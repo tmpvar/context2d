@@ -1,26 +1,24 @@
 {
-  'variables' : {
-    'shared_include_dirs' : [
-      'deps/skia/src/core',
-      'deps/skia/src/gpu',
-      'deps/skia/src/image',
-      'deps/skia/src/lazy',
-      'deps/skia/src/sfnt',
-      'deps/skia/src/utils',
-      'deps/skia/include',
-      'deps/skia/include/core',
-      'deps/skia/include/config',
-      'deps/skia/include/effects',
-      'deps/skia/include/images',
-      'deps/skia/include/lazy',
-      'deps/skia/include/gpu',
-      'deps/skia/include/ports',
-      'deps/skia/include/utils',
-    ]
-  },
+  'includes' : [
+    'context2d.gypi'
+  ],
 
   'targets': [{
     'target_name' : 'context2d',
+    'dependencies' : [
+      'skia'
+    ],
+    'sources' : [
+      'src/binding.cc',
+    ],
+    'include_dirs' : [
+      '<@(shared_include_dirs)'
+    ],
+  },
+  {
+    'target_name' : 'context2d-static',
+    "standalone_static_library": 1,
+    'type' : 'static_library',
     'dependencies' : [
       'skia'
     ],
@@ -371,7 +369,7 @@
         ],
         'defines' : [
         ],
-        
+
         # TODO: we'll need angle on windows
         #'dependencies' : [
         #  'deps/skia/third_party/externals/angle/src/build_angle.gyp'

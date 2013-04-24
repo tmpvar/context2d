@@ -1,5 +1,3 @@
-#define BUILDING_NODE_EXTENSION
-
 #include <node.h>
 
 #include "SkCanvas.h"
