@@ -6,24 +6,22 @@
   'targets': [{
     'target_name' : 'context2d',
     'dependencies' : [
-      'skia'
+      'context2d-static'
     ],
-    'sources' : [
-      'src/binding.cc',
-    ],
+    'sources' : ['src/binding.cc',],
     'include_dirs' : [
       '<@(shared_include_dirs)'
     ],
   },
   {
     'target_name' : 'context2d-static',
-    "standalone_static_library": 1,
     'type' : 'static_library',
+    "standalone_static_library": 1,
     'dependencies' : [
       'skia'
     ],
     'sources' : [
-      'src/binding.cc',
+      'src/context2d.cc',
     ],
     'include_dirs' : [
       '<@(shared_include_dirs)'

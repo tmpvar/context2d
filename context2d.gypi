@@ -16,6 +16,7 @@
       'deps/skia/include/gpu',
       'deps/skia/include/ports',
       'deps/skia/include/utils',
+      'src',
     ]
   },
 }
