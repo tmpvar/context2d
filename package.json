@@ -1,0 +1,22 @@
+{
+  "name": "context2d",
+  "version": "0.0.0",
+  "description": "the 2d context part of Canvas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tmpvar/context2d.git"
+  },
+  "author": "",
+  "license": "BSD",
+  "gypfile": true,
+  "readmeFilename": "readme.md",
+  "gitHead": "935c286de19a90810526ce717705716b8675ce56",
+  "dependencies": {
+    "bindings": "~1.1.0"
+  }
+}
