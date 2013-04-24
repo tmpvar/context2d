@@ -299,11 +299,8 @@
         #'deps/skia/src/ports/SkDebug_brew.cpp',
         #'deps/skia/src/ports/SkDebug_nacl.cpp',
         'deps/skia/src/ports/SkDebug_stdio.cpp',
-        #'deps/skia/src/ports/SkFontHost_FreeType.cpp',
-        #'deps/skia/src/ports/SkFontHost_FreeType_common.cpp',
         #'deps/skia/src/ports/SkFontHost_android.cpp',
         #'deps/skia/src/ports/SkFontHost_fontconfig.cpp',
-        #'deps/skia/src/ports/SkFontHost_linux.cpp',
         #'deps/skia/src/ports/SkFontHost_none.cpp',
         #'deps/skia/src/ports/SkFontHost_sandbox_none.cpp',
         #'deps/skia/src/ports/SkGlobalInitialization_chromium.cpp',
@@ -349,6 +346,23 @@
         },
         'include_dirs' : [
           'deps/skia/include/utils/mac'
+        ]
+      }],
+      ['OS == "linux"', {
+        'cflags': [
+          '-mssse3',
+          '<!@(freetype-config --cflags)'
+        ],
+        'defines' : [
+        ],
+        'sources' : [
+          'deps/skia/src/ports/SkThread_pthread.cpp',
+          'deps/skia/src/ports/SkTime_Unix.cpp',
+          'deps/skia/src/ports/SkFontHost_linux.cpp',
+          'deps/skia/src/ports/SkFontHost_FreeType.cpp',
+          'deps/skia/src/ports/SkFontHost_FreeType_common.cpp',
+        ],
+        'include_dirs' : [
         ]
       }],
       ['OS == "win"', {
