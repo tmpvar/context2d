@@ -6,6 +6,7 @@
       'deps/skia/src/image',
       'deps/skia/src/lazy',
       'deps/skia/src/sfnt',
+      'deps/skia/src/utils',
       'deps/skia/include',
       'deps/skia/include/core',
       'deps/skia/include/config',
@@ -239,6 +240,38 @@
       'deps/skia/src/gpu/SkGrPixelRef.cpp',
       'deps/skia/src/gpu/SkGrTexturePixelRef.cpp',
 
+      # gl
+      'deps/skia/src/gpu/gl/GrGLBufferImpl.cpp',
+      'deps/skia/src/gpu/gl/GrGLCaps.cpp',
+      'deps/skia/src/gpu/gl/GrGLContext.cpp',
+      'deps/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp',
+      'deps/skia/src/gpu/gl/GrGLCreateNullInterface.cpp',
+      'deps/skia/src/gpu/gl/GrGLDefaultInterface_native.cpp',
+      'deps/skia/src/gpu/gl/GrGLDefaultInterface_none.cpp',
+      'deps/skia/src/gpu/gl/GrGLEffect.cpp',
+      'deps/skia/src/gpu/gl/GrGLEffectMatrix.cpp',
+      'deps/skia/src/gpu/gl/GrGLExtensions.cpp',
+      'deps/skia/src/gpu/gl/GrGLIndexBuffer.cpp',
+      'deps/skia/src/gpu/gl/GrGLInterface.cpp',
+      'deps/skia/src/gpu/gl/GrGLNoOpInterface.cpp',
+      'deps/skia/src/gpu/gl/GrGLPath.cpp',
+      'deps/skia/src/gpu/gl/GrGLProgram.cpp',
+      'deps/skia/src/gpu/gl/GrGLProgramDesc.cpp',
+      'deps/skia/src/gpu/gl/GrGLRenderTarget.cpp',
+      'deps/skia/src/gpu/gl/GrGLSL.cpp',
+      'deps/skia/src/gpu/gl/GrGLShaderBuilder.cpp',
+      'deps/skia/src/gpu/gl/GrGLStencilBuffer.cpp',
+      'deps/skia/src/gpu/gl/GrGLTexture.cpp',
+      'deps/skia/src/gpu/gl/GrGLUniformManager.cpp',
+      'deps/skia/src/gpu/gl/GrGLUtil.cpp',
+      'deps/skia/src/gpu/gl/GrGLVertexArray.cpp',
+      'deps/skia/src/gpu/gl/GrGLVertexBuffer.cpp',
+      'deps/skia/src/gpu/gl/GrGpuGL.cpp',
+      'deps/skia/src/gpu/gl/GrGpuGL_program.cpp',
+      'deps/skia/src/gpu/gl/SkGLContextHelper.cpp',
+      'deps/skia/src/gpu/gl/SkNullGLContext.cpp',
+
+
       # gpu effects
       'deps/skia/src/gpu/effects/GrConfigConversionEffect.cpp',
       'deps/skia/src/gpu/effects/GrConvolutionEffect.cpp',
@@ -266,24 +299,16 @@
         #'deps/skia/src/ports/SkDebug_brew.cpp',
         #'deps/skia/src/ports/SkDebug_nacl.cpp',
         'deps/skia/src/ports/SkDebug_stdio.cpp',
-        #'deps/skia/src/ports/SkDebug_win.cpp',
-        'deps/skia/src/ports/SkFontConfigInterface_direct.cpp',
         #'deps/skia/src/ports/SkFontHost_FreeType.cpp',
         #'deps/skia/src/ports/SkFontHost_FreeType_common.cpp',
         #'deps/skia/src/ports/SkFontHost_android.cpp',
         #'deps/skia/src/ports/SkFontHost_fontconfig.cpp',
         #'deps/skia/src/ports/SkFontHost_linux.cpp',
-        'deps/skia/src/ports/SkFontHost_mac.cpp',
         #'deps/skia/src/ports/SkFontHost_none.cpp',
         #'deps/skia/src/ports/SkFontHost_sandbox_none.cpp',
-        #'deps/skia/src/ports/SkFontHost_win.cpp',
-        #'deps/skia/src/ports/SkFontHost_win_dw.cpp',
         #'deps/skia/src/ports/SkGlobalInitialization_chromium.cpp',
         'deps/skia/src/ports/SkGlobalInitialization_default.cpp',
         #'deps/skia/src/ports/SkHarfBuzzFont.cpp',
-        'deps/skia/src/ports/SkImageDecoder_CG.cpp',
-# windows decoder
-        #'deps/skia/src/ports/SkImageDecoder_WIC.cpp',
 
         #'deps/skia/src/ports/SkImageDecoder_empty.cpp',
         #'deps/skia/src/ports/SkMemory_brew.cpp',
@@ -292,13 +317,8 @@
         #'deps/skia/src/ports/SkOSFile_brew.cpp',
         'deps/skia/src/ports/SkOSFile_stdio.cpp',
         #'deps/skia/src/ports/SkPurgeableMemoryBlock_android.cpp',
-        'deps/skia/src/ports/SkPurgeableMemoryBlock_mac.cpp',
         #'deps/skia/src/ports/SkPurgeableMemoryBlock_none.cpp',
         #'deps/skia/src/ports/SkThread_none.cpp',
-        'deps/skia/src/ports/SkThread_pthread.cpp',
-        #'deps/skia/src/ports/SkThread_win.cpp',
-        'deps/skia/src/ports/SkTime_Unix.cpp',
-        #'deps/skia/src/ports/SkTime_win.cpp',
         #'deps/skia/src/ports/SkXMLParser_empty.cpp',
         #'deps/skia/src/ports/SkXMLParser_expat.cpp',
         #'deps/skia/src/ports/SkXMLParser_tinyxml.cpp',
@@ -316,6 +336,14 @@
         ],
         'defines' : [
         ],
+        'sources' : [
+          'deps/skia/src/ports/SkFontHost_mac.cpp',
+          'deps/skia/src/ports/SkPurgeableMemoryBlock_mac.cpp',
+          'deps/skia/src/ports/SkImageDecoder_CG.cpp',
+          'deps/skia/src/ports/SkThread_pthread.cpp',
+          'deps/skia/src/ports/SkTime_Unix.cpp',
+          'deps/skia/src/ports/SkFontConfigInterface_direct.cpp',
+        ],
         'xcode_settings': {
           'OTHER_CFLAGS': ['-mssse3',],
         },
@@ -329,10 +357,33 @@
         ],
         'defines' : [
         ],
+        
+        # TODO: we'll need angle on windows
+        #'dependencies' : [
+        #  'deps/skia/third_party/externals/angle/src/build_angle.gyp'
+        #],
+        'sources' : [
+          'deps/skia/src/ports/SkDebug_win.cpp',
+          'deps/skia/src/ports/SkFontHost_win.cpp',
+          'deps/skia/src/ports/SkFontHost_win_dw.cpp',
+          'deps/skia/src/ports/SkImageDecoder_WIC.cpp',
+          'deps/skia/src/ports/SkThread_win.cpp',
+          'deps/skia/src/ports/SkTime_win.cpp',
+
+          'deps/skia/src/utils/win/SkAutoCoInitialize.cpp',
+          'deps/skia/src/utils/win/SkDWriteFontFileStream.cpp',
+          'deps/skia/src/utils/win/SkDWriteGeometrySink.cpp',
+          'deps/skia/src/utils/win/SkHRESULT.cpp',
+          'deps/skia/src/utils/win/SkIStream.cpp',
+          'deps/skia/src/utils/win/SkWGL_win.cpp',
+
+
+        ],
         'xcode_settings': {
           'OTHER_CFLAGS': ['-mssse3',],
         },
         'include_dirs' : [
+          'deps/skia/src/utils/win',
           'deps/skia/include/utils/win'
         ]
       }]
