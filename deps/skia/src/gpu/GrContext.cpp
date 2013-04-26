@@ -140,6 +140,10 @@ GrContext::~GrContext() {
         (*fCleanUpData[i].fFunc)(this, fCleanUpData[i].fInfo);
     }
 
+    if (NULL == fGpu) {
+        return;
+    }
+
     this->flush();
 
     // Since the gpu can hold scratch textures, give it a chance to let go
@@ -760,7 +764,6 @@ static bool apply_aa_to_rect(GrDrawTarget* target,
     }
 
     combinedMatrix->mapRect(devRect, rect);
-    devRect->sort();
 
     if (strokeWidth < 0) {
         return !isIRect(*devRect);
@@ -965,6 +968,22 @@ void GrContext::drawVertices(const GrPaint& paint,
         target->resetIndexSource();
     } else {
         target->drawNonIndexed(primitiveType, 0, vertexCount);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void GrContext::drawRRect(const GrPaint& paint,
+                          const SkRRect& rect,
+                          const SkStrokeRec& stroke) {
+
+    GrDrawTarget* target = this->prepareToDraw(&paint, BUFFERED_DRAW);
+    GrDrawState::AutoStageDisable atr(fDrawState);
+
+    if (!fOvalRenderer->drawSimpleRRect(target, this, paint, rect, stroke)) {
+        SkPath path;
+        path.addRRect(rect);
+        this->internalDrawPath(target, paint, path, stroke);
     }
 }
 

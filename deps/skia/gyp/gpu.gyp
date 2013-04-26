@@ -158,7 +158,7 @@
              '/opt/X11/include/',
           ],
         }],
-        [ 'skia_angle == 0', {
+        [ 'not skia_angle', {
           'sources!': [
             '../include/gpu/gl/SkANGLEGLContext.h',
             '../src/gpu/gl/angle/SkANGLEGLContext.cpp',

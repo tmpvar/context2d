@@ -174,6 +174,8 @@ static PipeFlagComboData gPipeWritingFlagCombos[] = {
         | SkGPipeWriter::kSharedAddressSpace_Flag }
 };
 
+static bool encode_to_dct_stream(SkWStream* stream, const SkBitmap& bitmap, const SkIRect& rect);
+
 const static ErrorCombination kDefaultIgnorableErrorTypes = ErrorCombination()
     .plus(kMissingExpectations_ErrorType)
     .plus(kIntentionallySkipped_ErrorType);
@@ -556,6 +558,7 @@ public:
                               SkScalarRoundToInt(content.height()));
             dev = new SkPDFDevice(pageSize, contentSize, initialTransform);
         }
+        dev->setDCTEncoder(encode_to_dct_stream);
         SkAutoUnref aur(dev);
 
         SkCanvas c(dev);
@@ -1168,10 +1171,14 @@ static const ConfigData gRec[] = {
 #endif // SK_SUPPORT_PDF
 };
 
+static const char kDefaultsConfigStr[] = "defaults";
+static const char kExcludeConfigChar = '~';
+
 static SkString configUsage() {
     SkString result;
     result.appendf("Space delimited list of which configs to run. Possible options: [");
     for (size_t i = 0; i < SK_ARRAY_COUNT(gRec); ++i) {
+        SkASSERT(gRec[i].fName != kDefaultsConfigStr);
         if (i > 0) {
             result.append("|");
         }
@@ -1179,16 +1186,39 @@ static SkString configUsage() {
     }
     result.append("]\n");
     result.appendf("The default value is: \"");
+    SkString firstDefault;
+    SkString allButFirstDefaults;
+    SkString nonDefault;
     for (size_t i = 0; i < SK_ARRAY_COUNT(gRec); ++i) {
         if (gRec[i].fRunByDefault) {
             if (i > 0) {
                 result.append(" ");
             }
-            result.appendf("%s", gRec[i].fName);
+            result.append(gRec[i].fName);
+            if (firstDefault.isEmpty()) {
+                firstDefault = gRec[i].fName;
+            } else {
+                if (!allButFirstDefaults.isEmpty()) {
+                    allButFirstDefaults.append(" ");
+                }
+                allButFirstDefaults.append(gRec[i].fName);
+            }
+        } else {
+            nonDefault = gRec[i].fName;
         }
     }
-    result.appendf("\"");
-
+    result.append("\"\n");
+    result.appendf("\"%s\" evaluates to the default set of configs.\n", kDefaultsConfigStr);
+    result.appendf("Prepending \"%c\" on a config name excludes it from the set of configs to run.\n"
+                   "Exclusions always override inclusions regardless of order.\n",
+                   kExcludeConfigChar);
+    result.appendf("E.g. \"--config %s %c%s %s\" will run these configs:\n\t%s %s",
+                   kDefaultsConfigStr,
+                   kExcludeConfigChar,
+                   firstDefault.c_str(),
+                   nonDefault.c_str(),
+                   allButFirstDefaults.c_str(),
+                   nonDefault.c_str());
     return result;
 }
 
@@ -1210,18 +1240,9 @@ DEFINE_string(gpuCacheSize, "", "<bytes> <count>: Limit the gpu cache to byte si
 #endif
 DEFINE_bool(hierarchy, false, "Whether to use multilevel directory structure "
             "when reading/writing files.");
-// TODO(epoger): Maybe should make SkCommandLineFlags handle default string
-// values differently, so that the first definition of ignoreErrorTypes worked?
-#if 0
 DEFINE_string(ignoreErrorTypes, kDefaultIgnorableErrorTypes.asString(" ").c_str(),
               "Space-separated list of ErrorTypes that should be ignored. If any *other* error "
               "types are encountered, the tool will exit with a nonzero return value.");
-#else
-DEFINE_string(ignoreErrorTypes, "", SkString(SkString(
-              "Space-separated list of ErrorTypes that should be ignored. If any *other* error "
-              "types are encountered, the tool will exit with a nonzero return value. "
-              "Defaults to: ") += kDefaultIgnorableErrorTypes.asString(" ")).c_str());
-#endif
 DEFINE_string(match, "",  "Only run tests whose name includes this substring/these substrings "
               "(more than one can be supplied, separated by spaces).");
 DEFINE_string(mismatchPath, "", "Write images for tests that failed due to "
@@ -1246,6 +1267,37 @@ DEFINE_bool2(verbose, v, false, "Give more detail (e.g. list all GMs run, more i
              "each test).");
 DEFINE_string2(writePath, w, "",  "Write rendered images into this directory.");
 DEFINE_string2(writePicturePath, p, "", "Write .skp files into this directory.");
+DEFINE_int32(pdfJpegQuality, -1, "Encodes images in JPEG at quality level N, "
+             "which can be in range 0-100). N = -1 will disable JPEG compression. "
+             "Default is N = 100, maximum quality.");
+
+static bool encode_to_dct_stream(SkWStream* stream, const SkBitmap& bitmap, const SkIRect& rect) {
+    // Filter output of warnings that JPEG is not available for the image.
+    if (bitmap.width() >= 65500 || bitmap.height() >= 65500) return false;
+    if (FLAGS_pdfJpegQuality == -1) return false;
+
+    SkIRect bitmapBounds;
+    SkBitmap subset;
+    const SkBitmap* bitmapToUse = &bitmap;
+    bitmap.getBounds(&bitmapBounds);
+    if (rect != bitmapBounds) {
+        SkAssertResult(bitmap.extractSubset(&subset, rect));
+        bitmapToUse = &subset;
+    }
+
+#if defined(SK_BUILD_FOR_MAC)
+    // Workaround bug #1043 where bitmaps with referenced pixels cause
+    // CGImageDestinationFinalize to crash
+    SkBitmap copy;
+    bitmapToUse->deepCopyTo(&copy, bitmapToUse->config());
+    bitmapToUse = &copy;
+#endif
+
+    return SkImageEncoder::EncodeStream(stream,
+                                        *bitmapToUse,
+                                        SkImageEncoder::kJPEG_Type,
+                                        FLAGS_pdfJpegQuality);
+}
 
 static int findConfig(const char config[]) {
     for (size_t i = 0; i < SK_ARRAY_COUNT(gRec); i++) {
@@ -1620,12 +1672,34 @@ int tool_main(int argc, char** argv) {
     }
 
     for (int i = 0; i < FLAGS_config.count(); i++) {
-        int index = findConfig(FLAGS_config[i]);
+        const char* config = FLAGS_config[i];
+        userConfig = true;
+        bool exclude = false;
+        if (*config == kExcludeConfigChar) {
+            exclude = true;
+            config += 1;
+        }
+        int index = findConfig(config);
         if (index >= 0) {
-            appendUnique<size_t>(&configs, index);
-            userConfig = true;
+            if (exclude) {
+                *excludeConfigs.append() = index;
+            } else {
+                appendUnique<size_t>(&configs, index);
+            }
+        } else if (0 == strcmp(kDefaultsConfigStr, config)) {
+            for (size_t c = 0; c < SK_ARRAY_COUNT(gRec); ++c) {
+                if (gRec[c].fRunByDefault) {
+                    if (exclude) {
+                        gm_fprintf(stderr, "%c%s is not allowed.\n",
+                                   kExcludeConfigChar, kDefaultsConfigStr);
+                        return -1;
+                    } else {
+                        appendUnique<size_t>(&configs, c);
+                    }
+                }
+            }
         } else {
-            gm_fprintf(stderr, "unrecognized config %s\n", FLAGS_config[i]);
+            gm_fprintf(stderr, "unrecognized config %s\n", config);
             return -1;
         }
     }
@@ -1739,6 +1813,19 @@ int tool_main(int argc, char** argv) {
     GrContextFactory* grFactory = NULL;
 #endif
 
+    if (configs.isEmpty()) {
+        gm_fprintf(stderr, "No configs to run.");
+        return -1;
+    }
+
+    // now show the user the set of configs that will be run.
+    SkString configStr("These configs will be run: ");
+    // show the user the config that will run.
+    for (int i = 0; i < configs.count(); ++i) {
+        configStr.appendf("%s%s", gRec[configs[i]].fName, (i == configs.count() - 1) ? "\n" : " ");
+    }
+    gm_fprintf(stdout, "%s", configStr.c_str());
+
     if (FLAGS_resourcePath.count() == 1) {
         GM::SetResourcePath(FLAGS_resourcePath[0]);
     }
@@ -1802,6 +1889,10 @@ int tool_main(int argc, char** argv) {
                 }
             }
         }
+    }
+
+    if (FLAGS_pdfJpegQuality < -1 || FLAGS_pdfJpegQuality > 100) {
+        gm_fprintf(stderr, "%s\n", "pdfJpegQuality must be in [-1 .. 100] range.");
     }
 
     Iter iter;
