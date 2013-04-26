@@ -1,10 +1,19 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
+#define SK_DEBUG 1
+#define DUMP_IMAGEREF_LIFECYCLE
+
 #include <node.h>
 #include <SkCanvas.h>
 #include <SkPaint.h>
 #include <SkPath.h>
+
+#include <SkStream.h>
+#include <SkDevice.h>
+#include <SkData.h>
+#include <SkImageEncoder.h>
+#include <SkMatrix44.h>
 
 using namespace node;
 using namespace v8;
@@ -18,8 +27,9 @@ class Context2D : public ObjectWrap {
   public:
     static void Init(v8::Handle<v8::Object> exports);
     SkCanvas *canvas;
-    SkPath *path;
-    SkPaint *paint;
+    SkPath path;
+    SkPaint paint;
+
 
   private:
     Context2D();
@@ -30,6 +40,7 @@ class Context2D : public ObjectWrap {
 
     static Persistent<Function> constructor;
     OBJECT_METHOD(New);
+    OBJECT_METHOD(ToPngBuffer);
 
     // state
     OBJECT_METHOD(Save); // push state on state stack
@@ -171,9 +182,6 @@ class Context2D : public ObjectWrap {
 //   readonly attribute Uint8ClampedArray data;
 // };
 
-// [Constructor(optional Element scope)]
-// interface DrawingStyle { };
-// DrawingStyle implements CanvasDrawingStyles;
 
 // [Constructor]
 // interface Path {

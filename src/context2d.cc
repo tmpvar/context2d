@@ -1,7 +1,22 @@
 #include <node.h>
-#include "context2d.h"
+#include <node_buffer.h>
 
+#include "context2d.h"
+#include <Skcanvas.h>
+#include <SkPaint.h>
+#include <SkPath.h>
+#include <SkError.h>
+
+#include <SkStream.h>
+#include <SkDevice.h>
+#include <SkData.h>
+#include <SkGraphics.h>
+#include <SkTypeface.h>
+#include <SkImageEncoder.h>
 #include <SkMatrix44.h>
+
+#include <stdio.h>
+#include <assert.h>
 
 using namespace node;
 using namespace v8;
@@ -14,9 +29,13 @@ using namespace v8;
 
 
 void Context2D::Init(v8::Handle<v8::Object> exports) {
+  SkAutoGraphics ag;
+
   Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
   tpl->SetClassName(String::NewSymbol("Context2D"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+  PROTOTYPE_METHOD(ToPngBuffer, toPngBuffer);
 
   PROTOTYPE_METHOD(Save, save);
   PROTOTYPE_METHOD(Restore, restore);
@@ -92,13 +111,18 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 }
 
 Context2D::Context2D() {
-  this->canvas = new SkCanvas();
-  this->paint = new SkPaint();
-  this->path = NULL;
+
+  int w = 800;
+  int h = 600;
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  bitmap.allocPixels();
+
+  this->canvas = new SkCanvas(bitmap);
 }
 
 Context2D::~Context2D() {
-  delete this->canvas;
+  this->canvas->unref();
 }
 
 METHOD(New) {
@@ -108,6 +132,29 @@ METHOD(New) {
   context->Wrap(args.This());
 
   return args.This();
+}
+
+METHOD(ToPngBuffer) {
+  HandleScope scope;
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
+  size_t size = bitmap.getSize();
+
+  void *data = malloc(size);
+  SkMemoryWStream stream(data, size);
+  SkImageEncoder::EncodeStream(&stream, bitmap, SkImageEncoder::kPNG_Type, 100);
+
+  Buffer *buffer = Buffer::New((const char *)data, size);
+
+  Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
+  Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+
+  free(data);
+
+  return scope.Close(actualBuffer);
 }
 
 METHOD(Save) {
@@ -121,6 +168,7 @@ METHOD(Save) {
 
 METHOD(Restore) {
   HandleScope scope;
+
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   ctx->canvas->restore();
@@ -212,7 +260,7 @@ METHOD(ResetMatrix) {
 METHOD(SetGlobalAlpha) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -222,7 +270,7 @@ METHOD(SetGlobalAlpha) {
 METHOD(GetGlobalAlpha) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -232,7 +280,7 @@ METHOD(GetGlobalAlpha) {
 METHOD(SetGlobalCompositeOperation) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -242,7 +290,7 @@ METHOD(SetGlobalCompositeOperation) {
 METHOD(GetGlobalCompositeOperation) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -252,7 +300,7 @@ METHOD(GetGlobalCompositeOperation) {
 METHOD(SetImageSmoothingEnabled) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -262,7 +310,7 @@ METHOD(SetImageSmoothingEnabled) {
 METHOD(GetImageSmoothingEnabled) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -272,7 +320,7 @@ METHOD(GetImageSmoothingEnabled) {
 METHOD(SetStrokeStyle) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -282,7 +330,7 @@ METHOD(SetStrokeStyle) {
 METHOD(GetStrokeStyle) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -293,8 +341,12 @@ METHOD(SetFillStyle) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  U8CPU a = args[3]->NumberValue();
+  U8CPU r = args[0]->NumberValue();
+  U8CPU g = args[1]->NumberValue();
+  U8CPU b = args[2]->NumberValue();
 
-
+  ctx->paint.setColor(SkColorSetARGBInline(a,r,g,b));
 
   return scope.Close(Undefined());
 }
@@ -302,7 +354,7 @@ METHOD(SetFillStyle) {
 METHOD(GetFillStyle) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -312,7 +364,7 @@ METHOD(GetFillStyle) {
 METHOD(CreateLinearGradient) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -322,7 +374,7 @@ METHOD(CreateLinearGradient) {
 METHOD(CreatePattern) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -332,7 +384,7 @@ METHOD(CreatePattern) {
 METHOD(SetShadowOffset) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -342,7 +394,7 @@ METHOD(SetShadowOffset) {
 METHOD(GetShadowOffset) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -352,7 +404,7 @@ METHOD(GetShadowOffset) {
 METHOD(SetShadowBlur) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -362,7 +414,7 @@ METHOD(SetShadowBlur) {
 METHOD(GetShadowBlur) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -372,7 +424,7 @@ METHOD(GetShadowBlur) {
 METHOD(SetShadowColor) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -382,7 +434,7 @@ METHOD(SetShadowColor) {
 METHOD(GetShadowColor) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -392,7 +444,7 @@ METHOD(GetShadowColor) {
 METHOD(ClearRect) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -404,7 +456,18 @@ METHOD(FillRect) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  double x = args[0]->NumberValue();
+  double y = args[1]->NumberValue();
+  double w = args[2]->NumberValue();
+  double h = args[3]->NumberValue();
 
+  ctx->canvas->drawRectCoords(
+    x,
+    y,
+    x+w,
+    y+h,
+    ctx->paint
+  );
 
   return scope.Close(Undefined());
 }
@@ -412,7 +475,7 @@ METHOD(FillRect) {
 METHOD(StrokeRect) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -422,7 +485,7 @@ METHOD(StrokeRect) {
 METHOD(BeginPath) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -432,7 +495,7 @@ METHOD(BeginPath) {
 METHOD(Fill) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -442,7 +505,7 @@ METHOD(Fill) {
 METHOD(Stroke) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -452,7 +515,7 @@ METHOD(Stroke) {
 METHOD(Clip) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -462,7 +525,7 @@ METHOD(Clip) {
 METHOD(IsPointInPath) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -472,7 +535,7 @@ METHOD(IsPointInPath) {
 METHOD(ClosePath) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -482,7 +545,7 @@ METHOD(ClosePath) {
 METHOD(MoveTo) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -492,7 +555,7 @@ METHOD(MoveTo) {
 METHOD(LineTo) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -502,7 +565,7 @@ METHOD(LineTo) {
 METHOD(QuadraticCurveTo) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -512,7 +575,7 @@ METHOD(QuadraticCurveTo) {
 METHOD(BezierCurveTo) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -522,7 +585,7 @@ METHOD(BezierCurveTo) {
 METHOD(ArcTo) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -532,7 +595,7 @@ METHOD(ArcTo) {
 METHOD(Rect) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -542,7 +605,7 @@ METHOD(Rect) {
 METHOD(Arc) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -552,7 +615,7 @@ METHOD(Arc) {
 METHOD(Ellipse) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -562,7 +625,7 @@ METHOD(Ellipse) {
 METHOD(FillText) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -572,7 +635,7 @@ METHOD(FillText) {
 METHOD(StrokeText) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -582,7 +645,7 @@ METHOD(StrokeText) {
 METHOD(MeasureText) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -592,7 +655,7 @@ METHOD(MeasureText) {
 METHOD(GetFont) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -602,7 +665,7 @@ METHOD(GetFont) {
 METHOD(SetFont) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -612,7 +675,7 @@ METHOD(SetFont) {
 METHOD(GetTextAlign) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -622,7 +685,7 @@ METHOD(GetTextAlign) {
 METHOD(SetTextAlign) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -632,7 +695,7 @@ METHOD(SetTextAlign) {
 METHOD(GetTextBaseline) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -642,7 +705,7 @@ METHOD(GetTextBaseline) {
 METHOD(SetTextBaseline) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -652,7 +715,7 @@ METHOD(SetTextBaseline) {
 METHOD(DrawImage) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -662,7 +725,7 @@ METHOD(DrawImage) {
 METHOD(CreateImageData) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -672,7 +735,7 @@ METHOD(CreateImageData) {
 METHOD(GetImageData) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -682,7 +745,7 @@ METHOD(GetImageData) {
 METHOD(PutImageData) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -692,7 +755,7 @@ METHOD(PutImageData) {
 METHOD(GetLineWidth) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -702,7 +765,7 @@ METHOD(GetLineWidth) {
 METHOD(SetLineWidth) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -712,7 +775,7 @@ METHOD(SetLineWidth) {
 METHOD(GetLineCap) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -722,7 +785,7 @@ METHOD(GetLineCap) {
 METHOD(SetLineCap) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -732,7 +795,7 @@ METHOD(SetLineCap) {
 METHOD(GetLineJoin) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -742,7 +805,7 @@ METHOD(GetLineJoin) {
 METHOD(SetLineJoin) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -752,7 +815,7 @@ METHOD(SetLineJoin) {
 METHOD(GetMiterLimit) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -762,7 +825,7 @@ METHOD(GetMiterLimit) {
 METHOD(SetMiterLimit) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -772,7 +835,7 @@ METHOD(SetMiterLimit) {
 METHOD(SetLineDash) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -782,7 +845,7 @@ METHOD(SetLineDash) {
 METHOD(GetLineDash) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -792,7 +855,7 @@ METHOD(GetLineDash) {
 METHOD(SetLineDashOffset) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 
@@ -802,7 +865,7 @@ METHOD(SetLineDashOffset) {
 METHOD(GetLineDashOffset) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
 

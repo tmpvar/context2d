@@ -17,6 +17,7 @@
   "readmeFilename": "readme.md",
   "gitHead": "935c286de19a90810526ce717705716b8675ce56",
   "dependencies": {
-    "bindings": "~1.1.0"
+    "bindings": "~1.1.0",
+    "csscolorparser": "~1.0.0"
   }
 }

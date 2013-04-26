@@ -1,4 +1,5 @@
 var Context2D = require('bindings')('context2d').Context2D;
+var parseCSSColor = require('csscolorparser').parseCSSColor;
 
 module.exports.createContext = function(canvas) {
   var ret = new Context2D;
@@ -10,6 +11,22 @@ module.exports.createContext = function(canvas) {
   Object.defineProperty(ret, 'globalAlpha', {
     get : ret.getGlobalAlpha.bind(ret),
     set : ret.setGlobalAlpha.bind(ret)
+  });
+
+  var fill = 'black';
+  Object.defineProperty(ret, 'fillStyle', {
+    get : function() {
+      return fill;
+    },
+    set : function(color) {
+      console.log(c);
+      var c = parseCSSColor(color);
+      if (c) {
+        fill = color;
+        c[3] = c[3] * 255;
+        ret.setFillStyle.apply(ret, c);
+      }
+    }
   });
 
 
