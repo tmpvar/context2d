@@ -18,6 +18,8 @@
   "gitHead": "935c286de19a90810526ce717705716b8675ce56",
   "dependencies": {
     "bindings": "~1.1.0",
-    "csscolorparser": "~1.0.0"
+    "csscolorparser": "~1.0.0",
+    "htmlimage": "~1.0.0",
+    "optimist": "~0.4.0"
   }
 }

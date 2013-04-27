@@ -11,9 +11,13 @@
 #include <SkDevice.h>
 #include <SkData.h>
 #include <SkGraphics.h>
-#include <SkTypeface.h>
 #include <SkImageEncoder.h>
+#include <SkRect.h>
+#include <SkRegion.h>
+#include <SkTypeface.h>
 #include <SkMatrix44.h>
+#include <SkXfermode.h>
+#include <SkBitmapProcShader.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -35,8 +39,13 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   tpl->SetClassName(String::NewSymbol("Context2D"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+  // Non-standard
   PROTOTYPE_METHOD(ToPngBuffer, toPngBuffer);
+  PROTOTYPE_METHOD(ToBuffer, toBuffer);
+  PROTOTYPE_METHOD(GetPixel, getPixel);
 
+
+  // Standard
   PROTOTYPE_METHOD(Save, save);
   PROTOTYPE_METHOD(Restore, restore);
   PROTOTYPE_METHOD(Scale, scale);
@@ -52,10 +61,10 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(GetImageSmoothingEnabled, getImageSmoothingEnabled);
   PROTOTYPE_METHOD(SetStrokeStyle, setStrokeStyle);
   PROTOTYPE_METHOD(GetStrokeStyle, getStrokeStyle);
+  PROTOTYPE_METHOD(SetFillStylePattern, setFillStylePattern);
   PROTOTYPE_METHOD(SetFillStyle, setFillStyle);
   PROTOTYPE_METHOD(GetFillStyle, getFillStyle);
   PROTOTYPE_METHOD(CreateLinearGradient, createLinearGradient);
-  PROTOTYPE_METHOD(CreatePattern, createPattern);
   PROTOTYPE_METHOD(SetShadowOffset, setShadowOffset);
   PROTOTYPE_METHOD(GetShadowOffset, getShadowOffset);
   PROTOTYPE_METHOD(SetShadowBlur, setShadowBlur);
@@ -88,7 +97,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetTextAlign, setTextAlign);
   PROTOTYPE_METHOD(GetTextBaseline, getTextBaseline);
   PROTOTYPE_METHOD(SetTextBaseline, setTextBaseline);
-  PROTOTYPE_METHOD(DrawImage, drawImage);
+  PROTOTYPE_METHOD(DrawImageBuffer, drawImageBuffer);
   PROTOTYPE_METHOD(CreateImageData, createImageData);
   PROTOTYPE_METHOD(GetImageData, getImageData);
   PROTOTYPE_METHOD(PutImageData, putImageData);
@@ -110,15 +119,14 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 
 }
 
-Context2D::Context2D() {
-
-  int w = 800;
-  int h = 600;
+Context2D::Context2D(int w, int h) {
   SkBitmap bitmap;
+
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
   bitmap.allocPixels();
 
   this->canvas = new SkCanvas(bitmap);
+  this->canvas->clear(SkColorSetARGBInline(0, 0, 0, 0));
 }
 
 Context2D::~Context2D() {
@@ -128,10 +136,38 @@ Context2D::~Context2D() {
 METHOD(New) {
   HandleScope scope;
 
-  Context2D* context = new Context2D();
+  int w = args[0]->NumberValue();
+  int h = args[1]->NumberValue();
+
+  Context2D* context = new Context2D(w, h);
   context->Wrap(args.This());
 
   return args.This();
+}
+
+METHOD(GetPixel) {
+  HandleScope scope;
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  Local<Object> obj = Object::New();
+
+  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
+  bitmap.lockPixels();
+
+  // TODO: validity and bounds
+  SkColor color = bitmap.getColor(
+    args[0]->NumberValue(),
+    args[1]->NumberValue()
+  );
+
+  bitmap.unlockPixels();
+
+  obj->Set(String::NewSymbol("r"), Number::New(SkColorGetR(color)));
+  obj->Set(String::NewSymbol("g"), Number::New(SkColorGetG(color)));
+  obj->Set(String::NewSymbol("b"), Number::New(SkColorGetB(color)));
+  obj->Set(String::NewSymbol("a"), Number::New(SkColorGetA(color)));
+
+  return scope.Close(obj);
 }
 
 METHOD(ToPngBuffer) {
@@ -157,6 +193,25 @@ METHOD(ToPngBuffer) {
   return scope.Close(actualBuffer);
 }
 
+
+METHOD(ToBuffer) {
+  HandleScope scope;
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
+  size_t size = bitmap.getSize();
+
+  Buffer *buffer = Buffer::New((const char *)bitmap.getPixels(), size);
+
+  Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
+  Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+
+  return scope.Close(actualBuffer);
+}
+
+
 METHOD(Save) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
@@ -180,11 +235,11 @@ METHOD(Scale) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  if (!args[0]->IsUndefined() && args[1]->IsUndefined()) {
-    int x = args[0]->NumberValue();
-    int y = args[1]->NumberValue();
+  if (!args[0]->IsUndefined() && !args[1]->IsUndefined()) {
+    double x = args[0]->NumberValue();
+    double y = args[1]->NumberValue();
 
-    ctx->canvas->scale(SkIntToScalar(x), SkIntToScalar(y));
+    ctx->canvas->scale(x, y);
   }
 
   return scope.Close(Undefined());
@@ -280,9 +335,11 @@ METHOD(GetGlobalAlpha) {
 METHOD(SetGlobalCompositeOperation) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkXfermode::Mode mode = (SkXfermode::Mode)args[0]->IntegerValue();
 
+  ctx->paint.setXfermodeMode(mode);
 
   return scope.Close(Undefined());
 }
@@ -337,10 +394,48 @@ METHOD(GetStrokeStyle) {
   return scope.Close(Undefined());
 }
 
+METHOD(SetFillStylePattern) {
+  HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  if (!Buffer::HasInstance(args[0])) {
+    return ThrowException(Exception::Error(
+                String::New("First argument needs to be a buffer")));
+  }
+
+  Local<Object> buffer_obj = args[0]->ToObject();
+  char *buffer_data = Buffer::Data(buffer_obj);
+
+  double w = args[1]->NumberValue();
+  double h = args[2]->NumberValue();
+  SkShader::TileMode repeatX = args[3]->BooleanValue() ?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
+
+  SkShader::TileMode repeatY = args[4]->BooleanValue()?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
+
+  SkBitmap src;
+
+  //src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  //src.setPixels(buffer_data);
+
+  //SkBitmapProcShader shader(src, repeatX, repeatY);
+  //ctx->paint.setShader(&shader);
+
+  return scope.Close(Undefined());
+}
+
 METHOD(SetFillStyle) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  // Clear off the old shader
+  ctx->paint.setShader(NULL);
+
   U8CPU a = args[3]->NumberValue();
   U8CPU r = args[0]->NumberValue();
   U8CPU g = args[1]->NumberValue();
@@ -362,16 +457,6 @@ METHOD(GetFillStyle) {
 }
 
 METHOD(CreateLinearGradient) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
-
-  return scope.Close(Undefined());
-}
-
-METHOD(CreatePattern) {
   HandleScope scope;
 
   // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
@@ -444,9 +529,28 @@ METHOD(GetShadowColor) {
 METHOD(ClearRect) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  SkCanvas *canvas = ctx->canvas;
 
+  double x = args[0]->NumberValue();
+  double y = args[1]->NumberValue();
+  double w = args[2]->NumberValue();
+  double h = args[3]->NumberValue();
 
+  canvas->save();
+  SkPaint clearPaint;
+  clearPaint.setColor(SkColorSetARGBInline(0, 0, 0, 0));
+  clearPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+  ctx->canvas->drawRectCoords(
+    x,
+    y,
+    x+w,
+    y+h,
+    clearPaint
+  );
+
+  canvas->restore();
 
   return scope.Close(Undefined());
 }
@@ -485,9 +589,8 @@ METHOD(StrokeRect) {
 METHOD(BeginPath) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->path.reset();
 
   return scope.Close(Undefined());
 }
@@ -495,9 +598,11 @@ METHOD(BeginPath) {
 METHOD(Fill) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  SkPaint fillPaint;
+  fillPaint.setColor(ctx->paint.getColor());
+  ctx->paint.setStyle(SkPaint::kFill_Style);
+  ctx->canvas->drawPath(ctx->path, ctx->paint);
 
   return scope.Close(Undefined());
 }
@@ -515,7 +620,10 @@ METHOD(Stroke) {
 METHOD(Clip) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  ctx->path.close();
+  ctx->canvas->clipPath(ctx->path, SkRegion::kReplace_Op, true);
 
 
 
@@ -535,9 +643,8 @@ METHOD(IsPointInPath) {
 METHOD(ClosePath) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->path.close();
 
   return scope.Close(Undefined());
 }
@@ -595,9 +702,14 @@ METHOD(ArcTo) {
 METHOD(Rect) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  double x = args[0]->NumberValue();
+  double y = args[1]->NumberValue();
+  double w = args[2]->NumberValue();
+  double h = args[3]->NumberValue();
 
+  ctx->path.addRect(x, y, x+w, y+h);
 
   return scope.Close(Undefined());
 }
@@ -712,12 +824,39 @@ METHOD(SetTextBaseline) {
   return scope.Close(Undefined());
 }
 
-METHOD(DrawImage) {
+METHOD(DrawImageBuffer) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  if (!Buffer::HasInstance(args[0])) {
+    return ThrowException(Exception::Error(
+                String::New("First argument needs to be a buffer")));
+  }
 
+  Local<Object> buffer_obj = args[0]->ToObject();
+  char *buffer_data = Buffer::Data(buffer_obj);
+
+  double sx = args[1]->NumberValue();
+  double sy = args[2]->NumberValue();
+  double sw = args[3]->NumberValue();
+  double sh = args[4]->NumberValue();
+  double dx = args[5]->NumberValue();
+  double dy = args[6]->NumberValue();
+  double dw = args[7]->NumberValue();
+  double dh = args[8]->NumberValue();
+  double w = args[9]->NumberValue();
+  double h = args[10]->NumberValue();
+
+  SkBitmap src;
+
+  src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  src.setPixels(buffer_data);
+
+  SkRect srcRect = { sx, sy, sx+sw, sy+sh };
+  SkRect destRect = { dx, dy, dx+dw, dy+dh };
+
+  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &ctx->paint);
 
   return scope.Close(Undefined());
 }

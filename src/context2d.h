@@ -32,15 +32,14 @@ class Context2D : public ObjectWrap {
 
 
   private:
-    Context2D();
+    Context2D(int w, int h);
     ~Context2D();
-
-    double globalAlpha;
-    Persistent<String> globalCompositeOperation;
 
     static Persistent<Function> constructor;
     OBJECT_METHOD(New);
     OBJECT_METHOD(ToPngBuffer);
+    OBJECT_METHOD(ToBuffer);
+    OBJECT_METHOD(GetPixel);
 
     // state
     OBJECT_METHOD(Save); // push state on state stack
@@ -66,6 +65,7 @@ class Context2D : public ObjectWrap {
     // colors and styles (see also the CanvasDrawingStyles interface)
     OBJECT_METHOD(SetStrokeStyle);
     OBJECT_METHOD(GetStrokeStyle);
+    OBJECT_METHOD(SetFillStylePattern);
     OBJECT_METHOD(SetFillStyle);
     OBJECT_METHOD(GetFillStyle);
     OBJECT_METHOD(CreateLinearGradient);
@@ -112,7 +112,7 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(SetTextBaseline);
 
     // drawing images
-    OBJECT_METHOD(DrawImage);
+    OBJECT_METHOD(DrawImageBuffer);
 
     // pixel manipulation
     OBJECT_METHOD(CreateImageData);
