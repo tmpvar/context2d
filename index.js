@@ -51,10 +51,6 @@ module.exports.createContext = function(canvas, w, h) {
         //ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
       } else {
 
-        if (c[0] === '#' && c.length === 4) {
-          c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
-        }
-
         var color = parseCSSColor(c);
 
         if (c) {
