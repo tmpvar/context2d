@@ -77,20 +77,135 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
-  var fill = 'black';
+  var fill = '#000000';
+  var magicSystemMapping = {};
+
+  [ 'ActiveBorder','ActiveCaption','AppWorkspace',
+    'Background','ButtonFace','ButtonHighlight',
+    'ButtonShadow','ButtonText','CaptionText',
+    'GrayText','Highlight','HighlightText',
+    'InactiveBorder','InactiveCaption',
+    'InactiveCaptionText','InfoBackground','InfoText',
+    'Menu','MenuText','Scrollbar','ThreeDDarkShadow',
+    'ThreeDFace','ThreeDHighlight','ThreeDLightShadow',
+    'ThreeDShadow','Window','WindowFrame','WindowText'
+  ].forEach(function(key) {
+    // w3c doesn't behave, so neither will we.
+    // this is deprecated anyhow.
+    magicSystemMapping[key] = '#FF00FF';
+  });
+
   Object.defineProperty(ret, 'fillStyle', {
     get : function() {
       return fill;
     },
     set : function(c) {
+      if (!c) {
+        return;
+      }
+
+      if (c === 'currentColor') {
+        if (canvas.getAttribute) {
+          var style = canvas.getAttribute('style') || '';
+          var currentMatch = style.match(/color: ?([^\);]+)/);
+          if (currentMatch && currentMatch.length > 1) {
+            c = currentMatch[1];
+          } else {
+            c = '#000000';
+          }
+        } else {
+          c = '#000000';
+        }
+      }
+
       if (c.type && c.type === 'pattern') {
         var id = c.obj.imageData
         ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
       } else {
+        c = magicSystemMapping[c] || c;
+
+        if (c[0] === '#' && !c.match(/#[\da-f]{3,6}/i)) {
+          return;
+        } else if (c[0] !== '#' && c.match(/rgb|rgba|hsl|hsla/)) {
+          var type = c.substring(0,3);
+          var components = c.indexOf('(');
+          var fullType = c.substring(0, components);
+
+          var parts = c.replace(/^[a-z]+\(|\)$/g, '').trim().split(/ *, */);
+          var alpha = null;
+          if (components === 4) {
+            var alpha = parts.pop();
+            if (alpha.match(/ |%/)) {
+              return;
+            }
+
+            alpha = parseFloat(alpha);
+            if (isNaN(alpha)) {
+              return;
+            }
+          }
+
+          var percent = c.match(/%/g);
+          if (percent) {
+            if (type === 'rgb' && percent.length !== 3) {
+              return;
+            } else if (type === 'hsl' && percent.length !== 2) {
+              return;
+            }
+          }
+
+          parts = parts.filter(function(part, i) {
+            part = part.trim();
+            if (part.indexOf(' ') > -1) {
+              return false;
+            }
+
+            if (type === 'rgb' && (part.indexOf('.') > -1 || part.indexOf(' ') > -1)) {
+              return false;
+            }
+
+            if (type === 'hsl') {
+              if (isNaN(parseInt(part, 10))) {
+                return false;
+              }
+            }
+
+            return true;
+          });
+
+          if (alpha !== null) {
+            parts.push(alpha);
+          }
+
+          if (parts.length < components) {
+            return;
+          }
+        }
 
         var color = parseCSSColor(c);
-        if (c) {
-          fill = c;
+        if (color) {
+
+          if (color[3] === 1) {
+            c = '#' + color.slice(0,3).map(function(a) { return a.toString(16)[0] + a.toString(16)[0]; }).join('');
+          } else {
+            fill = c;
+          }
+
+          if (c[0] === '#') {
+            fill = c;
+          } else {
+            fill = fullType + '(' + color.map(function(val, i) {
+              if (i === 3) {
+                if (val) {
+                  return val;
+                } else {
+                  return val.toFixed(1);
+                }
+              }
+
+              return val;
+            }).join(', ') + ')'
+          }
           color[3] = color[3] * 255;
           ret.setFillStyle.apply(ret, color);
         }
@@ -105,6 +220,13 @@ module.exports.createContext = function(canvas, w, h) {
 
     if (!i) {
       throw new DOMException('invalid image', DOMException.TYPE_MISMATCH_ERR);
+    } else if (i.tagName) {
+
+      var allowedTags = { 'img': 1 , 'video': 1, 'canvas': 1 };
+
+      if (!allowedTags[i.tagName.toLowerCase()]) {
+        throw new DOMException('invalid image', DOMException.TYPE_MISMATCH_ERR);
+      }
     }
 
 

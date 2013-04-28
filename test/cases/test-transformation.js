@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.transformation.order', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -25,8 +26,10 @@ test('2d.transformation.order', function(t) {
 
 
 test('2d.transformation.rotate.direction', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -42,8 +45,10 @@ test('2d.transformation.rotate.direction', function(t) {
 
 
 test('2d.transformation.rotate.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -64,8 +69,10 @@ test('2d.transformation.rotate.nonfinite', function(t) {
 
 
 test('2d.transformation.rotate.radians', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -81,8 +88,10 @@ test('2d.transformation.rotate.radians', function(t) {
 
 
 test('2d.transformation.rotate.wrap', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -103,8 +112,10 @@ test('2d.transformation.rotate.wrap', function(t) {
 
 
 test('2d.transformation.rotate.wrapnegative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -122,8 +133,10 @@ test('2d.transformation.rotate.wrapnegative', function(t) {
 
 
 test('2d.transformation.rotate.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -139,8 +152,10 @@ test('2d.transformation.rotate.zero', function(t) {
 
 
 test('2d.transformation.scale.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -156,8 +171,10 @@ test('2d.transformation.scale.basic', function(t) {
 
 
 test('2d.transformation.scale.large', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -173,8 +190,10 @@ test('2d.transformation.scale.large', function(t) {
 
 
 test('2d.transformation.scale.multiple', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -191,8 +210,10 @@ test('2d.transformation.scale.multiple', function(t) {
 
 
 test('2d.transformation.scale.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -217,8 +238,10 @@ test('2d.transformation.scale.negative', function(t) {
 
 
 test('2d.transformation.scale.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -243,8 +266,10 @@ test('2d.transformation.scale.nonfinite', function(t) {
 
 
 test('2d.transformation.scale.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -274,8 +299,10 @@ test('2d.transformation.scale.zero', function(t) {
 
 
 test('2d.transformation.setTransform.multiple', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -292,8 +319,10 @@ test('2d.transformation.setTransform.multiple', function(t) {
 
 
 test('2d.transformation.setTransform.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -386,8 +415,10 @@ test('2d.transformation.setTransform.nonfinite', function(t) {
 
 
 test('2d.transformation.setTransform.skewed', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Create green with a red square ring inside it
@@ -425,8 +456,10 @@ test('2d.transformation.setTransform.skewed', function(t) {
 
 
 test('2d.transformation.transform.identity', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -442,8 +475,10 @@ test('2d.transformation.transform.identity', function(t) {
 
 
 test('2d.transformation.transform.multiply', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -460,8 +495,10 @@ test('2d.transformation.transform.multiply', function(t) {
 
 
 test('2d.transformation.transform.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -554,8 +591,10 @@ test('2d.transformation.transform.nonfinite', function(t) {
 
 
 test('2d.transformation.transform.skewed', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Create green with a red square ring inside it
@@ -593,8 +632,10 @@ test('2d.transformation.transform.skewed', function(t) {
 
 
 test('2d.transformation.translate.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -610,8 +651,10 @@ test('2d.transformation.translate.basic', function(t) {
 
 
 test('2d.transformation.translate.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';

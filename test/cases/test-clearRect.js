@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.clearRect.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -21,8 +22,10 @@ test('2d.clearRect.basic', function(t) {
 
 
 test('2d.clearRect.clip', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -44,8 +47,10 @@ test('2d.clearRect.clip', function(t) {
 
 
 test('2d.clearRect.globalalpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -59,8 +64,10 @@ test('2d.clearRect.globalalpha', function(t) {
 
 
 test('2d.clearRect.globalcomposite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -74,8 +81,10 @@ test('2d.clearRect.globalcomposite', function(t) {
 
 
 test('2d.clearRect.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -94,8 +103,10 @@ test('2d.clearRect.negative', function(t) {
 
 
 test('2d.clearRect.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -132,8 +143,10 @@ test('2d.clearRect.nonfinite', function(t) {
 
 
 test('2d.clearRect.path', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -148,8 +161,10 @@ test('2d.clearRect.path', function(t) {
 
 
 test('2d.clearRect.shadow', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -166,8 +181,10 @@ test('2d.clearRect.shadow', function(t) {
 
 
 test('2d.clearRect.transform', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -182,8 +199,10 @@ test('2d.clearRect.transform', function(t) {
 
 
 test('2d.clearRect.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';

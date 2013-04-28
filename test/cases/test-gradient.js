@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.gradient.empty', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -23,8 +24,10 @@ test('2d.gradient.empty', function(t) {
 
 
 test('2d.gradient.interpolate.alpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#ff0';
@@ -43,8 +46,10 @@ test('2d.gradient.interpolate.alpha', function(t) {
 
 
 test('2d.gradient.interpolate.colour', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -61,8 +66,10 @@ test('2d.gradient.interpolate.colour', function(t) {
 
 
 test('2d.gradient.interpolate.colouralpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -79,8 +86,10 @@ test('2d.gradient.interpolate.colouralpha', function(t) {
 
 
 test('2d.gradient.interpolate.multiple', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   canvas.width = 200;
@@ -99,8 +108,10 @@ test('2d.gradient.interpolate.multiple', function(t) {
 
 
 test('2d.gradient.interpolate.outside', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -121,8 +132,10 @@ test('2d.gradient.interpolate.outside', function(t) {
 
 
 test('2d.gradient.interpolate.overlap', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   canvas.width = 200;
@@ -157,8 +170,10 @@ test('2d.gradient.interpolate.overlap', function(t) {
 
 
 test('2d.gradient.interpolate.overlap2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -183,8 +198,10 @@ test('2d.gradient.interpolate.overlap2', function(t) {
 
 
 test('2d.gradient.interpolate.solid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -199,8 +216,10 @@ test('2d.gradient.interpolate.solid', function(t) {
 
 
 test('2d.gradient.interpolate.vertical', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 0, 50);
@@ -217,8 +236,10 @@ test('2d.gradient.interpolate.vertical', function(t) {
 
 
 test('2d.gradient.interpolate.zerosize', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -236,8 +257,10 @@ test('2d.gradient.interpolate.zerosize', function(t) {
 
 
 test('2d.gradient.linear.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -315,8 +338,10 @@ test('2d.gradient.linear.nonfinite', function(t) {
 
 
 test('2d.gradient.linear.transform.1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 200, 0);
@@ -336,8 +361,10 @@ test('2d.gradient.linear.transform.1', function(t) {
 
 
 test('2d.gradient.linear.transform.2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.translate(100, 0);
@@ -358,8 +385,10 @@ test('2d.gradient.linear.transform.2', function(t) {
 
 
 test('2d.gradient.linear.transform.3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 200, 0);
@@ -380,8 +409,10 @@ test('2d.gradient.linear.transform.3', function(t) {
 
 
 test('2d.gradient.object.compare', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g1 = ctx.createLinearGradient(0, 0, 100, 0);
@@ -395,8 +426,10 @@ test('2d.gradient.object.compare', function(t) {
 
 
 test('2d.gradient.object.crosscanvas', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -413,8 +446,10 @@ test('2d.gradient.object.crosscanvas', function(t) {
 
 
 test('2d.gradient.object.invalidcolour', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -430,8 +465,10 @@ test('2d.gradient.object.invalidcolour', function(t) {
 
 
 test('2d.gradient.object.invalidoffset', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(0, 0, 100, 0);
@@ -456,10 +493,11 @@ test('2d.gradient.object.invalidoffset', function(t) {
 
 
 test('2d.gradient.object.return', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
-  var window = new Window()
 
   window.CanvasGradient.prototype.thisImplementsCanvasGradient = true;
   
@@ -476,8 +514,10 @@ test('2d.gradient.object.return', function(t) {
 
 
 test('2d.gradient.object.update', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createLinearGradient(-100, 0, 200, 0);
@@ -494,8 +534,10 @@ test('2d.gradient.object.update', function(t) {
 
 
 test('2d.gradient.radial.cone.behind', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -522,8 +564,10 @@ test('2d.gradient.radial.cone.behind', function(t) {
 
 
 test('2d.gradient.radial.cone.beside', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -550,8 +594,10 @@ test('2d.gradient.radial.cone.beside', function(t) {
 
 
 test('2d.gradient.radial.cone.bottom', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -578,8 +624,10 @@ test('2d.gradient.radial.cone.bottom', function(t) {
 
 
 test('2d.gradient.radial.cone.cylinder', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -606,8 +654,10 @@ test('2d.gradient.radial.cone.cylinder', function(t) {
 
 
 test('2d.gradient.radial.cone.front', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -634,8 +684,10 @@ test('2d.gradient.radial.cone.front', function(t) {
 
 
 test('2d.gradient.radial.cone.shape1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var tol = 1; // tolerance to avoid antialiasing artifacts
@@ -671,8 +723,10 @@ test('2d.gradient.radial.cone.shape1', function(t) {
 
 
 test('2d.gradient.radial.cone.shape2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var tol = 1; // tolerance to avoid antialiasing artifacts
@@ -708,8 +762,10 @@ test('2d.gradient.radial.cone.shape2', function(t) {
 
 
 test('2d.gradient.radial.cone.top', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -736,8 +792,10 @@ test('2d.gradient.radial.cone.top', function(t) {
 
 
 test('2d.gradient.radial.equal', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -764,8 +822,10 @@ test('2d.gradient.radial.equal', function(t) {
 
 
 test('2d.gradient.radial.inside1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -792,8 +852,10 @@ test('2d.gradient.radial.inside1', function(t) {
 
 
 test('2d.gradient.radial.inside2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -820,8 +882,10 @@ test('2d.gradient.radial.inside2', function(t) {
 
 
 test('2d.gradient.radial.inside3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -849,8 +913,10 @@ test('2d.gradient.radial.inside3', function(t) {
 
 
 test('2d.gradient.radial.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -868,8 +934,10 @@ test('2d.gradient.radial.negative', function(t) {
 
 
 test('2d.gradient.radial.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -1103,8 +1171,10 @@ test('2d.gradient.radial.nonfinite', function(t) {
 
 
 test('2d.gradient.radial.outside1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1131,8 +1201,10 @@ test('2d.gradient.radial.outside1', function(t) {
 
 
 test('2d.gradient.radial.outside2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1159,8 +1231,10 @@ test('2d.gradient.radial.outside2', function(t) {
 
 
 test('2d.gradient.radial.outside3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1188,8 +1262,10 @@ test('2d.gradient.radial.outside3', function(t) {
 
 
 test('2d.gradient.radial.touch1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -1216,8 +1292,10 @@ test('2d.gradient.radial.touch1', function(t) {
 
 
 test('2d.gradient.radial.touch2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1246,8 +1324,10 @@ test('2d.gradient.radial.touch2', function(t) {
 
 
 test('2d.gradient.radial.touch3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -1274,8 +1354,10 @@ test('2d.gradient.radial.touch3', function(t) {
 
 
 test('2d.gradient.radial.transform.1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 11.2);
@@ -1296,8 +1378,10 @@ test('2d.gradient.radial.transform.1', function(t) {
 
 
 test('2d.gradient.radial.transform.2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.translate(100, 0);
@@ -1319,8 +1403,10 @@ test('2d.gradient.radial.transform.2', function(t) {
 
 
 test('2d.gradient.radial.transform.3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 11.2);

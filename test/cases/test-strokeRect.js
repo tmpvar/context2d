@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.strokeRect.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';
@@ -21,8 +22,10 @@ test('2d.strokeRect.basic', function(t) {
 
 
 test('2d.strokeRect.clip', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -46,8 +49,10 @@ test('2d.strokeRect.clip', function(t) {
 
 
 test('2d.strokeRect.globalalpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0;
@@ -61,8 +66,10 @@ test('2d.strokeRect.globalalpha', function(t) {
 
 
 test('2d.strokeRect.globalcomposite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'source-in';
@@ -76,8 +83,10 @@ test('2d.strokeRect.globalcomposite', function(t) {
 
 
 test('2d.strokeRect.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -98,8 +107,10 @@ test('2d.strokeRect.negative', function(t) {
 
 
 test('2d.strokeRect.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -138,8 +149,10 @@ test('2d.strokeRect.nonfinite', function(t) {
 
 
 test('2d.strokeRect.path', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.beginPath();
@@ -156,8 +169,10 @@ test('2d.strokeRect.path', function(t) {
 
 
 test('2d.strokeRect.shadow', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -177,8 +192,10 @@ test('2d.strokeRect.shadow', function(t) {
 
 
 test('2d.strokeRect.transform', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.scale(10, 10);
@@ -193,8 +210,10 @@ test('2d.strokeRect.transform', function(t) {
 
 
 test('2d.strokeRect.zero.1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -207,8 +226,10 @@ test('2d.strokeRect.zero.1', function(t) {
 
 
 test('2d.strokeRect.zero.2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -223,8 +244,10 @@ test('2d.strokeRect.zero.2', function(t) {
 
 
 test('2d.strokeRect.zero.3', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';
@@ -237,8 +260,10 @@ test('2d.strokeRect.zero.3', function(t) {
 
 
 test('2d.strokeRect.zero.4', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -252,8 +277,10 @@ test('2d.strokeRect.zero.4', function(t) {
 
 
 test('2d.strokeRect.zero.5', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';

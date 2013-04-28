@@ -2,8 +2,7 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.composite.canvas.copy', function(t) {
@@ -11,8 +10,10 @@ test('2d.composite.canvas.copy', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -36,8 +37,10 @@ test('2d.composite.canvas.destination-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -61,8 +64,10 @@ test('2d.composite.canvas.destination-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -86,8 +91,10 @@ test('2d.composite.canvas.destination-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -111,8 +118,10 @@ test('2d.composite.canvas.destination-over', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -136,8 +145,10 @@ test('2d.composite.canvas.lighter', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -161,8 +172,10 @@ test('2d.composite.canvas.source-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -186,8 +199,10 @@ test('2d.composite.canvas.source-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -211,8 +226,10 @@ test('2d.composite.canvas.source-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -236,8 +253,10 @@ test('2d.composite.canvas.source-over', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -261,8 +280,10 @@ test('2d.composite.canvas.xor', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     var canvas2 = new Canvas();
@@ -282,8 +303,10 @@ test('2d.composite.canvas.xor', function(t) {
 
 
 test('2d.composite.clip.copy', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -301,8 +324,10 @@ test('2d.composite.clip.copy', function(t) {
 
 
 test('2d.composite.clip.destination-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -320,8 +345,10 @@ test('2d.composite.clip.destination-atop', function(t) {
 
 
 test('2d.composite.clip.destination-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -339,8 +366,10 @@ test('2d.composite.clip.destination-in', function(t) {
 
 
 test('2d.composite.clip.destination-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -358,8 +387,10 @@ test('2d.composite.clip.destination-out', function(t) {
 
 
 test('2d.composite.clip.destination-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -377,8 +408,10 @@ test('2d.composite.clip.destination-over', function(t) {
 
 
 test('2d.composite.clip.lighter', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -396,8 +429,10 @@ test('2d.composite.clip.lighter', function(t) {
 
 
 test('2d.composite.clip.source-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -415,8 +450,10 @@ test('2d.composite.clip.source-atop', function(t) {
 
 
 test('2d.composite.clip.source-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -434,8 +471,10 @@ test('2d.composite.clip.source-in', function(t) {
 
 
 test('2d.composite.clip.source-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -453,8 +492,10 @@ test('2d.composite.clip.source-out', function(t) {
 
 
 test('2d.composite.clip.source-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -472,8 +513,10 @@ test('2d.composite.clip.source-over', function(t) {
 
 
 test('2d.composite.clip.xor', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -491,8 +534,10 @@ test('2d.composite.clip.xor', function(t) {
 
 
 test('2d.composite.globalAlpha.canvas', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var canvas2 = new Canvas();
@@ -513,8 +558,10 @@ test('2d.composite.globalAlpha.canvas', function(t) {
 
 
 test('2d.composite.globalAlpha.canvaspattern', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var canvas2 = new Canvas();
@@ -536,8 +583,10 @@ test('2d.composite.globalAlpha.canvaspattern', function(t) {
 
 
 test('2d.composite.globalAlpha.default', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.globalAlpha, 1.0, "ctx.globalAlpha", "1.0");
@@ -547,8 +596,10 @@ test('2d.composite.globalAlpha.default', function(t) {
 
 
 test('2d.composite.globalAlpha.fill', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -567,8 +618,10 @@ test('2d.composite.globalAlpha.image', function(t) {
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -587,8 +640,10 @@ test('2d.composite.globalAlpha.imagepattern', function(t) {
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -604,8 +659,10 @@ test('2d.composite.globalAlpha.imagepattern', function(t) {
 
 
 test('2d.composite.globalAlpha.invalid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0.5;
@@ -622,8 +679,10 @@ test('2d.composite.globalAlpha.invalid', function(t) {
 
 
 test('2d.composite.globalAlpha.range', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0.5;
@@ -646,8 +705,10 @@ test('2d.composite.image.copy', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -666,8 +727,10 @@ test('2d.composite.image.destination-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -686,8 +749,10 @@ test('2d.composite.image.destination-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -706,8 +771,10 @@ test('2d.composite.image.destination-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -726,8 +793,10 @@ test('2d.composite.image.destination-over', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -746,8 +815,10 @@ test('2d.composite.image.lighter', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -766,8 +837,10 @@ test('2d.composite.image.source-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -786,8 +859,10 @@ test('2d.composite.image.source-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -806,8 +881,10 @@ test('2d.composite.image.source-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -826,8 +903,10 @@ test('2d.composite.image.source-over', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -846,8 +925,10 @@ test('2d.composite.image.xor', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -862,8 +943,10 @@ test('2d.composite.image.xor', function(t) {
 
 
 test('2d.composite.operation.casesensitive', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -875,8 +958,10 @@ test('2d.composite.operation.casesensitive', function(t) {
 
 
 test('2d.composite.operation.clear', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -888,8 +973,10 @@ test('2d.composite.operation.clear', function(t) {
 
 
 test('2d.composite.operation.darker', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -901,8 +988,10 @@ test('2d.composite.operation.darker', function(t) {
 
 
 test('2d.composite.operation.default', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'source-over', "ctx.globalCompositeOperation", "'source-over'");
@@ -912,8 +1001,10 @@ test('2d.composite.operation.default', function(t) {
 
 
 test('2d.composite.operation.get', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var modes = ['source-atop', 'source-in', 'source-out', 'source-over',
@@ -930,8 +1021,10 @@ test('2d.composite.operation.get', function(t) {
 
 
 test('2d.composite.operation.highlight', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -943,8 +1036,10 @@ test('2d.composite.operation.highlight', function(t) {
 
 
 test('2d.composite.operation.nullsuffix', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -956,8 +1051,10 @@ test('2d.composite.operation.nullsuffix', function(t) {
 
 
 test('2d.composite.operation.over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -969,8 +1066,10 @@ test('2d.composite.operation.over', function(t) {
 
 
 test('2d.composite.operation.unrecognised', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -982,8 +1081,10 @@ test('2d.composite.operation.unrecognised', function(t) {
 
 
 test('2d.composite.solid.copy', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -998,8 +1099,10 @@ test('2d.composite.solid.copy', function(t) {
 
 
 test('2d.composite.solid.destination-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1014,8 +1117,10 @@ test('2d.composite.solid.destination-atop', function(t) {
 
 
 test('2d.composite.solid.destination-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1030,8 +1135,10 @@ test('2d.composite.solid.destination-in', function(t) {
 
 
 test('2d.composite.solid.destination-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1046,8 +1153,10 @@ test('2d.composite.solid.destination-out', function(t) {
 
 
 test('2d.composite.solid.destination-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1062,8 +1171,10 @@ test('2d.composite.solid.destination-over', function(t) {
 
 
 test('2d.composite.solid.lighter', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1078,8 +1189,10 @@ test('2d.composite.solid.lighter', function(t) {
 
 
 test('2d.composite.solid.source-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1094,8 +1207,10 @@ test('2d.composite.solid.source-atop', function(t) {
 
 
 test('2d.composite.solid.source-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1110,8 +1225,10 @@ test('2d.composite.solid.source-in', function(t) {
 
 
 test('2d.composite.solid.source-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1126,8 +1243,10 @@ test('2d.composite.solid.source-out', function(t) {
 
 
 test('2d.composite.solid.source-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1142,8 +1261,10 @@ test('2d.composite.solid.source-over', function(t) {
 
 
 test('2d.composite.solid.xor', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1158,8 +1279,10 @@ test('2d.composite.solid.xor', function(t) {
 
 
 test('2d.composite.transparent.copy', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1174,8 +1297,10 @@ test('2d.composite.transparent.copy', function(t) {
 
 
 test('2d.composite.transparent.destination-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1190,8 +1315,10 @@ test('2d.composite.transparent.destination-atop', function(t) {
 
 
 test('2d.composite.transparent.destination-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1206,8 +1333,10 @@ test('2d.composite.transparent.destination-in', function(t) {
 
 
 test('2d.composite.transparent.destination-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1222,8 +1351,10 @@ test('2d.composite.transparent.destination-out', function(t) {
 
 
 test('2d.composite.transparent.destination-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1238,8 +1369,10 @@ test('2d.composite.transparent.destination-over', function(t) {
 
 
 test('2d.composite.transparent.lighter', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1254,8 +1387,10 @@ test('2d.composite.transparent.lighter', function(t) {
 
 
 test('2d.composite.transparent.source-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1270,8 +1405,10 @@ test('2d.composite.transparent.source-atop', function(t) {
 
 
 test('2d.composite.transparent.source-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1286,8 +1423,10 @@ test('2d.composite.transparent.source-in', function(t) {
 
 
 test('2d.composite.transparent.source-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1302,8 +1441,10 @@ test('2d.composite.transparent.source-out', function(t) {
 
 
 test('2d.composite.transparent.source-over', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1318,8 +1459,10 @@ test('2d.composite.transparent.source-over', function(t) {
 
 
 test('2d.composite.transparent.xor', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1334,8 +1477,10 @@ test('2d.composite.transparent.xor', function(t) {
 
 
 test('2d.composite.uncovered.fill.copy', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1351,8 +1496,10 @@ test('2d.composite.uncovered.fill.copy', function(t) {
 
 
 test('2d.composite.uncovered.fill.destination-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1368,8 +1515,10 @@ test('2d.composite.uncovered.fill.destination-atop', function(t) {
 
 
 test('2d.composite.uncovered.fill.destination-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1385,8 +1534,10 @@ test('2d.composite.uncovered.fill.destination-in', function(t) {
 
 
 test('2d.composite.uncovered.fill.source-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1402,8 +1553,10 @@ test('2d.composite.uncovered.fill.source-in', function(t) {
 
 
 test('2d.composite.uncovered.fill.source-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1423,8 +1576,10 @@ test('2d.composite.uncovered.image.copy', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1444,8 +1599,10 @@ test('2d.composite.uncovered.image.destination-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1465,8 +1622,10 @@ test('2d.composite.uncovered.image.destination-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1486,8 +1645,10 @@ test('2d.composite.uncovered.image.source-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1507,8 +1668,10 @@ test('2d.composite.uncovered.image.source-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1524,8 +1687,10 @@ test('2d.composite.uncovered.image.source-out', function(t) {
 
 
 test('2d.composite.uncovered.nocontext.copy', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1540,8 +1705,10 @@ test('2d.composite.uncovered.nocontext.copy', function(t) {
 
 
 test('2d.composite.uncovered.nocontext.destination-atop', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1556,8 +1723,10 @@ test('2d.composite.uncovered.nocontext.destination-atop', function(t) {
 
 
 test('2d.composite.uncovered.nocontext.destination-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1572,8 +1741,10 @@ test('2d.composite.uncovered.nocontext.destination-in', function(t) {
 
 
 test('2d.composite.uncovered.nocontext.source-in', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1588,8 +1759,10 @@ test('2d.composite.uncovered.nocontext.source-in', function(t) {
 
 
 test('2d.composite.uncovered.nocontext.source-out', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1608,8 +1781,10 @@ test('2d.composite.uncovered.pattern.copy', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1629,8 +1804,10 @@ test('2d.composite.uncovered.pattern.destination-atop', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1650,8 +1827,10 @@ test('2d.composite.uncovered.pattern.destination-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1671,8 +1850,10 @@ test('2d.composite.uncovered.pattern.source-in', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1692,8 +1873,10 @@ test('2d.composite.uncovered.pattern.source-out', function(t) {
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
+    var window = helpers.createWindow()
+    var document = window.document
 
-    var canvas = new Canvas(100, 50);
+    var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';

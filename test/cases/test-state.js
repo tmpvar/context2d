@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.state.saverestore.bitmap', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -24,8 +25,10 @@ test('2d.state.saverestore.bitmap', function(t) {
 
 
 test('2d.state.saverestore.clip', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -43,8 +46,10 @@ test('2d.state.saverestore.clip', function(t) {
 
 
 test('2d.state.saverestore.fillStyle', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -68,8 +73,10 @@ test('2d.state.saverestore.fillStyle', function(t) {
 
 
 test('2d.state.saverestore.font', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -93,8 +100,10 @@ test('2d.state.saverestore.font', function(t) {
 
 
 test('2d.state.saverestore.globalAlpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -118,8 +127,10 @@ test('2d.state.saverestore.globalAlpha', function(t) {
 
 
 test('2d.state.saverestore.globalCompositeOperation', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -143,8 +154,10 @@ test('2d.state.saverestore.globalCompositeOperation', function(t) {
 
 
 test('2d.state.saverestore.lineCap', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -168,8 +181,10 @@ test('2d.state.saverestore.lineCap', function(t) {
 
 
 test('2d.state.saverestore.lineJoin', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -193,8 +208,10 @@ test('2d.state.saverestore.lineJoin', function(t) {
 
 
 test('2d.state.saverestore.lineWidth', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -218,8 +235,10 @@ test('2d.state.saverestore.lineWidth', function(t) {
 
 
 test('2d.state.saverestore.miterLimit', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -243,8 +262,10 @@ test('2d.state.saverestore.miterLimit', function(t) {
 
 
 test('2d.state.saverestore.path', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -261,8 +282,10 @@ test('2d.state.saverestore.path', function(t) {
 
 
 test('2d.state.saverestore.shadowBlur', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -286,8 +309,10 @@ test('2d.state.saverestore.shadowBlur', function(t) {
 
 
 test('2d.state.saverestore.shadowColor', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -311,8 +336,10 @@ test('2d.state.saverestore.shadowColor', function(t) {
 
 
 test('2d.state.saverestore.shadowOffsetX', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -336,8 +363,10 @@ test('2d.state.saverestore.shadowOffsetX', function(t) {
 
 
 test('2d.state.saverestore.shadowOffsetY', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -361,8 +390,10 @@ test('2d.state.saverestore.shadowOffsetY', function(t) {
 
 
 test('2d.state.saverestore.stack', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineWidth = 1;
@@ -381,8 +412,10 @@ test('2d.state.saverestore.stack', function(t) {
 
 
 test('2d.state.saverestore.stackdepth', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var limit = 512;
@@ -402,8 +435,10 @@ test('2d.state.saverestore.stackdepth', function(t) {
 
 
 test('2d.state.saverestore.strokeStyle', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -427,8 +462,10 @@ test('2d.state.saverestore.strokeStyle', function(t) {
 
 
 test('2d.state.saverestore.textAlign', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -452,8 +489,10 @@ test('2d.state.saverestore.textAlign', function(t) {
 
 
 test('2d.state.saverestore.textBaseline', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Test that restore() undoes any modifications
@@ -477,8 +516,10 @@ test('2d.state.saverestore.textBaseline', function(t) {
 
 
 test('2d.state.saverestore.transformation', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -495,8 +536,10 @@ test('2d.state.saverestore.transformation', function(t) {
 
 
 test('2d.state.saverestore.underflow', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   for (var i = 0; i < 16; ++i)

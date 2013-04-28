@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.line.cap.butt', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -52,8 +53,10 @@ test('2d.line.cap.butt', function(t) {
 
 
 test('2d.line.cap.closed', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -82,8 +85,10 @@ test('2d.line.cap.closed', function(t) {
 
 
 test('2d.line.cap.invalid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineCap = 'butt'
@@ -118,8 +123,10 @@ test('2d.line.cap.invalid', function(t) {
 
 
 test('2d.line.cap.open', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -148,8 +155,10 @@ test('2d.line.cap.open', function(t) {
 
 
 test('2d.line.cap.round', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -209,8 +218,10 @@ test('2d.line.cap.round', function(t) {
 
 
 test('2d.line.cap.square', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -254,8 +265,10 @@ test('2d.line.cap.square', function(t) {
 
 
 test('2d.line.cap.valid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineCap = 'butt'
@@ -272,8 +285,10 @@ test('2d.line.cap.valid', function(t) {
 
 
 test('2d.line.cross', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -299,8 +314,10 @@ test('2d.line.cross', function(t) {
 
 
 test('2d.line.defaults', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.lineWidth, 1, "ctx.lineWidth", "1");
@@ -313,8 +330,10 @@ test('2d.line.defaults', function(t) {
 
 
 test('2d.line.join.bevel', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -377,8 +396,10 @@ test('2d.line.join.bevel', function(t) {
 
 
 test('2d.line.join.closed', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -406,8 +427,10 @@ test('2d.line.join.closed', function(t) {
 
 
 test('2d.line.join.invalid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineJoin = 'bevel'
@@ -442,8 +465,10 @@ test('2d.line.join.invalid', function(t) {
 
 
 test('2d.line.join.miter', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -497,8 +522,10 @@ test('2d.line.join.miter', function(t) {
 
 
 test('2d.line.join.open', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -526,8 +553,10 @@ test('2d.line.join.open', function(t) {
 
 
 test('2d.line.join.parallel', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -552,8 +581,10 @@ test('2d.line.join.parallel', function(t) {
 
 
 test('2d.line.join.round', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -614,8 +645,10 @@ test('2d.line.join.round', function(t) {
 
 
 test('2d.line.join.valid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineJoin = 'bevel'
@@ -632,8 +665,10 @@ test('2d.line.join.valid', function(t) {
 
 
 test('2d.line.miter.acute', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -668,8 +703,10 @@ test('2d.line.miter.acute', function(t) {
 
 
 test('2d.line.miter.exceeded', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -696,8 +733,10 @@ test('2d.line.miter.exceeded', function(t) {
 
 
 test('2d.line.miter.invalid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.miterLimit = 1.5;
@@ -728,8 +767,10 @@ test('2d.line.miter.invalid', function(t) {
 
 
 test('2d.line.miter.lineedge', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -753,8 +794,10 @@ test('2d.line.miter.lineedge', function(t) {
 
 
 test('2d.line.miter.obtuse', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -789,8 +832,10 @@ test('2d.line.miter.obtuse', function(t) {
 
 
 test('2d.line.miter.rightangle', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -817,8 +862,10 @@ test('2d.line.miter.rightangle', function(t) {
 
 
 test('2d.line.miter.valid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.miterLimit = 1.5;
@@ -838,8 +885,10 @@ test('2d.line.miter.valid', function(t) {
 
 
 test('2d.line.miter.within', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -866,8 +915,10 @@ test('2d.line.miter.within', function(t) {
 
 
 test('2d.line.union', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -896,8 +947,10 @@ test('2d.line.union', function(t) {
 
 
 test('2d.line.width.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -943,8 +996,10 @@ test('2d.line.width.basic', function(t) {
 
 
 test('2d.line.width.invalid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineWidth = 1.5;
@@ -975,8 +1030,10 @@ test('2d.line.width.invalid', function(t) {
 
 
 test('2d.line.width.scaledefault', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -999,8 +1056,10 @@ test('2d.line.width.scaledefault', function(t) {
 
 
 test('2d.line.width.transformed', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -1052,8 +1111,10 @@ test('2d.line.width.transformed', function(t) {
 
 
 test('2d.line.width.valid', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.lineWidth = 1.5;

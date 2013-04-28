@@ -2,13 +2,14 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var Window = helpers.Window;
-var Document = helpers.Document;
+var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.imageData.create1.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertNotEqual(t, ctx.createImageData(ctx.createImageData(1, 1)), null, "ctx.createImageData(ctx.createImageData(1, 1))", "null");
@@ -18,8 +19,10 @@ test('2d.imageData.create1.basic', function(t) {
 
 
 test('2d.imageData.create1.initial', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -40,10 +43,11 @@ test('2d.imageData.create1.initial', function(t) {
 
 
 test('2d.imageData.create1.type', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
-  var window = new Window()
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   helpers.assertNotEqual(t, window.CanvasPixelArray, undefined, "window.CanvasPixelArray", "undefined");
@@ -58,8 +62,10 @@ test('2d.imageData.create1.type', function(t) {
 
 
 test('2d.imageData.create1.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -71,8 +77,10 @@ test('2d.imageData.create1.zero', function(t) {
 
 
 test('2d.imageData.create2.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertNotEqual(t, ctx.createImageData(1, 1), null, "ctx.createImageData(1, 1)", "null");
@@ -82,8 +90,10 @@ test('2d.imageData.create2.basic', function(t) {
 
 
 test('2d.imageData.create2.initial', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.createImageData(10, 20);
@@ -101,8 +111,10 @@ test('2d.imageData.create2.initial', function(t) {
 
 
 test('2d.imageData.create2.large', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.createImageData(1000, 2000);
@@ -120,8 +132,10 @@ test('2d.imageData.create2.large', function(t) {
 
 
 test('2d.imageData.create2.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata1 = ctx.createImageData(10, 20);
@@ -137,8 +151,10 @@ test('2d.imageData.create2.negative', function(t) {
 
 
 test('2d.imageData.create2.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -168,8 +184,10 @@ test('2d.imageData.create2.nonfinite', function(t) {
 
 
 test('2d.imageData.create2.round', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata1 = ctx.createImageData(10.01, 10.99);
@@ -182,8 +200,10 @@ test('2d.imageData.create2.round', function(t) {
 
 
 test('2d.imageData.create2.tiny', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.createImageData(0.0001, 0.0001);
@@ -201,10 +221,11 @@ test('2d.imageData.create2.tiny', function(t) {
 
 
 test('2d.imageData.create2.type', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
-  var window = new Window()
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   helpers.assertNotEqual(t, window.CanvasPixelArray, undefined, "window.CanvasPixelArray", "undefined");
@@ -219,8 +240,10 @@ test('2d.imageData.create2.type', function(t) {
 
 
 test('2d.imageData.create2.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -238,8 +261,10 @@ test('2d.imageData.create2.zero', function(t) {
 
 
 test('2d.imageData.get.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertNotEqual(t, ctx.getImageData(0, 0, 100, 50), null, "ctx.getImageData(0, 0, 100, 50)", "null");
@@ -249,8 +274,10 @@ test('2d.imageData.get.basic', function(t) {
 
 
 test('2d.imageData.get.clamp', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgb(-100, -200, -300)';
@@ -271,8 +298,10 @@ test('2d.imageData.get.clamp', function(t) {
 
 
 test('2d.imageData.get.length', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -283,8 +312,10 @@ test('2d.imageData.get.length', function(t) {
 
 
 test('2d.imageData.get.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -362,8 +393,10 @@ test('2d.imageData.get.nonfinite', function(t) {
 
 
 test('2d.imageData.get.nonpremul', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -380,8 +413,10 @@ test('2d.imageData.get.nonpremul', function(t) {
 
 
 test('2d.imageData.get.order.alpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -395,8 +430,10 @@ test('2d.imageData.get.order.alpha', function(t) {
 
 
 test('2d.imageData.get.order.cols', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#fff';
@@ -413,8 +450,10 @@ test('2d.imageData.get.order.cols', function(t) {
 
 
 test('2d.imageData.get.order.rgb', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#48c';
@@ -434,8 +473,10 @@ test('2d.imageData.get.order.rgb', function(t) {
 
 
 test('2d.imageData.get.order.rows', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#fff';
@@ -452,8 +493,10 @@ test('2d.imageData.get.order.rows', function(t) {
 
 
 test('2d.imageData.get.range', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#000';
@@ -470,8 +513,10 @@ test('2d.imageData.get.range', function(t) {
 
 
 test('2d.imageData.get.source.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#000';
@@ -500,8 +545,10 @@ test('2d.imageData.get.source.negative', function(t) {
 
 
 test('2d.imageData.get.source.outside', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#08f';
@@ -536,8 +583,10 @@ test('2d.imageData.get.source.outside', function(t) {
 
 
 test('2d.imageData.get.source.size', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata1 = ctx.getImageData(0, 0, 10, 10);
@@ -550,8 +599,10 @@ test('2d.imageData.get.source.size', function(t) {
 
 
 test('2d.imageData.get.tiny', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 0.0001, 0.0001);
@@ -564,10 +615,11 @@ test('2d.imageData.get.tiny', function(t) {
 
 
 test('2d.imageData.get.type', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
-  var window = new Window()
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   helpers.assertNotEqual(t, window.CanvasPixelArray, undefined, "window.CanvasPixelArray", "undefined");
@@ -582,8 +634,10 @@ test('2d.imageData.get.type', function(t) {
 
 
 test('2d.imageData.get.unaffected', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -608,8 +662,10 @@ test('2d.imageData.get.unaffected', function(t) {
 
 
 test('2d.imageData.get.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -627,7 +683,8 @@ test('2d.imageData.get.zero', function(t) {
 
 
 test('2d.imageData.object.ctor', function(t) {
-  var window = new Window()
+  var window = helpers.createWindow()
+  var document = window.document
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   try { var _thrown = false; new window.ImageData(1,1); } catch (e) { _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception: new window.ImageData(1,1)"); }
@@ -637,8 +694,10 @@ test('2d.imageData.object.ctor', function(t) {
 
 
 test('2d.imageData.object.nan', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -654,8 +713,10 @@ test('2d.imageData.object.nan', function(t) {
 
 
 test('2d.imageData.object.properties', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -668,8 +729,10 @@ test('2d.imageData.object.properties', function(t) {
 
 
 test('2d.imageData.object.readonly', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -692,8 +755,10 @@ test('2d.imageData.object.readonly', function(t) {
 
 
 test('2d.imageData.object.round', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -731,8 +796,10 @@ test('2d.imageData.object.round', function(t) {
 
 
 test('2d.imageData.object.set', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -746,8 +813,10 @@ test('2d.imageData.object.set', function(t) {
 
 
 test('2d.imageData.object.string', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -766,8 +835,10 @@ test('2d.imageData.object.string', function(t) {
 
 
 test('2d.imageData.object.undefined', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -780,8 +851,10 @@ test('2d.imageData.object.undefined', function(t) {
 
 
 test('2d.imageData.object.wrap', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -808,8 +881,10 @@ test('2d.imageData.object.wrap', function(t) {
 
 
 test('2d.imageData.put.alpha', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.25)';
@@ -825,8 +900,10 @@ test('2d.imageData.put.alpha', function(t) {
 
 
 test('2d.imageData.put.basic', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -842,8 +919,10 @@ test('2d.imageData.put.basic', function(t) {
 
 
 test('2d.imageData.put.clip', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -863,8 +942,10 @@ test('2d.imageData.put.clip', function(t) {
 
 
 test('2d.imageData.put.created', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.createImageData(100, 50);
@@ -884,8 +965,10 @@ test('2d.imageData.put.created', function(t) {
 
 
 test('2d.imageData.put.cross', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var canvas2 = new Canvas();
@@ -903,8 +986,10 @@ test('2d.imageData.put.cross', function(t) {
 
 
 test('2d.imageData.put.dirty.negative', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -931,8 +1016,10 @@ test('2d.imageData.put.dirty.negative', function(t) {
 
 
 test('2d.imageData.put.dirty.outside', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -961,8 +1048,10 @@ test('2d.imageData.put.dirty.outside', function(t) {
 
 
 test('2d.imageData.put.dirty.rect1', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -989,8 +1078,10 @@ test('2d.imageData.put.dirty.rect1', function(t) {
 
 
 test('2d.imageData.put.dirty.rect2', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1017,8 +1108,10 @@ test('2d.imageData.put.dirty.rect2', function(t) {
 
 
 test('2d.imageData.put.dirty.zero', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1034,8 +1127,10 @@ test('2d.imageData.put.dirty.zero', function(t) {
 
 
 test('2d.imageData.put.modified', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -1056,8 +1151,10 @@ test('2d.imageData.put.modified', function(t) {
 
 
 test('2d.imageData.put.nonfinite', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = ctx.getImageData(0, 0, 10, 10);
@@ -1313,8 +1410,10 @@ test('2d.imageData.put.nonfinite', function(t) {
 
 
 test('2d.imageData.put.null', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -1326,8 +1425,10 @@ test('2d.imageData.put.null', function(t) {
 
 
 test('2d.imageData.put.path', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -1344,8 +1445,10 @@ test('2d.imageData.put.path', function(t) {
 
 
 test('2d.imageData.put.unaffected', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -1367,8 +1470,10 @@ test('2d.imageData.put.unaffected', function(t) {
 
 
 test('2d.imageData.put.unchanged', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var i = 0;
@@ -1395,8 +1500,10 @@ test('2d.imageData.put.unchanged', function(t) {
 
 
 test('2d.imageData.put.wrongtype', function(t) {
+  var window = helpers.createWindow()
+  var document = window.document
 
-  var canvas = new Canvas(100, 50);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var imgdata = { width: 1, height: 1, data: [255, 0, 0, 255] };

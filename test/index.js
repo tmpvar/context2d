@@ -7,7 +7,7 @@
 
   'cases/test-drawImage',
   'cases/test-fillRect',
-  // 'cases/test-fillStyle',
+  'cases/test-fillStyle',
 
   // 'cases/test-gradient',
   // 'cases/test-imageData',
