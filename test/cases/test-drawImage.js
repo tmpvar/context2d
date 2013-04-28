@@ -21,7 +21,7 @@ test('2d.drawImage.3arg', function(t) {
     ctx.drawImage(images['red.png'], 100, 0);
     ctx.drawImage(images['red.png'], 0, -50);
     ctx.drawImage(images['red.png'], 0, 50);
-
+    
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -48,7 +48,7 @@ test('2d.drawImage.5arg', function(t) {
     ctx.drawImage(images['red.png'], 0, 0, 50, 50);
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 50, 50);
-
+    
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -290,10 +290,10 @@ test('2d.drawImage.canvas', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#0f0';
   ctx2.fillRect(0, 0, 100, 50);
-
+  
   ctx.fillStyle = '#f00';
   ctx.drawImage(canvas2, 0, 0);
-
+  
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -811,7 +811,7 @@ test('2d.drawImage.null', function(t) {
 
   try { var _thrown = false;
     ctx.drawImage(null, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(null, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(null, 0, 0)"); }
 
   t.end()
 });
@@ -832,28 +832,28 @@ test('2d.drawImage.outsidesource', function(t) {
     ctx.drawImage(images['green.png'], 100, 50, -5, -5, 0, 0, 100, 50);
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
     t.end()
@@ -891,7 +891,7 @@ test('2d.drawImage.self.1', function(t) {
   ctx.fillStyle = '#f00';
   ctx.fillRect(50, 0, 50, 50);
   ctx.drawImage(canvas, 50, 0);
-
+  
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -913,7 +913,7 @@ test('2d.drawImage.self.2', function(t) {
   ctx.drawImage(canvas, 0, 1);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 2);
-
+  
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -950,16 +950,16 @@ test('2d.drawImage.wrongtype', function(t) {
 
   try { var _thrown = false;
     ctx.drawImage(undefined, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(undefined, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(undefined, 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage(0, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(0, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(0, 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage("", 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(\"\", 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(\"\", 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage(document.createElement('p'), 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(document.createElement('p'), 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(document.createElement('p'), 0, 0)"); }
 
   t.end()
 });
@@ -972,26 +972,26 @@ test('2d.drawImage.zerocanvas', function(t) {
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-
+  
   var canvas2 = new Canvas();
   canvas2.width = 0;
   canvas2.height = 10;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+  
   canvas2.width = 10;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+  
   canvas2.width = 0;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+  
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
   t.end()
@@ -1011,14 +1011,13 @@ test('2d.drawImage.zerosource', function(t) {
     ctx.fillRect(0, 0, 100, 50);
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50);
-      console.log('HERE');
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
     t.end()

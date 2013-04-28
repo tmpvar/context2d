@@ -130,7 +130,7 @@ test('2d.pattern.basic.type', function(t) {
     
     var img = images['green.png'];
     var pattern = ctx.createPattern(img, 'no-repeat');
-    t.ok(pattern.thisImplementsCanvasPattern, "pattern.thisImplementsCanvasPattern");
+    helpers.ok(t, pattern.thisImplementsCanvasPattern, "pattern.thisImplementsCanvasPattern");
 
     t.end()
   });
@@ -148,7 +148,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 10, "canvas.height", "10");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
   
   canvas.width = 10;
   canvas.height = 0;
@@ -156,7 +156,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 0, "canvas.height", "0");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
   
   canvas.width = 0;
   canvas.height = 0;
@@ -164,7 +164,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 0, "canvas.height", "0");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
 
   t.end()
 });
@@ -232,7 +232,7 @@ test('2d.pattern.image.null', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(null, 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(null, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(null, 'repeat')"); }
 
   t.end()
 });
@@ -245,7 +245,7 @@ test('2d.pattern.image.string', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern('/../philip/orig/images/red.png', 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('/../philip/orig/images/red.png', 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('/../philip/orig/images/red.png', 'repeat')"); }
 
   t.end()
 });
@@ -258,7 +258,7 @@ test('2d.pattern.image.undefined', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(undefined, 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(undefined, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(undefined, 'repeat')"); }
 
   t.end()
 });
@@ -928,7 +928,7 @@ test('2d.pattern.repeat.case', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "Repeat");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"Repeat\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"Repeat\")"); }
 
   t.end()
 });
@@ -993,7 +993,7 @@ test('2d.pattern.repeat.nullsuffix', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "repeat\0");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"repeat\\0\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"repeat\\0\")"); }
 
   t.end()
 });
@@ -1006,7 +1006,7 @@ test('2d.pattern.repeat.undefined', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, undefined);
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, undefined)"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, undefined)"); }
 
   t.end()
 });
@@ -1019,7 +1019,7 @@ test('2d.pattern.repeat.unrecognised', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "invalid");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"invalid\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"invalid\")"); }
 
   t.end()
 });

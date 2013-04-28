@@ -984,7 +984,7 @@ test('2d.text.measure.width.space', function(t) {
       helpers.assertEqual(t, ctx.measureText('A B').width, 150, "ctx.measureText('A B').width", "150");
       helpers.assertEqual(t, ctx.measureText('A  B').width, 150, "ctx.measureText('A  B').width", "150");
       helpers.assertEqual(t, ctx.measureText('A \x09\x0a\x0c\x0d  \x09\x0a\x0c\x0dB').width, 150, "ctx.measureText('A \\x09\\x0a\\x0c\\x0d  \\x09\\x0a\\x0c\\x0dB').width", "150");
-      t.ok(ctx.measureText('A \x0b B').width >= 200, "ctx.measureText('A \\x0b B').width >= 200");
+      helpers.ok(t, ctx.measureText('A \x0b B').width >= 200, "ctx.measureText('A \\x0b B').width >= 200");
   
       helpers.assertEqual(t, ctx.measureText(' AB').width, 100, "ctx.measureText(' AB').width", "100");
       helpers.assertEqual(t, ctx.measureText('AB ').width, 100, "ctx.measureText('AB ').width", "100");
