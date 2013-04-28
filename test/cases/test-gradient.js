@@ -1,9 +1,11 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.gradient.empty', function(t) {
 
   var canvas = new Canvas(100, 50);
@@ -240,73 +242,73 @@ test('2d.gradient.linear.nonfinite', function(t) {
 
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, 0, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(-Infinity, 0, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(-Infinity, 0, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(-Infinity, 0, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(NaN, 0, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(NaN, 0, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(NaN, 0, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, Infinity, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, -Infinity, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, -Infinity, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, -Infinity, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, NaN, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, NaN, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, NaN, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, Infinity, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, Infinity, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, Infinity, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, -Infinity, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, -Infinity, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, -Infinity, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, NaN, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, NaN, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, NaN, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, 1, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, 1, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, -Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, 1, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, 1, NaN)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, Infinity, 1, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, 1, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, 1, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, Infinity, Infinity, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, Infinity, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, Infinity, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, Infinity, 1, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, 1, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, Infinity, 1, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, 0, Infinity, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, Infinity, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, Infinity, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(Infinity, 0, 1, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, 1, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(Infinity, 0, 1, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, Infinity, Infinity, 0);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, Infinity, 0)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, Infinity, 0)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, Infinity, 1, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, 1, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, Infinity, 1, Infinity)"); }
   try { var _thrown = false;
     ctx.createLinearGradient(0, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, Infinity, Infinity)"); }
 
   t.end()
 });
@@ -418,10 +420,10 @@ test('2d.gradient.object.invalidcolour', function(t) {
   var g = ctx.createLinearGradient(0, 0, 100, 0);
   try { var _thrown = false;
     g.addColorStop(0, "");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: g.addColorStop(0, \"\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: g.addColorStop(0, \"\")"); }
   try { var _thrown = false;
     g.addColorStop(0, 'undefined');
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: g.addColorStop(0, 'undefined')"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: g.addColorStop(0, 'undefined')"); }
 
   t.end()
 });
@@ -435,19 +437,19 @@ test('2d.gradient.object.invalidoffset', function(t) {
   var g = ctx.createLinearGradient(0, 0, 100, 0);
   try { var _thrown = false;
     g.addColorStop(-1, '#000');
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(-1, '#000')"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(-1, '#000')"); }
   try { var _thrown = false;
     g.addColorStop(2, '#000');
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(2, '#000')"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(2, '#000')"); }
   try { var _thrown = false;
     g.addColorStop(Infinity, '#000');
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(Infinity, '#000')"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(Infinity, '#000')"); }
   try { var _thrown = false;
     g.addColorStop(-Infinity, '#000');
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(-Infinity, '#000')"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(-Infinity, '#000')"); }
   try { var _thrown = false;
     g.addColorStop(NaN, '#000');
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(NaN, '#000')"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(NaN, '#000')"); }
 
   t.end()
 });
@@ -853,13 +855,13 @@ test('2d.gradient.radial.negative', function(t) {
 
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, -0.1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, -0.1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, -0.1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, 0, -0.1);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, -0.1)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, -0.1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, -0.1, 0, 0, -0.1);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, -0.1, 0, 0, -0.1)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, -0.1, 0, 0, -0.1)"); }
 
   t.end()
 });
@@ -872,229 +874,229 @@ test('2d.gradient.radial.nonfinite', function(t) {
 
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(-Infinity, 0, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(-Infinity, 0, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(-Infinity, 0, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(NaN, 0, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(NaN, 0, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(NaN, 0, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, -Infinity, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, -Infinity, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, -Infinity, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, NaN, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, NaN, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, NaN, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, -Infinity, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, -Infinity, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, -Infinity, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, NaN, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, NaN, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, NaN, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, -Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, -Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, -Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, NaN, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, NaN, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, NaN, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, -Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, -Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, -Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, NaN, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, NaN, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, NaN, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, 0, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, -Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, 0, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, 0, NaN)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, Infinity, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, Infinity, 1, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, Infinity, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(Infinity, 0, 1, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(Infinity, 0, 1, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, Infinity, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, Infinity, 1, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, Infinity, 1, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, Infinity, 0, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, Infinity, 0, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, 1);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, 1)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, 1)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, Infinity, 0, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, 0, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, Infinity, 0, Infinity)"); }
   try { var _thrown = false;
     ctx.createRadialGradient(0, 0, 1, 0, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, Infinity, Infinity)"); }
 
   t.end()
 });

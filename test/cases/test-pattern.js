@@ -1,31 +1,31 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.pattern.animated.gif', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'anim-gr.gif' , url: __dirname + '/../philip/orig/images/anim-gr.gif' }
   ], function(images) {
 
     var canvas = new Canvas(100, 50);
     var ctx = canvas.getContext('2d')
 
-    deferTest();
     setTimeout(function () {
         var pattern = ctx.createPattern(images['anim-gr.gif'], 'repeat');
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, 50, 50);
-        setTimeout(wrapFunction(function () {
+        setTimeout(wrapFunction(t, function () {
             ctx.fillRect(50, 0, 50, 50);
             helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
             helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
         }), 250);
     }, 250);
 
-    t.end()
   });
 });
 
@@ -65,7 +65,7 @@ test('2d.pattern.basic.canvas', function(t) {
 
 test('2d.pattern.basic.image', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -116,7 +116,7 @@ test('2d.pattern.basic.nocontext', function(t) {
 
 test('2d.pattern.basic.type', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -130,7 +130,7 @@ test('2d.pattern.basic.type', function(t) {
     
     var img = images['green.png'];
     var pattern = ctx.createPattern(img, 'no-repeat');
-    helpers.assert(pattern.thisImplementsCanvasPattern, "pattern.thisImplementsCanvasPattern");
+    t.ok(pattern.thisImplementsCanvasPattern, "pattern.thisImplementsCanvasPattern");
 
     t.end()
   });
@@ -148,7 +148,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 10, "canvas.height", "10");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
   
   canvas.width = 10;
   canvas.height = 0;
@@ -156,7 +156,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 0, "canvas.height", "0");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
   
   canvas.width = 0;
   canvas.height = 0;
@@ -164,7 +164,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
   helpers.assertEqual(t, canvas.height, 0, "canvas.height", "0");
   try { var _thrown = false;
     ctx.createPattern(canvas, 'repeat');
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.createPattern(canvas, 'repeat')"); }
 
   t.end()
 });
@@ -172,7 +172,7 @@ test('2d.pattern.basic.zerocanvas', function(t) {
 
 test('2d.pattern.crosscanvas', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -196,7 +196,7 @@ test('2d.pattern.crosscanvas', function(t) {
 
 test('2d.pattern.image.broken', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'broken.png' , url: __dirname + '/../philip/orig/images/broken.png' }
   ], function(images) {
 
@@ -232,7 +232,7 @@ test('2d.pattern.image.null', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(null, 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(null, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(null, 'repeat')"); }
 
   t.end()
 });
@@ -245,7 +245,7 @@ test('2d.pattern.image.string', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern('/../philip/orig/images/red.png', 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('/../philip/orig/images/red.png', 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('/../philip/orig/images/red.png', 'repeat')"); }
 
   t.end()
 });
@@ -258,7 +258,7 @@ test('2d.pattern.image.undefined', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(undefined, 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(undefined, 'repeat')"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern(undefined, 'repeat')"); }
 
   t.end()
 });
@@ -328,7 +328,7 @@ test('2d.pattern.modify.canvas2', function(t) {
 
 test('2d.pattern.modify.image1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -337,7 +337,7 @@ test('2d.pattern.modify.image1', function(t) {
 
     var img = images['green.png'];
     var pattern = ctx.createPattern(img, 'no-repeat');
-    deferTest();
+    
     img.onload = wrapFunction(function ()
     {
         ctx.fillStyle = pattern;
@@ -350,14 +350,13 @@ test('2d.pattern.modify.image1', function(t) {
     });
     img.src = '/../philip/orig/images/red.png';
 
-    t.end()
   });
 });
 
 
 test('2d.pattern.modify.image2', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -370,7 +369,7 @@ test('2d.pattern.modify.image2', function(t) {
     ctx.fillRect(0, 0, 100, 50);
     ctx.fillStyle = '#00f';
     ctx.fillRect(0, 0, 100, 50);
-    deferTest();
+    
     img.onload = wrapFunction(function ()
     {
         ctx.fillStyle = pattern;
@@ -383,14 +382,13 @@ test('2d.pattern.modify.image2', function(t) {
     });
     img.src = '/../philip/orig/images/red.png';
 
-    t.end()
   });
 });
 
 
 test('2d.pattern.paint.norepeat.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -417,7 +415,7 @@ test('2d.pattern.paint.norepeat.basic', function(t) {
 
 test('2d.pattern.paint.norepeat.coord1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -447,7 +445,7 @@ test('2d.pattern.paint.norepeat.coord1', function(t) {
 
 test('2d.pattern.paint.norepeat.coord2', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -478,7 +476,7 @@ test('2d.pattern.paint.norepeat.coord2', function(t) {
 
 test('2d.pattern.paint.norepeat.coord3', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -509,7 +507,7 @@ test('2d.pattern.paint.norepeat.coord3', function(t) {
 
 test('2d.pattern.paint.norepeat.outside', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -574,7 +572,7 @@ test('2d.pattern.paint.orientation.canvas', function(t) {
 
 test('2d.pattern.paint.orientation.image', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'rrgg-256x256.png' , url: __dirname + '/../philip/orig/images/rrgg-256x256.png' }
   ], function(images) {
 
@@ -607,7 +605,7 @@ test('2d.pattern.paint.orientation.image', function(t) {
 
 test('2d.pattern.paint.repeat.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
 
@@ -634,7 +632,7 @@ test('2d.pattern.paint.repeat.basic', function(t) {
 
 test('2d.pattern.paint.repeat.coord1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
 
@@ -662,7 +660,7 @@ test('2d.pattern.paint.repeat.coord1', function(t) {
 
 test('2d.pattern.paint.repeat.coord2', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
 
@@ -686,7 +684,7 @@ test('2d.pattern.paint.repeat.coord2', function(t) {
 
 test('2d.pattern.paint.repeat.coord3', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
 
@@ -713,7 +711,7 @@ test('2d.pattern.paint.repeat.coord3', function(t) {
 
 test('2d.pattern.paint.repeat.outside', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
 
@@ -741,7 +739,7 @@ test('2d.pattern.paint.repeat.outside', function(t) {
 
 test('2d.pattern.paint.repeatx.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
 
@@ -770,7 +768,7 @@ test('2d.pattern.paint.repeatx.basic', function(t) {
 
 test('2d.pattern.paint.repeatx.coord1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
 
@@ -803,7 +801,7 @@ test('2d.pattern.paint.repeatx.coord1', function(t) {
 
 test('2d.pattern.paint.repeatx.outside', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
 
@@ -833,7 +831,7 @@ test('2d.pattern.paint.repeatx.outside', function(t) {
 
 test('2d.pattern.paint.repeaty.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
 
@@ -862,7 +860,7 @@ test('2d.pattern.paint.repeaty.basic', function(t) {
 
 test('2d.pattern.paint.repeaty.coord1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
 
@@ -895,7 +893,7 @@ test('2d.pattern.paint.repeaty.coord1', function(t) {
 
 test('2d.pattern.paint.repeaty.outside', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
 
@@ -930,7 +928,7 @@ test('2d.pattern.repeat.case', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "Repeat");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"Repeat\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"Repeat\")"); }
 
   t.end()
 });
@@ -938,7 +936,7 @@ test('2d.pattern.repeat.case', function(t) {
 
 test('2d.pattern.repeat.empty', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
   ], function(images) {
 
@@ -964,7 +962,7 @@ test('2d.pattern.repeat.empty', function(t) {
 
 test('2d.pattern.repeat.null', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
   ], function(images) {
 
@@ -995,7 +993,7 @@ test('2d.pattern.repeat.nullsuffix', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "repeat\0");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"repeat\\0\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"repeat\\0\")"); }
 
   t.end()
 });
@@ -1008,7 +1006,7 @@ test('2d.pattern.repeat.undefined', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, undefined);
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, undefined)"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, undefined)"); }
 
   t.end()
 });
@@ -1021,7 +1019,7 @@ test('2d.pattern.repeat.unrecognised', function(t) {
 
   try { var _thrown = false;
     ctx.createPattern(canvas, "invalid");
-  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) _fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"invalid\")"); }
+  } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type SYNTAX_ERR: ctx.createPattern(canvas, \"invalid\")"); }
 
   t.end()
 });

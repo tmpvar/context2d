@@ -1,12 +1,14 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.drawImage.3arg', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
@@ -19,7 +21,7 @@ test('2d.drawImage.3arg', function(t) {
     ctx.drawImage(images['red.png'], 100, 0);
     ctx.drawImage(images['red.png'], 0, -50);
     ctx.drawImage(images['red.png'], 0, 50);
-    
+
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -32,7 +34,7 @@ test('2d.drawImage.3arg', function(t) {
 
 test('2d.drawImage.5arg', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
@@ -46,7 +48,7 @@ test('2d.drawImage.5arg', function(t) {
     ctx.drawImage(images['red.png'], 0, 0, 50, 50);
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 50, 50);
-    
+
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -59,7 +61,7 @@ test('2d.drawImage.5arg', function(t) {
 
 test('2d.drawImage.9arg.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -81,7 +83,7 @@ test('2d.drawImage.9arg.basic', function(t) {
 
 test('2d.drawImage.9arg.destpos', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
@@ -108,7 +110,7 @@ test('2d.drawImage.9arg.destpos', function(t) {
 
 test('2d.drawImage.9arg.destsize', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
@@ -135,7 +137,7 @@ test('2d.drawImage.9arg.destsize', function(t) {
 
 test('2d.drawImage.9arg.sourcepos', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
 
@@ -157,7 +159,7 @@ test('2d.drawImage.9arg.sourcepos', function(t) {
 
 test('2d.drawImage.9arg.sourcesize', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
 
@@ -186,7 +188,7 @@ test('2d.drawImage.9arg.sourcesize', function(t) {
 
 test('2d.drawImage.alpha', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -206,47 +208,43 @@ test('2d.drawImage.alpha', function(t) {
 
 test('2d.drawImage.animated.apng', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'anim-gr.png' , url: __dirname + '/../philip/orig/images/anim-gr.png' }
   ], function(images) {
 
     var canvas = new Canvas(100, 50);
     var ctx = canvas.getContext('2d')
 
-    deferTest();
-    setTimeout(wrapFunction(function () {
+    setTimeout(wrapFunction(t, function () {
         ctx.drawImage(images['anim-gr.png'], 0, 0);
         helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
     }), 500);
 
-    t.end()
   });
 });
 
 
 test('2d.drawImage.animated.gif', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'anim-gr.gif' , url: __dirname + '/../philip/orig/images/anim-gr.gif' }
   ], function(images) {
 
     var canvas = new Canvas(100, 50);
     var ctx = canvas.getContext('2d')
 
-    deferTest();
-    setTimeout(wrapFunction(function () {
+    setTimeout(wrapFunction(t, function () {
         ctx.drawImage(images['anim-gr.gif'], 0, 0);
         helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
     }), 500);
 
-    t.end()
   });
 });
 
 
 test('2d.drawImage.animated.poster', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'anim-poster-gr.png' , url: __dirname + '/../philip/orig/images/anim-poster-gr.png' }
   ], function(images) {
 
@@ -263,7 +261,7 @@ test('2d.drawImage.animated.poster', function(t) {
 
 test('2d.drawImage.broken', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'broken.png' , url: __dirname + '/../philip/orig/images/broken.png' }
   ], function(images) {
 
@@ -292,10 +290,10 @@ test('2d.drawImage.canvas', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#0f0';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#f00';
   ctx.drawImage(canvas2, 0, 0);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -307,7 +305,7 @@ test('2d.drawImage.canvas', function(t) {
 
 test('2d.drawImage.clip', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -328,7 +326,7 @@ test('2d.drawImage.clip', function(t) {
 
 test('2d.drawImage.composite', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -348,7 +346,7 @@ test('2d.drawImage.composite', function(t) {
 
 test('2d.drawImage.floatsource', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
 
@@ -380,7 +378,7 @@ test('2d.drawImage.incomplete', function(t) {
 
 test('2d.drawImage.negativedest', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
 
@@ -409,7 +407,7 @@ test('2d.drawImage.negativedest', function(t) {
 
 test('2d.drawImage.negativedir', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
 
@@ -438,7 +436,7 @@ test('2d.drawImage.negativedir', function(t) {
 
 test('2d.drawImage.negativesource', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
 
@@ -467,7 +465,7 @@ test('2d.drawImage.negativesource', function(t) {
 
 test('2d.drawImage.nonfinite', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -787,7 +785,7 @@ test('2d.drawImage.nonfinite', function(t) {
 
 test('2d.drawImage.nowrap', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
 
@@ -813,7 +811,7 @@ test('2d.drawImage.null', function(t) {
 
   try { var _thrown = false;
     ctx.drawImage(null, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(null, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(null, 0, 0)"); }
 
   t.end()
 });
@@ -821,7 +819,7 @@ test('2d.drawImage.null', function(t) {
 
 test('2d.drawImage.outsidesource', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' },
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
@@ -834,28 +832,28 @@ test('2d.drawImage.outsidesource', function(t) {
     ctx.drawImage(images['green.png'], 100, 50, -5, -5, 0, 0, 100, 50);
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], -0.001, 0, 100, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, -0.001, 100, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100.001, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 100, 50.001, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 50, 0, 50.001, 50, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, -5, 5, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 0, 0, 5, -5, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
     t.end()
@@ -865,7 +863,7 @@ test('2d.drawImage.outsidesource', function(t) {
 
 test('2d.drawImage.path', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -893,7 +891,7 @@ test('2d.drawImage.self.1', function(t) {
   ctx.fillStyle = '#f00';
   ctx.fillRect(50, 0, 50, 50);
   ctx.drawImage(canvas, 50, 0);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -915,7 +913,7 @@ test('2d.drawImage.self.2', function(t) {
   ctx.drawImage(canvas, 0, 1);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 2);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -927,7 +925,7 @@ test('2d.drawImage.self.2', function(t) {
 
 test('2d.drawImage.transform', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -952,16 +950,16 @@ test('2d.drawImage.wrongtype', function(t) {
 
   try { var _thrown = false;
     ctx.drawImage(undefined, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(undefined, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(undefined, 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage(0, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(0, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(0, 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage("", 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(\"\", 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(\"\", 0, 0)"); }
   try { var _thrown = false;
     ctx.drawImage(document.createElement('p'), 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(document.createElement('p'), 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(document.createElement('p'), 0, 0)"); }
 
   t.end()
 });
@@ -974,26 +972,26 @@ test('2d.drawImage.zerocanvas', function(t) {
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var canvas2 = new Canvas();
   canvas2.width = 0;
   canvas2.height = 10;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+
   canvas2.width = 10;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+
   canvas2.width = 0;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
-  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) _fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+  } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
+
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
   t.end()
@@ -1002,7 +1000,7 @@ test('2d.drawImage.zerocanvas', function(t) {
 
 test('2d.drawImage.zerosource', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -1013,13 +1011,14 @@ test('2d.drawImage.zerosource', function(t) {
     ctx.fillRect(0, 0, 100, 50);
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50)"); }
+      console.log('HERE');
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 1, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 1, 0, 0, 0, 100, 50)"); }
     try { var _thrown = false;
       ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50);
-    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50)"); }
+    } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
     t.end()

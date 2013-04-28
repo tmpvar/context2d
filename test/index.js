@@ -3,7 +3,7 @@
   'cases/test-clearRect',
   'cases/test-composite',
   // 'cases/test-coordinatespace',
-  // 'cases/test-drawImage',
+  'cases/test-drawImage',
   // 'cases/test-fillRect',
   // 'cases/test-fillStyle',
   // 'cases/test-getcontext',

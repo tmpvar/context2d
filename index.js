@@ -1,6 +1,30 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var parseCSSColor = require('csscolorparser').parseCSSColor;
 
+
+var DOMException = module.exports.DOMException = function(m, c) {
+  var ret = new Error(m)
+  ret.code = c;
+  return ret;
+};
+
+DOMException.INDEX_SIZE_ERR                 = 1;
+DOMException.DOMSTRING_SIZE_ERR             = 2;
+DOMException.HIERARCHY_REQUEST_ERR          = 3;
+DOMException.WRONG_DOCUMENT_ERR             = 4;
+DOMException.INVALID_CHARACTER_ERR          = 5;
+DOMException.NO_DATA_ALLOWED_ERR            = 6;
+DOMException.NO_MODIFICATION_ALLOWED_ERR    = 7;
+DOMException.NOT_FOUND_ERR                  = 8;
+DOMException.NOT_SUPPORTED_ERR              = 9;
+DOMException.INUSE_ATTRIBUTE_ERR            = 10;
+DOMException.INVALID_STATE_ERR              = 11;
+DOMException.SYNTAX_ERR                     = 12;
+DOMException.INVALID_MODIFICATION_ERR       = 13;
+DOMException.NAMESPACE_ERR                  = 14;
+DOMException.INVALID_ACCESS_ERR             = 15;
+
+
 module.exports.createContext = function(canvas, w, h) {
   var w = w || 300;
   var h = h || 150;
@@ -58,8 +82,8 @@ module.exports.createContext = function(canvas, w, h) {
     },
     set : function(c) {
       if (c.type && c.type === 'pattern') {
-        //var id = c.obj.imageData
-        //ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
+        var id = c.obj.imageData
+        ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
       } else {
 
         var color = parseCSSColor(c);
@@ -78,6 +102,11 @@ module.exports.createContext = function(canvas, w, h) {
     args.shift();
 
     if (!i) {
+      throw new DOMException('invalid image', DOMException.TYPE_MISMATCH_ERR);
+    }
+
+    if (i.src && i.complete !== true) {
+      // TODO: what needs to happen here?
       return;
     }
 
@@ -99,6 +128,11 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     var id = i.imageData;
+
+    if (!id.width || !id.height) {
+      throw new DOMException('invalid image dimensions', DOMException.INVALID_STATE_ERR);
+    }
+
     if (needsSwizzle && !i.swizzled) {
       var pre = function(component, alpha) {
         var prod = (component * alpha) + 128;
@@ -149,6 +183,44 @@ module.exports.createContext = function(canvas, w, h) {
       dw = args[6];
       dh = args[7];
     }
+
+    var clean = function(a, alt) {
+      if (!isNaN(a) && isFinite(a)) {
+        return a;
+      }
+      return alt;
+    }
+
+    dw = clean(dw, id.width);
+    dh = clean(dh, id.height);
+    sw = clean(sw, id.width);
+    sh = clean(sh, id.height);
+
+
+    if (dw < 0) {
+      dx += dw;
+      dw = Math.abs(dw);
+    }
+
+    if (dh < 0) {
+      dy += dh;
+      dh = Math.abs(dh);
+    }
+
+    if (sw < 0) {
+      sx += sw;
+      sw = Math.abs(sw);
+    }
+
+    if (sh < 0) {
+      sy += sh;
+      sh = Math.abs(sh);
+    }
+
+    if (!sh || !sw || !dh || !dw) {
+      throw new DOMException('invalid image dimensions', DOMException.INDEX_SIZE_ERR);
+    }
+
 
     ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
   };

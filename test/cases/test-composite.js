@@ -1,12 +1,14 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.composite.canvas.copy', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -31,7 +33,7 @@ test('2d.composite.canvas.copy', function(t) {
 
 test('2d.composite.canvas.destination-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -56,7 +58,7 @@ test('2d.composite.canvas.destination-atop', function(t) {
 
 test('2d.composite.canvas.destination-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -81,7 +83,7 @@ test('2d.composite.canvas.destination-in', function(t) {
 
 test('2d.composite.canvas.destination-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -106,7 +108,7 @@ test('2d.composite.canvas.destination-out', function(t) {
 
 test('2d.composite.canvas.destination-over', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -131,7 +133,7 @@ test('2d.composite.canvas.destination-over', function(t) {
 
 test('2d.composite.canvas.lighter', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -156,7 +158,7 @@ test('2d.composite.canvas.lighter', function(t) {
 
 test('2d.composite.canvas.source-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -181,7 +183,7 @@ test('2d.composite.canvas.source-atop', function(t) {
 
 test('2d.composite.canvas.source-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -206,7 +208,7 @@ test('2d.composite.canvas.source-in', function(t) {
 
 test('2d.composite.canvas.source-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -231,7 +233,7 @@ test('2d.composite.canvas.source-out', function(t) {
 
 test('2d.composite.canvas.source-over', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -256,7 +258,7 @@ test('2d.composite.canvas.source-over', function(t) {
 
 test('2d.composite.canvas.xor', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -499,7 +501,7 @@ test('2d.composite.globalAlpha.canvas', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-
+  
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalAlpha = 0.01; // avoid any potential alpha=0 optimisations
@@ -521,7 +523,7 @@ test('2d.composite.globalAlpha.canvaspattern', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-
+  
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.fillStyle = ctx.createPattern(canvas2, 'no-repeat');
@@ -562,7 +564,7 @@ test('2d.composite.globalAlpha.fill', function(t) {
 
 test('2d.composite.globalAlpha.image', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -582,7 +584,7 @@ test('2d.composite.globalAlpha.image', function(t) {
 
 test('2d.composite.globalAlpha.imagepattern', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -641,7 +643,7 @@ test('2d.composite.globalAlpha.range', function(t) {
 
 test('2d.composite.image.copy', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -661,7 +663,7 @@ test('2d.composite.image.copy', function(t) {
 
 test('2d.composite.image.destination-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -681,7 +683,7 @@ test('2d.composite.image.destination-atop', function(t) {
 
 test('2d.composite.image.destination-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -701,7 +703,7 @@ test('2d.composite.image.destination-in', function(t) {
 
 test('2d.composite.image.destination-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -721,7 +723,7 @@ test('2d.composite.image.destination-out', function(t) {
 
 test('2d.composite.image.destination-over', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -741,7 +743,7 @@ test('2d.composite.image.destination-over', function(t) {
 
 test('2d.composite.image.lighter', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -761,7 +763,7 @@ test('2d.composite.image.lighter', function(t) {
 
 test('2d.composite.image.source-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -781,7 +783,7 @@ test('2d.composite.image.source-atop', function(t) {
 
 test('2d.composite.image.source-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -801,7 +803,7 @@ test('2d.composite.image.source-in', function(t) {
 
 test('2d.composite.image.source-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -821,7 +823,7 @@ test('2d.composite.image.source-out', function(t) {
 
 test('2d.composite.image.source-over', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -841,7 +843,7 @@ test('2d.composite.image.source-over', function(t) {
 
 test('2d.composite.image.xor', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
   ], function(images) {
 
@@ -866,7 +868,6 @@ test('2d.composite.operation.casesensitive', function(t) {
 
   ctx.globalCompositeOperation = 'xor';
   ctx.globalCompositeOperation = 'Source-over';
-  console.log('weird', ctx.globalCompositeOperation);
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
   t.end()
@@ -1343,7 +1344,6 @@ test('2d.composite.uncovered.fill.copy', function(t) {
   ctx.fillStyle = 'rgba(0, 0, 255, 0.75)';
   ctx.translate(0, 25);
   ctx.fillRect(0, 50, 100, 50);
-  helpers.output(ctx, 'out.png');
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
   t.end()
@@ -1420,7 +1420,7 @@ test('2d.composite.uncovered.fill.source-out', function(t) {
 
 test('2d.composite.uncovered.image.copy', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1441,7 +1441,7 @@ test('2d.composite.uncovered.image.copy', function(t) {
 
 test('2d.composite.uncovered.image.destination-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1462,7 +1462,7 @@ test('2d.composite.uncovered.image.destination-atop', function(t) {
 
 test('2d.composite.uncovered.image.destination-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1483,7 +1483,7 @@ test('2d.composite.uncovered.image.destination-in', function(t) {
 
 test('2d.composite.uncovered.image.source-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1504,7 +1504,7 @@ test('2d.composite.uncovered.image.source-in', function(t) {
 
 test('2d.composite.uncovered.image.source-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1605,7 +1605,7 @@ test('2d.composite.uncovered.nocontext.source-out', function(t) {
 
 test('2d.composite.uncovered.pattern.copy', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1626,7 +1626,7 @@ test('2d.composite.uncovered.pattern.copy', function(t) {
 
 test('2d.composite.uncovered.pattern.destination-atop', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1647,7 +1647,7 @@ test('2d.composite.uncovered.pattern.destination-atop', function(t) {
 
 test('2d.composite.uncovered.pattern.destination-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1668,7 +1668,7 @@ test('2d.composite.uncovered.pattern.destination-in', function(t) {
 
 test('2d.composite.uncovered.pattern.source-in', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
@@ -1689,7 +1689,7 @@ test('2d.composite.uncovered.pattern.source-in', function(t) {
 
 test('2d.composite.uncovered.pattern.source-out', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 

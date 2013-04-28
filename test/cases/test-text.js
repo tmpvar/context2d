@@ -1,9 +1,11 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.text.align.default', function(t) {
 
   var canvas = new Canvas(100, 50);
@@ -133,8 +135,8 @@ test('2d.text.draw.align.center', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -148,7 +150,6 @@ test('2d.text.draw.align.center', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -158,8 +159,8 @@ test('2d.text.draw.align.end.ltr', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -173,7 +174,6 @@ test('2d.text.draw.align.end.ltr', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -183,8 +183,8 @@ test('2d.text.draw.align.end.rtl', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -198,7 +198,6 @@ test('2d.text.draw.align.end.rtl', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -208,8 +207,8 @@ test('2d.text.draw.align.left', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -223,7 +222,6 @@ test('2d.text.draw.align.left', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -233,8 +231,8 @@ test('2d.text.draw.align.right', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -248,7 +246,6 @@ test('2d.text.draw.align.right', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -258,8 +255,8 @@ test('2d.text.draw.align.start.ltr', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -273,7 +270,6 @@ test('2d.text.draw.align.start.ltr', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -283,8 +279,8 @@ test('2d.text.draw.align.start.rtl', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -298,7 +294,6 @@ test('2d.text.draw.align.start.rtl', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -308,8 +303,8 @@ test('2d.text.draw.baseline.alphabetic', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -323,7 +318,6 @@ test('2d.text.draw.baseline.alphabetic', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -333,8 +327,8 @@ test('2d.text.draw.baseline.bottom', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -348,7 +342,6 @@ test('2d.text.draw.baseline.bottom', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -358,8 +351,8 @@ test('2d.text.draw.baseline.hanging', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -373,7 +366,6 @@ test('2d.text.draw.baseline.hanging', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -383,8 +375,8 @@ test('2d.text.draw.baseline.ideographic', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -398,7 +390,6 @@ test('2d.text.draw.baseline.ideographic', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -408,8 +399,8 @@ test('2d.text.draw.baseline.middle', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -423,7 +414,6 @@ test('2d.text.draw.baseline.middle', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -433,8 +423,8 @@ test('2d.text.draw.baseline.top', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -448,7 +438,6 @@ test('2d.text.draw.baseline.top', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -474,8 +463,8 @@ test('2d.text.draw.fill.maxWidth.bound', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -486,7 +475,6 @@ test('2d.text.draw.fill.maxWidth.bound', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -496,8 +484,8 @@ test('2d.text.draw.fill.maxWidth.fontface', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#0f0';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#f00';
@@ -508,7 +496,6 @@ test('2d.text.draw.fill.maxWidth.fontface', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -605,8 +592,8 @@ test('2d.text.draw.fontface', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '67px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -617,7 +604,6 @@ test('2d.text.draw.fontface', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -627,8 +613,8 @@ test('2d.text.draw.fontface.notinpage', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '67px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -639,7 +625,6 @@ test('2d.text.draw.fontface.notinpage', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -653,8 +638,8 @@ test('2d.text.draw.fontface.repeat', function(t) {
   ctx.font = '67px CanvasTest';
   ctx.fillStyle = '#0f0';
   ctx.fillText('AA', 0, 50);
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillText('AA', 0, 50);
       helpers.assertPixelApprox(t, canvas, 5,5, 0,255,0,255, "5,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
@@ -662,7 +647,6 @@ test('2d.text.draw.fontface.repeat', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -692,8 +676,8 @@ test('2d.text.draw.space.basic', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -702,7 +686,6 @@ test('2d.text.draw.space.basic', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -712,8 +695,8 @@ test('2d.text.draw.space.collapse.end', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -723,7 +706,6 @@ test('2d.text.draw.space.collapse.end', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -733,8 +715,8 @@ test('2d.text.draw.space.collapse.nonspace', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -743,7 +725,6 @@ test('2d.text.draw.space.collapse.nonspace', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -753,8 +734,8 @@ test('2d.text.draw.space.collapse.other', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -763,7 +744,6 @@ test('2d.text.draw.space.collapse.other', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -773,8 +753,8 @@ test('2d.text.draw.space.collapse.space', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -783,7 +763,6 @@ test('2d.text.draw.space.collapse.space', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -793,8 +772,8 @@ test('2d.text.draw.space.collapse.start', function(t) {
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  
+  setTimeout(wrapFunction(t, function () {
       ctx.fillStyle = '#f00';
       ctx.fillRect(0, 0, 100, 50);
       ctx.fillStyle = '#0f0';
@@ -803,7 +782,6 @@ test('2d.text.draw.space.collapse.start', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
   }), 500);
 
-  t.end()
 });
 
 
@@ -970,8 +948,7 @@ test('2d.text.measure.width.basic', function(t) {
   var canvas = new Canvas(100, 50);
   var ctx = canvas.getContext('2d')
 
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  setTimeout(wrapFunction(t, function () {
       ctx.font = '50px CanvasTest';
       helpers.assertEqual(t, ctx.measureText('A').width, 50, "ctx.measureText('A').width", "50");
       helpers.assertEqual(t, ctx.measureText('AA').width, 100, "ctx.measureText('AA').width", "100");
@@ -981,7 +958,6 @@ test('2d.text.measure.width.basic', function(t) {
       helpers.assertEqual(t, ctx.measureText('A').width, 100, "ctx.measureText('A').width", "100");
   }), 500);
 
-  t.end()
 });
 
 
@@ -990,13 +966,11 @@ test('2d.text.measure.width.empty', function(t) {
   var canvas = new Canvas(100, 50);
   var ctx = canvas.getContext('2d')
 
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  setTimeout(wrapFunction(t, function () {
       ctx.font = '50px CanvasTest';
       helpers.assertEqual(t, ctx.measureText("").width, 0, "ctx.measureText(\"\").width", "0");
   }), 500);
 
-  t.end()
 });
 
 
@@ -1005,18 +979,16 @@ test('2d.text.measure.width.space', function(t) {
   var canvas = new Canvas(100, 50);
   var ctx = canvas.getContext('2d')
 
-  deferTest();
-  setTimeout(wrapFunction(function () {
+  setTimeout(wrapFunction(t, function () {
       ctx.font = '50px CanvasTest';
       helpers.assertEqual(t, ctx.measureText('A B').width, 150, "ctx.measureText('A B').width", "150");
       helpers.assertEqual(t, ctx.measureText('A  B').width, 150, "ctx.measureText('A  B').width", "150");
       helpers.assertEqual(t, ctx.measureText('A \x09\x0a\x0c\x0d  \x09\x0a\x0c\x0dB').width, 150, "ctx.measureText('A \\x09\\x0a\\x0c\\x0d  \\x09\\x0a\\x0c\\x0dB').width", "150");
-      helpers.assert(ctx.measureText('A \x0b B').width >= 200, "ctx.measureText('A \\x0b B').width >= 200");
+      t.ok(ctx.measureText('A \x0b B').width >= 200, "ctx.measureText('A \\x0b B').width >= 200");
   
       helpers.assertEqual(t, ctx.measureText(' AB').width, 100, "ctx.measureText(' AB').width", "100");
       helpers.assertEqual(t, ctx.measureText('AB ').width, 100, "ctx.measureText('AB ').width", "100");
   }), 500);
 
-  t.end()
 });
 

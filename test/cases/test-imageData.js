@@ -1,9 +1,11 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.imageData.create1.basic', function(t) {
 
   var canvas = new Canvas(100, 50);
@@ -31,7 +33,7 @@ test('2d.imageData.create1.initial', function(t) {
   for (var i = 0; i < imgdata2.data.length; ++i)
       if (imgdata2.data[i] !== 0)
           isTransparentBlack = false;
-  helpers.assert(isTransparentBlack, "isTransparentBlack");
+  t.ok(isTransparentBlack, "isTransparentBlack");
 
   t.end()
 });
@@ -48,8 +50,8 @@ test('2d.imageData.create1.type', function(t) {
   window.ImageData.prototype.thisImplementsImageData = true;
   window.CanvasPixelArray.prototype.thisImplementsCanvasPixelArray = true;
   var imgdata = ctx.createImageData(ctx.createImageData(1, 1));
-  helpers.assert(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
-  helpers.assert(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
+  t.ok(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
+  t.ok(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
   t.end()
 });
@@ -62,7 +64,7 @@ test('2d.imageData.create1.zero', function(t) {
 
   try { var _thrown = false;
     ctx.createImageData(null);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(null)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(null)"); }
 
   t.end()
 });
@@ -86,13 +88,13 @@ test('2d.imageData.create2.initial', function(t) {
 
   var imgdata = ctx.createImageData(10, 20);
   helpers.assertEqual(t, imgdata.data.length, imgdata.width*imgdata.height*4, "imgdata.data.length", "imgdata.width*imgdata.height*4");
-  helpers.assert(imgdata.width < imgdata.height, "imgdata.width < imgdata.height");
-  helpers.assert(imgdata.width > 0, "imgdata.width > 0");
+  t.ok(imgdata.width < imgdata.height, "imgdata.width < imgdata.height");
+  t.ok(imgdata.width > 0, "imgdata.width > 0");
   var isTransparentBlack = true;
   for (var i = 0; i < imgdata.data.length; ++i)
       if (imgdata.data[i] !== 0)
           isTransparentBlack = false;
-  helpers.assert(isTransparentBlack, "isTransparentBlack");
+  t.ok(isTransparentBlack, "isTransparentBlack");
 
   t.end()
 });
@@ -105,13 +107,13 @@ test('2d.imageData.create2.large', function(t) {
 
   var imgdata = ctx.createImageData(1000, 2000);
   helpers.assertEqual(t, imgdata.data.length, imgdata.width*imgdata.height*4, "imgdata.data.length", "imgdata.width*imgdata.height*4");
-  helpers.assert(imgdata.width < imgdata.height, "imgdata.width < imgdata.height");
-  helpers.assert(imgdata.width > 0, "imgdata.width > 0");
+  t.ok(imgdata.width < imgdata.height, "imgdata.width < imgdata.height");
+  t.ok(imgdata.width > 0, "imgdata.width > 0");
   var isTransparentBlack = true;
   for (var i = 0; i < imgdata.data.length; i += 7813) // check ~1024 points (assuming normal scaling)
       if (imgdata.data[i] !== 0)
           isTransparentBlack = false;
-  helpers.assert(isTransparentBlack, "isTransparentBlack");
+  t.ok(isTransparentBlack, "isTransparentBlack");
 
   t.end()
 });
@@ -141,25 +143,25 @@ test('2d.imageData.create2.nonfinite', function(t) {
 
   try { var _thrown = false;
     ctx.createImageData(Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(Infinity, 10)"); }
   try { var _thrown = false;
     ctx.createImageData(-Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(-Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(-Infinity, 10)"); }
   try { var _thrown = false;
     ctx.createImageData(NaN, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(NaN, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(NaN, 10)"); }
   try { var _thrown = false;
     ctx.createImageData(10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, Infinity)"); }
   try { var _thrown = false;
     ctx.createImageData(10, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, -Infinity)"); }
   try { var _thrown = false;
     ctx.createImageData(10, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(10, NaN)"); }
   try { var _thrown = false;
     ctx.createImageData(Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(Infinity, Infinity)"); }
 
   t.end()
 });
@@ -192,7 +194,7 @@ test('2d.imageData.create2.tiny', function(t) {
   for (var i = 0; i < imgdata.data.length; ++i)
       if (imgdata.data[i] !== 0)
           isTransparentBlack = false;
-  helpers.assert(isTransparentBlack, "isTransparentBlack");
+  t.ok(isTransparentBlack, "isTransparentBlack");
 
   t.end()
 });
@@ -209,8 +211,8 @@ test('2d.imageData.create2.type', function(t) {
   window.ImageData.prototype.thisImplementsImageData = true;
   window.CanvasPixelArray.prototype.thisImplementsCanvasPixelArray = true;
   var imgdata = ctx.createImageData(1, 1);
-  helpers.assert(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
-  helpers.assert(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
+  t.ok(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
+  t.ok(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
   t.end()
 });
@@ -223,13 +225,13 @@ test('2d.imageData.create2.zero', function(t) {
 
   try { var _thrown = false;
     ctx.createImageData(10, 0);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(10, 0)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(10, 0)"); }
   try { var _thrown = false;
     ctx.createImageData(0, 10);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(0, 10)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(0, 10)"); }
   try { var _thrown = false;
     ctx.createImageData(0, 0);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(0, 0)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(0, 0)"); }
 
   t.end()
 });
@@ -287,73 +289,73 @@ test('2d.imageData.get.nonfinite', function(t) {
 
   try { var _thrown = false;
     ctx.getImageData(Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(-Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(-Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(-Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(NaN, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(NaN, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(NaN, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, -Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, -Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, -Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, NaN, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, NaN, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, NaN, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, -Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, -Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, -Infinity, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, NaN, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, NaN, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, NaN, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, 10, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, -Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, 10, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, 10, NaN)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(Infinity, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(Infinity, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(10, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(10, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(10, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.getImageData(10, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, Infinity, Infinity)"); }
 
   t.end()
 });
@@ -367,11 +369,11 @@ test('2d.imageData.get.nonpremul', function(t) {
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   var imgdata = ctx.getImageData(10, 10, 10, 10);
-  helpers.assert(imgdata.data[0] > 200, "imgdata.data[\""+(0)+"\"] > 200");
-  helpers.assert(imgdata.data[1] > 200, "imgdata.data[\""+(1)+"\"] > 200");
-  helpers.assert(imgdata.data[2] > 200, "imgdata.data[\""+(2)+"\"] > 200");
-  helpers.assert(imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
-  helpers.assert(imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
+  t.ok(imgdata.data[0] > 200, "imgdata.data[\""+(0)+"\"] > 200");
+  t.ok(imgdata.data[1] > 200, "imgdata.data[\""+(1)+"\"] > 200");
+  t.ok(imgdata.data[2] > 200, "imgdata.data[\""+(2)+"\"] > 200");
+  t.ok(imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
+  t.ok(imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
 
   t.end()
 });
@@ -385,8 +387,8 @@ test('2d.imageData.get.order.alpha', function(t) {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   var imgdata = ctx.getImageData(0, 0, 10, 10);
-  helpers.assert(imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
-  helpers.assert(imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
+  t.ok(imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
+  t.ok(imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
 
   t.end()
 });
@@ -540,8 +542,8 @@ test('2d.imageData.get.source.size', function(t) {
 
   var imgdata1 = ctx.getImageData(0, 0, 10, 10);
   var imgdata2 = ctx.getImageData(0, 0, 20, 20);
-  helpers.assert(imgdata2.width > imgdata1.width, "imgdata2.width > imgdata1.width");
-  helpers.assert(imgdata2.height > imgdata1.height, "imgdata2.height > imgdata1.height");
+  t.ok(imgdata2.width > imgdata1.width, "imgdata2.width > imgdata1.width");
+  t.ok(imgdata2.height > imgdata1.height, "imgdata2.height > imgdata1.height");
 
   t.end()
 });
@@ -572,8 +574,8 @@ test('2d.imageData.get.type', function(t) {
   window.ImageData.prototype.thisImplementsImageData = true;
   window.CanvasPixelArray.prototype.thisImplementsCanvasPixelArray = true;
   var imgdata = ctx.getImageData(0, 0, 1, 1);
-  helpers.assert(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
-  helpers.assert(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
+  t.ok(imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
+  t.ok(imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
   t.end()
 });
@@ -612,13 +614,13 @@ test('2d.imageData.get.zero', function(t) {
 
   try { var _thrown = false;
     ctx.getImageData(1, 1, 10, 0);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 10, 0)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 10, 0)"); }
   try { var _thrown = false;
     ctx.getImageData(1, 1, 0, 10);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 0, 10)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 0, 10)"); }
   try { var _thrown = false;
     ctx.getImageData(1, 1, 0, 0);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 0, 0)"); }
 
   t.end()
 });
@@ -628,7 +630,7 @@ test('2d.imageData.object.ctor', function(t) {
   var window = new Window()
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
-  try { var _thrown = false; new window.ImageData(1,1); } catch (e) { _thrown = true; } finally { helpers.assert(_thrown, "should throw exception: new window.ImageData(1,1)"); }
+  try { var _thrown = false; new window.ImageData(1,1); } catch (e) { _thrown = true; } finally { t.ok(_thrown, "should throw exception: new window.ImageData(1,1)"); }
 
   t.end()
 });
@@ -1061,250 +1063,250 @@ test('2d.imageData.put.nonfinite', function(t) {
   var imgdata = ctx.getImageData(0, 0, 10, 10);
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, -Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, -Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, -Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, NaN, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, NaN, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, NaN, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, -Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, NaN)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, -Infinity, 10, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, -Infinity, 10, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, -Infinity, 10, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, NaN, 10, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, NaN, 10, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, NaN, 10, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, -Infinity, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, -Infinity, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, -Infinity, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, NaN, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, NaN, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, NaN, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, -Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, -Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, -Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, NaN, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, NaN, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, NaN, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, -Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, -Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, -Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, NaN, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, NaN, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, NaN, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, -Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, -Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, -Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, NaN, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, NaN, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, NaN, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, 10, -Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, -Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, -Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, 10, NaN);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, NaN)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, 10, NaN)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, Infinity, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, Infinity, 10, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, Infinity, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, Infinity, 10, 10, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, Infinity, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, Infinity, 10, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, Infinity, 10, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, 10);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, 10)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, 10)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, Infinity, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, Infinity, 10, Infinity)"); }
   try { var _thrown = false;
     ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, Infinity);
-  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) _fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, Infinity)"); }
+  } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, Infinity)"); }
 
   t.end()
 });
@@ -1317,7 +1319,7 @@ test('2d.imageData.put.null', function(t) {
 
   try { var _thrown = false;
     ctx.putImageData(null, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(null, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(null, 0, 0)"); }
 
   t.end()
 });
@@ -1400,13 +1402,13 @@ test('2d.imageData.put.wrongtype', function(t) {
   var imgdata = { width: 1, height: 1, data: [255, 0, 0, 255] };
   try { var _thrown = false;
     ctx.putImageData(imgdata, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(imgdata, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(imgdata, 0, 0)"); }
   try { var _thrown = false;
     ctx.putImageData("cheese", 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(\"cheese\", 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(\"cheese\", 0, 0)"); }
   try { var _thrown = false;
     ctx.putImageData(42, 0, 0);
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) _fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(42, 0, 0)"); }
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(42, 0, 0)"); }
 
   t.end()
 });

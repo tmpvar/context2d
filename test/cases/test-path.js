@@ -1,9 +1,11 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.path.arc.angle.1', function(t) {
 
   var canvas = new Canvas(100, 50);
@@ -163,7 +165,7 @@ test('2d.path.arc.negative', function(t) {
 
   try { var _thrown = false;
     ctx.arc(0, 0, -1, 0, 0, true);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arc(0, 0, -1, 0, 0, true)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arc(0, 0, -1, 0, 0, true)"); }
 
   t.end()
 });
@@ -782,7 +784,7 @@ test('2d.path.arcTo.negative', function(t) {
 
   try { var _thrown = false;
     ctx.arcTo(0, 0, 0, 0, -1);
-  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) _fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.assert(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arcTo(0, 0, 0, 0, -1)"); }
+  } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { t.ok(_thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arcTo(0, 0, 0, 0, -1)"); }
 
   t.end()
 });

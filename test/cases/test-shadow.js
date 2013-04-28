@@ -1,9 +1,11 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.shadow.alpha.1', function(t) {
 
   var canvas = new Canvas(100, 50);
@@ -319,7 +321,7 @@ test('2d.shadow.blur.low', function(t) {
 
 test('2d.shadow.canvas.alpha', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
 
@@ -728,7 +730,7 @@ test('2d.shadow.gradient.transparent.2', function(t) {
 
 test('2d.shadow.image.alpha', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
 
@@ -750,7 +752,7 @@ test('2d.shadow.image.alpha', function(t) {
 
 test('2d.shadow.image.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -772,7 +774,7 @@ test('2d.shadow.image.basic', function(t) {
 
 test('2d.shadow.image.scale', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
 
@@ -796,7 +798,7 @@ test('2d.shadow.image.scale', function(t) {
 
 test('2d.shadow.image.section', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
 
@@ -820,7 +822,7 @@ test('2d.shadow.image.section', function(t) {
 
 test('2d.shadow.image.transparent.1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
   ], function(images) {
 
@@ -842,7 +844,7 @@ test('2d.shadow.image.transparent.1', function(t) {
 
 test('2d.shadow.image.transparent.2', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
 
@@ -968,7 +970,7 @@ test('2d.shadow.outside', function(t) {
 
 test('2d.shadow.pattern.alpha', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
 
@@ -992,7 +994,7 @@ test('2d.shadow.pattern.alpha', function(t) {
 
 test('2d.shadow.pattern.basic', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
 
@@ -1016,7 +1018,7 @@ test('2d.shadow.pattern.basic', function(t) {
 
 test('2d.shadow.pattern.transparent.1', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
   ], function(images) {
 
@@ -1040,7 +1042,7 @@ test('2d.shadow.pattern.transparent.1', function(t) {
 
 test('2d.shadow.pattern.transparent.2', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
 

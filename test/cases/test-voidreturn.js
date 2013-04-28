@@ -1,12 +1,14 @@
 var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
+var Image = helpers.Image;
 var Window = helpers.Window;
 var Document = helpers.Document;
-
+var DOMException = helpers.DOMException;
+var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.voidreturn', function(t) {
 
-  helpers.loadImages([
+  helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
 
