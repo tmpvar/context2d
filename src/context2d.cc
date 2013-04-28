@@ -618,7 +618,7 @@ METHOD(FillRect) {
   double bh = h+by > dh ? h+by : dh;
 
   SkRect bounds = {
-    bx, by, dw, dh
+    bx, by, bw, bh
   };
 
   SkPaint p;
