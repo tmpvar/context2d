@@ -499,7 +499,7 @@ test('2d.composite.globalAlpha.canvas', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalAlpha = 0.01; // avoid any potential alpha=0 optimisations
@@ -521,7 +521,7 @@ test('2d.composite.globalAlpha.canvaspattern', function(t) {
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.fillStyle = ctx.createPattern(canvas2, 'no-repeat');
@@ -866,6 +866,7 @@ test('2d.composite.operation.casesensitive', function(t) {
 
   ctx.globalCompositeOperation = 'xor';
   ctx.globalCompositeOperation = 'Source-over';
+  console.log('weird', ctx.globalCompositeOperation);
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
   t.end()
@@ -1342,6 +1343,7 @@ test('2d.composite.uncovered.fill.copy', function(t) {
   ctx.fillStyle = 'rgba(0, 0, 255, 0.75)';
   ctx.translate(0, 25);
   ctx.fillRect(0, 50, 100, 50);
+  helpers.output(ctx, 'out.png');
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
   t.end()

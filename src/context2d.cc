@@ -127,6 +127,12 @@ Context2D::Context2D(int w, int h) {
 
   this->canvas = new SkCanvas(bitmap);
   this->canvas->clear(SkColorSetARGBInline(0, 0, 0, 0));
+
+  this->globalAlpha = 255;
+  this->globalCompositeOperation = SkXfermode::kSrcOver_Mode;
+
+  this->paint.setXfermodeMode(this->globalCompositeOperation);
+  this->paint.setColor(SK_ColorBLACK);
 }
 
 Context2D::~Context2D() {
@@ -152,6 +158,9 @@ METHOD(GetPixel) {
   Local<Object> obj = Object::New();
 
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
+
+  ctx->canvas->flush();
+
   bitmap.lockPixels();
 
   // TODO: validity and bounds
@@ -160,12 +169,12 @@ METHOD(GetPixel) {
     args[1]->NumberValue()
   );
 
-  bitmap.unlockPixels();
-
   obj->Set(String::NewSymbol("r"), Number::New(SkColorGetR(color)));
   obj->Set(String::NewSymbol("g"), Number::New(SkColorGetG(color)));
   obj->Set(String::NewSymbol("b"), Number::New(SkColorGetB(color)));
   obj->Set(String::NewSymbol("a"), Number::New(SkColorGetA(color)));
+
+  bitmap.unlockPixels();
 
   return scope.Close(obj);
 }
@@ -174,6 +183,7 @@ METHOD(ToPngBuffer) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  ctx->canvas->flush();
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
   size_t size = bitmap.getSize();
 
@@ -201,7 +211,12 @@ METHOD(ToBuffer) {
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
   size_t size = bitmap.getSize();
 
-  Buffer *buffer = Buffer::New((const char *)bitmap.getPixels(), size);
+  ctx->canvas->flush();
+
+  bitmap.lockPixels();
+  Buffer *buffer = Buffer::New(size);
+  memcpy(Buffer::Data(buffer), (const char *)bitmap.getPixels(), size);
+  bitmap.unlockPixels();
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
@@ -315,9 +330,14 @@ METHOD(ResetMatrix) {
 METHOD(SetGlobalAlpha) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->globalAlpha = args[0]->NumberValue()*255;
 
-
+  if (ctx->globalAlpha > 255) {
+    ctx->globalAlpha = 255;
+  } else if (ctx->globalAlpha < 0) {
+    ctx->globalAlpha = 0;
+  }
 
   return scope.Close(Undefined());
 }
@@ -325,21 +345,16 @@ METHOD(SetGlobalAlpha) {
 METHOD(GetGlobalAlpha) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
-
-  return scope.Close(Undefined());
+  return scope.Close(Number::New(ctx->globalAlpha/255));
 }
 
 METHOD(SetGlobalCompositeOperation) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  SkXfermode::Mode mode = (SkXfermode::Mode)args[0]->IntegerValue();
-
-  ctx->paint.setXfermodeMode(mode);
+  ctx->globalCompositeOperation = (SkXfermode::Mode)args[0]->IntegerValue();
 
   return scope.Close(Undefined());
 }
@@ -564,6 +579,9 @@ METHOD(FillRect) {
   double y = args[1]->NumberValue();
   double w = args[2]->NumberValue();
   double h = args[3]->NumberValue();
+
+  //ctx->paint.setAlpha(ctx->globalAlpha);
+  ctx->paint.setXfermodeMode(ctx->globalCompositeOperation);
 
   ctx->canvas->drawRectCoords(
     x,
@@ -855,8 +873,12 @@ METHOD(DrawImageBuffer) {
 
   SkRect srcRect = { sx, sy, sx+sw, sy+sh };
   SkRect destRect = { dx, dy, dx+dw, dy+dh };
+  SkPaint p;
+  p.setColor(SK_ColorBLACK);
+  p.setAlpha(ctx->globalAlpha);
+  p.setXfermodeMode(ctx->globalCompositeOperation);
 
-  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &ctx->paint);
+  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &p);
 
   return scope.Close(Undefined());
 }

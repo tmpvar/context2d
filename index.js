@@ -16,11 +16,19 @@ module.exports.createContext = function(canvas, w, h) {
 
   Object.defineProperty(ret, 'globalAlpha', {
     get : ret.getGlobalAlpha.bind(ret),
-    set : ret.setGlobalAlpha.bind(ret)
+    set : function(v) {
+      if (!isNaN(v) && isFinite(v) && v >= 0 && v <= 1) {
+        ret.setGlobalAlpha(v);
+      }
+    }
   });
 
+
+  var globalCompositeOperation = 'source-over';
   Object.defineProperty(ret, 'globalCompositeOperation', {
-    get : ret.getGlobalAlpha.bind(ret),
+    get : function() {
+      return globalCompositeOperation;
+    },
     set : function(str) {
       var mapping = {
         'source-atop' : 9,
@@ -28,15 +36,18 @@ module.exports.createContext = function(canvas, w, h) {
         'source-out' : 7,
         'source-over' : 3,
         'destination-atop' : 10,
-        'destination-in' : 5,
+        'destination-in' : 6,
         'destination-out' : 8,
         'destination-over' : 4,
-        'lighter' : 17,
-        'copy' : 0,
+        'lighter' : 12,
+        'copy' : 1,
         'xor' : 11
       };
 
-      ret.setGlobalCompositeOperation(mapping[str] || 3);
+      if (mapping[str]) {
+        globalCompositeOperation = str;
+        ret.setGlobalCompositeOperation(mapping[str]);
+      }
     }
   });
 
@@ -52,7 +63,6 @@ module.exports.createContext = function(canvas, w, h) {
       } else {
 
         var color = parseCSSColor(c);
-
         if (c) {
           fill = c;
           color[3] = color[3] * 255;
@@ -71,9 +81,12 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
+    var needsSwizzle = true;
+
     // Handle Canvas elements
     if (i.ctx) {
       i = i.ctx;
+      needsSwizzle = false;
     }
 
     if (!i.imageData) {
@@ -82,6 +95,28 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     var id = i.imageData;
+    if (needsSwizzle && !i.swizzled) {
+      var pre = function(component, alpha) {
+        var prod = (component * alpha) + 128;
+        return (prod + (prod >> 8)) >> 8;
+      }
+
+      var length = id.data.length;
+      for (var i = 0; i<length; i+=4) {
+
+        var a = id.data[i+3];
+            r = pre(id.data[i], a),
+            g = pre(id.data[i+1], a),
+            b = pre(id.data[i+2], a);
+
+        id.data[i+3] = a;
+        id.data[i] = r;
+        id.data[i+1] = g;
+        id.data[i+2] = b;
+
+      }
+      i.swizzled = true;
+    }
 
     var sx = 0,
         sy = 0,

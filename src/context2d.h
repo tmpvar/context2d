@@ -29,7 +29,8 @@ class Context2D : public ObjectWrap {
     SkCanvas *canvas;
     SkPath path;
     SkPaint paint;
-
+    SkXfermode::Mode globalCompositeOperation;
+    double globalAlpha;
 
   private:
     Context2D(int w, int h);
