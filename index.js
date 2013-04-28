@@ -194,6 +194,10 @@ module.exports.createContext = function(canvas, w, h) {
       dh = args[7];
     }
 
+    if (dx < 0 || dy < 0) {
+      return;
+    }
+
     var valid = function(a) {
       return !isNaN(a) && isFinite(a);
     };
@@ -224,7 +228,7 @@ module.exports.createContext = function(canvas, w, h) {
         sy < 0 ||
         sy > id.height ||
         sx > id.width ||
-        sx+sw > id.width ||
+        sx + sw > id.width ||
         sy + sh > id.height
     ) {
       throw new DOMException('invalid source dimensions', DOMException.INDEX_SIZE_ERR);
@@ -254,7 +258,7 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     sy = clamp(sy, id.height);
-    sx = clamp(sy, id.width);
+    sx = clamp(sx, id.width);
     dy = clamp(dy, id.height);
     dx = clamp(dx, id.width);
 
