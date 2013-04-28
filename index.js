@@ -28,6 +28,8 @@ DOMException.INVALID_ACCESS_ERR             = 15;
 module.exports.createContext = function(canvas, w, h) {
   var w = w || 300;
   var h = h || 150;
+  canvas.width = w;
+  canvas.height = h;
   var ret = new Context2D(w, h);
 
   // TODO: track changes here
@@ -105,12 +107,18 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid image', DOMException.TYPE_MISMATCH_ERR);
     }
 
-    if (i.src && i.complete !== true) {
+
+
+    if (typeof i.complete !== 'undefined' && !i.complete) {
       // TODO: what needs to happen here?
       return;
     }
 
     var needsSwizzle = true;
+
+    if (i.getContext && (!i.width || !i.height)) {
+      throw new DOMException('invalid canvas dimensions', DOMException.INVALID_STATE_ERR);
+    }
 
     // Handle Canvas elements
     if (i.ctx) {
@@ -120,10 +128,12 @@ module.exports.createContext = function(canvas, w, h) {
 
     if (!i.imageData) {
       needsSwizzle = false;
+      var buffer = new Buffer(i.width * i.height * 4);
+      buffer.fill(0);
       i.imageData = {
         width : i.width,
         height: i.height,
-        data: new Buffer(i.width * i.height * 4)
+        data:  buffer
       }
     }
 
@@ -184,18 +194,21 @@ module.exports.createContext = function(canvas, w, h) {
       dh = args[7];
     }
 
-    var clean = function(a, alt) {
-      if (!isNaN(a) && isFinite(a)) {
-        return a;
-      }
-      return alt;
+    var valid = function(a) {
+      return !isNaN(a) && isFinite(a);
+    };
+
+    if (!valid(dw) ||
+        !valid(dh) ||
+        !valid(sw) ||
+        !valid(sh) ||
+        !valid(sx) ||
+        !valid(sy) ||
+        !valid(dx) ||
+        !valid(dy)
+    ){
+      return;
     }
-
-    dw = clean(dw, id.width);
-    dh = clean(dh, id.height);
-    sw = clean(sw, id.width);
-    sh = clean(sh, id.height);
-
 
     if (dw < 0) {
       dx += dw;
@@ -205,6 +218,16 @@ module.exports.createContext = function(canvas, w, h) {
     if (dh < 0) {
       dy += dh;
       dh = Math.abs(dh);
+    }
+
+    if (sx < 0 ||
+        sy < 0 ||
+        sy > id.height ||
+        sx > id.width ||
+        sx+sw > id.width ||
+        sy + sh > id.height
+    ) {
+      throw new DOMException('invalid source dimensions', DOMException.INDEX_SIZE_ERR);
     }
 
     if (sw < 0) {
@@ -217,10 +240,28 @@ module.exports.createContext = function(canvas, w, h) {
       sh = Math.abs(sh);
     }
 
-    if (!sh || !sw || !dh || !dw) {
+    var clamp = function(a, alt) {
+      if (a < 0) {
+        return 0;
+      } else if (a>alt) {
+        return alt;
+      }
+      return a;
+    }
+
+    if (sx < 0 || sy < 0) {
       throw new DOMException('invalid image dimensions', DOMException.INDEX_SIZE_ERR);
     }
 
+    sy = clamp(sy, id.height);
+    sx = clamp(sy, id.width);
+    dy = clamp(dy, id.height);
+    dx = clamp(dx, id.width);
+
+
+    if (!sh || !sw || !dh || !dw) {
+      throw new DOMException('invalid image dimensions', DOMException.INDEX_SIZE_ERR);
+    }
 
     ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
   };
