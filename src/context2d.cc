@@ -9,6 +9,7 @@
 
 #include <SkStream.h>
 #include <SkDevice.h>
+#include <SkBlurMaskFilter.h>
 #include <SkData.h>
 #include <SkGraphics.h>
 #include <SkImageEncoder.h>
@@ -65,8 +66,10 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetFillStyle, setFillStyle);
   PROTOTYPE_METHOD(GetFillStyle, getFillStyle);
   PROTOTYPE_METHOD(CreateLinearGradient, createLinearGradient);
-  PROTOTYPE_METHOD(SetShadowOffset, setShadowOffset);
-  PROTOTYPE_METHOD(GetShadowOffset, getShadowOffset);
+  PROTOTYPE_METHOD(SetShadowOffsetX, setShadowOffsetX);
+  PROTOTYPE_METHOD(GetShadowOffsetX, getShadowOffsetX);
+  PROTOTYPE_METHOD(SetShadowOffsetY, setShadowOffsetY);
+  PROTOTYPE_METHOD(GetShadowOffsetY, getShadowOffsetY);
   PROTOTYPE_METHOD(SetShadowBlur, setShadowBlur);
   PROTOTYPE_METHOD(GetShadowBlur, getShadowBlur);
   PROTOTYPE_METHOD(SetShadowColor, setShadowColor);
@@ -133,6 +136,11 @@ Context2D::Context2D(int w, int h) {
 
   this->paint.setXfermodeMode(this->globalCompositeOperation);
   this->paint.setColor(SK_ColorBLACK);
+
+  this->shadowX = 0;
+  this->shadowY = 0;
+  this->shadowBlur = 0;
+  this->shadowPaint.setColor(0x00000000);
 }
 
 Context2D::~Context2D() {
@@ -278,10 +286,10 @@ METHOD(Translate) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   if (!args[0]->IsUndefined()) {
-    int x = args[0]->NumberValue();
-    int y = args[1]->NumberValue();
+    double x = args[0]->NumberValue();
+    double y = args[1]->NumberValue();
 
-    ctx->canvas->translate(SkIntToScalar(x), SkIntToScalar(y));
+    ctx->canvas->translate(x, y);
   }
 
   return scope.Close(Undefined());
@@ -481,32 +489,45 @@ METHOD(CreateLinearGradient) {
   return scope.Close(Undefined());
 }
 
-METHOD(SetShadowOffset) {
+METHOD(SetShadowOffsetX) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->shadowX = args[0]->NumberValue();
 
   return scope.Close(Undefined());
 }
 
-METHOD(GetShadowOffset) {
+METHOD(GetShadowOffsetX) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  return scope.Close(Number::New(ctx->shadowX));
+}
 
+METHOD(SetShadowOffsetY) {
+  HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->shadowY = args[0]->NumberValue();
 
   return scope.Close(Undefined());
+}
+
+METHOD(GetShadowOffsetY) {
+  HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  return scope.Close(Number::New(ctx->shadowY));
 }
 
 METHOD(SetShadowBlur) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->shadowBlur = args[0]->NumberValue();
 
   return scope.Close(Undefined());
 }
@@ -514,18 +535,25 @@ METHOD(SetShadowBlur) {
 METHOD(GetShadowBlur) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
-
-  return scope.Close(Undefined());
+  return scope.Close(Number::New(ctx->shadowBlur));
 }
 
 METHOD(SetShadowColor) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  // Clear off the old shader
+  ctx->shadowPaint.setShader(NULL);
+
+  U8CPU a = args[3]->NumberValue();
+  U8CPU r = args[0]->NumberValue();
+  U8CPU g = args[1]->NumberValue();
+  U8CPU b = args[2]->NumberValue();
+
+  ctx->shadowPaint.setColor(SkColorSetARGBInline(a,r,g,b));
 
 
   return scope.Close(Undefined());
@@ -580,10 +608,17 @@ METHOD(FillRect) {
   double w = args[2]->NumberValue();
   double h = args[3]->NumberValue();
 
+  double bx = (x < 0) ? x : 0;
+  double by = (y < 0) ? y : 0;
+
+  double dw = ctx->canvas->getDevice()->width();
+  double dh = ctx->canvas->getDevice()->height();
+
+  double bw = w+bx > dw ? w+bx : dw;
+  double bh = h+by > dh ? h+by : dh;
+
   SkRect bounds = {
-    0, 0,
-    ctx->canvas->getDevice()->width(),
-    ctx->canvas->getDevice()->height()
+    bx, by, dw, dh
   };
 
   SkPaint p;
@@ -591,6 +626,32 @@ METHOD(FillRect) {
   p.setAlpha(ctx->globalAlpha);
 
   int count = ctx->canvas->saveLayer(&bounds, &p);
+
+
+  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
+      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
+     )
+  {
+
+    // Draw a shadow if applicable
+    ctx->shadowPaint.setMaskFilter(SkBlurMaskFilter::Create(
+      ctx->shadowBlur,
+      SkBlurMaskFilter::kSolid_BlurStyle
+      // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
+    ));
+
+    double sx = x+ctx->shadowX;
+    double sy = y+ctx->shadowY;
+
+    ctx->canvas->drawRectCoords(
+      sx,
+      sy,
+      sx+w,
+      sy+h,
+      ctx->shadowPaint
+    );
+  }
+
   ctx->canvas->drawRectCoords(
     x,
     y,
@@ -598,6 +659,7 @@ METHOD(FillRect) {
     y+h,
     ctx->paint
   );
+
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());

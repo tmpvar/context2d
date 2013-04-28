@@ -28,9 +28,10 @@ class Context2D : public ObjectWrap {
     static void Init(v8::Handle<v8::Object> exports);
     SkCanvas *canvas;
     SkPath path;
-    SkPaint paint;
+    SkPaint paint, shadowPaint;
+
     SkXfermode::Mode globalCompositeOperation;
-    double globalAlpha;
+    double globalAlpha, shadowX, shadowY, shadowBlur;
 
   private:
     Context2D(int w, int h);
@@ -73,8 +74,10 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(CreatePattern);
 
     // shadows
-    OBJECT_METHOD(SetShadowOffset);
-    OBJECT_METHOD(GetShadowOffset);
+    OBJECT_METHOD(SetShadowOffsetX);
+    OBJECT_METHOD(GetShadowOffsetX);
+    OBJECT_METHOD(SetShadowOffsetY);
+    OBJECT_METHOD(GetShadowOffsetY);
     OBJECT_METHOD(SetShadowBlur);
     OBJECT_METHOD(GetShadowBlur);
     OBJECT_METHOD(SetShadowColor);

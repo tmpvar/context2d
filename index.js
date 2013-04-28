@@ -281,6 +281,43 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
+
+  Object.defineProperty(ret, 'shadowOffsetX', {
+    get : ret.getShadowOffsetX.bind(ret),
+    set : ret.setShadowOffsetX.bind(ret)
+  });
+
+  Object.defineProperty(ret, 'shadowOffsetY', {
+    get : ret.getShadowOffsetY.bind(ret),
+    set : ret.setShadowOffsetY.bind(ret)
+  });
+
+  Object.defineProperty(ret, 'shadowBlur', {
+    get : ret.getShadowBlur.bind(ret),
+    set : ret.setShadowBlur.bind(ret)
+  });
+
+  var shadowColor = 'rgba(0,0,0,0)'
+  Object.defineProperty(ret, 'shadowColor', {
+    get : function() { return shadowColor; },
+    set : function(c) {
+      var color = parseCSSColor(c);
+
+      color[3] = color[3] * 255;
+
+      ret.setShadowColor(
+        color[0],
+        color[1],
+        color[2],
+        color[3]
+      );
+    }
+  });
+
+
+
+
+
 //            attribute double shadowOffsetX; // (default 0)
 //            attribute double shadowOffsetY; // (default 0)
 //            attribute double shadowBlur; // (default 0)
