@@ -580,9 +580,17 @@ METHOD(FillRect) {
   double w = args[2]->NumberValue();
   double h = args[3]->NumberValue();
 
-  //ctx->paint.setAlpha(ctx->globalAlpha);
-  ctx->paint.setXfermodeMode(ctx->globalCompositeOperation);
+  SkRect bounds = {
+    0, 0,
+    ctx->canvas->getDevice()->width(),
+    ctx->canvas->getDevice()->height()
+  };
 
+  SkPaint p;
+  p.setXfermodeMode(ctx->globalCompositeOperation);
+  p.setAlpha(ctx->globalAlpha);
+
+  int count = ctx->canvas->saveLayer(&bounds, &p);
   ctx->canvas->drawRectCoords(
     x,
     y,
@@ -590,6 +598,7 @@ METHOD(FillRect) {
     y+h,
     ctx->paint
   );
+  ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
 }
@@ -873,12 +882,20 @@ METHOD(DrawImageBuffer) {
 
   SkRect srcRect = { sx, sy, sx+sw, sy+sh };
   SkRect destRect = { dx, dy, dx+dw, dy+dh };
-  SkPaint p;
-  p.setColor(SK_ColorBLACK);
-  p.setAlpha(ctx->globalAlpha);
-  p.setXfermodeMode(ctx->globalCompositeOperation);
 
-  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &p);
+  SkRect bounds = {
+    0, 0,
+    ctx->canvas->getDevice()->width(),
+    ctx->canvas->getDevice()->height()
+  };
+
+  SkPaint layerPaint;
+  layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
+  layerPaint.setAlpha(ctx->globalAlpha);
+
+  int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
+  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, NULL);
+  ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
 }

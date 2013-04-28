@@ -90,8 +90,12 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     if (!i.imageData) {
-      throw new Error('invalid image');
-      return;
+      needsSwizzle = false;
+      i.imageData = {
+        width : i.width,
+        height: i.height,
+        data: new Buffer(i.width * i.height * 4)
+      }
     }
 
     var id = i.imageData;
