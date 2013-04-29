@@ -9,7 +9,7 @@
   'cases/test-fillRect',
   'cases/test-fillStyle',
 
-  // 'cases/test-gradient',
+  'cases/test-gradient',
   // 'cases/test-imageData',
   // 'cases/test-line',
   //'cases/test-missingargs',
