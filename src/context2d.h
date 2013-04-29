@@ -42,6 +42,7 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(ToPngBuffer);
     OBJECT_METHOD(ToBuffer);
     OBJECT_METHOD(GetPixel);
+    OBJECT_METHOD(Resize);
 
     // state
     OBJECT_METHOD(Save); // push state on state stack
@@ -60,6 +61,11 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(SetGlobalCompositeOperation);
     OBJECT_METHOD(GetGlobalCompositeOperation);
 
+    // gradients
+    OBJECT_METHOD(SetLinearGradientShader);
+    OBJECT_METHOD(SetRadialGradientShader);
+
+
     // image smoothing
     OBJECT_METHOD(SetImageSmoothingEnabled);
     OBJECT_METHOD(GetImageSmoothingEnabled);
@@ -70,7 +76,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(SetFillStylePattern);
     OBJECT_METHOD(SetFillStyle);
     OBJECT_METHOD(GetFillStyle);
-    OBJECT_METHOD(CreateLinearGradient);
     OBJECT_METHOD(CreatePattern);
 
     // shadows
@@ -139,11 +144,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(SetLineDashOffset);
     OBJECT_METHOD(GetLineDashOffset);
 
-// interface CanvasGradient {
-//   // opaque object
-//   void addColorStop(double offset, DOMString color);
-// };
-
 // interface CanvasPattern {
 //   // opaque object
 // };
@@ -197,7 +197,6 @@ class Context2D : public ObjectWrap {
 //   void addPathByStrokingText(DOMString text, CanvasDrawingStyles styles, SVGMatrix? transformation, Path path, optional double maxWidth);
 
 // };
-// Path implements CanvasPathMethods;
 
 // enum CanvasWindingRule  { "nonzero", "evenodd" };
 

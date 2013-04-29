@@ -1,6 +1,9 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
 
+// TODO: prefer to lookup ownerDocument and find the DOMException
+//       class if in a dom environment.  Otherwise, emit events,
+//       like a sane node program
 
 var DOMException = module.exports.DOMException = function(m, c) {
   var ret = new Error(m)
@@ -25,26 +28,136 @@ DOMException.NAMESPACE_ERR                  = 14;
 DOMException.INVALID_ACCESS_ERR             = 15;
 
 
-function CanvasGradient() {
+function CanvasGradient(type, opts) {
 
+  Object.keys(opts).forEach(function(key) {
+    if (isNaN(opts[key]) || !isFinite(opts[key])) {
+      throw new DOMException('invalid gradient params', DOMException.NOT_SUPPORTED_ERR);
+    }
+  })
+
+  if (type === 'radial' && (opts.r0 < 0 || opts.r1 < 0)) {
+    throw new DOMException(
+      'radial gradient radius must be > 0',
+      DOMException.INDEX_SIZE_ERR
+    );
+  }
+
+  var stops = []
+
+  this.addColorStop = function(offset, color) {
+    if (isNaN(offset) || !isFinite(offset) || offset < 0 || offset > 1) {
+      throw new DOMException('color stop offset out of range', DOMException.INDEX_SIZE_ERR);
+    }
+
+    var color = csscolor(color);
+    if (!color) {
+      throw new DOMException('color stop color', DOMException.SYNTAX_ERR);
+    }
+
+    color.array[3] *= 255;
+
+    stops.push({
+      offset : offset,
+      color :  color.array
+    });
+  };
+
+  this.apply = function(ctx) {
+    //if (stops.length < 2) { return; }
+
+    if (type === 'linear') {
+      ctx.setLinearGradientShader(
+        opts.x0,
+        opts.y0,
+        opts.x1,
+        opts.y1,
+        stops
+      );
+
+      return true;
+    } else if (type === 'radial') {
+
+      if (opts.x0 === opts.x1 &&
+          opts.y0 === opts.y1 &&
+          opts.r0 === opts.r1)
+      {
+        return;
+      }
+
+      ctx.setRadialGradientShader(
+        opts.x0,
+        opts.y0,
+        opts.r0,
+        opts.x1,
+        opts.y1,
+        opts.r1,
+        stops
+      );
+console.log('good to go');
+      return true;
+    }
+  };
+
+  this.toString = function() {
+    return JSON.stringify(opts) + ' - ' + stops.map(function(stop) {
+      return stop.offset +  '-> [' + stop.color + '] ';
+    }).join(',');
+  }
+
+  Object.defineProperty(this, 'type', {
+    get : function() { return 'gradient' }
+  });
 }
 
-CanvasGradient.prototype = {
-  addColorStop : function(offset, color) {
-
-  }
-};
+module.exports.CanvasGradient = CanvasGradient;
 
 module.exports.createContext = function(canvas, w, h) {
+  canvas = canvas || {};
+
   var w = w || 300;
   var h = h || 150;
-  canvas.width = w;
-  canvas.height = h;
+
   var ret = new Context2D(w, h);
 
+  var override = function(orig, fn) {
+    ret[orig] = fn.bind(ret, ret[orig].bind(ret))
+  };
+
+  // if (typeof canvas.width !== 'undefined' &&
+  //     typeof canvas.width !== 'undefined' &&
+  //     typeof canvas.addEventListener === 'function'
+  //   )
+  // {
+  //   canvas.addEventListener('resize', function(ev) {
+  //     console.log('resized');
+  //   });
+  // } else {
+
+  // delete canvas.width;
+  // delete canvas.height;
+
+  // Object.defineProperty(canvas, 'width', {
+  //   get: function() { return w; },
+  //   set: function(width) {
+  //     console.log('JS RESIZE', width);
+  //     w = width;
+  //     ret.resize(w, h);
+  //   }
+  // });
+
+  // Object.defineProperty(canvas, 'height', {
+  //   get: function() { return w; },
+  //   set: function(height) {
+  //     h = height;
+  //     ret.resize(w, h);
+  //   }
+  // });
+  //}
+
   // TODO: track changes here
-  ret.width = w;
-  ret.height = h;
+  // ret.width = w;
+  // ret.height = h;
 
   Object.defineProperty(ret, 'canvas', {
     value : canvas
@@ -58,7 +171,6 @@ module.exports.createContext = function(canvas, w, h) {
       }
     }
   });
-
 
   var globalCompositeOperation = 'source-over';
   Object.defineProperty(ret, 'globalCompositeOperation', {
@@ -113,9 +225,15 @@ module.exports.createContext = function(canvas, w, h) {
         }
       }
 
-      if (c.type && c.type === 'pattern') {
-        var id = c.obj.imageData
-        ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
+      if (c.type) {
+        if (c.type === 'pattern') {
+          var id = c.obj.imageData
+          ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
+          fill = c;
+        } else if (c.type === 'gradient') {
+          fill = c;
+        }
+        return;
       } else {
         var color = csscolor(c);
         if (color) {
@@ -125,7 +243,6 @@ module.exports.createContext = function(canvas, w, h) {
           color[3] = color[3] * 255;
           ret.setFillStyle.apply(ret, color);
         }
-
       }
     }
   });
@@ -360,11 +477,6 @@ module.exports.createContext = function(canvas, w, h) {
 
 
 
-
-//            attribute double shadowOffsetX; // (default 0)
-//            attribute double shadowOffsetY; // (default 0)
-//            attribute double shadowBlur; // (default 0)
-//            attribute DOMString shadowColor; // (default transparent black)
 //            attribute double lineWidth; // (default 1)
 //            attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
 //            attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
@@ -395,6 +507,25 @@ module.exports.createContext = function(canvas, w, h) {
     };
   };
 
+  ret.createLinearGradient = function(x0, y0, x1, y1) {
+    return new CanvasGradient('linear', {
+      x0 : x0,
+      y0 : y0,
+      x1 : x1,
+      y1 : y1
+    });
+  };
+
+  ret.createRadialGradient = function(x0, y0, r0, x1, y1, r1) {
+    return new CanvasGradient('radial', {
+      x0 : x0,
+      y0 : y0,
+      r0 : r0,
+      x1 : x1,
+      y1 : y1,
+      r1 : r1
+    });
+  };
 
   ret.setTransform = function(a,b,c,d,e,f) {
     if (
@@ -409,6 +540,16 @@ module.exports.createContext = function(canvas, w, h) {
       this.transform(a,b,c,d,e,f);
     }
   };
+
+  override('fillRect', function(fillRect, x, y, w, h) {
+    if (fill && fill.type === 'gradient') {
+      console.log(fill.toString());
+      if (!fill.apply(ret)) {
+        return;
+      }
+    }
+    fillRect(x, y, w, h);
+  });
 
   return ret;
 };

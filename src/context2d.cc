@@ -2,7 +2,7 @@
 #include <node_buffer.h>
 
 #include "context2d.h"
-#include <Skcanvas.h>
+#include <SkCanvas.h>
 #include <SkPaint.h>
 #include <SkPath.h>
 #include <SkError.h>
@@ -12,6 +12,8 @@
 #include <SkBlurMaskFilter.h>
 #include <SkData.h>
 #include <SkGraphics.h>
+#include <SkGradientShader.h>
+#include <SkShader.h>
 #include <SkImageEncoder.h>
 #include <SkRect.h>
 #include <SkRegion.h>
@@ -44,6 +46,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(ToPngBuffer, toPngBuffer);
   PROTOTYPE_METHOD(ToBuffer, toBuffer);
   PROTOTYPE_METHOD(GetPixel, getPixel);
+  PROTOTYPE_METHOD(Resize, resize);
 
 
   // Standard
@@ -65,7 +68,8 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetFillStylePattern, setFillStylePattern);
   PROTOTYPE_METHOD(SetFillStyle, setFillStyle);
   PROTOTYPE_METHOD(GetFillStyle, getFillStyle);
-  PROTOTYPE_METHOD(CreateLinearGradient, createLinearGradient);
+  PROTOTYPE_METHOD(SetLinearGradientShader, setLinearGradientShader);
+  PROTOTYPE_METHOD(SetRadialGradientShader, setRadialGradientShader);
   PROTOTYPE_METHOD(SetShadowOffsetX, setShadowOffsetX);
   PROTOTYPE_METHOD(GetShadowOffsetX, getShadowOffsetX);
   PROTOTYPE_METHOD(SetShadowOffsetY, setShadowOffsetY);
@@ -125,7 +129,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 Context2D::Context2D(int w, int h) {
   SkBitmap bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w*2, h*2);
   bitmap.allocPixels();
 
   this->canvas = new SkCanvas(bitmap);
@@ -157,6 +161,44 @@ METHOD(New) {
   context->Wrap(args.This());
 
   return args.This();
+}
+
+METHOD(Resize) {
+  HandleScope scope;
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+
+  int width = args[0]->Uint32Value() & 0xff;
+  int height = args[1]->Uint32Value() & 0xff;
+
+//printf("Resize to %i,%i\n", width, height);
+
+  // SkBitmap bitmap;
+
+  // bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  // bitmap.allocPixels();
+
+  // delete ctx->canvas;
+
+  // ctx->canvas = new SkCanvas(bitmap);
+  // ctx->canvas->clear(0x00000000);
+
+//printf("HERERERERERERERER\n\n\n\n\n");
+
+
+// printf("Resize to %d,%d", width, height);
+//   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(true);
+//   bitmap.lockPixels();
+//   bitmap.setConfig(
+//     bitmap.getConfig(),
+//     SkDoubleToScalar(width),
+//     SkDoubleToScalar(height)
+//   );
+
+//   bitmap.allocPixels();
+//   bitmap.unlockPixels();
+
+  scope.Close(Undefined());
 }
 
 METHOD(GetPixel) {
@@ -479,12 +521,155 @@ METHOD(GetFillStyle) {
   return scope.Close(Undefined());
 }
 
-METHOD(CreateLinearGradient) {
+METHOD(SetLinearGradientShader) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  SkPoint points[2] = {
+    {
+      SkDoubleToScalar(args[0]->NumberValue()),
+      SkDoubleToScalar(args[1]->NumberValue())
+    },
+    {
+      SkDoubleToScalar(args[2]->NumberValue()),
+      SkDoubleToScalar(args[3]->NumberValue())
+    }
+  };
+
+  SkColor* colors = NULL;
+  SkScalar* offsets = NULL;
 
 
+  if (args[4]->IsArray()) {
+    Handle<Array> stops = Handle<Array>::Cast(args[4]);
+    uint32_t stopCount = stops->Length();
+
+
+    if (stopCount) {
+
+      colors = new SkColor[stopCount];
+      offsets = new SkScalar[stopCount];
+
+      Handle<Object> item;
+      Handle<Array> color;
+
+      for (uint32_t stop = 0; stop < stopCount; stop++) {
+        item = stops->Get(stop)->ToObject();
+
+        offsets[stop] = SkDoubleToScalar(
+          item->Get(String::NewSymbol("offset"))->NumberValue()
+        );
+
+        color = Handle<Array>::Cast(item->Get(String::NewSymbol("color")));
+
+        colors[stop] = SkColorSetARGB(color->Get(3)->Uint32Value() & 0xff,
+                                      color->Get(0)->Uint32Value() & 0xff,
+                                      color->Get(1)->Uint32Value() & 0xff,
+                                      color->Get(2)->Uint32Value() & 0xff);
+      }
+    }
+
+    SkShader *gradientShader = SkGradientShader::CreateLinear(
+      points,
+      colors,
+      offsets,
+      stopCount,
+      SkShader::kClamp_TileMode
+    );
+
+    ctx->paint.setShader(gradientShader);
+
+    delete[] colors;
+    delete[] offsets;
+
+    gradientShader->unref();
+  }
+
+  return scope.Close(Undefined());
+}
+
+METHOD(SetRadialGradientShader) {
+ HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  // printf("c++ land.. %lf,%lf,%lf,%lf,%lf,%lf",
+  //   SkDoubleToScalar(args[0]->NumberValue()),
+  //   SkDoubleToScalar(args[1]->NumberValue()),
+  //   SkDoubleToScalar(args[2]->NumberValue()),
+  //   SkDoubleToScalar(args[3]->NumberValue()),
+  //   SkDoubleToScalar(args[4]->NumberValue()),
+  //   SkDoubleToScalar(args[5]->NumberValue())
+  // );
+
+  SkPoint start = {
+    SkDoubleToScalar(args[0]->NumberValue()),
+    SkDoubleToScalar(args[1]->NumberValue())
+  };
+
+  SkScalar startRadius = SkDoubleToScalar(args[2]->NumberValue());
+
+  SkPoint end = {
+    SkDoubleToScalar(args[3]->NumberValue()),
+    SkDoubleToScalar(args[4]->NumberValue())
+  };
+
+  SkScalar endRadius = SkDoubleToScalar(args[5]->NumberValue());
+
+
+  SkColor* colors = NULL;
+  SkScalar* offsets = NULL;
+
+
+  if (args[6]->IsArray()) {
+    Handle<Array> stops = Handle<Array>::Cast(args[6]);
+    uint32_t stopCount = stops->Length();
+printf("stop count %u\n\n", stopCount);
+    if (stopCount) {
+
+      colors = new SkColor[stopCount];
+      offsets = new SkScalar[stopCount];
+
+      Handle<Object> item;
+      Handle<Array> color;
+
+      for (uint32_t stop = 0; stop < stopCount; stop++) {
+        item = stops->Get(stop)->ToObject();
+
+        offsets[stop] = SkDoubleToScalar(
+          item->Get(String::NewSymbol("offset"))->NumberValue()
+        );
+
+        color = Handle<Array>::Cast(item->Get(String::NewSymbol("color")));
+
+        colors[stop] = SkColorSetARGB(color->Get(3)->Uint32Value() & 0xff,
+                                      color->Get(0)->Uint32Value() & 0xff,
+                                      color->Get(1)->Uint32Value() & 0xff,
+                                      color->Get(2)->Uint32Value() & 0xff);
+      }
+    }
+
+    SkShader *gradientShader = SkGradientShader::CreateTwoPointConical(
+      start,
+      startRadius,
+      end,
+      endRadius,
+      colors,
+      offsets,
+      stopCount,
+      SkShader::kClamp_TileMode
+    );
+
+    assert(gradientShader);
+
+    ctx->paint.setShader(gradientShader);
+
+    delete[] colors;
+    delete[] offsets;
+
+    gradientShader->unref();
+  }
 
   return scope.Close(Undefined());
 }
@@ -614,8 +799,8 @@ METHOD(FillRect) {
   double dw = ctx->canvas->getDevice()->width();
   double dh = ctx->canvas->getDevice()->height();
 
-  double bw = w+bx > dw ? w+bx : dw;
-  double bh = h+by > dh ? h+by : dh;
+  double bw = w+x > dw ? w+x : dw;
+  double bh = h+y > dh ? h+y : dh;
 
   SkRect bounds = {
     bx, by, bw, bh
