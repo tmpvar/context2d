@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.imageData.create1.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create1.basic',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -18,9 +18,9 @@ test('2d.imageData.create1.basic', function(t) {
 });
 
 
-test('2d.imageData.create1.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create1.initial',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -42,9 +42,9 @@ test('2d.imageData.create1.initial', function(t) {
 });
 
 
-test('2d.imageData.create1.type', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create1.type',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -61,9 +61,9 @@ test('2d.imageData.create1.type', function(t) {
 });
 
 
-test('2d.imageData.create1.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create1.zero',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -76,9 +76,9 @@ test('2d.imageData.create1.zero', function(t) {
 });
 
 
-test('2d.imageData.create2.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.basic',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -89,9 +89,9 @@ test('2d.imageData.create2.basic', function(t) {
 });
 
 
-test('2d.imageData.create2.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.initial',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -110,9 +110,9 @@ test('2d.imageData.create2.initial', function(t) {
 });
 
 
-test('2d.imageData.create2.large', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.large',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -131,9 +131,9 @@ test('2d.imageData.create2.large', function(t) {
 });
 
 
-test('2d.imageData.create2.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -150,9 +150,9 @@ test('2d.imageData.create2.negative', function(t) {
 });
 
 
-test('2d.imageData.create2.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -183,9 +183,9 @@ test('2d.imageData.create2.nonfinite', function(t) {
 });
 
 
-test('2d.imageData.create2.round', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.round',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -199,9 +199,9 @@ test('2d.imageData.create2.round', function(t) {
 });
 
 
-test('2d.imageData.create2.tiny', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.tiny',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -220,9 +220,9 @@ test('2d.imageData.create2.tiny', function(t) {
 });
 
 
-test('2d.imageData.create2.type', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.type',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -239,9 +239,9 @@ test('2d.imageData.create2.type', function(t) {
 });
 
 
-test('2d.imageData.create2.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.create2.zero',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -260,9 +260,9 @@ test('2d.imageData.create2.zero', function(t) {
 });
 
 
-test('2d.imageData.get.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.basic',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -273,9 +273,9 @@ test('2d.imageData.get.basic', function(t) {
 });
 
 
-test('2d.imageData.get.clamp', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.clamp',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -297,9 +297,9 @@ test('2d.imageData.get.clamp', function(t) {
 });
 
 
-test('2d.imageData.get.length', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.length',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -311,9 +311,9 @@ test('2d.imageData.get.length', function(t) {
 });
 
 
-test('2d.imageData.get.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -392,9 +392,9 @@ test('2d.imageData.get.nonfinite', function(t) {
 });
 
 
-test('2d.imageData.get.nonpremul', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.nonpremul',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -412,9 +412,9 @@ test('2d.imageData.get.nonpremul', function(t) {
 });
 
 
-test('2d.imageData.get.order.alpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.order.alpha',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -429,9 +429,9 @@ test('2d.imageData.get.order.alpha', function(t) {
 });
 
 
-test('2d.imageData.get.order.cols', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.order.cols',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -449,9 +449,9 @@ test('2d.imageData.get.order.cols', function(t) {
 });
 
 
-test('2d.imageData.get.order.rgb', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.order.rgb',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -472,9 +472,9 @@ test('2d.imageData.get.order.rgb', function(t) {
 });
 
 
-test('2d.imageData.get.order.rows', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.order.rows',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -492,9 +492,9 @@ test('2d.imageData.get.order.rows', function(t) {
 });
 
 
-test('2d.imageData.get.range', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.range',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -512,9 +512,9 @@ test('2d.imageData.get.range', function(t) {
 });
 
 
-test('2d.imageData.get.source.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.source.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -544,9 +544,9 @@ test('2d.imageData.get.source.negative', function(t) {
 });
 
 
-test('2d.imageData.get.source.outside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.source.outside',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -582,9 +582,9 @@ test('2d.imageData.get.source.outside', function(t) {
 });
 
 
-test('2d.imageData.get.source.size', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.source.size',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -598,9 +598,9 @@ test('2d.imageData.get.source.size', function(t) {
 });
 
 
-test('2d.imageData.get.tiny', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.tiny',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -614,9 +614,9 @@ test('2d.imageData.get.tiny', function(t) {
 });
 
 
-test('2d.imageData.get.type', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.type',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -633,9 +633,9 @@ test('2d.imageData.get.type', function(t) {
 });
 
 
-test('2d.imageData.get.unaffected', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.unaffected','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -661,9 +661,9 @@ test('2d.imageData.get.unaffected', function(t) {
 });
 
 
-test('2d.imageData.get.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.get.zero',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -682,9 +682,9 @@ test('2d.imageData.get.zero', function(t) {
 });
 
 
-test('2d.imageData.object.ctor', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.ctor',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   try { var _thrown = false; new window.ImageData(1,1); } catch (e) { _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception: new window.ImageData(1,1)"); }
@@ -693,9 +693,9 @@ test('2d.imageData.object.ctor', function(t) {
 });
 
 
-test('2d.imageData.object.nan', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.nan',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -712,9 +712,9 @@ test('2d.imageData.object.nan', function(t) {
 });
 
 
-test('2d.imageData.object.properties', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.properties',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -728,9 +728,9 @@ test('2d.imageData.object.properties', function(t) {
 });
 
 
-test('2d.imageData.object.readonly', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.readonly',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -754,9 +754,9 @@ test('2d.imageData.object.readonly', function(t) {
 });
 
 
-test('2d.imageData.object.round', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.round',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -795,9 +795,9 @@ test('2d.imageData.object.round', function(t) {
 });
 
 
-test('2d.imageData.object.set', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.set',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -812,9 +812,9 @@ test('2d.imageData.object.set', function(t) {
 });
 
 
-test('2d.imageData.object.string', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.string',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -834,9 +834,9 @@ test('2d.imageData.object.string', function(t) {
 });
 
 
-test('2d.imageData.object.undefined', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.undefined',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -850,9 +850,9 @@ test('2d.imageData.object.undefined', function(t) {
 });
 
 
-test('2d.imageData.object.wrap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.object.wrap',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -880,9 +880,9 @@ test('2d.imageData.object.wrap', function(t) {
 });
 
 
-test('2d.imageData.put.alpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.alpha','2d.imageData.put.alpha.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -899,9 +899,9 @@ test('2d.imageData.put.alpha', function(t) {
 });
 
 
-test('2d.imageData.put.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -918,9 +918,9 @@ test('2d.imageData.put.basic', function(t) {
 });
 
 
-test('2d.imageData.put.clip', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.clip','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -941,9 +941,9 @@ test('2d.imageData.put.clip', function(t) {
 });
 
 
-test('2d.imageData.put.created', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.created','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -964,9 +964,9 @@ test('2d.imageData.put.created', function(t) {
 });
 
 
-test('2d.imageData.put.cross', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.cross','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -985,9 +985,9 @@ test('2d.imageData.put.cross', function(t) {
 });
 
 
-test('2d.imageData.put.dirty.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.dirty.negative','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1015,9 +1015,9 @@ test('2d.imageData.put.dirty.negative', function(t) {
 });
 
 
-test('2d.imageData.put.dirty.outside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.dirty.outside','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1047,9 +1047,9 @@ test('2d.imageData.put.dirty.outside', function(t) {
 });
 
 
-test('2d.imageData.put.dirty.rect1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.dirty.rect1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1077,9 +1077,9 @@ test('2d.imageData.put.dirty.rect1', function(t) {
 });
 
 
-test('2d.imageData.put.dirty.rect2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.dirty.rect2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1107,9 +1107,9 @@ test('2d.imageData.put.dirty.rect2', function(t) {
 });
 
 
-test('2d.imageData.put.dirty.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.dirty.zero','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1126,9 +1126,9 @@ test('2d.imageData.put.dirty.zero', function(t) {
 });
 
 
-test('2d.imageData.put.modified', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.modified','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1150,9 +1150,9 @@ test('2d.imageData.put.modified', function(t) {
 });
 
 
-test('2d.imageData.put.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1409,9 +1409,9 @@ test('2d.imageData.put.nonfinite', function(t) {
 });
 
 
-test('2d.imageData.put.null', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.null',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1424,9 +1424,9 @@ test('2d.imageData.put.null', function(t) {
 });
 
 
-test('2d.imageData.put.path', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.path','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1444,9 +1444,9 @@ test('2d.imageData.put.path', function(t) {
 });
 
 
-test('2d.imageData.put.unaffected', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.unaffected','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1469,9 +1469,9 @@ test('2d.imageData.put.unaffected', function(t) {
 });
 
 
-test('2d.imageData.put.unchanged', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.unchanged',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1499,9 +1499,9 @@ test('2d.imageData.put.unchanged', function(t) {
 });
 
 
-test('2d.imageData.put.wrongtype', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.imageData.put.wrongtype','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

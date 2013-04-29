@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.fillStyle.default', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.default',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -18,9 +18,9 @@ test('2d.fillStyle.default', function(t) {
 });
 
 
-test('2d.fillStyle.get.semitransparent', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.get.semitransparent',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -32,9 +32,9 @@ test('2d.fillStyle.get.semitransparent', function(t) {
 });
 
 
-test('2d.fillStyle.get.solid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.get.solid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -46,9 +46,9 @@ test('2d.fillStyle.get.solid', function(t) {
 });
 
 
-test('2d.fillStyle.get.transparent', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.get.transparent',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -60,9 +60,9 @@ test('2d.fillStyle.get.transparent', function(t) {
 });
 
 
-test('2d.fillStyle.invalidstring', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.invalidstring','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -78,9 +78,9 @@ test('2d.fillStyle.invalidstring', function(t) {
 });
 
 
-test('2d.fillStyle.invalidtype', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.invalidtype','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -96,9 +96,9 @@ test('2d.fillStyle.invalidtype', function(t) {
 });
 
 
-test('2d.fillStyle.parse.current.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.current.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -113,9 +113,9 @@ test('2d.fillStyle.parse.current.basic', function(t) {
 });
 
 
-test('2d.fillStyle.parse.current.changed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.current.changed','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -131,9 +131,9 @@ test('2d.fillStyle.parse.current.changed', function(t) {
 });
 
 
-test('2d.fillStyle.parse.current.removed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.current.removed','2d.fillStyle.parse.current.removed.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -143,26 +143,26 @@ test('2d.fillStyle.parse.current.removed', function(t) {
   document.body.parentNode.setAttribute('style', 'color: #f00');
   document.body.setAttribute('style', 'color: #f00');
   canvas.setAttribute('style', 'color: #f00');
-
+  
   var canvas2 = new Canvas();
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillStyle = 'currentColor';
   ctx2.fillRect(0, 0, 100, 50);
   ctx.drawImage(canvas2, 0, 0);
-
+  
   document.body.parentNode.removeAttribute('style');
   document.body.removeAttribute('style');
-
+  
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,255, "50,25", "0,0,0,255");
 
   t.end()
 });
 
 
-test('2d.fillStyle.parse.hex3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hex3','2d.fillStyle.parse.hex3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -176,9 +176,9 @@ test('2d.fillStyle.parse.hex3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hex6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hex6','2d.fillStyle.parse.hex6.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -192,9 +192,9 @@ test('2d.fillStyle.parse.hex6', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-1','2d.fillStyle.parse.hsl-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -208,9 +208,9 @@ test('2d.fillStyle.parse.hsl-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-2','2d.fillStyle.parse.hsl-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -224,9 +224,9 @@ test('2d.fillStyle.parse.hsl-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-3','2d.fillStyle.parse.hsl-3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -240,9 +240,9 @@ test('2d.fillStyle.parse.hsl-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-4','2d.fillStyle.parse.hsl-4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -256,9 +256,9 @@ test('2d.fillStyle.parse.hsl-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-5','2d.fillStyle.parse.hsl-5.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -272,9 +272,9 @@ test('2d.fillStyle.parse.hsl-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-clamp-1','2d.fillStyle.parse.hsl-clamp-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -288,9 +288,9 @@ test('2d.fillStyle.parse.hsl-clamp-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-clamp-2','2d.fillStyle.parse.hsl-clamp-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -304,9 +304,9 @@ test('2d.fillStyle.parse.hsl-clamp-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-clamp-3','2d.fillStyle.parse.hsl-clamp-3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -320,9 +320,9 @@ test('2d.fillStyle.parse.hsl-clamp-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsl-clamp-4','2d.fillStyle.parse.hsl-clamp-4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -336,9 +336,9 @@ test('2d.fillStyle.parse.hsl-clamp-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-1','2d.fillStyle.parse.hsla-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -352,9 +352,9 @@ test('2d.fillStyle.parse.hsla-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-2','2d.fillStyle.parse.hsla-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -368,9 +368,9 @@ test('2d.fillStyle.parse.hsla-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-1','2d.fillStyle.parse.hsla-clamp-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -384,9 +384,9 @@ test('2d.fillStyle.parse.hsla-clamp-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-2','2d.fillStyle.parse.hsla-clamp-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -400,9 +400,9 @@ test('2d.fillStyle.parse.hsla-clamp-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-3','2d.fillStyle.parse.hsla-clamp-3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -416,9 +416,9 @@ test('2d.fillStyle.parse.hsla-clamp-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-4','2d.fillStyle.parse.hsla-clamp-4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -432,9 +432,9 @@ test('2d.fillStyle.parse.hsla-clamp-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-5','2d.fillStyle.parse.hsla-clamp-5.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -448,9 +448,9 @@ test('2d.fillStyle.parse.hsla-clamp-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.hsla-clamp-6','2d.fillStyle.parse.hsla-clamp-6.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -464,9 +464,9 @@ test('2d.fillStyle.parse.hsla-clamp-6', function(t) {
 });
 
 
-test('2d.fillStyle.parse.html4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.html4','2d.fillStyle.parse.html4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -480,9 +480,9 @@ test('2d.fillStyle.parse.html4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -496,9 +496,9 @@ test('2d.fillStyle.parse.invalid.hex1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -512,9 +512,9 @@ test('2d.fillStyle.parse.invalid.hex2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -528,9 +528,9 @@ test('2d.fillStyle.parse.invalid.hex3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -544,9 +544,9 @@ test('2d.fillStyle.parse.invalid.hex4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -560,9 +560,9 @@ test('2d.fillStyle.parse.invalid.hex5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex6','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -576,9 +576,9 @@ test('2d.fillStyle.parse.invalid.hex6', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex7', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex7','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -592,9 +592,9 @@ test('2d.fillStyle.parse.invalid.hex7', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hex8', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hex8','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -608,9 +608,9 @@ test('2d.fillStyle.parse.invalid.hex8', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsl-1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -624,9 +624,9 @@ test('2d.fillStyle.parse.invalid.hsl-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsl-2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -640,9 +640,9 @@ test('2d.fillStyle.parse.invalid.hsl-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsl-3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -656,9 +656,9 @@ test('2d.fillStyle.parse.invalid.hsl-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsl-4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -672,9 +672,9 @@ test('2d.fillStyle.parse.invalid.hsl-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsl-5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -688,9 +688,9 @@ test('2d.fillStyle.parse.invalid.hsl-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsla-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsla-1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -704,9 +704,9 @@ test('2d.fillStyle.parse.invalid.hsla-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.hsla-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.hsla-2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -720,9 +720,9 @@ test('2d.fillStyle.parse.invalid.hsla-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.name-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.name-1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -736,9 +736,9 @@ test('2d.fillStyle.parse.invalid.name-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.name-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.name-2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -752,9 +752,9 @@ test('2d.fillStyle.parse.invalid.name-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.name-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.name-3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -768,9 +768,9 @@ test('2d.fillStyle.parse.invalid.name-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -784,9 +784,9 @@ test('2d.fillStyle.parse.invalid.rgb-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -800,9 +800,9 @@ test('2d.fillStyle.parse.invalid.rgb-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -816,9 +816,9 @@ test('2d.fillStyle.parse.invalid.rgb-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -832,9 +832,9 @@ test('2d.fillStyle.parse.invalid.rgb-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -848,9 +848,9 @@ test('2d.fillStyle.parse.invalid.rgb-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-6','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -864,9 +864,9 @@ test('2d.fillStyle.parse.invalid.rgb-6', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-7', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgb-7','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -880,9 +880,9 @@ test('2d.fillStyle.parse.invalid.rgb-7', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgba-1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -896,9 +896,9 @@ test('2d.fillStyle.parse.invalid.rgba-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgba-2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -912,9 +912,9 @@ test('2d.fillStyle.parse.invalid.rgba-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgba-3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -928,9 +928,9 @@ test('2d.fillStyle.parse.invalid.rgba-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgba-4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -944,9 +944,9 @@ test('2d.fillStyle.parse.invalid.rgba-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.invalid.rgba-5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -960,9 +960,9 @@ test('2d.fillStyle.parse.invalid.rgba-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-clamp-1','2d.fillStyle.parse.rgb-clamp-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -976,9 +976,9 @@ test('2d.fillStyle.parse.rgb-clamp-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-clamp-2','2d.fillStyle.parse.rgb-clamp-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -992,9 +992,9 @@ test('2d.fillStyle.parse.rgb-clamp-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-clamp-3','2d.fillStyle.parse.rgb-clamp-3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1008,9 +1008,9 @@ test('2d.fillStyle.parse.rgb-clamp-3', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-clamp-4','2d.fillStyle.parse.rgb-clamp-4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1024,9 +1024,9 @@ test('2d.fillStyle.parse.rgb-clamp-4', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-clamp-5','2d.fillStyle.parse.rgb-clamp-5.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1040,9 +1040,9 @@ test('2d.fillStyle.parse.rgb-clamp-5', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-num', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-num','2d.fillStyle.parse.rgb-num.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1056,9 +1056,9 @@ test('2d.fillStyle.parse.rgb-num', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgb-percent', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgb-percent','2d.fillStyle.parse.rgb-percent.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1072,9 +1072,9 @@ test('2d.fillStyle.parse.rgb-percent', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-clamp-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-clamp-1','2d.fillStyle.parse.rgba-clamp-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1088,9 +1088,9 @@ test('2d.fillStyle.parse.rgba-clamp-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-clamp-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-clamp-2','2d.fillStyle.parse.rgba-clamp-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1104,9 +1104,9 @@ test('2d.fillStyle.parse.rgba-clamp-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-num-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-num-1','2d.fillStyle.parse.rgba-num-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1120,9 +1120,9 @@ test('2d.fillStyle.parse.rgba-num-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-num-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-num-2','2d.fillStyle.parse.rgba-num-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1136,9 +1136,9 @@ test('2d.fillStyle.parse.rgba-num-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-percent', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-percent','2d.fillStyle.parse.rgba-percent.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1152,9 +1152,9 @@ test('2d.fillStyle.parse.rgba-percent', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-solid-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-solid-1','2d.fillStyle.parse.rgba-solid-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1168,9 +1168,9 @@ test('2d.fillStyle.parse.rgba-solid-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.rgba-solid-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.rgba-solid-2','2d.fillStyle.parse.rgba-solid-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1184,9 +1184,9 @@ test('2d.fillStyle.parse.rgba-solid-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.svg-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.svg-1','2d.fillStyle.parse.svg-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1200,9 +1200,9 @@ test('2d.fillStyle.parse.svg-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.svg-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.svg-2','2d.fillStyle.parse.svg-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1216,9 +1216,9 @@ test('2d.fillStyle.parse.svg-2', function(t) {
 });
 
 
-test('2d.fillStyle.parse.system', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.system',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1231,9 +1231,9 @@ test('2d.fillStyle.parse.system', function(t) {
 });
 
 
-test('2d.fillStyle.parse.transparent-1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.transparent-1','2d.fillStyle.parse.transparent-1.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1247,9 +1247,9 @@ test('2d.fillStyle.parse.transparent-1', function(t) {
 });
 
 
-test('2d.fillStyle.parse.transparent-2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillStyle.parse.transparent-2','2d.fillStyle.parse.transparent-2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

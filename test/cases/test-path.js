@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.path.arc.angle.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -25,9 +25,9 @@ test('2d.path.arc.angle.1', function(t) {
 });
 
 
-test('2d.path.arc.angle.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -45,9 +45,9 @@ test('2d.path.arc.angle.2', function(t) {
 });
 
 
-test('2d.path.arc.angle.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -65,9 +65,9 @@ test('2d.path.arc.angle.3', function(t) {
 });
 
 
-test('2d.path.arc.angle.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -88,9 +88,9 @@ test('2d.path.arc.angle.4', function(t) {
 });
 
 
-test('2d.path.arc.angle.5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -108,9 +108,9 @@ test('2d.path.arc.angle.5', function(t) {
 });
 
 
-test('2d.path.arc.angle.6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.angle.6','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -131,9 +131,9 @@ test('2d.path.arc.angle.6', function(t) {
 });
 
 
-test('2d.path.arc.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.empty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -151,9 +151,9 @@ test('2d.path.arc.empty', function(t) {
 });
 
 
-test('2d.path.arc.end', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.end','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -173,9 +173,9 @@ test('2d.path.arc.end', function(t) {
 });
 
 
-test('2d.path.arc.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -188,9 +188,9 @@ test('2d.path.arc.negative', function(t) {
 });
 
 
-test('2d.path.arc.nonempty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.nonempty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -209,9 +209,9 @@ test('2d.path.arc.nonempty', function(t) {
 });
 
 
-test('2d.path.arc.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -272,9 +272,9 @@ test('2d.path.arc.nonfinite', function(t) {
 });
 
 
-test('2d.path.arc.scale.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.scale.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -312,9 +312,9 @@ test('2d.path.arc.scale.1', function(t) {
 });
 
 
-test('2d.path.arc.scale.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.scale.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -342,9 +342,9 @@ test('2d.path.arc.scale.2', function(t) {
 });
 
 
-test('2d.path.arc.selfintersect.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.selfintersect.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -366,9 +366,9 @@ test('2d.path.arc.selfintersect.1', function(t) {
 });
 
 
-test('2d.path.arc.selfintersect.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.selfintersect.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -394,9 +394,9 @@ test('2d.path.arc.selfintersect.2', function(t) {
 });
 
 
-test('2d.path.arc.shape.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.shape.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -419,9 +419,9 @@ test('2d.path.arc.shape.1', function(t) {
 });
 
 
-test('2d.path.arc.shape.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.shape.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -444,9 +444,9 @@ test('2d.path.arc.shape.2', function(t) {
 });
 
 
-test('2d.path.arc.shape.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.shape.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -468,9 +468,9 @@ test('2d.path.arc.shape.3', function(t) {
 });
 
 
-test('2d.path.arc.shape.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.shape.4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -492,9 +492,9 @@ test('2d.path.arc.shape.4', function(t) {
 });
 
 
-test('2d.path.arc.shape.5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.shape.5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -516,9 +516,9 @@ test('2d.path.arc.shape.5', function(t) {
 });
 
 
-test('2d.path.arc.twopie.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.twopie.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -536,9 +536,9 @@ test('2d.path.arc.twopie.1', function(t) {
 });
 
 
-test('2d.path.arc.twopie.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.twopie.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -556,9 +556,9 @@ test('2d.path.arc.twopie.2', function(t) {
 });
 
 
-test('2d.path.arc.twopie.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.twopie.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -576,9 +576,9 @@ test('2d.path.arc.twopie.3', function(t) {
 });
 
 
-test('2d.path.arc.twopie.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.twopie.4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -596,9 +596,9 @@ test('2d.path.arc.twopie.4', function(t) {
 });
 
 
-test('2d.path.arc.zero.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.zero.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -616,9 +616,9 @@ test('2d.path.arc.zero.1', function(t) {
 });
 
 
-test('2d.path.arc.zero.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.zero.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -636,9 +636,9 @@ test('2d.path.arc.zero.2', function(t) {
 });
 
 
-test('2d.path.arc.zeroradius', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arc.zeroradius','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -657,9 +657,9 @@ test('2d.path.arc.zeroradius', function(t) {
 });
 
 
-test('2d.path.arcTo.coincide.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.coincide.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -689,9 +689,9 @@ test('2d.path.arcTo.coincide.1', function(t) {
 });
 
 
-test('2d.path.arcTo.coincide.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.coincide.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -711,9 +711,9 @@ test('2d.path.arcTo.coincide.2', function(t) {
 });
 
 
-test('2d.path.arcTo.collinear.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.collinear.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -740,9 +740,9 @@ test('2d.path.arcTo.collinear.1', function(t) {
 });
 
 
-test('2d.path.arcTo.collinear.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.collinear.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -769,9 +769,9 @@ test('2d.path.arcTo.collinear.2', function(t) {
 });
 
 
-test('2d.path.arcTo.collinear.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.collinear.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -803,9 +803,9 @@ test('2d.path.arcTo.collinear.3', function(t) {
 });
 
 
-test('2d.path.arcTo.ensuresubpath.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.ensuresubpath.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -823,9 +823,9 @@ test('2d.path.arcTo.ensuresubpath.1', function(t) {
 });
 
 
-test('2d.path.arcTo.ensuresubpath.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.ensuresubpath.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -844,9 +844,9 @@ test('2d.path.arcTo.ensuresubpath.2', function(t) {
 });
 
 
-test('2d.path.arcTo.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -859,9 +859,9 @@ test('2d.path.arcTo.negative', function(t) {
 });
 
 
-test('2d.path.arcTo.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -920,9 +920,9 @@ test('2d.path.arcTo.nonfinite', function(t) {
 });
 
 
-test('2d.path.arcTo.scale', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.scale','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -953,9 +953,9 @@ test('2d.path.arcTo.scale', function(t) {
 });
 
 
-test('2d.path.arcTo.shape.curve1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.shape.curve1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -999,9 +999,9 @@ test('2d.path.arcTo.shape.curve1', function(t) {
 });
 
 
-test('2d.path.arcTo.shape.curve2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.shape.curve2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1044,9 +1044,9 @@ test('2d.path.arcTo.shape.curve2', function(t) {
 });
 
 
-test('2d.path.arcTo.shape.end', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.shape.end','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1070,9 +1070,9 @@ test('2d.path.arcTo.shape.end', function(t) {
 });
 
 
-test('2d.path.arcTo.shape.start', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.shape.start','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1096,9 +1096,9 @@ test('2d.path.arcTo.shape.start', function(t) {
 });
 
 
-test('2d.path.arcTo.transformation', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.transformation','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1128,9 +1128,9 @@ test('2d.path.arcTo.transformation', function(t) {
 });
 
 
-test('2d.path.arcTo.zero.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.zero.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1157,9 +1157,9 @@ test('2d.path.arcTo.zero.1', function(t) {
 });
 
 
-test('2d.path.arcTo.zero.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.arcTo.zero.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1186,9 +1186,9 @@ test('2d.path.arcTo.zero.2', function(t) {
 });
 
 
-test('2d.path.beginPath', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.beginPath','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1205,9 +1205,9 @@ test('2d.path.beginPath', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1226,9 +1226,9 @@ test('2d.path.bezierCurveTo.basic', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.ensuresubpath.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1247,9 +1247,9 @@ test('2d.path.bezierCurveTo.ensuresubpath.1', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.ensuresubpath.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1268,9 +1268,9 @@ test('2d.path.bezierCurveTo.ensuresubpath.2', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1363,9 +1363,9 @@ test('2d.path.bezierCurveTo.nonfinite', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.scaled', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.scaled','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1389,9 +1389,9 @@ test('2d.path.bezierCurveTo.scaled', function(t) {
 });
 
 
-test('2d.path.bezierCurveTo.shape', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.bezierCurveTo.shape','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1414,9 +1414,9 @@ test('2d.path.bezierCurveTo.shape', function(t) {
 });
 
 
-test('2d.path.clip.basic.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.basic.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1437,9 +1437,9 @@ test('2d.path.clip.basic.1', function(t) {
 });
 
 
-test('2d.path.clip.basic.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.basic.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1460,9 +1460,9 @@ test('2d.path.clip.basic.2', function(t) {
 });
 
 
-test('2d.path.clip.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.empty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1482,9 +1482,9 @@ test('2d.path.clip.empty', function(t) {
 });
 
 
-test('2d.path.clip.intersect', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.intersect','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1508,9 +1508,9 @@ test('2d.path.clip.intersect', function(t) {
 });
 
 
-test('2d.path.clip.unaffected', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.unaffected','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1536,9 +1536,9 @@ test('2d.path.clip.unaffected', function(t) {
 });
 
 
-test('2d.path.clip.winding.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.winding.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1567,9 +1567,9 @@ test('2d.path.clip.winding.1', function(t) {
 });
 
 
-test('2d.path.clip.winding.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.clip.winding.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1602,9 +1602,9 @@ test('2d.path.clip.winding.2', function(t) {
 });
 
 
-test('2d.path.closePath.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.closePath.empty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1620,9 +1620,9 @@ test('2d.path.closePath.empty', function(t) {
 });
 
 
-test('2d.path.closePath.newline', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.closePath.newline','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1643,9 +1643,9 @@ test('2d.path.closePath.newline', function(t) {
 });
 
 
-test('2d.path.closePath.nextpoint', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.closePath.nextpoint','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1665,9 +1665,9 @@ test('2d.path.closePath.nextpoint', function(t) {
 });
 
 
-test('2d.path.fill.closed.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.closed.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1688,9 +1688,9 @@ test('2d.path.fill.closed.basic', function(t) {
 });
 
 
-test('2d.path.fill.closed.unaffected', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.closed.unaffected','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1714,9 +1714,9 @@ test('2d.path.fill.closed.unaffected', function(t) {
 });
 
 
-test('2d.path.fill.overlap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.overlap','2d.path.fill.overlap.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1736,9 +1736,9 @@ test('2d.path.fill.overlap', function(t) {
 });
 
 
-test('2d.path.fill.winding.add', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.winding.add','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1764,9 +1764,9 @@ test('2d.path.fill.winding.add', function(t) {
 });
 
 
-test('2d.path.fill.winding.subtract.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.winding.subtract.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1792,9 +1792,9 @@ test('2d.path.fill.winding.subtract.1', function(t) {
 });
 
 
-test('2d.path.fill.winding.subtract.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.winding.subtract.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1819,9 +1819,9 @@ test('2d.path.fill.winding.subtract.2', function(t) {
 });
 
 
-test('2d.path.fill.winding.subtract.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.fill.winding.subtract.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1852,9 +1852,9 @@ test('2d.path.fill.winding.subtract.3', function(t) {
 });
 
 
-test('2d.path.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.initial','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1870,9 +1870,9 @@ test('2d.path.initial', function(t) {
 });
 
 
-test('2d.path.isPointInPath.arc', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.arc',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1891,9 +1891,9 @@ test('2d.path.isPointInPath.arc', function(t) {
 });
 
 
-test('2d.path.isPointInPath.basic.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.basic.1',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1906,9 +1906,9 @@ test('2d.path.isPointInPath.basic.1', function(t) {
 });
 
 
-test('2d.path.isPointInPath.basic.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.basic.2',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1921,9 +1921,9 @@ test('2d.path.isPointInPath.basic.2', function(t) {
 });
 
 
-test('2d.path.isPointInPath.bezier', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.bezier',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1955,9 +1955,9 @@ test('2d.path.isPointInPath.bezier', function(t) {
 });
 
 
-test('2d.path.isPointInPath.bigarc', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.bigarc',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1976,9 +1976,9 @@ test('2d.path.isPointInPath.bigarc', function(t) {
 });
 
 
-test('2d.path.isPointInPath.edge', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.edge',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2001,9 +2001,9 @@ test('2d.path.isPointInPath.edge', function(t) {
 });
 
 
-test('2d.path.isPointInPath.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.empty',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2014,9 +2014,9 @@ test('2d.path.isPointInPath.empty', function(t) {
 });
 
 
-test('2d.path.isPointInPath.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2034,9 +2034,9 @@ test('2d.path.isPointInPath.nonfinite', function(t) {
 });
 
 
-test('2d.path.isPointInPath.outside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.outside',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2054,9 +2054,9 @@ test('2d.path.isPointInPath.outside', function(t) {
 });
 
 
-test('2d.path.isPointInPath.subpath', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.subpath',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2074,9 +2074,9 @@ test('2d.path.isPointInPath.subpath', function(t) {
 });
 
 
-test('2d.path.isPointInPath.transform.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.transform.1',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2094,9 +2094,9 @@ test('2d.path.isPointInPath.transform.1', function(t) {
 });
 
 
-test('2d.path.isPointInPath.transform.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.transform.2',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2114,9 +2114,9 @@ test('2d.path.isPointInPath.transform.2', function(t) {
 });
 
 
-test('2d.path.isPointInPath.transform.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.transform.3',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2134,9 +2134,9 @@ test('2d.path.isPointInPath.transform.3', function(t) {
 });
 
 
-test('2d.path.isPointInPath.unclosed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.unclosed',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2152,9 +2152,9 @@ test('2d.path.isPointInPath.unclosed', function(t) {
 });
 
 
-test('2d.path.isPointInPath.winding', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.isPointInPath.winding',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2185,9 +2185,9 @@ test('2d.path.isPointInPath.winding', function(t) {
 });
 
 
-test('2d.path.lineTo.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.lineTo.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2206,9 +2206,9 @@ test('2d.path.lineTo.basic', function(t) {
 });
 
 
-test('2d.path.lineTo.ensuresubpath.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.lineTo.ensuresubpath.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2226,9 +2226,9 @@ test('2d.path.lineTo.ensuresubpath.1', function(t) {
 });
 
 
-test('2d.path.lineTo.ensuresubpath.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.lineTo.ensuresubpath.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2247,9 +2247,9 @@ test('2d.path.lineTo.ensuresubpath.2', function(t) {
 });
 
 
-test('2d.path.lineTo.nextpoint', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.lineTo.nextpoint','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2269,9 +2269,9 @@ test('2d.path.lineTo.nextpoint', function(t) {
 });
 
 
-test('2d.path.lineTo.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.lineTo.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2296,9 +2296,9 @@ test('2d.path.lineTo.nonfinite', function(t) {
 });
 
 
-test('2d.path.moveTo.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.moveTo.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2318,9 +2318,9 @@ test('2d.path.moveTo.basic', function(t) {
 });
 
 
-test('2d.path.moveTo.multiple', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.moveTo.multiple','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2340,9 +2340,9 @@ test('2d.path.moveTo.multiple', function(t) {
 });
 
 
-test('2d.path.moveTo.newsubpath', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.moveTo.newsubpath','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2362,9 +2362,9 @@ test('2d.path.moveTo.newsubpath', function(t) {
 });
 
 
-test('2d.path.moveTo.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.moveTo.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2388,9 +2388,9 @@ test('2d.path.moveTo.nonfinite', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2409,9 +2409,9 @@ test('2d.path.quadraticCurveTo.basic', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.ensuresubpath.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2430,9 +2430,9 @@ test('2d.path.quadraticCurveTo.ensuresubpath.1', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.ensuresubpath.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2451,9 +2451,9 @@ test('2d.path.quadraticCurveTo.ensuresubpath.2', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2494,9 +2494,9 @@ test('2d.path.quadraticCurveTo.nonfinite', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.scaled', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.scaled','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2520,9 +2520,9 @@ test('2d.path.quadraticCurveTo.scaled', function(t) {
 });
 
 
-test('2d.path.quadraticCurveTo.shape', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.quadraticCurveTo.shape','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2545,9 +2545,9 @@ test('2d.path.quadraticCurveTo.shape', function(t) {
 });
 
 
-test('2d.path.rect.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2563,9 +2563,9 @@ test('2d.path.rect.basic', function(t) {
 });
 
 
-test('2d.path.rect.closed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.closed','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2583,9 +2583,9 @@ test('2d.path.rect.closed', function(t) {
 });
 
 
-test('2d.path.rect.end.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.end.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2603,9 +2603,9 @@ test('2d.path.rect.end.1', function(t) {
 });
 
 
-test('2d.path.rect.end.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.end.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2628,9 +2628,9 @@ test('2d.path.rect.end.2', function(t) {
 });
 
 
-test('2d.path.rect.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2653,9 +2653,9 @@ test('2d.path.rect.negative', function(t) {
 });
 
 
-test('2d.path.rect.newsubpath', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.newsubpath','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2675,9 +2675,9 @@ test('2d.path.rect.newsubpath', function(t) {
 });
 
 
-test('2d.path.rect.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2718,9 +2718,9 @@ test('2d.path.rect.nonfinite', function(t) {
 });
 
 
-test('2d.path.rect.selfintersect', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.selfintersect','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2738,9 +2738,9 @@ test('2d.path.rect.selfintersect', function(t) {
 });
 
 
-test('2d.path.rect.winding', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.winding',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2763,9 +2763,9 @@ test('2d.path.rect.winding', function(t) {
 });
 
 
-test('2d.path.rect.zero.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2783,9 +2783,9 @@ test('2d.path.rect.zero.1', function(t) {
 });
 
 
-test('2d.path.rect.zero.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2803,9 +2803,9 @@ test('2d.path.rect.zero.2', function(t) {
 });
 
 
-test('2d.path.rect.zero.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2823,9 +2823,9 @@ test('2d.path.rect.zero.3', function(t) {
 });
 
 
-test('2d.path.rect.zero.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.4','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2843,9 +2843,9 @@ test('2d.path.rect.zero.4', function(t) {
 });
 
 
-test('2d.path.rect.zero.5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2863,9 +2863,9 @@ test('2d.path.rect.zero.5', function(t) {
 });
 
 
-test('2d.path.rect.zero.6', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.rect.zero.6','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2885,9 +2885,9 @@ test('2d.path.rect.zero.6', function(t) {
 });
 
 
-test('2d.path.stroke.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.empty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2911,9 +2911,9 @@ test('2d.path.stroke.empty', function(t) {
 });
 
 
-test('2d.path.stroke.overlap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.overlap','2d.path.stroke.overlap.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2935,9 +2935,9 @@ test('2d.path.stroke.overlap', function(t) {
 });
 
 
-test('2d.path.stroke.prune.arc', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.arc','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2966,9 +2966,9 @@ test('2d.path.stroke.prune.arc', function(t) {
 });
 
 
-test('2d.path.stroke.prune.closed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.closed','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -2993,9 +2993,9 @@ test('2d.path.stroke.prune.closed', function(t) {
 });
 
 
-test('2d.path.stroke.prune.corner', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.corner','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3022,9 +3022,9 @@ test('2d.path.stroke.prune.corner', function(t) {
 });
 
 
-test('2d.path.stroke.prune.curve', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.curve','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3053,9 +3053,9 @@ test('2d.path.stroke.prune.curve', function(t) {
 });
 
 
-test('2d.path.stroke.prune.line', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.line','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3079,9 +3079,9 @@ test('2d.path.stroke.prune.line', function(t) {
 });
 
 
-test('2d.path.stroke.prune.rect', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.prune.rect','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3106,9 +3106,9 @@ test('2d.path.stroke.prune.rect', function(t) {
 });
 
 
-test('2d.path.stroke.scale1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.scale1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3146,9 +3146,9 @@ test('2d.path.stroke.scale1', function(t) {
 });
 
 
-test('2d.path.stroke.scale2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.scale2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3188,9 +3188,9 @@ test('2d.path.stroke.scale2', function(t) {
 });
 
 
-test('2d.path.stroke.skew', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.skew','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3244,9 +3244,9 @@ test('2d.path.stroke.skew', function(t) {
 });
 
 
-test('2d.path.stroke.unaffected', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.unaffected','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3272,9 +3272,9 @@ test('2d.path.stroke.unaffected', function(t) {
 });
 
 
-test('2d.path.stroke.union', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.stroke.union','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3296,9 +3296,9 @@ test('2d.path.stroke.union', function(t) {
 });
 
 
-test('2d.path.transformation.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.transformation.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3318,9 +3318,9 @@ test('2d.path.transformation.basic', function(t) {
 });
 
 
-test('2d.path.transformation.changing', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.transformation.changing','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -3346,9 +3346,9 @@ test('2d.path.transformation.changing', function(t) {
 });
 
 
-test('2d.path.transformation.multiple', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.path.transformation.multiple','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

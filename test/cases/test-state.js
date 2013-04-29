@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.state.saverestore.bitmap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.bitmap','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -24,9 +24,9 @@ test('2d.state.saverestore.bitmap', function(t) {
 });
 
 
-test('2d.state.saverestore.clip', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.clip','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -45,9 +45,9 @@ test('2d.state.saverestore.clip', function(t) {
 });
 
 
-test('2d.state.saverestore.fillStyle', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.fillStyle',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -72,9 +72,9 @@ test('2d.state.saverestore.fillStyle', function(t) {
 });
 
 
-test('2d.state.saverestore.font', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.font',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -99,9 +99,9 @@ test('2d.state.saverestore.font', function(t) {
 });
 
 
-test('2d.state.saverestore.globalAlpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.globalAlpha',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -126,9 +126,9 @@ test('2d.state.saverestore.globalAlpha', function(t) {
 });
 
 
-test('2d.state.saverestore.globalCompositeOperation', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.globalCompositeOperation',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -153,9 +153,9 @@ test('2d.state.saverestore.globalCompositeOperation', function(t) {
 });
 
 
-test('2d.state.saverestore.lineCap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.lineCap',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -180,9 +180,9 @@ test('2d.state.saverestore.lineCap', function(t) {
 });
 
 
-test('2d.state.saverestore.lineJoin', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.lineJoin',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -207,9 +207,9 @@ test('2d.state.saverestore.lineJoin', function(t) {
 });
 
 
-test('2d.state.saverestore.lineWidth', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.lineWidth',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -234,9 +234,9 @@ test('2d.state.saverestore.lineWidth', function(t) {
 });
 
 
-test('2d.state.saverestore.miterLimit', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.miterLimit',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -261,9 +261,9 @@ test('2d.state.saverestore.miterLimit', function(t) {
 });
 
 
-test('2d.state.saverestore.path', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.path','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -281,9 +281,9 @@ test('2d.state.saverestore.path', function(t) {
 });
 
 
-test('2d.state.saverestore.shadowBlur', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.shadowBlur',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -308,9 +308,9 @@ test('2d.state.saverestore.shadowBlur', function(t) {
 });
 
 
-test('2d.state.saverestore.shadowColor', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.shadowColor',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -335,9 +335,9 @@ test('2d.state.saverestore.shadowColor', function(t) {
 });
 
 
-test('2d.state.saverestore.shadowOffsetX', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.shadowOffsetX',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -362,9 +362,9 @@ test('2d.state.saverestore.shadowOffsetX', function(t) {
 });
 
 
-test('2d.state.saverestore.shadowOffsetY', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.shadowOffsetY',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -389,9 +389,9 @@ test('2d.state.saverestore.shadowOffsetY', function(t) {
 });
 
 
-test('2d.state.saverestore.stack', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.stack',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -411,9 +411,9 @@ test('2d.state.saverestore.stack', function(t) {
 });
 
 
-test('2d.state.saverestore.stackdepth', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.stackdepth',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -434,9 +434,9 @@ test('2d.state.saverestore.stackdepth', function(t) {
 });
 
 
-test('2d.state.saverestore.strokeStyle', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.strokeStyle',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -461,9 +461,9 @@ test('2d.state.saverestore.strokeStyle', function(t) {
 });
 
 
-test('2d.state.saverestore.textAlign', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.textAlign',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -488,9 +488,9 @@ test('2d.state.saverestore.textAlign', function(t) {
 });
 
 
-test('2d.state.saverestore.textBaseline', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.textBaseline',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -515,9 +515,9 @@ test('2d.state.saverestore.textBaseline', function(t) {
 });
 
 
-test('2d.state.saverestore.transformation', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.transformation','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -535,9 +535,9 @@ test('2d.state.saverestore.transformation', function(t) {
 });
 
 
-test('2d.state.saverestore.underflow', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.state.saverestore.underflow',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

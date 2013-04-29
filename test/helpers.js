@@ -3,28 +3,74 @@ var domino = require('domino');
 var test = require('tap').test;
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
+var fs = require('fs');
 
+// In the tests, this is specified in a css style. I really
+// Do not want to have to have a dom to run these so I've
+// generated background-tiled.png and it gets drawn when
+// the context is created.
 var background = new Image();
-background.onload = function() {
-  console.log(background.imageData.data);
-}
 background.src = __dirname + '/images/background-tiled.png';
+background.listeners = 10;
 
 var testQueue = [];
-module.exports.test = function(name, fn) {
+module.exports.test = function(name, image, fn) {
+  var skip = {
+    '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517'
+  };
+
+  if (skip[name]) {
+    console.log('SKIPPED:', name, '(see: ' + skip[name], ')');
+    return;
+  }
+
+
+  var wrapper = function(t) {
+    if (image) {
+      t.image = new Image();
+      t.image.onload = function() {
+        t.readExpectedPixel = function(x, y) {
+          var id = t.image.imageData;
+          var pos = x + (y * id.width)
+          var data = id.data;
+          return [
+            data[pos+3],
+            data[pos],
+            data[pos+1],
+            data[pos+2],
+          ];
+        };
+
+        fn(t);
+      }
+
+      t.image.on('error', function() {
+        console.log('blah', arguments);
+      });
+
+      t.image.src = __dirname + '/images/' + image;
+
+    } else {
+      fn(t);
+    }
+  };
+
   if (!argv.t || name.indexOf(argv.t) > -1) {
     if (!background.complete) {
+      background.setMaxListeners(background.listeners++);
       background.on('load', function() {
-        test(name, fn);
+        test(name, wrapper);
       });
     } else {
-      test(name, fn);
+      test(name, wrapper);
     }
   }
 };
 
 module.exports.createWindow = function() {
-  return domino.createWindow('<p />');
+  var window = domino.createWindow('<p />');
+  window.CanvasGradient = context.CanvasGradient;
+  return window;
 }
 
 module.exports.Canvas = function(w, h) {
@@ -97,6 +143,17 @@ module.exports.assertNotEqual = function(t, a, b) {
 module.exports.assertPixel = function(t, canvas, x,y, r,g,b,a, pos, color) {
   var c = canvas.ctx.getPixel(x, y);
 
+  // if (t.readExpectedPixel) {
+
+
+  //   var color = t.readExpectedPixel(x,y);
+  //   console.log('COLOR', color, t.image.src, t.image.imageData.width, x, t.image.imageData.height, y);
+  //   r = color[0];
+  //   g = color[1];
+  //   b = color[2];
+  //   a = color[3];
+  // }
+
   var message = 'Failed assertion: got pixel [' +
                 JSON.stringify(c) +
                 '] at ('+x+','+y+'), expected ['+r+','+g+','+b+','+a+']';
@@ -106,7 +163,16 @@ module.exports.assertPixel = function(t, canvas, x,y, r,g,b,a, pos, color) {
 }
 
 module.exports.assertPixelApprox = function(t, canvas, x,y, r,g,b,a, pos, color, tolerance) {
+  console.log('ASSERT PIXEL APPROX', canvas.width, canvas.height, x, y)
   var c = canvas.ctx.getPixel(x, y);
+
+  if (t.readExpectedPixel) {
+    var color = t.readExpectedPixel(x,y);
+    r = color[0];
+    g = color[1];
+    b = color[2];
+    a = color[3];
+  }
 
   var diff = Math.max(
     Math.abs(c.r-r),

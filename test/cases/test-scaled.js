@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.scaled', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.scaled','2d.scaled.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 50, 25);
   var ctx = canvas.getContext('2d')

@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.transformation.order', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.order','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -25,9 +25,9 @@ test('2d.transformation.order', function(t) {
 });
 
 
-test('2d.transformation.rotate.direction', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.direction','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -44,9 +44,9 @@ test('2d.transformation.rotate.direction', function(t) {
 });
 
 
-test('2d.transformation.rotate.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -68,9 +68,9 @@ test('2d.transformation.rotate.nonfinite', function(t) {
 });
 
 
-test('2d.transformation.rotate.radians', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.radians','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -87,9 +87,9 @@ test('2d.transformation.rotate.radians', function(t) {
 });
 
 
-test('2d.transformation.rotate.wrap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.wrap','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -111,9 +111,9 @@ test('2d.transformation.rotate.wrap', function(t) {
 });
 
 
-test('2d.transformation.rotate.wrapnegative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.wrapnegative','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -132,9 +132,9 @@ test('2d.transformation.rotate.wrapnegative', function(t) {
 });
 
 
-test('2d.transformation.rotate.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.rotate.zero','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -151,9 +151,9 @@ test('2d.transformation.rotate.zero', function(t) {
 });
 
 
-test('2d.transformation.scale.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -170,9 +170,9 @@ test('2d.transformation.scale.basic', function(t) {
 });
 
 
-test('2d.transformation.scale.large', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.large','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -189,9 +189,9 @@ test('2d.transformation.scale.large', function(t) {
 });
 
 
-test('2d.transformation.scale.multiple', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.multiple','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -209,9 +209,9 @@ test('2d.transformation.scale.multiple', function(t) {
 });
 
 
-test('2d.transformation.scale.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.negative','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -237,9 +237,9 @@ test('2d.transformation.scale.negative', function(t) {
 });
 
 
-test('2d.transformation.scale.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -265,9 +265,9 @@ test('2d.transformation.scale.nonfinite', function(t) {
 });
 
 
-test('2d.transformation.scale.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.scale.zero','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -298,9 +298,9 @@ test('2d.transformation.scale.zero', function(t) {
 });
 
 
-test('2d.transformation.setTransform.multiple', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.setTransform.multiple','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -318,9 +318,9 @@ test('2d.transformation.setTransform.multiple', function(t) {
 });
 
 
-test('2d.transformation.setTransform.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.setTransform.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -414,9 +414,9 @@ test('2d.transformation.setTransform.nonfinite', function(t) {
 });
 
 
-test('2d.transformation.setTransform.skewed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.setTransform.skewed','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -455,9 +455,9 @@ test('2d.transformation.setTransform.skewed', function(t) {
 });
 
 
-test('2d.transformation.transform.identity', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.transform.identity','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -474,9 +474,9 @@ test('2d.transformation.transform.identity', function(t) {
 });
 
 
-test('2d.transformation.transform.multiply', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.transform.multiply','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -494,9 +494,9 @@ test('2d.transformation.transform.multiply', function(t) {
 });
 
 
-test('2d.transformation.transform.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.transform.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -590,9 +590,9 @@ test('2d.transformation.transform.nonfinite', function(t) {
 });
 
 
-test('2d.transformation.transform.skewed', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.transform.skewed','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -631,9 +631,9 @@ test('2d.transformation.transform.skewed', function(t) {
 });
 
 
-test('2d.transformation.translate.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.translate.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -650,9 +650,9 @@ test('2d.transformation.translate.basic', function(t) {
 });
 
 
-test('2d.transformation.translate.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.transformation.translate.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

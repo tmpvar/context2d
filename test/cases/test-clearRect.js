@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.clearRect.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.basic','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -21,9 +21,9 @@ test('2d.clearRect.basic', function(t) {
 });
 
 
-test('2d.clearRect.clip', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.clip','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -46,9 +46,9 @@ test('2d.clearRect.clip', function(t) {
 });
 
 
-test('2d.clearRect.globalalpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.globalalpha','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -63,9 +63,9 @@ test('2d.clearRect.globalalpha', function(t) {
 });
 
 
-test('2d.clearRect.globalcomposite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.globalcomposite','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -80,9 +80,9 @@ test('2d.clearRect.globalcomposite', function(t) {
 });
 
 
-test('2d.clearRect.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.negative','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -102,9 +102,9 @@ test('2d.clearRect.negative', function(t) {
 });
 
 
-test('2d.clearRect.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -142,9 +142,9 @@ test('2d.clearRect.nonfinite', function(t) {
 });
 
 
-test('2d.clearRect.path', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.path','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -160,9 +160,9 @@ test('2d.clearRect.path', function(t) {
 });
 
 
-test('2d.clearRect.shadow', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.shadow','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -180,9 +180,9 @@ test('2d.clearRect.shadow', function(t) {
 });
 
 
-test('2d.clearRect.transform', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.transform','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -198,9 +198,9 @@ test('2d.clearRect.transform', function(t) {
 });
 
 
-test('2d.clearRect.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.clearRect.zero','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

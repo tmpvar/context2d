@@ -5,13 +5,13 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.pattern.animated.gif', function(t) {
+test('2d.pattern.animated.gif','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-gr.gif' , url: __dirname + '/../philip/orig/images/anim-gr.gif' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -31,9 +31,9 @@ test('2d.pattern.animated.gif', function(t) {
 });
 
 
-test('2d.pattern.basic.canvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.basic.canvas','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -66,13 +66,13 @@ test('2d.pattern.basic.canvas', function(t) {
 });
 
 
-test('2d.pattern.basic.image', function(t) {
+test('2d.pattern.basic.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -94,9 +94,9 @@ test('2d.pattern.basic.image', function(t) {
 });
 
 
-test('2d.pattern.basic.nocontext', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.basic.nocontext','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -121,13 +121,13 @@ test('2d.pattern.basic.nocontext', function(t) {
 });
 
 
-test('2d.pattern.basic.type', function(t) {
+test('2d.pattern.basic.type',null, function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -145,9 +145,9 @@ test('2d.pattern.basic.type', function(t) {
 });
 
 
-test('2d.pattern.basic.zerocanvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.basic.zerocanvas',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -180,13 +180,13 @@ test('2d.pattern.basic.zerocanvas', function(t) {
 });
 
 
-test('2d.pattern.crosscanvas', function(t) {
+test('2d.pattern.crosscanvas','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -206,13 +206,13 @@ test('2d.pattern.crosscanvas', function(t) {
 });
 
 
-test('2d.pattern.image.broken', function(t) {
+test('2d.pattern.image.broken',null, function(t) {
 
   helpers.loadImages(t, [
     { id : 'broken.png' , url: __dirname + '/../philip/orig/images/broken.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -226,9 +226,9 @@ test('2d.pattern.image.broken', function(t) {
 });
 
 
-test('2d.pattern.image.incomplete', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.image.incomplete',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -241,9 +241,9 @@ test('2d.pattern.image.incomplete', function(t) {
 });
 
 
-test('2d.pattern.image.null', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.image.null',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -256,9 +256,9 @@ test('2d.pattern.image.null', function(t) {
 });
 
 
-test('2d.pattern.image.string', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.image.string',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -271,9 +271,9 @@ test('2d.pattern.image.string', function(t) {
 });
 
 
-test('2d.pattern.image.undefined', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.image.undefined',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -286,9 +286,9 @@ test('2d.pattern.image.undefined', function(t) {
 });
 
 
-test('2d.pattern.modify.canvas1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.modify.canvas1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -317,9 +317,9 @@ test('2d.pattern.modify.canvas1', function(t) {
 });
 
 
-test('2d.pattern.modify.canvas2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.modify.canvas2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -352,13 +352,13 @@ test('2d.pattern.modify.canvas2', function(t) {
 });
 
 
-test('2d.pattern.modify.image1', function(t) {
+test('2d.pattern.modify.image1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -382,13 +382,13 @@ test('2d.pattern.modify.image1', function(t) {
 });
 
 
-test('2d.pattern.modify.image2', function(t) {
+test('2d.pattern.modify.image2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -416,13 +416,13 @@ test('2d.pattern.modify.image2', function(t) {
 });
 
 
-test('2d.pattern.paint.norepeat.basic', function(t) {
+test('2d.pattern.paint.norepeat.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -445,13 +445,13 @@ test('2d.pattern.paint.norepeat.basic', function(t) {
 });
 
 
-test('2d.pattern.paint.norepeat.coord1', function(t) {
+test('2d.pattern.paint.norepeat.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -477,13 +477,13 @@ test('2d.pattern.paint.norepeat.coord1', function(t) {
 });
 
 
-test('2d.pattern.paint.norepeat.coord2', function(t) {
+test('2d.pattern.paint.norepeat.coord2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -510,13 +510,13 @@ test('2d.pattern.paint.norepeat.coord2', function(t) {
 });
 
 
-test('2d.pattern.paint.norepeat.coord3', function(t) {
+test('2d.pattern.paint.norepeat.coord3','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -543,13 +543,13 @@ test('2d.pattern.paint.norepeat.coord3', function(t) {
 });
 
 
-test('2d.pattern.paint.norepeat.outside', function(t) {
+test('2d.pattern.paint.norepeat.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -578,9 +578,9 @@ test('2d.pattern.paint.norepeat.outside', function(t) {
 });
 
 
-test('2d.pattern.paint.orientation.canvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.paint.orientation.canvas','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -612,13 +612,13 @@ test('2d.pattern.paint.orientation.canvas', function(t) {
 });
 
 
-test('2d.pattern.paint.orientation.image', function(t) {
+test('2d.pattern.paint.orientation.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rrgg-256x256.png' , url: __dirname + '/../philip/orig/images/rrgg-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -647,13 +647,13 @@ test('2d.pattern.paint.orientation.image', function(t) {
 });
 
 
-test('2d.pattern.paint.repeat.basic', function(t) {
+test('2d.pattern.paint.repeat.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -676,13 +676,13 @@ test('2d.pattern.paint.repeat.basic', function(t) {
 });
 
 
-test('2d.pattern.paint.repeat.coord1', function(t) {
+test('2d.pattern.paint.repeat.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -706,13 +706,13 @@ test('2d.pattern.paint.repeat.coord1', function(t) {
 });
 
 
-test('2d.pattern.paint.repeat.coord2', function(t) {
+test('2d.pattern.paint.repeat.coord2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -732,13 +732,13 @@ test('2d.pattern.paint.repeat.coord2', function(t) {
 });
 
 
-test('2d.pattern.paint.repeat.coord3', function(t) {
+test('2d.pattern.paint.repeat.coord3','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -761,13 +761,13 @@ test('2d.pattern.paint.repeat.coord3', function(t) {
 });
 
 
-test('2d.pattern.paint.repeat.outside', function(t) {
+test('2d.pattern.paint.repeat.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -791,13 +791,13 @@ test('2d.pattern.paint.repeat.outside', function(t) {
 });
 
 
-test('2d.pattern.paint.repeatx.basic', function(t) {
+test('2d.pattern.paint.repeatx.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -822,13 +822,13 @@ test('2d.pattern.paint.repeatx.basic', function(t) {
 });
 
 
-test('2d.pattern.paint.repeatx.coord1', function(t) {
+test('2d.pattern.paint.repeatx.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -857,13 +857,13 @@ test('2d.pattern.paint.repeatx.coord1', function(t) {
 });
 
 
-test('2d.pattern.paint.repeatx.outside', function(t) {
+test('2d.pattern.paint.repeatx.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -889,13 +889,13 @@ test('2d.pattern.paint.repeatx.outside', function(t) {
 });
 
 
-test('2d.pattern.paint.repeaty.basic', function(t) {
+test('2d.pattern.paint.repeaty.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -920,13 +920,13 @@ test('2d.pattern.paint.repeaty.basic', function(t) {
 });
 
 
-test('2d.pattern.paint.repeaty.coord1', function(t) {
+test('2d.pattern.paint.repeaty.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -955,13 +955,13 @@ test('2d.pattern.paint.repeaty.coord1', function(t) {
 });
 
 
-test('2d.pattern.paint.repeaty.outside', function(t) {
+test('2d.pattern.paint.repeaty.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -987,9 +987,9 @@ test('2d.pattern.paint.repeaty.outside', function(t) {
 });
 
 
-test('2d.pattern.repeat.case', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.repeat.case',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1002,13 +1002,13 @@ test('2d.pattern.repeat.case', function(t) {
 });
 
 
-test('2d.pattern.repeat.empty', function(t) {
+test('2d.pattern.repeat.empty','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1030,13 +1030,13 @@ test('2d.pattern.repeat.empty', function(t) {
 });
 
 
-test('2d.pattern.repeat.null', function(t) {
+test('2d.pattern.repeat.null','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1058,9 +1058,9 @@ test('2d.pattern.repeat.null', function(t) {
 });
 
 
-test('2d.pattern.repeat.nullsuffix', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.repeat.nullsuffix',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1073,9 +1073,9 @@ test('2d.pattern.repeat.nullsuffix', function(t) {
 });
 
 
-test('2d.pattern.repeat.undefined', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.repeat.undefined',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1088,9 +1088,9 @@ test('2d.pattern.repeat.undefined', function(t) {
 });
 
 
-test('2d.pattern.repeat.unrecognised', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.pattern.repeat.unrecognised',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

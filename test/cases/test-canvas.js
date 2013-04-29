@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.canvas.readonly', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.canvas.readonly',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -22,9 +22,9 @@ test('2d.canvas.readonly', function(t) {
 });
 
 
-test('2d.canvas.reference', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.canvas.reference',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

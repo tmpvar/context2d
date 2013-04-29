@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.shadow.alpha.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.alpha.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -24,9 +24,9 @@ test('2d.shadow.alpha.1', function(t) {
 });
 
 
-test('2d.shadow.alpha.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.alpha.2','2d.shadow.alpha.2.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -43,9 +43,9 @@ test('2d.shadow.alpha.2', function(t) {
 });
 
 
-test('2d.shadow.alpha.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.alpha.3','2d.shadow.alpha.3.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -64,9 +64,9 @@ test('2d.shadow.alpha.3', function(t) {
 });
 
 
-test('2d.shadow.alpha.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.alpha.4','2d.shadow.alpha.4.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -85,9 +85,9 @@ test('2d.shadow.alpha.4', function(t) {
 });
 
 
-test('2d.shadow.alpha.5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.alpha.5','2d.shadow.alpha.5.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -105,9 +105,9 @@ test('2d.shadow.alpha.5', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowBlur.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowBlur.initial',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -118,9 +118,9 @@ test('2d.shadow.attributes.shadowBlur.initial', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowBlur.invalid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowBlur.invalid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -145,9 +145,9 @@ test('2d.shadow.attributes.shadowBlur.invalid', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowBlur.valid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowBlur.valid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -168,9 +168,9 @@ test('2d.shadow.attributes.shadowBlur.valid', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowColor.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowColor.initial',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -181,9 +181,9 @@ test('2d.shadow.attributes.shadowColor.initial', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowColor.invalid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowColor.invalid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -208,9 +208,9 @@ test('2d.shadow.attributes.shadowColor.invalid', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowColor.valid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowColor.valid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -225,9 +225,9 @@ test('2d.shadow.attributes.shadowColor.valid', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowOffset.initial', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowOffset.initial',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -239,9 +239,9 @@ test('2d.shadow.attributes.shadowOffset.initial', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowOffset.invalid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowOffset.invalid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -271,9 +271,9 @@ test('2d.shadow.attributes.shadowOffset.invalid', function(t) {
 });
 
 
-test('2d.shadow.attributes.shadowOffset.valid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.attributes.shadowOffset.valid',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -307,9 +307,9 @@ test('2d.shadow.attributes.shadowOffset.valid', function(t) {
 });
 
 
-test('2d.shadow.blur.high', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.blur.high','2d.shadow.blur.high.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -325,9 +325,9 @@ test('2d.shadow.blur.high', function(t) {
 });
 
 
-test('2d.shadow.blur.low', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.blur.low','2d.shadow.blur.low.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -350,13 +350,13 @@ test('2d.shadow.blur.low', function(t) {
 });
 
 
-test('2d.shadow.canvas.alpha', function(t) {
+test('2d.shadow.canvas.alpha','2d.shadow.canvas.alpha.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -381,9 +381,9 @@ test('2d.shadow.canvas.alpha', function(t) {
 });
 
 
-test('2d.shadow.canvas.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.canvas.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -407,9 +407,9 @@ test('2d.shadow.canvas.basic', function(t) {
 });
 
 
-test('2d.shadow.canvas.transparent.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.canvas.transparent.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -431,9 +431,9 @@ test('2d.shadow.canvas.transparent.1', function(t) {
 });
 
 
-test('2d.shadow.canvas.transparent.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.canvas.transparent.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -463,9 +463,9 @@ test('2d.shadow.canvas.transparent.2', function(t) {
 });
 
 
-test('2d.shadow.clip.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.clip.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -491,9 +491,9 @@ test('2d.shadow.clip.1', function(t) {
 });
 
 
-test('2d.shadow.clip.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.clip.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -519,9 +519,9 @@ test('2d.shadow.clip.2', function(t) {
 });
 
 
-test('2d.shadow.clip.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.clip.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -548,9 +548,9 @@ test('2d.shadow.clip.3', function(t) {
 });
 
 
-test('2d.shadow.composite.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.composite.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -569,9 +569,9 @@ test('2d.shadow.composite.1', function(t) {
 });
 
 
-test('2d.shadow.composite.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.composite.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -590,9 +590,9 @@ test('2d.shadow.composite.2', function(t) {
 });
 
 
-test('2d.shadow.composite.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.composite.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -612,9 +612,9 @@ test('2d.shadow.composite.3', function(t) {
 });
 
 
-test('2d.shadow.enable.blur', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.enable.blur','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -630,9 +630,9 @@ test('2d.shadow.enable.blur', function(t) {
 });
 
 
-test('2d.shadow.enable.off.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.enable.off.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -646,9 +646,9 @@ test('2d.shadow.enable.off.1', function(t) {
 });
 
 
-test('2d.shadow.enable.off.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.enable.off.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -663,9 +663,9 @@ test('2d.shadow.enable.off.2', function(t) {
 });
 
 
-test('2d.shadow.enable.x', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.enable.x','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -681,9 +681,9 @@ test('2d.shadow.enable.x', function(t) {
 });
 
 
-test('2d.shadow.enable.y', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.enable.y','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -699,9 +699,9 @@ test('2d.shadow.enable.y', function(t) {
 });
 
 
-test('2d.shadow.gradient.alpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.gradient.alpha','2d.shadow.gradient.alpha.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -722,9 +722,9 @@ test('2d.shadow.gradient.alpha', function(t) {
 });
 
 
-test('2d.shadow.gradient.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.gradient.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -745,9 +745,9 @@ test('2d.shadow.gradient.basic', function(t) {
 });
 
 
-test('2d.shadow.gradient.transparent.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.gradient.transparent.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -768,9 +768,9 @@ test('2d.shadow.gradient.transparent.1', function(t) {
 });
 
 
-test('2d.shadow.gradient.transparent.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.gradient.transparent.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -797,13 +797,13 @@ test('2d.shadow.gradient.transparent.2', function(t) {
 });
 
 
-test('2d.shadow.image.alpha', function(t) {
+test('2d.shadow.image.alpha','2d.shadow.image.alpha.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -821,13 +821,13 @@ test('2d.shadow.image.alpha', function(t) {
 });
 
 
-test('2d.shadow.image.basic', function(t) {
+test('2d.shadow.image.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -845,13 +845,13 @@ test('2d.shadow.image.basic', function(t) {
 });
 
 
-test('2d.shadow.image.scale', function(t) {
+test('2d.shadow.image.scale','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -871,13 +871,13 @@ test('2d.shadow.image.scale', function(t) {
 });
 
 
-test('2d.shadow.image.section', function(t) {
+test('2d.shadow.image.section','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -897,13 +897,13 @@ test('2d.shadow.image.section', function(t) {
 });
 
 
-test('2d.shadow.image.transparent.1', function(t) {
+test('2d.shadow.image.transparent.1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -921,13 +921,13 @@ test('2d.shadow.image.transparent.1', function(t) {
 });
 
 
-test('2d.shadow.image.transparent.2', function(t) {
+test('2d.shadow.image.transparent.2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -951,9 +951,9 @@ test('2d.shadow.image.transparent.2', function(t) {
 });
 
 
-test('2d.shadow.offset.negativeX', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.offset.negativeX','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -971,9 +971,9 @@ test('2d.shadow.offset.negativeX', function(t) {
 });
 
 
-test('2d.shadow.offset.negativeY', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.offset.negativeY','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -991,9 +991,9 @@ test('2d.shadow.offset.negativeY', function(t) {
 });
 
 
-test('2d.shadow.offset.positiveX', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.offset.positiveX','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1011,9 +1011,9 @@ test('2d.shadow.offset.positiveX', function(t) {
 });
 
 
-test('2d.shadow.offset.positiveY', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.offset.positiveY','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1031,9 +1031,9 @@ test('2d.shadow.offset.positiveY', function(t) {
 });
 
 
-test('2d.shadow.outside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.outside','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1059,13 +1059,13 @@ test('2d.shadow.outside', function(t) {
 });
 
 
-test('2d.shadow.pattern.alpha', function(t) {
+test('2d.shadow.pattern.alpha','2d.shadow.pattern.alpha.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1085,13 +1085,13 @@ test('2d.shadow.pattern.alpha', function(t) {
 });
 
 
-test('2d.shadow.pattern.basic', function(t) {
+test('2d.shadow.pattern.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1111,13 +1111,13 @@ test('2d.shadow.pattern.basic', function(t) {
 });
 
 
-test('2d.shadow.pattern.transparent.1', function(t) {
+test('2d.shadow.pattern.transparent.1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1137,13 +1137,13 @@ test('2d.shadow.pattern.transparent.1', function(t) {
 });
 
 
-test('2d.shadow.pattern.transparent.2', function(t) {
+test('2d.shadow.pattern.transparent.2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -1167,9 +1167,9 @@ test('2d.shadow.pattern.transparent.2', function(t) {
 });
 
 
-test('2d.shadow.stroke.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1193,9 +1193,9 @@ test('2d.shadow.stroke.basic', function(t) {
 });
 
 
-test('2d.shadow.stroke.cap.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.cap.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1222,9 +1222,9 @@ test('2d.shadow.stroke.cap.1', function(t) {
 });
 
 
-test('2d.shadow.stroke.cap.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.cap.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1249,9 +1249,9 @@ test('2d.shadow.stroke.cap.2', function(t) {
 });
 
 
-test('2d.shadow.stroke.join.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.join.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1278,9 +1278,9 @@ test('2d.shadow.stroke.join.1', function(t) {
 });
 
 
-test('2d.shadow.stroke.join.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.join.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1309,9 +1309,9 @@ test('2d.shadow.stroke.join.2', function(t) {
 });
 
 
-test('2d.shadow.stroke.join.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.stroke.join.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1339,9 +1339,9 @@ test('2d.shadow.stroke.join.3', function(t) {
 });
 
 
-test('2d.shadow.transform.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.transform.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1359,9 +1359,9 @@ test('2d.shadow.transform.1', function(t) {
 });
 
 
-test('2d.shadow.transform.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.shadow.transform.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

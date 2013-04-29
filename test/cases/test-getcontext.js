@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.getcontext.exists', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.getcontext.exists',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -18,9 +18,9 @@ test('2d.getcontext.exists', function(t) {
 });
 
 
-test('2d.getcontext.shared', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.getcontext.shared','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -35,9 +35,9 @@ test('2d.getcontext.shared', function(t) {
 });
 
 
-test('2d.getcontext.unique', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.getcontext.unique',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

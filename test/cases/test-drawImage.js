@@ -5,14 +5,14 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.drawImage.3arg', function(t) {
+test('2d.drawImage.3arg','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -33,14 +33,14 @@ test('2d.drawImage.3arg', function(t) {
 });
 
 
-test('2d.drawImage.5arg', function(t) {
+test('2d.drawImage.5arg','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -62,13 +62,13 @@ test('2d.drawImage.5arg', function(t) {
 });
 
 
-test('2d.drawImage.9arg.basic', function(t) {
+test('2d.drawImage.9arg.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -86,14 +86,14 @@ test('2d.drawImage.9arg.basic', function(t) {
 });
 
 
-test('2d.drawImage.9arg.destpos', function(t) {
+test('2d.drawImage.9arg.destpos','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -115,14 +115,14 @@ test('2d.drawImage.9arg.destpos', function(t) {
 });
 
 
-test('2d.drawImage.9arg.destsize', function(t) {
+test('2d.drawImage.9arg.destsize','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' },
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -144,13 +144,13 @@ test('2d.drawImage.9arg.destsize', function(t) {
 });
 
 
-test('2d.drawImage.9arg.sourcepos', function(t) {
+test('2d.drawImage.9arg.sourcepos','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -168,13 +168,13 @@ test('2d.drawImage.9arg.sourcepos', function(t) {
 });
 
 
-test('2d.drawImage.9arg.sourcesize', function(t) {
+test('2d.drawImage.9arg.sourcesize','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -199,13 +199,13 @@ test('2d.drawImage.9arg.sourcesize', function(t) {
 });
 
 
-test('2d.drawImage.alpha', function(t) {
+test('2d.drawImage.alpha','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -221,13 +221,13 @@ test('2d.drawImage.alpha', function(t) {
 });
 
 
-test('2d.drawImage.animated.apng', function(t) {
+test('2d.drawImage.animated.apng','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-gr.png' , url: __dirname + '/../philip/orig/images/anim-gr.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -241,13 +241,13 @@ test('2d.drawImage.animated.apng', function(t) {
 });
 
 
-test('2d.drawImage.animated.gif', function(t) {
+test('2d.drawImage.animated.gif','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-gr.gif' , url: __dirname + '/../philip/orig/images/anim-gr.gif' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -261,13 +261,13 @@ test('2d.drawImage.animated.gif', function(t) {
 });
 
 
-test('2d.drawImage.animated.poster', function(t) {
+test('2d.drawImage.animated.poster','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-poster-gr.png' , url: __dirname + '/../philip/orig/images/anim-poster-gr.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -280,13 +280,13 @@ test('2d.drawImage.animated.poster', function(t) {
 });
 
 
-test('2d.drawImage.broken', function(t) {
+test('2d.drawImage.broken','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'broken.png' , url: __dirname + '/../philip/orig/images/broken.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -302,9 +302,9 @@ test('2d.drawImage.broken', function(t) {
 });
 
 
-test('2d.drawImage.canvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.canvas','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -328,13 +328,13 @@ test('2d.drawImage.canvas', function(t) {
 });
 
 
-test('2d.drawImage.clip', function(t) {
+test('2d.drawImage.clip','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -351,13 +351,13 @@ test('2d.drawImage.clip', function(t) {
 });
 
 
-test('2d.drawImage.composite', function(t) {
+test('2d.drawImage.composite','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -373,13 +373,13 @@ test('2d.drawImage.composite', function(t) {
 });
 
 
-test('2d.drawImage.floatsource', function(t) {
+test('2d.drawImage.floatsource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -392,9 +392,9 @@ test('2d.drawImage.floatsource', function(t) {
 });
 
 
-test('2d.drawImage.incomplete', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.incomplete','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -409,13 +409,13 @@ test('2d.drawImage.incomplete', function(t) {
 });
 
 
-test('2d.drawImage.negativedest', function(t) {
+test('2d.drawImage.negativedest','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -440,13 +440,13 @@ test('2d.drawImage.negativedest', function(t) {
 });
 
 
-test('2d.drawImage.negativedir', function(t) {
+test('2d.drawImage.negativedir','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -471,13 +471,13 @@ test('2d.drawImage.negativedir', function(t) {
 });
 
 
-test('2d.drawImage.negativesource', function(t) {
+test('2d.drawImage.negativesource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -502,13 +502,13 @@ test('2d.drawImage.negativesource', function(t) {
 });
 
 
-test('2d.drawImage.nonfinite', function(t) {
+test('2d.drawImage.nonfinite','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -824,13 +824,13 @@ test('2d.drawImage.nonfinite', function(t) {
 });
 
 
-test('2d.drawImage.nowrap', function(t) {
+test('2d.drawImage.nowrap','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -847,9 +847,9 @@ test('2d.drawImage.nowrap', function(t) {
 });
 
 
-test('2d.drawImage.null', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.null',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -862,14 +862,14 @@ test('2d.drawImage.null', function(t) {
 });
 
 
-test('2d.drawImage.outsidesource', function(t) {
+test('2d.drawImage.outsidesource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' },
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -908,13 +908,13 @@ test('2d.drawImage.outsidesource', function(t) {
 });
 
 
-test('2d.drawImage.path', function(t) {
+test('2d.drawImage.path','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -930,9 +930,9 @@ test('2d.drawImage.path', function(t) {
 });
 
 
-test('2d.drawImage.self.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.self.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -952,9 +952,9 @@ test('2d.drawImage.self.1', function(t) {
 });
 
 
-test('2d.drawImage.self.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.self.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -976,13 +976,13 @@ test('2d.drawImage.self.2', function(t) {
 });
 
 
-test('2d.drawImage.transform', function(t) {
+test('2d.drawImage.transform','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
@@ -998,9 +998,9 @@ test('2d.drawImage.transform', function(t) {
 });
 
 
-test('2d.drawImage.wrongtype', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.wrongtype',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1022,9 +1022,9 @@ test('2d.drawImage.wrongtype', function(t) {
 });
 
 
-test('2d.drawImage.zerocanvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.drawImage.zerocanvas','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1057,13 +1057,13 @@ test('2d.drawImage.zerocanvas', function(t) {
 });
 
 
-test('2d.drawImage.zerosource', function(t) {
+test('2d.drawImage.zerosource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')

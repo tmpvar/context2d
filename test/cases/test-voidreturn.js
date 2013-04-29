@@ -5,13 +5,13 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.voidreturn', function(t) {
+test('2d.voidreturn',null, function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
   ], function(images) {
-    var window = helpers.createWindow()
-    var document = window.document
+    var window = helpers.createWindow();
+    var document = window.document;
 
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')

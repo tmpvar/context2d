@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.fillRect.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -20,9 +20,9 @@ test('2d.fillRect.basic', function(t) {
 });
 
 
-test('2d.fillRect.clip', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.clip','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -46,9 +46,9 @@ test('2d.fillRect.clip', function(t) {
 });
 
 
-test('2d.fillRect.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.negative','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -69,9 +69,9 @@ test('2d.fillRect.negative', function(t) {
 });
 
 
-test('2d.fillRect.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -110,9 +110,9 @@ test('2d.fillRect.nonfinite', function(t) {
 });
 
 
-test('2d.fillRect.path', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.path','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -129,9 +129,9 @@ test('2d.fillRect.path', function(t) {
 });
 
 
-test('2d.fillRect.shadow', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.shadow','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -149,9 +149,9 @@ test('2d.fillRect.shadow', function(t) {
 });
 
 
-test('2d.fillRect.transform', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.transform','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -166,9 +166,9 @@ test('2d.fillRect.transform', function(t) {
 });
 
 
-test('2d.fillRect.zero', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.fillRect.zero','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

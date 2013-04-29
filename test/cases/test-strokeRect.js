@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.strokeRect.basic', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.basic','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -21,9 +21,9 @@ test('2d.strokeRect.basic', function(t) {
 });
 
 
-test('2d.strokeRect.clip', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.clip','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -48,9 +48,9 @@ test('2d.strokeRect.clip', function(t) {
 });
 
 
-test('2d.strokeRect.globalalpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.globalalpha','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -65,9 +65,9 @@ test('2d.strokeRect.globalalpha', function(t) {
 });
 
 
-test('2d.strokeRect.globalcomposite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.globalcomposite','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -82,9 +82,9 @@ test('2d.strokeRect.globalcomposite', function(t) {
 });
 
 
-test('2d.strokeRect.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.negative','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -106,9 +106,9 @@ test('2d.strokeRect.negative', function(t) {
 });
 
 
-test('2d.strokeRect.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.nonfinite','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -148,9 +148,9 @@ test('2d.strokeRect.nonfinite', function(t) {
 });
 
 
-test('2d.strokeRect.path', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.path','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -168,9 +168,9 @@ test('2d.strokeRect.path', function(t) {
 });
 
 
-test('2d.strokeRect.shadow', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.shadow','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -191,9 +191,9 @@ test('2d.strokeRect.shadow', function(t) {
 });
 
 
-test('2d.strokeRect.transform', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.transform','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -209,9 +209,9 @@ test('2d.strokeRect.transform', function(t) {
 });
 
 
-test('2d.strokeRect.zero.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.zero.1','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -225,9 +225,9 @@ test('2d.strokeRect.zero.1', function(t) {
 });
 
 
-test('2d.strokeRect.zero.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.zero.2','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -243,9 +243,9 @@ test('2d.strokeRect.zero.2', function(t) {
 });
 
 
-test('2d.strokeRect.zero.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.zero.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -259,9 +259,9 @@ test('2d.strokeRect.zero.3', function(t) {
 });
 
 
-test('2d.strokeRect.zero.4', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.zero.4','clear-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -276,9 +276,9 @@ test('2d.strokeRect.zero.4', function(t) {
 });
 
 
-test('2d.strokeRect.zero.5', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.strokeRect.zero.5','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')

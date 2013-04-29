@@ -5,9 +5,9 @@ var Image = helpers.Image;
 var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.gradient.empty', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.empty','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -23,9 +23,9 @@ test('2d.gradient.empty', function(t) {
 });
 
 
-test('2d.gradient.interpolate.alpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.alpha','2d.gradient.interpolate.alpha.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -45,9 +45,9 @@ test('2d.gradient.interpolate.alpha', function(t) {
 });
 
 
-test('2d.gradient.interpolate.colour', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.colour','2d.gradient.interpolate.colour.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -65,9 +65,9 @@ test('2d.gradient.interpolate.colour', function(t) {
 });
 
 
-test('2d.gradient.interpolate.colouralpha', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.colouralpha','2d.gradient.interpolate.colouralpha.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -85,9 +85,9 @@ test('2d.gradient.interpolate.colouralpha', function(t) {
 });
 
 
-test('2d.gradient.interpolate.multiple', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.multiple','2d.gradient.interpolate.multiple.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -107,20 +107,20 @@ test('2d.gradient.interpolate.multiple', function(t) {
 });
 
 
-test('2d.gradient.interpolate.outside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.outside','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createLinearGradient(25, 0, 75, 0);
   g.addColorStop(0.4, '#0f0');
   g.addColorStop(0.6, '#0f0');
-  
+
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 20,25, 0,255,0,255, "20,25", "0,255,0,255", 2);
@@ -131,9 +131,9 @@ test('2d.gradient.interpolate.outside', function(t) {
 });
 
 
-test('2d.gradient.interpolate.overlap', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.overlap','2d.gradient.interpolate.overlap.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -169,9 +169,9 @@ test('2d.gradient.interpolate.overlap', function(t) {
 });
 
 
-test('2d.gradient.interpolate.overlap2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.overlap2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -197,9 +197,9 @@ test('2d.gradient.interpolate.overlap2', function(t) {
 });
 
 
-test('2d.gradient.interpolate.solid', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.solid','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -215,9 +215,9 @@ test('2d.gradient.interpolate.solid', function(t) {
 });
 
 
-test('2d.gradient.interpolate.vertical', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.vertical','2d.gradient.interpolate.vertical.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -235,16 +235,16 @@ test('2d.gradient.interpolate.vertical', function(t) {
 });
 
 
-test('2d.gradient.interpolate.zerosize', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.interpolate.zerosize','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createLinearGradient(50, 25, 50, 25); // zero-length line (undefined direction)
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
@@ -256,9 +256,9 @@ test('2d.gradient.interpolate.zerosize', function(t) {
 });
 
 
-test('2d.gradient.linear.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.linear.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -337,9 +337,9 @@ test('2d.gradient.linear.nonfinite', function(t) {
 });
 
 
-test('2d.gradient.linear.transform.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.linear.transform.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -360,9 +360,9 @@ test('2d.gradient.linear.transform.1', function(t) {
 });
 
 
-test('2d.gradient.linear.transform.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.linear.transform.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -384,9 +384,9 @@ test('2d.gradient.linear.transform.2', function(t) {
 });
 
 
-test('2d.gradient.linear.transform.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.linear.transform.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -408,9 +408,9 @@ test('2d.gradient.linear.transform.3', function(t) {
 });
 
 
-test('2d.gradient.object.compare', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.compare',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -425,9 +425,9 @@ test('2d.gradient.object.compare', function(t) {
 });
 
 
-test('2d.gradient.object.crosscanvas', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.crosscanvas','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -445,9 +445,9 @@ test('2d.gradient.object.crosscanvas', function(t) {
 });
 
 
-test('2d.gradient.object.invalidcolour', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.invalidcolour',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -464,9 +464,9 @@ test('2d.gradient.object.invalidcolour', function(t) {
 });
 
 
-test('2d.gradient.object.invalidoffset', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.invalidoffset',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -492,19 +492,19 @@ test('2d.gradient.object.invalidoffset', function(t) {
 });
 
 
-test('2d.gradient.object.return', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.return',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   window.CanvasGradient.prototype.thisImplementsCanvasGradient = true;
-  
+
   var g1 = ctx.createLinearGradient(0, 0, 100, 0);
   helpers.assertNotEqual(t, g1.addColorStop, undefined, "g1.addColorStop", "undefined");
   helpers.assertEqual(t, g1.thisImplementsCanvasGradient, true, "g1.thisImplementsCanvasGradient", "true");
-  
+
   var g2 = ctx.createRadialGradient(0, 0, 10, 0, 0, 20);
   helpers.assertNotEqual(t, g2.addColorStop, undefined, "g2.addColorStop", "undefined");
   helpers.assertEqual(t, g2.thisImplementsCanvasGradient, true, "g2.thisImplementsCanvasGradient", "true");
@@ -513,9 +513,9 @@ test('2d.gradient.object.return', function(t) {
 });
 
 
-test('2d.gradient.object.update', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.object.update','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -533,22 +533,22 @@ test('2d.gradient.object.update', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.behind', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.behind','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(120, 25, 10, 211, 25, 100);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -563,22 +563,22 @@ test('2d.gradient.radial.cone.behind', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.beside', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.beside','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(0, 100, 40, 100, 100, 50);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -593,22 +593,22 @@ test('2d.gradient.radial.cone.beside', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.bottom', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.bottom','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(210, 25, 100, 230, 25, 101);
   g.addColorStop(0, '#0f0');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+helpers.output(ctx);
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -623,22 +623,22 @@ test('2d.gradient.radial.cone.bottom', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.cylinder', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.cylinder','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(210, 25, 100, 230, 25, 100);
   g.addColorStop(0, '#0f0');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -653,22 +653,22 @@ test('2d.gradient.radial.cone.cylinder', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.front', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.front','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(311, 25, 10, 210, 25, 100);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -683,31 +683,31 @@ test('2d.gradient.radial.cone.front', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.shape1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.shape1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var tol = 1; // tolerance to avoid antialiasing artifacts
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#f00';
   ctx.beginPath();
   ctx.moveTo(30+tol, 40);
   ctx.lineTo(110, -20+tol);
   ctx.lineTo(110, 100-tol);
   ctx.fill();
-  
+
   var g = ctx.createRadialGradient(30+10*5/2, 40, 10*3/2, 30+10*15/4, 40, 10*9/4);
   g.addColorStop(0, '#0f0');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -722,31 +722,31 @@ test('2d.gradient.radial.cone.shape1', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.shape2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.shape2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var tol = 1; // tolerance to avoid antialiasing artifacts
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(30+10*5/2, 40, 10*3/2, 30+10*15/4, 40, 10*9/4);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.beginPath();
   ctx.moveTo(30-tol, 40);
   ctx.lineTo(110, -20-tol);
   ctx.lineTo(110, 100+tol);
   ctx.fill();
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -761,22 +761,22 @@ test('2d.gradient.radial.cone.shape2', function(t) {
 });
 
 
-test('2d.gradient.radial.cone.top', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.cone.top','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(230, 25, 100, 100, 25, 101);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -791,22 +791,22 @@ test('2d.gradient.radial.cone.top', function(t) {
 });
 
 
-test('2d.gradient.radial.equal', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.equal','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(50, 25, 20, 50, 25, 20);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -821,22 +821,22 @@ test('2d.gradient.radial.equal', function(t) {
 });
 
 
-test('2d.gradient.radial.inside1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.inside1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(50, 25, 100, 50, 25, 200);
   g.addColorStop(0, '#0f0');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -851,22 +851,22 @@ test('2d.gradient.radial.inside1', function(t) {
 });
 
 
-test('2d.gradient.radial.inside2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.inside2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(50, 25, 200, 50, 25, 100);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -881,23 +881,23 @@ test('2d.gradient.radial.inside2', function(t) {
 });
 
 
-test('2d.gradient.radial.inside3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.inside3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(50, 25, 200, 50, 25, 100);
   g.addColorStop(0, '#f00');
   g.addColorStop(0.993, '#f00');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -912,9 +912,9 @@ test('2d.gradient.radial.inside3', function(t) {
 });
 
 
-test('2d.gradient.radial.negative', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.negative',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -933,9 +933,9 @@ test('2d.gradient.radial.negative', function(t) {
 });
 
 
-test('2d.gradient.radial.nonfinite', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.nonfinite',null, function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1170,22 +1170,22 @@ test('2d.gradient.radial.nonfinite', function(t) {
 });
 
 
-test('2d.gradient.radial.outside1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.outside1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(200, 25, 10, 200, 25, 20);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#0f0');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1200,22 +1200,22 @@ test('2d.gradient.radial.outside1', function(t) {
 });
 
 
-test('2d.gradient.radial.outside2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.outside2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(200, 25, 20, 200, 25, 10);
   g.addColorStop(0, '#0f0');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1230,23 +1230,23 @@ test('2d.gradient.radial.outside2', function(t) {
 });
 
 
-test('2d.gradient.radial.outside3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.outside3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(200, 25, 20, 200, 25, 10);
   g.addColorStop(0, '#0f0');
   g.addColorStop(0.001, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+helpers.output(ctx);
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1261,22 +1261,22 @@ test('2d.gradient.radial.outside3', function(t) {
 });
 
 
-test('2d.gradient.radial.touch1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.touch1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(150, 25, 50, 200, 25, 100);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1291,16 +1291,16 @@ test('2d.gradient.radial.touch1', function(t) {
 });
 
 
-test('2d.gradient.radial.touch2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.touch2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(-80, 25, 70, 0, 25, 150);
   g.addColorStop(0, '#f00');
   g.addColorStop(0.01, '#0f0');
@@ -1308,7 +1308,7 @@ test('2d.gradient.radial.touch2', function(t) {
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1323,22 +1323,22 @@ test('2d.gradient.radial.touch2', function(t) {
 });
 
 
-test('2d.gradient.radial.touch3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.touch3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   var g = ctx.createRadialGradient(120, -15, 25, 140, -30, 50);
   g.addColorStop(0, '#f00');
   g.addColorStop(1, '#f00');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
@@ -1353,9 +1353,9 @@ test('2d.gradient.radial.touch3', function(t) {
 });
 
 
-test('2d.gradient.radial.transform.1', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.transform.1','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1377,9 +1377,9 @@ test('2d.gradient.radial.transform.1', function(t) {
 });
 
 
-test('2d.gradient.radial.transform.2', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.transform.2','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
@@ -1402,9 +1402,9 @@ test('2d.gradient.radial.transform.2', function(t) {
 });
 
 
-test('2d.gradient.radial.transform.3', function(t) {
-  var window = helpers.createWindow()
-  var document = window.document
+test('2d.gradient.radial.transform.3','green-100x50.png', function(t) {
+  var window = helpers.createWindow();
+  var document = window.document;
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
