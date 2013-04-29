@@ -4,9 +4,22 @@ var test = require('tap').test;
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
 
+var background = new Image();
+background.onload = function() {
+  console.log(background.imageData.data);
+}
+background.src = __dirname + '/images/background-tiled.png';
+
+var testQueue = [];
 module.exports.test = function(name, fn) {
   if (!argv.t || name.indexOf(argv.t) > -1) {
-    test(name, fn);
+    if (!background.complete) {
+      background.on('load', function() {
+        test(name, fn);
+      });
+    } else {
+      test(name, fn);
+    }
   }
 };
 
@@ -41,6 +54,7 @@ module.exports.createCanvas = function(doc, w, h) {
 
   el.getContext = function() {
     el.ctx = context.createContext(el, this.width, this.height);
+    el.ctx.drawImage(background, 0, 0);
     return el.ctx;
   }
 
@@ -119,11 +133,11 @@ module.exports.assertMatch = function(t, a, b, text_a, text_b) {
 
 module.exports.output = function(ctx, name) {
   name = name || 'out.png';
-  require('fs').writeFileSync('/Users/tmpvar/work/tmp/' + name, ctx.toPngBuffer());
+  require('fs').writeFileSync(__dirname + '/' + name, ctx.toPngBuffer());
 }
 module.exports.outputRaw = function(ctx, name) {
   name = name || 'out.raw';
-  require('fs').writeFileSync('/Users/tmpvar/work/tmp/' + name, ctx.toBuffer());
+  require('fs').writeFileSync(__dirname + '/' + name, ctx.toBuffer());
 }
 
 module.exports.loadImages = function(t, array, fn) {
