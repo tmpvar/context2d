@@ -2,7 +2,6 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.text.align.default',null, function(t) {
@@ -995,7 +994,7 @@ test('2d.text.font.parse.size.percentage.default',null, function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   var ctx2 = canvas2.getContext('2d');
   ctx.font = '1000% serif';
   helpers.assertEqual(t, ctx.font, '100px serif', "ctx.font", "'100px serif'");

@@ -2,7 +2,6 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.shadow.alpha.1','green-100x50.png', function(t) {
@@ -353,7 +352,7 @@ test('2d.shadow.blur.low','2d.shadow.blur.low.png', function(t) {
 test('2d.shadow.canvas.alpha','2d.shadow.canvas.alpha.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
+    { id : 'transparent50.png' , url: __dirname + '/../images/transparent50.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -361,7 +360,7 @@ test('2d.shadow.canvas.alpha','2d.shadow.canvas.alpha.png', function(t) {
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = 100;
     canvas2.height = 50;
     var ctx2 = canvas2.getContext('2d');
@@ -388,7 +387,7 @@ test('2d.shadow.canvas.basic','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -414,7 +413,7 @@ test('2d.shadow.canvas.transparent.1','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -438,7 +437,7 @@ test('2d.shadow.canvas.transparent.2','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -800,7 +799,7 @@ test('2d.shadow.gradient.transparent.2','green-100x50.png', function(t) {
 test('2d.shadow.image.alpha','2d.shadow.image.alpha.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
+    { id : 'transparent50.png' , url: __dirname + '/../images/transparent50.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -824,7 +823,7 @@ test('2d.shadow.image.alpha','2d.shadow.image.alpha.png', function(t) {
 test('2d.shadow.image.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -848,7 +847,7 @@ test('2d.shadow.image.basic','green-100x50.png', function(t) {
 test('2d.shadow.image.scale','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
+    { id : 'redtransparent.png' , url: __dirname + '/../images/redtransparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -874,7 +873,7 @@ test('2d.shadow.image.scale','green-100x50.png', function(t) {
 test('2d.shadow.image.section','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
+    { id : 'redtransparent.png' , url: __dirname + '/../images/redtransparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -900,7 +899,7 @@ test('2d.shadow.image.section','green-100x50.png', function(t) {
 test('2d.shadow.image.transparent.1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
+    { id : 'transparent.png' , url: __dirname + '/../images/transparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -924,7 +923,7 @@ test('2d.shadow.image.transparent.1','green-100x50.png', function(t) {
 test('2d.shadow.image.transparent.2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
+    { id : 'redtransparent.png' , url: __dirname + '/../images/redtransparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1062,7 +1061,7 @@ test('2d.shadow.outside','green-100x50.png', function(t) {
 test('2d.shadow.pattern.alpha','2d.shadow.pattern.alpha.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'transparent50.png' , url: __dirname + '/../philip/orig/images/transparent50.png' }
+    { id : 'transparent50.png' , url: __dirname + '/../images/transparent50.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1088,7 +1087,7 @@ test('2d.shadow.pattern.alpha','2d.shadow.pattern.alpha.png', function(t) {
 test('2d.shadow.pattern.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1114,7 +1113,7 @@ test('2d.shadow.pattern.basic','green-100x50.png', function(t) {
 test('2d.shadow.pattern.transparent.1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'transparent.png' , url: __dirname + '/../philip/orig/images/transparent.png' }
+    { id : 'transparent.png' , url: __dirname + '/../images/transparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1140,7 +1139,7 @@ test('2d.shadow.pattern.transparent.1','green-100x50.png', function(t) {
 test('2d.shadow.pattern.transparent.2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'redtransparent.png' , url: __dirname + '/../philip/orig/images/redtransparent.png' }
+    { id : 'redtransparent.png' , url: __dirname + '/../images/redtransparent.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;

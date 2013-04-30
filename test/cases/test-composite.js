@@ -2,13 +2,12 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -16,7 +15,7 @@ test('2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -35,7 +34,7 @@ test('2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
 test('2d.composite.canvas.destination-atop','2d.composite.canvas.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -43,7 +42,7 @@ test('2d.composite.canvas.destination-atop','2d.composite.canvas.destination-ato
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -62,7 +61,7 @@ test('2d.composite.canvas.destination-atop','2d.composite.canvas.destination-ato
 test('2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -70,7 +69,7 @@ test('2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.pn
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -89,7 +88,7 @@ test('2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.pn
 test('2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -97,7 +96,7 @@ test('2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -116,7 +115,7 @@ test('2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.
 test('2d.composite.canvas.destination-over','2d.composite.canvas.destination-over.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -124,7 +123,7 @@ test('2d.composite.canvas.destination-over','2d.composite.canvas.destination-ove
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -143,7 +142,7 @@ test('2d.composite.canvas.destination-over','2d.composite.canvas.destination-ove
 test('2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -151,7 +150,7 @@ test('2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -170,7 +169,7 @@ test('2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t
 test('2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -178,7 +177,7 @@ test('2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', fu
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -197,7 +196,7 @@ test('2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', fu
 test('2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -205,7 +204,7 @@ test('2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', functi
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -224,7 +223,7 @@ test('2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', functi
 test('2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -232,7 +231,7 @@ test('2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', func
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -251,7 +250,7 @@ test('2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', func
 test('2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -259,7 +258,7 @@ test('2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', fu
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -278,7 +277,7 @@ test('2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', fu
 test('2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -286,7 +285,7 @@ test('2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t) {
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = new Canvas();
+    var canvas2 = helpers.createCanvas(document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -540,7 +539,7 @@ test('2d.composite.globalAlpha.canvas','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -564,7 +563,7 @@ test('2d.composite.globalAlpha.canvaspattern','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -616,7 +615,7 @@ test('2d.composite.globalAlpha.fill','green-100x50.png', function(t) {
 test('2d.composite.globalAlpha.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -638,7 +637,7 @@ test('2d.composite.globalAlpha.image','green-100x50.png', function(t) {
 test('2d.composite.globalAlpha.imagepattern','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -703,7 +702,7 @@ test('2d.composite.globalAlpha.range',null, function(t) {
 test('2d.composite.image.copy','2d.composite.image.copy.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -725,7 +724,7 @@ test('2d.composite.image.copy','2d.composite.image.copy.png', function(t) {
 test('2d.composite.image.destination-atop','2d.composite.image.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -747,7 +746,7 @@ test('2d.composite.image.destination-atop','2d.composite.image.destination-atop.
 test('2d.composite.image.destination-in','2d.composite.image.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -769,7 +768,7 @@ test('2d.composite.image.destination-in','2d.composite.image.destination-in.png'
 test('2d.composite.image.destination-out','2d.composite.image.destination-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -791,7 +790,7 @@ test('2d.composite.image.destination-out','2d.composite.image.destination-out.pn
 test('2d.composite.image.destination-over','2d.composite.image.destination-over.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -813,7 +812,7 @@ test('2d.composite.image.destination-over','2d.composite.image.destination-over.
 test('2d.composite.image.lighter','2d.composite.image.lighter.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -835,7 +834,7 @@ test('2d.composite.image.lighter','2d.composite.image.lighter.png', function(t) 
 test('2d.composite.image.source-atop','2d.composite.image.source-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -857,7 +856,7 @@ test('2d.composite.image.source-atop','2d.composite.image.source-atop.png', func
 test('2d.composite.image.source-in','2d.composite.image.source-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -879,7 +878,7 @@ test('2d.composite.image.source-in','2d.composite.image.source-in.png', function
 test('2d.composite.image.source-out','2d.composite.image.source-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -901,7 +900,7 @@ test('2d.composite.image.source-out','2d.composite.image.source-out.png', functi
 test('2d.composite.image.source-over','2d.composite.image.source-over.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -923,7 +922,7 @@ test('2d.composite.image.source-over','2d.composite.image.source-over.png', func
 test('2d.composite.image.xor','2d.composite.image.xor.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow75.png' , url: __dirname + '/../philip/orig/images/yellow75.png' }
+    { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1574,7 +1573,7 @@ test('2d.composite.uncovered.fill.source-out','2d.composite.uncovered.fill.sourc
 test('2d.composite.uncovered.image.copy','2d.composite.uncovered.image.copy.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1597,7 +1596,7 @@ test('2d.composite.uncovered.image.copy','2d.composite.uncovered.image.copy.png'
 test('2d.composite.uncovered.image.destination-atop','2d.composite.uncovered.image.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1620,7 +1619,7 @@ test('2d.composite.uncovered.image.destination-atop','2d.composite.uncovered.ima
 test('2d.composite.uncovered.image.destination-in','2d.composite.uncovered.image.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1643,7 +1642,7 @@ test('2d.composite.uncovered.image.destination-in','2d.composite.uncovered.image
 test('2d.composite.uncovered.image.source-in','2d.composite.uncovered.image.source-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1666,7 +1665,7 @@ test('2d.composite.uncovered.image.source-in','2d.composite.uncovered.image.sour
 test('2d.composite.uncovered.image.source-out','2d.composite.uncovered.image.source-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1696,7 +1695,7 @@ test('2d.composite.uncovered.nocontext.copy','2d.composite.uncovered.nocontext.c
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'copy';
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1714,7 +1713,7 @@ test('2d.composite.uncovered.nocontext.destination-atop','2d.composite.uncovered
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'destination-atop';
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1732,7 +1731,7 @@ test('2d.composite.uncovered.nocontext.destination-in','2d.composite.uncovered.n
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'destination-in';
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1750,7 +1749,7 @@ test('2d.composite.uncovered.nocontext.source-in','2d.composite.uncovered.nocont
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'source-in';
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1768,7 +1767,7 @@ test('2d.composite.uncovered.nocontext.source-out','2d.composite.uncovered.nocon
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'source-out';
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1779,7 +1778,7 @@ test('2d.composite.uncovered.nocontext.source-out','2d.composite.uncovered.nocon
 test('2d.composite.uncovered.pattern.copy','2d.composite.uncovered.pattern.copy.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1802,7 +1801,7 @@ test('2d.composite.uncovered.pattern.copy','2d.composite.uncovered.pattern.copy.
 test('2d.composite.uncovered.pattern.destination-atop','2d.composite.uncovered.pattern.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1825,7 +1824,7 @@ test('2d.composite.uncovered.pattern.destination-atop','2d.composite.uncovered.p
 test('2d.composite.uncovered.pattern.destination-in','2d.composite.uncovered.pattern.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1848,7 +1847,7 @@ test('2d.composite.uncovered.pattern.destination-in','2d.composite.uncovered.pat
 test('2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.pattern.source-in.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1871,7 +1870,7 @@ test('2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.pattern.
 test('2d.composite.uncovered.pattern.source-out','2d.composite.uncovered.pattern.source-out.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;

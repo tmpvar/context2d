@@ -43,11 +43,18 @@ function CanvasGradient(type, opts) {
     );
   }
 
-  var stops = []
-
+  var stops = [];
+  var stopCache = {};
+  var idx = 0;
+  var last = -1;
+  var count = 0;
   this.addColorStop = function(offset, color) {
+
     if (isNaN(offset) || !isFinite(offset) || offset < 0 || offset > 1) {
-      throw new DOMException('color stop offset out of range', DOMException.INDEX_SIZE_ERR);
+      throw new DOMException(
+        'color stop offset out of range',
+        DOMException.INDEX_SIZE_ERR
+      );
     }
 
     var color = csscolor(color);
@@ -55,18 +62,39 @@ function CanvasGradient(type, opts) {
       throw new DOMException('color stop color', DOMException.SYNTAX_ERR);
     }
 
+    var key = offset + '-key';
+    if (typeof stopCache[key] === 'undefined') {
+      stopCache[key] = 0;
+    } else {
+      stopCache[key]+=.0000001;
+    }
+
     color.array[3] *= 255;
+
+    offset+=stopCache[key];
 
     stops.push({
       offset : offset,
-      color :  color.array
+      color : color.array,
+      idx: idx++
     });
+
   };
 
   this.apply = function(ctx) {
-    //if (stops.length < 2) { return; }
+
+    if (stops.length < 2) { return; }
+
+    stops.sort(function(a, b) {
+      return (a.idx < b.idx && a.offset <= b.offset) ? -1 : 1;
+    });
 
     if (type === 'linear') {
+
+      if (opts.x0 === opts.x1 && opts.y0 === opts.y1) {
+        return;
+      }
+
       ctx.setLinearGradientShader(
         opts.x0,
         opts.y0,
@@ -94,7 +122,7 @@ function CanvasGradient(type, opts) {
         opts.r1,
         stops
       );
-console.log('good to go');
+
       return true;
     }
   };
@@ -113,51 +141,49 @@ console.log('good to go');
 module.exports.CanvasGradient = CanvasGradient;
 
 module.exports.createContext = function(canvas, w, h) {
-  canvas = canvas || {};
 
-  var w = w || 300;
-  var h = h || 150;
+  canvas = canvas || {
+    width : w || 300,
+    height: h || 150
+  };
 
-  var ret = new Context2D(w, h);
+  var ret = new Context2D(canvas.width, canvas.height);
 
   var override = function(orig, fn) {
     ret[orig] = fn.bind(ret, ret[orig].bind(ret))
   };
 
-  // if (typeof canvas.width !== 'undefined' &&
-  //     typeof canvas.width !== 'undefined' &&
-  //     typeof canvas.addEventListener === 'function'
-  //   )
-  // {
-  //   canvas.addEventListener('resize', function(ev) {
-  //     console.log('resized');
-  //   });
-  // } else {
+  if (typeof canvas.width !== 'undefined' &&
+      typeof canvas.width !== 'undefined' &&
+      typeof canvas.addEventListener === 'function'
+    )
+  {
+    canvas.addEventListener('resize', function(ev) {
+      ret.width = canvas.width;
+      ret.height = canvas.height;
+    });
+  }
 
-  // delete canvas.width;
-  // delete canvas.height;
+  Object.defineProperty(ret, 'width', {
+    get : function() { return canvas.width },
+    set : function(w) {
+      if (canvas.width !== w) {
+        canvas.width = w;
+        ret.resize(canvas.width, canvas.height);
+      }
+    }
+  });
 
-  // Object.defineProperty(canvas, 'width', {
-  //   get: function() { return w; },
-  //   set: function(width) {
-  //     console.log('JS RESIZE', width);
-  //     w = width;
-  //     ret.resize(w, h);
-  //   }
-  // });
+  Object.defineProperty(ret, 'height', {
+    get : function() { return canvas.height },
+    set : function(h) {
+      if (canvas.h !== h) {
+        canvas.height = h;
+        ret.resize(canvas.width, canvas.height);
+      }
+    }
+  });
 
-  // Object.defineProperty(canvas, 'height', {
-  //   get: function() { return w; },
-  //   set: function(height) {
-  //     h = height;
-  //     ret.resize(w, h);
-  //   }
-  // });
-  //}
-
-  // TODO: track changes here
-  // ret.width = w;
-  // ret.height = h;
 
   Object.defineProperty(ret, 'canvas', {
     value : canvas
@@ -432,7 +458,9 @@ module.exports.createContext = function(canvas, w, h) {
       return {
         width : ret.width,
         height: ret.height,
-        data : ret.toBuffer()
+        get data() {
+          return ret.toBuffer();
+        }
       }
     }
   });
@@ -543,7 +571,6 @@ module.exports.createContext = function(canvas, w, h) {
 
   override('fillRect', function(fillRect, x, y, w, h) {
     if (fill && fill.type === 'gradient') {
-      console.log(fill.toString());
       if (!fill.apply(ret)) {
         return;
       }

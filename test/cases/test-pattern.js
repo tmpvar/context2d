@@ -2,13 +2,12 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.pattern.animated.gif','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'anim-gr.gif' , url: __dirname + '/../philip/orig/images/anim-gr.gif' }
+    { id : 'anim-gr.gif' , url: __dirname + '/../images/anim-gr.gif' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -41,7 +40,7 @@ test('2d.pattern.basic.canvas','green-100x50.png', function(t) {
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
   
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -69,7 +68,7 @@ test('2d.pattern.basic.canvas','green-100x50.png', function(t) {
 test('2d.pattern.basic.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -101,7 +100,7 @@ test('2d.pattern.basic.nocontext','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var pattern = ctx.createPattern(canvas2, 'no-repeat');
@@ -124,7 +123,7 @@ test('2d.pattern.basic.nocontext','green-100x50.png', function(t) {
 test('2d.pattern.basic.type',null, function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -183,7 +182,7 @@ test('2d.pattern.basic.zerocanvas',null, function(t) {
 test('2d.pattern.crosscanvas','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -193,7 +192,7 @@ test('2d.pattern.crosscanvas','green-100x50.png', function(t) {
 
     var img = images['green.png'];
     
-    var pattern = new Canvas().getContext('2d').createPattern(img, 'no-repeat');
+    var pattern = helpers.createCanvas(document).getContext('2d').createPattern(img, 'no-repeat');
     ctx.fillStyle = '#f00';
     ctx.fillRect(0, 0, 100, 50);
     ctx.fillStyle = pattern;
@@ -209,7 +208,7 @@ test('2d.pattern.crosscanvas','green-100x50.png', function(t) {
 test('2d.pattern.image.broken',null, function(t) {
 
   helpers.loadImages(t, [
-    { id : 'broken.png' , url: __dirname + '/../philip/orig/images/broken.png' }
+    { id : 'broken.png' , url: __dirname + '/../images/broken.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -264,8 +263,8 @@ test('2d.pattern.image.string',null, function(t) {
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
-    ctx.createPattern('/../philip/orig/images/red.png', 'repeat');
-  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('/../philip/orig/images/red.png', 'repeat')"); }
+    ctx.createPattern('../philip/orig/images/red.png', 'repeat');
+  } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.createPattern('../philip/orig/images/red.png', 'repeat')"); }
 
   t.end()
 });
@@ -293,7 +292,7 @@ test('2d.pattern.modify.canvas1','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -324,7 +323,7 @@ test('2d.pattern.modify.canvas2','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -355,7 +354,7 @@ test('2d.pattern.modify.canvas2','green-100x50.png', function(t) {
 test('2d.pattern.modify.image1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -376,7 +375,7 @@ test('2d.pattern.modify.image1','green-100x50.png', function(t) {
         helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
     });
-    img.src = '/../philip/orig/images/red.png';
+    img.src = '../philip/orig/images/red.png';
 
   });
 });
@@ -385,7 +384,7 @@ test('2d.pattern.modify.image1','green-100x50.png', function(t) {
 test('2d.pattern.modify.image2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -410,7 +409,7 @@ test('2d.pattern.modify.image2','green-100x50.png', function(t) {
         helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
     });
-    img.src = '/../philip/orig/images/red.png';
+    img.src = '../philip/orig/images/red.png';
 
   });
 });
@@ -419,7 +418,7 @@ test('2d.pattern.modify.image2','green-100x50.png', function(t) {
 test('2d.pattern.paint.norepeat.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -448,7 +447,7 @@ test('2d.pattern.paint.norepeat.basic','green-100x50.png', function(t) {
 test('2d.pattern.paint.norepeat.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -480,7 +479,7 @@ test('2d.pattern.paint.norepeat.coord1','green-100x50.png', function(t) {
 test('2d.pattern.paint.norepeat.coord2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green.png' , url: __dirname + '/../philip/orig/images/green.png' }
+    { id : 'green.png' , url: __dirname + '/../images/green.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -513,7 +512,7 @@ test('2d.pattern.paint.norepeat.coord2','green-100x50.png', function(t) {
 test('2d.pattern.paint.norepeat.coord3','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -546,7 +545,7 @@ test('2d.pattern.paint.norepeat.coord3','green-100x50.png', function(t) {
 test('2d.pattern.paint.norepeat.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red.png' , url: __dirname + '/../philip/orig/images/red.png' }
+    { id : 'red.png' , url: __dirname + '/../images/red.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -588,7 +587,7 @@ test('2d.pattern.paint.orientation.canvas','green-100x50.png', function(t) {
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
   
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
@@ -615,7 +614,7 @@ test('2d.pattern.paint.orientation.canvas','green-100x50.png', function(t) {
 test('2d.pattern.paint.orientation.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'rrgg-256x256.png' , url: __dirname + '/../philip/orig/images/rrgg-256x256.png' }
+    { id : 'rrgg-256x256.png' , url: __dirname + '/../images/rrgg-256x256.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -650,7 +649,7 @@ test('2d.pattern.paint.orientation.image','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeat.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
+    { id : 'green-16x16.png' , url: __dirname + '/../images/green-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -679,7 +678,7 @@ test('2d.pattern.paint.repeat.basic','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeat.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
+    { id : 'rgrg-256x256.png' , url: __dirname + '/../images/rgrg-256x256.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -709,7 +708,7 @@ test('2d.pattern.paint.repeat.coord1','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeat.coord2','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'ggrr-256x256.png' , url: __dirname + '/../philip/orig/images/ggrr-256x256.png' }
+    { id : 'ggrr-256x256.png' , url: __dirname + '/../images/ggrr-256x256.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -735,7 +734,7 @@ test('2d.pattern.paint.repeat.coord2','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeat.coord3','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'rgrg-256x256.png' , url: __dirname + '/../philip/orig/images/rgrg-256x256.png' }
+    { id : 'rgrg-256x256.png' , url: __dirname + '/../images/rgrg-256x256.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -764,7 +763,7 @@ test('2d.pattern.paint.repeat.coord3','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeat.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
+    { id : 'green-16x16.png' , url: __dirname + '/../images/green-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -794,7 +793,7 @@ test('2d.pattern.paint.repeat.outside','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeatx.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
+    { id : 'green-16x16.png' , url: __dirname + '/../images/green-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -825,7 +824,7 @@ test('2d.pattern.paint.repeatx.basic','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeatx.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
+    { id : 'red-16x16.png' , url: __dirname + '/../images/red-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -860,7 +859,7 @@ test('2d.pattern.paint.repeatx.coord1','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeatx.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
+    { id : 'red-16x16.png' , url: __dirname + '/../images/red-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -892,7 +891,7 @@ test('2d.pattern.paint.repeatx.outside','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeaty.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-16x16.png' , url: __dirname + '/../philip/orig/images/green-16x16.png' }
+    { id : 'green-16x16.png' , url: __dirname + '/../images/green-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -923,7 +922,7 @@ test('2d.pattern.paint.repeaty.basic','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeaty.coord1','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
+    { id : 'red-16x16.png' , url: __dirname + '/../images/red-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -958,7 +957,7 @@ test('2d.pattern.paint.repeaty.coord1','green-100x50.png', function(t) {
 test('2d.pattern.paint.repeaty.outside','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'red-16x16.png' , url: __dirname + '/../philip/orig/images/red-16x16.png' }
+    { id : 'red-16x16.png' , url: __dirname + '/../images/red-16x16.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1005,7 +1004,7 @@ test('2d.pattern.repeat.case',null, function(t) {
 test('2d.pattern.repeat.empty','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
+    { id : 'green-1x1.png' , url: __dirname + '/../images/green-1x1.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;
@@ -1033,7 +1032,7 @@ test('2d.pattern.repeat.empty','green-100x50.png', function(t) {
 test('2d.pattern.repeat.null','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
-    { id : 'green-1x1.png' , url: __dirname + '/../philip/orig/images/green-1x1.png' }
+    { id : 'green-1x1.png' , url: __dirname + '/../images/green-1x1.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;

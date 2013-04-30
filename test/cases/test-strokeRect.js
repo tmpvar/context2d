@@ -2,7 +2,6 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.strokeRect.basic','green-100x50.png', function(t) {

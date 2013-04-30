@@ -2,7 +2,6 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.imageData.create1.basic',null, function(t) {
@@ -971,7 +970,7 @@ test('2d.imageData.put.cross','green-100x50.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = new Canvas();
+  var canvas2 = helpers.createCanvas(document);
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#0f0';
   ctx2.fillRect(0, 0, 100, 50)

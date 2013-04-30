@@ -2,13 +2,12 @@ var helpers = require('../helpers');
 var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
-var domino = require('domino');
 var DOMException = helpers.DOMException;
 var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
 test('2d.voidreturn',null, function(t) {
 
   helpers.loadImages(t, [
-    { id : 'yellow.png' , url: __dirname + '/../philip/orig/images/yellow.png' }
+    { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
   ], function(images) {
     var window = helpers.createWindow();
     var document = window.document;

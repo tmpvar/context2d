@@ -129,7 +129,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 Context2D::Context2D(int w, int h) {
   SkBitmap bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w*2, h*2);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
   bitmap.allocPixels();
 
   this->canvas = new SkCanvas(bitmap);
@@ -167,36 +167,19 @@ METHOD(Resize) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
   int width = args[0]->Uint32Value() & 0xff;
   int height = args[1]->Uint32Value() & 0xff;
 
-//printf("Resize to %i,%i\n", width, height);
+  SkDevice *device = ctx->canvas->createCompatibleDevice(
+    SkBitmap::kARGB_8888_Config,
+    width,
+    height,
+    false
+  );
 
-  // SkBitmap bitmap;
-
-  // bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  // bitmap.allocPixels();
-
-  // delete ctx->canvas;
-
-  // ctx->canvas = new SkCanvas(bitmap);
-  // ctx->canvas->clear(0x00000000);
-
-//printf("HERERERERERERERER\n\n\n\n\n");
-
-
-// printf("Resize to %d,%d", width, height);
-//   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(true);
-//   bitmap.lockPixels();
-//   bitmap.setConfig(
-//     bitmap.getConfig(),
-//     SkDoubleToScalar(width),
-//     SkDoubleToScalar(height)
-//   );
-
-//   bitmap.allocPixels();
-//   bitmap.unlockPixels();
+  // TODO: check for memory leakage.
+  SkSafeUnref(ctx->canvas);
+  ctx->canvas = new SkCanvas(device);
 
   scope.Close(Undefined());
 }
@@ -258,12 +241,13 @@ METHOD(ToBuffer) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
+
+  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(true);
   size_t size = bitmap.getSize();
 
   ctx->canvas->flush();
-
   bitmap.lockPixels();
+
   Buffer *buffer = Buffer::New(size);
   memcpy(Buffer::Data(buffer), (const char *)bitmap.getPixels(), size);
   bitmap.unlockPixels();
@@ -546,7 +530,7 @@ METHOD(SetLinearGradientShader) {
     uint32_t stopCount = stops->Length();
 
 
-    if (stopCount) {
+    if (stopCount > 1) {
 
       colors = new SkColor[stopCount];
       offsets = new SkScalar[stopCount];
@@ -568,22 +552,23 @@ METHOD(SetLinearGradientShader) {
                                       color->Get(1)->Uint32Value() & 0xff,
                                       color->Get(2)->Uint32Value() & 0xff);
       }
+
+
+      SkShader *gradientShader = SkGradientShader::CreateLinear(
+        points,
+        colors,
+        offsets,
+        stopCount,
+        SkShader::kRepeat_TileMode
+      );
+
+      ctx->paint.setShader(gradientShader);
+
+      delete[] colors;
+      delete[] offsets;
+
+      gradientShader->unref();
     }
-
-    SkShader *gradientShader = SkGradientShader::CreateLinear(
-      points,
-      colors,
-      offsets,
-      stopCount,
-      SkShader::kClamp_TileMode
-    );
-
-    ctx->paint.setShader(gradientShader);
-
-    delete[] colors;
-    delete[] offsets;
-
-    gradientShader->unref();
   }
 
   return scope.Close(Undefined());
@@ -593,15 +578,6 @@ METHOD(SetRadialGradientShader) {
  HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  // printf("c++ land.. %lf,%lf,%lf,%lf,%lf,%lf",
-  //   SkDoubleToScalar(args[0]->NumberValue()),
-  //   SkDoubleToScalar(args[1]->NumberValue()),
-  //   SkDoubleToScalar(args[2]->NumberValue()),
-  //   SkDoubleToScalar(args[3]->NumberValue()),
-  //   SkDoubleToScalar(args[4]->NumberValue()),
-  //   SkDoubleToScalar(args[5]->NumberValue())
-  // );
 
   SkPoint start = {
     SkDoubleToScalar(args[0]->NumberValue()),
@@ -625,8 +601,8 @@ METHOD(SetRadialGradientShader) {
   if (args[6]->IsArray()) {
     Handle<Array> stops = Handle<Array>::Cast(args[6]);
     uint32_t stopCount = stops->Length();
-printf("stop count %u\n\n", stopCount);
-    if (stopCount) {
+
+    if (stopCount > 1) {
 
       colors = new SkColor[stopCount];
       offsets = new SkScalar[stopCount];
@@ -648,27 +624,28 @@ printf("stop count %u\n\n", stopCount);
                                       color->Get(1)->Uint32Value() & 0xff,
                                       color->Get(2)->Uint32Value() & 0xff);
       }
+
+      SkShader *gradientShader = SkGradientShader::CreateTwoPointConical(
+        start,
+        startRadius,
+        end,
+        endRadius,
+        colors,
+        offsets,
+        stopCount,
+        SkShader::kClamp_TileMode
+      );
+
+      assert(gradientShader);
+
+      ctx->paint.setShader(gradientShader);
+
+      delete[] colors;
+      delete[] offsets;
+
+      gradientShader->unref();
+
     }
-
-    SkShader *gradientShader = SkGradientShader::CreateTwoPointConical(
-      start,
-      startRadius,
-      end,
-      endRadius,
-      colors,
-      offsets,
-      stopCount,
-      SkShader::kClamp_TileMode
-    );
-
-    assert(gradientShader);
-
-    ctx->paint.setShader(gradientShader);
-
-    delete[] colors;
-    delete[] offsets;
-
-    gradientShader->unref();
   }
 
   return scope.Close(Undefined());
