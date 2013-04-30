@@ -13,6 +13,26 @@
 #include "SkRandom.h"
 #include "SkColorPriv.h"
 
+static void test_clz(skiatest::Reporter* reporter) {
+    REPORTER_ASSERT(reporter, 32 == SkCLZ(0));
+    REPORTER_ASSERT(reporter, 31 == SkCLZ(1));
+    REPORTER_ASSERT(reporter, 1 == SkCLZ(1 << 30));
+    REPORTER_ASSERT(reporter, 0 == SkCLZ(~0U));
+    
+    SkRandom rand;
+    for (int i = 0; i < 1000; ++i) {
+        uint32_t mask = rand.nextU();
+        // need to get some zeros for testing, but in some obscure way so the
+        // compiler won't "see" that, and work-around calling the functions.
+        mask >>= (mask & 31);
+        int intri = SkCLZ(mask);
+        int porta = SkCLZ_portable(mask);
+        REPORTER_ASSERT(reporter, intri == porta);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static float sk_fsel(float pred, float result_ge, float result_lt) {
     return pred >= 0 ? result_ge : result_lt;
 }
@@ -623,6 +643,7 @@ static void TestMath(skiatest::Reporter* reporter) {
     if (false) test_blend31();  // avoid bit rot, suppress warning
 
     test_muldivround(reporter);
+    test_clz(reporter);
 }
 
 #include "TestClassDef.h"

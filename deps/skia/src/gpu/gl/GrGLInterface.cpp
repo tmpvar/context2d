@@ -59,9 +59,7 @@ bool GrGLInterface::validate(GrGLBinding binding) const {
         NULL == fClearStencil ||
         NULL == fColorMask ||
         NULL == fCompileShader ||
-#if 0  //  FIXME: Remove this once Chromium is updated to provide this function
         NULL == fCopyTexSubImage2D ||
-#endif
         NULL == fCreateProgram ||
         NULL == fCreateShader ||
         NULL == fCullFace ||
@@ -293,6 +291,15 @@ bool GrGLInterface::validate(GrGLBinding binding) const {
         if (NULL == fTexStorage2D) {
             return false;
         }
+    }
+
+    if (extensions.has("GL_EXT_discard_framebuffer")) {
+// FIXME: Remove this once Chromium is updated to provide this function
+#if 0
+        if (NULL == fDiscardFramebuffer) {
+            return false;
+        }
+#endif
     }
 
     // FBO MSAA

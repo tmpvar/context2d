@@ -996,7 +996,7 @@ public:
 
             // We don't try to optimize for this case at all
             if (NULL == inputColor) {
-                builder->fsCodeAppendf("\tconst vec4 ones = %s;\n", GrGLSLOnesVecf(4));
+                builder->fsCodeAppendf("\t\tconst vec4 ones = %s;\n", GrGLSLOnesVecf(4));
                 inputColor = "ones";
             }
 
@@ -1135,14 +1135,16 @@ public:
                               const char* final,
                               const char* src,
                               const char* dst) {
-            builder->fsCodeAppendf("\t\t%s.a = 1.0 - (1.0 - %s.a) * (1.0 - %s.a);\n",
-                                   final, dst, src);
-            builder->fsCodeAppendf("\t\t%s.rgb = mix(2.0 * %s.rgb * %s.rgb, ",
-                                   final, src, dst);
-            builder->fsCodeAppendf("%s.aaa * %s.aaa - 2.0 * (%s.aaa - %s.rgb) * (%s.aaa - %s.rgb),",
-                                   src, dst, dst, dst, src, src);
-            builder->fsCodeAppendf("vec3(greaterThan(2.0 * %s.rgb, %s.aaa)));\n",
-                                   src, src);
+            static const char kComponents[] = {'r', 'g', 'b'};
+            for (size_t i = 0; i < SK_ARRAY_COUNT(kComponents); ++i) {
+                char component = kComponents[i];
+                builder->fsCodeAppendf("\t\tif (2.0 * %s.%c <= %s.a) {\n", src, component, src);
+                builder->fsCodeAppendf("\t\t\t%s.%c = 2.0 * %s.%c * %s.%c;\n", final, component, src, component, dst, component);
+                builder->fsCodeAppend("\t\t} else {\n");
+                builder->fsCodeAppendf("\t\t\t%s.%c = %s.a * %s.a - 2.0 * (%s.a - %s.%c) * (%s.a - %s.%c);\n",
+                                       final, component, src, dst, dst, dst, component, src, src, component);
+                builder->fsCodeAppend("\t\t}\n");
+            }
             builder->fsCodeAppendf("\t\t%s.rgb += %s.rgb * (1.0 - %s.a) + %s.rgb * (1.0 - %s.a);\n",
                                    final, src, dst, dst, src);
         }
@@ -1289,7 +1291,10 @@ public:
                                   getSatBody.c_str(),
                                   &getFunction);
 
-            // Emit a helper that sets the saturation given sorted input channels
+            // Emit a helper that sets the saturation given sorted input channels. This used
+            // to use inout params for min, mid, and max components but that seems to cause
+            // problems on PowerVR drivers. So instead it returns a vec3 where r, g ,b are the
+            // adjusted min, mid, and max inputs, respectively.
             SkString helperFunction;
             GrGLShaderVar helperArgs[] = {
                 GrGLShaderVar("minComp", kFloat_GrSLType),
@@ -1297,22 +1302,20 @@ public:
                 GrGLShaderVar("maxComp", kFloat_GrSLType),
                 GrGLShaderVar("sat", kFloat_GrSLType),
             };
-            helperArgs[0].setTypeModifier(GrGLShaderVar::kInOut_TypeModifier);
-            helperArgs[1].setTypeModifier(GrGLShaderVar::kInOut_TypeModifier);
-            helperArgs[2].setTypeModifier(GrGLShaderVar::kInOut_TypeModifier);
-            SkString helperBody;
-            helperBody.append("\tif (minComp < maxComp) {\n"
-                              "\t\tmidComp = sat * (midComp - minComp) / (maxComp - minComp);\n"
-                              "\t\tmaxComp = sat;\n"
-                              "\t} else {\n"
-                              "\t\tmidComp = maxComp = 0.0;\n"
-                              "\t}\n"
-                              "\tminComp = 0.0;\n");
+            static const char kHelperBody[] = "\tif (minComp < maxComp) {\n"
+                                              "\t\tvec3 result;\n"
+                                              "\t\tresult.r = 0.0;\n"
+                                              "\t\tresult.g = sat * (midComp - minComp) / (maxComp - minComp);\n"
+                                              "\t\tresult.b = sat;\n"
+                                              "\t\treturn result;\n"
+                                              "\t} else {\n"
+                                              "\t\treturn vec3(0, 0, 0);\n"
+                                              "\t}\n";
             builder->emitFunction(GrGLShaderBuilder::kFragment_ShaderType,
-                                  kVoid_GrSLType,
+                                  kVec3f_GrSLType,
                                   "set_saturation_helper",
                                   SK_ARRAY_COUNT(helperArgs), helperArgs,
-                                  helperBody.c_str(),
+                                  kHelperBody,
                                   &helperFunction);
 
             GrGLShaderVar setSatArgs[] = {
@@ -1324,20 +1327,20 @@ public:
             setSatBody.appendf("\tfloat sat = %s(satColor);\n"
                                "\tif (hueLumColor.r <= hueLumColor.g) {\n"
                                "\t\tif (hueLumColor.g <= hueLumColor.b) {\n"
-                               "\t\t\t%s(hueLumColor.r, hueLumColor.g, hueLumColor.b, sat);\n"
+                               "\t\t\thueLumColor.rgb = %s(hueLumColor.r, hueLumColor.g, hueLumColor.b, sat);\n"
                                "\t\t} else if (hueLumColor.r <= hueLumColor.b) {\n"
-                               "\t\t\t%s(hueLumColor.r, hueLumColor.b, hueLumColor.g, sat);\n"
+                               "\t\t\thueLumColor.rbg = %s(hueLumColor.r, hueLumColor.b, hueLumColor.g, sat);\n"
                                "\t\t} else {\n"
-                               "\t\t\t%s(hueLumColor.b, hueLumColor.r, hueLumColor.g, sat);\n"
+                               "\t\t\thueLumColor.brg = %s(hueLumColor.b, hueLumColor.r, hueLumColor.g, sat);\n"
                                "\t\t}\n"
                                "\t} else if (hueLumColor.r <= hueLumColor.b) {\n"
-                               "\t\t%s(hueLumColor.g, hueLumColor.r, hueLumColor.b, sat);\n"
+                               "\t\thueLumColor.grb = %s(hueLumColor.g, hueLumColor.r, hueLumColor.b, sat);\n"
                                "\t} else if (hueLumColor.g <= hueLumColor.b) {\n"
-                               "\t\t%s(hueLumColor.g, hueLumColor.b, hueLumColor.r, sat);\n"
+                               "\t\thueLumColor.gbr = %s(hueLumColor.g, hueLumColor.b, hueLumColor.r, sat);\n"
                                "\t} else {\n"
-                               "\t\t%s(hueLumColor.b, hueLumColor.g, hueLumColor.r, sat);\n"
+                               "\t\thueLumColor.bgr = %s(hueLumColor.b, hueLumColor.g, hueLumColor.r, sat);\n"
                                "\t}\n"
-                               "\treturn hueLumColor;",
+                               "\treturn hueLumColor;\n",
                                getFunction.c_str(), helpFunc, helpFunc, helpFunc, helpFunc,
                                helpFunc, helpFunc);
             builder->emitFunction(GrGLShaderBuilder::kFragment_ShaderType,
@@ -1368,10 +1371,7 @@ GrEffectRef* XferEffect::TestCreate(SkMWCRandom* rand,
                                     GrContext*,
                                     const GrDrawTargetCaps&,
                                     GrTexture*[]) {
-    int mode;
-    do {
-        mode = rand->nextRangeU(SkXfermode::kLastCoeffMode + 1, SkXfermode::kLastSeparableMode);
-    } while (mode == SkXfermode::kHardLight_Mode);
+    int mode = rand->nextRangeU(SkXfermode::kLastCoeffMode + 1, SkXfermode::kLastSeparableMode);
 
     static AutoEffectUnref gEffect(SkNEW_ARGS(XferEffect, (static_cast<SkXfermode::Mode>(mode))));
     return CreateEffectRef(gEffect);
