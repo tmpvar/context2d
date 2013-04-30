@@ -376,6 +376,10 @@ module.exports.createContext = function(canvas, w, h) {
       dh = args[7];
     }
 
+    if (!dw || ! dh) {
+      return;
+    }
+
     if (dx < 0 || dy < 0) {
       return;
     }
@@ -446,7 +450,7 @@ module.exports.createContext = function(canvas, w, h) {
 
 
     if (!sh || !sw || !dh || !dw) {
-      throw new DOMException('invalid image dimensions', DOMException.INDEX_SIZE_ERR);
+      throw new DOMException('invalid image dimensions (' + i.src + ')', DOMException.INDEX_SIZE_ERR);
     }
 
     ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
