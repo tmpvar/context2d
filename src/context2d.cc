@@ -331,22 +331,24 @@ METHOD(Transform) {
       !args[4]->IsUndefined() &&
       !args[5]->IsUndefined())
   {
-    double a = args[0]->NumberValue();
-    double b = args[1]->NumberValue();
-    double c = args[2]->NumberValue();
-    double d = args[3]->NumberValue();
-    double e = args[4]->NumberValue();
-    double f = args[5]->NumberValue();
+    SkScalar a = SkDoubleToScalar(args[0]->NumberValue());
+    SkScalar b = SkDoubleToScalar(args[1]->NumberValue());
+    SkScalar c = SkDoubleToScalar(args[2]->NumberValue());
+    SkScalar d = SkDoubleToScalar(args[3]->NumberValue());
+    SkScalar e = SkDoubleToScalar(args[4]->NumberValue());
+    SkScalar f = SkDoubleToScalar(args[5]->NumberValue());
 
     SkMatrix44 m;
+
     m.set3x3(
-      a, b, c,
-      d, e, f,
+      a, c, e,
+      b, d, f,
       0, 0, 1
     );
 
     Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-    ctx->canvas->concat(m);
+
+    assert(ctx->canvas->concat(m));
   }
 
   return scope.Close(Undefined());

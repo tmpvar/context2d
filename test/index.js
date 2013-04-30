@@ -21,7 +21,7 @@
   // 'cases/test-strokeRect',
   // 'cases/test-strokeStyle',
   // 'cases/test-text',
-  // 'cases/test-transformation',
+  'cases/test-transformation',
   'cases/test-voidreturn',
 
   // These are <canvas> specific and not needed for context2d tests

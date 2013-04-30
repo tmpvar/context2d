@@ -1,6 +1,10 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
 
+var valid = function(a) {
+  return !isNaN(a) && isFinite(a);
+};
+
 // TODO: prefer to lookup ownerDocument and find the DOMException
 //       class if in a dom environment.  Otherwise, emit events,
 //       like a sane node program
@@ -384,10 +388,6 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
-    var valid = function(a) {
-      return !isNaN(a) && isFinite(a);
-    };
-
     if (!valid(dw) ||
         !valid(dh) ||
         !valid(sw) ||
@@ -560,17 +560,19 @@ module.exports.createContext = function(canvas, w, h) {
   };
 
   ret.setTransform = function(a,b,c,d,e,f) {
-    if (
-      typeof a !== 'undefined' &&
-      typeof b !== 'undefined' &&
-      typeof c !== 'undefined' &&
-      typeof d !== 'undefined' &&
-      typeof e !== 'undefined' &&
-      typeof f !== 'undefined'
+    if (!valid(a) ||
+        !valid(b) ||
+        !valid(c) ||
+        !valid(d) ||
+        !valid(e) ||
+        !valid(f)
     ) {
-      this.resetMatrix();
-      this.transform(a,b,c,d,e,f);
+      return;
     }
+
+    this.resetMatrix();
+    this.transform(a,b,c,d,e,f);
+
   };
 
   override('fillRect', function(fillRect, x, y, w, h) {
@@ -581,6 +583,40 @@ module.exports.createContext = function(canvas, w, h) {
     }
     fillRect(x, y, w, h);
   });
+
+  override('scale', function(scale, x, y) {
+    if (!valid(x) || !valid(y)) {
+      return;
+    }
+    scale(x, y);
+  });
+
+  override('translate', function(translate, x, y) {
+    if (!valid(x) || !valid(y)) {
+      return;
+    }
+    translate(x, y);
+  });
+
+  override('transform', function(transform, a, b, c, d, e, f) {
+    if (!valid(a) ||
+        !valid(b) ||
+        !valid(c) ||
+        !valid(d) ||
+        !valid(e) ||
+        !valid(f)
+    ) {
+      return;
+    }
+    transform(a, b, c, d, e, f);
+  });
+
+  override('rotate', function(rotate, rads) {
+    if (!valid(rads)) {
+      return;
+    }
+    rotate(rads);
+  })
 
   return ret;
 };
