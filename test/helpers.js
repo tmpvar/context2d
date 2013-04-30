@@ -78,6 +78,11 @@ module.exports.test = function(name, image, fn) {
 module.exports.createWindow = function() {
   var window = domino.createWindow('<p />');
   window.CanvasGradient = context.CanvasGradient;
+  window.ImageData = context.ImageData;
+  window.CanvasPixelArray = context.CanvasPixelArray;
+
+
+
   return window;
 }
 

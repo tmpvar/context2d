@@ -1084,10 +1084,10 @@ METHOD(DrawImageBuffer) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  if (!Buffer::HasInstance(args[0])) {
-    return ThrowException(Exception::Error(
-                String::New("First argument needs to be a buffer")));
-  }
+  // if (!Buffer::HasInstance(args[0])) {
+  //   return ThrowException(Exception::Error(
+  //               String::New("First argument needs to be a buffer")));
+  // }
 
   Local<Object> buffer_obj = args[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
@@ -1141,9 +1141,49 @@ METHOD(CreateImageData) {
 METHOD(GetImageData) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  SkDevice* device = ctx->canvas->getDevice();
 
+  int32_t sx = args[0]->IntegerValue();
+  int32_t sy = args[1]->IntegerValue();
+  int32_t sw = args[2]->IntegerValue();
+  int32_t sh = args[3]->IntegerValue();
+  SkIRect srcRect = { sx, sy, sx+sw, sy+sh };
 
+  SkIRect bounds;
+  bounds.set(0, 0, device->width(), device->height());
+  if (!bounds.intersect(srcRect)) {
+      return scope.Close(Undefined());
+  }
+
+  SkBitmap bitmap;
+  bitmap.setConfig(
+    SkBitmap::kARGB_8888_Config,
+    bounds.width(),
+    bounds.height()
+  );
+
+  if (ctx->canvas->readPixels(&bitmap, bounds.fLeft, bounds.fTop)) {
+
+    size_t size = bitmap.getSize();
+
+    bitmap.lockPixels();
+    Buffer *buffer = Buffer::New(size);
+    memcpy(Buffer::Data(buffer), (const char *)bitmap.getPixels(), size);
+    bitmap.unlockPixels();
+
+    Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
+    Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
+    Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+    Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+
+    Handle<Object> obj = Object::New();
+    obj->Set(String::NewSymbol("width"), Number::New(bounds.width()));
+    obj->Set(String::NewSymbol("height"), Number::New(bounds.height()));
+    obj->Set(String::NewSymbol("data"), actualBuffer);
+
+    return scope.Close(obj);
+  }
 
   return scope.Close(Undefined());
 }

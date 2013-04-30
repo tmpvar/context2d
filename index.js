@@ -1,5 +1,6 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
+var util = require('util');
 
 var valid = function(a) {
   return !isNaN(a) && isFinite(a);
@@ -143,6 +144,22 @@ function CanvasGradient(type, opts) {
 }
 
 module.exports.CanvasGradient = CanvasGradient;
+
+function ImageData(buffer, w, h) {
+  this.width = w;
+  this.height = h;
+  this.data = buffer;
+}
+
+module.exports.ImageData = ImageData;
+
+function CanvasPixelArray() {
+  Buffer.apply(this, arguments);
+}
+
+util.inherits(CanvasPixelArray, Buffer);
+
+module.exports.CanvasPixelArray = CanvasPixelArray;
 
 module.exports.createContext = function(canvas, w, h) {
 
@@ -616,7 +633,89 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
     rotate(rads);
+  });
+
+  var validateWH = function(w, h) {
+    if (!valid(w) || !valid(h)) {
+      throw new DOMException('invalid dimensions', DOMException.NOT_SUPPORTED_ERR);
+    }
+
+    if (!w || !h) {
+      throw new DOMException('invalid dimensions', DOMException.INDEX_SIZE_ERR);
+    }
+  }
+
+  override('getImageData', function(getImageData, sx, sy, sw, sh) {
+    if (!valid(sx) || !valid(sy)) {
+      throw new DOMException('invalid coords', DOMException.NOT_SUPPORTED_ERR);
+    }
+
+    validateWH(sw, sh);
+
+
+    if (sw < 0) {
+      sx += sw;
+      sw = Math.abs(sw);
+    }
+
+    if (sh < 0) {
+      sy += sh;
+      sh = Math.abs(sh);
+    }
+
+
+    sx = Math.round(Math.abs(sx));
+    sy = Math.round(Math.abs(sy));
+    sw = Math.round(sw) || 1;
+    sh = Math.round(sh) || 1;
+
+    var obj = getImageData(sx, sy, sw, sh);
+    return new ImageData(obj.data, obj.width, obj.height);
+  });
+
+  override('putImageData', function(putImageData, id, dx, dy) {
+    if (!id) {
+      throw new DOMException('invalid datatype', DOMException.TYPE_MISMATCH_ERR);
+    }
+
+    if (!(id instanceof ImageData)) {
+      throw new DOMException('invalid datatype', DOMException.TYPE_MISMATCH_ERR);
+    }
+
+    // ret.drawImage({
+    //   width : id.width,
+    //   height: id.height,
+    //   imageData : id
+    // }, dx, dy);
+
+    //putImageData(id, dx, dy);
   })
+
+  ret.createImageData = function(obj, h) {
+    if (typeof obj === 'undefined' || obj === null) {
+      throw new DOMException('invalid object', DOMException.NOT_SUPPORTED_ERR);
+    }
+
+
+    var w;
+    if (typeof h !== 'undefined') {
+      w = obj;
+    } else {
+      w = obj.width;
+      h = obj.height;
+    }
+
+    validateWH(w, h)
+
+    w = Math.round(Math.abs(w)) || 1;
+    h = Math.round(Math.abs(h)) || 1;
+
+
+
+    var buf = new CanvasPixelArray(w * h * 4);
+    buf.fill(0);
+    return new ImageData(buf, w, h);
+  };
 
   return ret;
 };
