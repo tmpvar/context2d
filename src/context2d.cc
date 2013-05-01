@@ -112,7 +112,6 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(PutImageData, putImageData);
   PROTOTYPE_METHOD(GetLineWidth, getLineWidth);
   PROTOTYPE_METHOD(SetLineWidth, setLineWidth);
-  PROTOTYPE_METHOD(GetLineCap, getLineCap);
   PROTOTYPE_METHOD(SetLineCap, setLineCap);
   PROTOTYPE_METHOD(SetLineJoin, setLineJoin);
   PROTOTYPE_METHOD(GetMiterLimit, getMiterLimit);
@@ -1321,22 +1320,13 @@ METHOD(SetLineWidth) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetLineCap) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
-
-  return scope.Close(Undefined());
-}
-
 METHOD(SetLineCap) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
+  int c = args[0]->IntegerValue();
+  ctx->paint.setStrokeCap((SkPaint::Cap)c);
 
   return scope.Close(Undefined());
 }

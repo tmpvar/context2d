@@ -579,9 +579,26 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
+  var lineCapMap = {
+    butt : 0,
+    round : 1,
+    square : 2
+  };
+  var lineCap = 'butt';
 
-//            attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
-//            attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
+  Object.defineProperty(ret, 'lineCap', {
+    get : function() {
+      return lineCap;
+    },
+    set : function(val) {
+      if (typeof lineCapMap[val] !== 'undefined') {
+        lineCap = val;
+        ret.setLineCap(lineCapMap[val]);
+      }
+    }
+  });
+
+
 //            attribute double miterLimit; // (default 10)
 //   void setLineDash(sequence<double> segments); // default empty
 //   sequence<double> getLineDash();
