@@ -16,7 +16,8 @@ background.listeners = 10;
 var testQueue = [];
 module.exports.test = function(name, image, fn) {
   var skip = {
-    '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517'
+    '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517',
+    '2d.drawImage.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1'
   };
 
   if (skip[name]) {
