@@ -28,7 +28,7 @@ class Context2D : public ObjectWrap {
     static void Init(v8::Handle<v8::Object> exports);
     SkCanvas *canvas;
     SkPath path, subpath;
-    SkPaint paint, shadowPaint;
+    SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
     double globalAlpha, shadowX, shadowY, shadowBlur;
 
@@ -72,10 +72,8 @@ class Context2D : public ObjectWrap {
 
     // colors and styles (see also the CanvasDrawingStyles interface)
     OBJECT_METHOD(SetStrokeStyle);
-    OBJECT_METHOD(GetStrokeStyle);
     OBJECT_METHOD(SetFillStylePattern);
     OBJECT_METHOD(SetFillStyle);
-    OBJECT_METHOD(GetFillStyle);
     OBJECT_METHOD(CreatePattern);
 
     // shadows

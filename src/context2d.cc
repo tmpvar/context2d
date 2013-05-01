@@ -66,10 +66,8 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetImageSmoothingEnabled, setImageSmoothingEnabled);
   PROTOTYPE_METHOD(GetImageSmoothingEnabled, getImageSmoothingEnabled);
   PROTOTYPE_METHOD(SetStrokeStyle, setStrokeStyle);
-  PROTOTYPE_METHOD(GetStrokeStyle, getStrokeStyle);
   PROTOTYPE_METHOD(SetFillStylePattern, setFillStylePattern);
   PROTOTYPE_METHOD(SetFillStyle, setFillStyle);
-  PROTOTYPE_METHOD(GetFillStyle, getFillStyle);
   PROTOTYPE_METHOD(SetLinearGradientShader, setLinearGradientShader);
   PROTOTYPE_METHOD(SetRadialGradientShader, setRadialGradientShader);
   PROTOTYPE_METHOD(SetShadowOffsetX, setShadowOffsetX);
@@ -139,6 +137,11 @@ Context2D::Context2D(int w, int h) {
 
   this->paint.setXfermodeMode(this->globalCompositeOperation);
   this->paint.setColor(SK_ColorBLACK);
+  this->paint.setStyle(SkPaint::kFill_Style);
+
+  this->strokePaint.setColor(SK_ColorBLACK);
+  this->strokePaint.setStrokeMiter(10);
+  this->strokePaint.setStyle(SkPaint::kStroke_Style);
 
   this->shadowX = 0;
   this->shadowY = 0;
@@ -439,19 +442,17 @@ METHOD(GetImageSmoothingEnabled) {
 METHOD(SetStrokeStyle) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  // Clear off the old shader
+  ctx->strokePaint.setShader(NULL);
 
+  U8CPU a = args[3]->NumberValue();
+  U8CPU r = args[0]->NumberValue();
+  U8CPU g = args[1]->NumberValue();
+  U8CPU b = args[2]->NumberValue();
 
-  return scope.Close(Undefined());
-}
-
-METHOD(GetStrokeStyle) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  ctx->strokePaint.setColor(SkColorSetARGBInline(a,r,g,b));
 
   return scope.Close(Undefined());
 }
@@ -485,7 +486,7 @@ METHOD(SetFillStylePattern) {
   //src.setPixels(buffer_data);
 
   //SkBitmapProcShader shader(src, repeatX, repeatY);
-  //ctx->paint.setShader(&shader);
+  //ctx->fillPaint.setShader(&shader);
 
   return scope.Close(Undefined());
 }
@@ -504,16 +505,6 @@ METHOD(SetFillStyle) {
   U8CPU b = args[2]->NumberValue();
 
   ctx->paint.setColor(SkColorSetARGBInline(a,r,g,b));
-
-  return scope.Close(Undefined());
-}
-
-METHOD(GetFillStyle) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
 
   return scope.Close(Undefined());
 }
@@ -902,9 +893,7 @@ METHOD(Stroke) {
 
   ctx->canvas->save();
     ctx->canvas->resetMatrix();
-    SkPaint strokePaint(ctx->paint);
-    strokePaint.setStyle(SkPaint::kStroke_Style);
-    ctx->canvas->drawPath(ctx->path, strokePaint);
+    ctx->canvas->drawPath(ctx->path, ctx->strokePaint);
   ctx->canvas->restore();
 
   return scope.Close(Undefined());
@@ -1306,7 +1295,7 @@ METHOD(SetLineWidth) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->paint.setStrokeWidth(SkDoubleToScalar(args[0]->NumberValue()));
+  ctx->strokePaint.setStrokeWidth(SkDoubleToScalar(args[0]->NumberValue()));
 
   return scope.Close(Undefined());
 }
@@ -1317,7 +1306,7 @@ METHOD(SetLineCap) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   int c = args[0]->IntegerValue();
-  ctx->paint.setStrokeCap((SkPaint::Cap)c);
+  ctx->strokePaint.setStrokeCap((SkPaint::Cap)c);
 
   return scope.Close(Undefined());
 }
@@ -1328,7 +1317,7 @@ METHOD(SetLineJoin) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   int j = args[0]->IntegerValue();
-  ctx->paint.setStrokeJoin((SkPaint::Join)j);
+  ctx->strokePaint.setStrokeJoin((SkPaint::Join)j);
 
   return scope.Close(Undefined());
 }
