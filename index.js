@@ -319,14 +319,13 @@ module.exports.createContext = function(canvas, w, h) {
         }
       }
 
-
       var color = csscolor(c);
       if (color) {
         fill = color.string;
         color = color.array;
 
         color[3] = color[3] * 255;
-        ret.setFillStyle.apply(ret, color);
+        ret.setStrokeStyle.apply(ret, color);
       }
     }
   });
