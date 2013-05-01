@@ -133,7 +133,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(SetLineWidth);
     OBJECT_METHOD(GetLineCap);
     OBJECT_METHOD(SetLineCap);
-    OBJECT_METHOD(GetLineJoin);
     OBJECT_METHOD(SetLineJoin);
     OBJECT_METHOD(GetMiterLimit);
     OBJECT_METHOD(SetMiterLimit);

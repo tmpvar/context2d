@@ -295,7 +295,7 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
-  var stroke;
+  var stroke = "#000000";
   Object.defineProperty(ret, 'strokeStyle', {
     get : function() {
       return stroke;
@@ -560,10 +560,26 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
+  var lineJoinMap = {
+    miter : 0,
+    round : 1,
+    bevel : 2
+  };
+  var lineJoin = 'miter';
+
+  Object.defineProperty(ret, 'lineJoin', {
+    get : function() {
+      return lineJoin;
+    },
+    set : function(val) {
+      if (typeof lineJoinMap[val] !== 'undefined') {
+        lineJoin = val;
+        ret.setLineJoin(lineJoinMap[val]);
+      }
+    }
+  });
 
 
-
-//            attribute double lineWidth; // (default 1)
 //            attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
 //            attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
 //            attribute double miterLimit; // (default 10)
@@ -636,6 +652,15 @@ module.exports.createContext = function(canvas, w, h) {
       }
     }
     fillRect(x, y, w, h);
+  });
+
+  override('strokeRect', function(strokeRect, x, y, w, h) {
+
+    if (!w && !h) {
+      return;
+    }
+
+    strokeRect(x, y, w, h);
   });
 
   override('scale', function(scale, x, y) {

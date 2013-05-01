@@ -114,7 +114,6 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetLineWidth, setLineWidth);
   PROTOTYPE_METHOD(GetLineCap, getLineCap);
   PROTOTYPE_METHOD(SetLineCap, setLineCap);
-  PROTOTYPE_METHOD(GetLineJoin, getLineJoin);
   PROTOTYPE_METHOD(SetLineJoin, setLineJoin);
   PROTOTYPE_METHOD(GetMiterLimit, getMiterLimit);
   PROTOTYPE_METHOD(SetMiterLimit, setMiterLimit);
@@ -846,8 +845,29 @@ METHOD(FillRect) {
 METHOD(StrokeRect) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  double x = args[0]->NumberValue();
+  double y = args[1]->NumberValue();
+  double w = args[2]->NumberValue();
+  double h = args[3]->NumberValue();
+
+  double bx = (x < 0) ? x : 0;
+  double by = (y < 0) ? y : 0;
+
+  double dw = ctx->canvas->getDevice()->width();
+  double dh = ctx->canvas->getDevice()->height();
+
+  double bw = w+x > dw ? w+x : dw;
+  double bh = h+y > dh ? h+y : dh;
+
+  SkRect bounds = {
+    bx, by, bw, bh
+  };
+
+
+  SkPaint paint(ctx->paint);
+  ctx->canvas->drawRect(bounds, paint);
 
 
   return scope.Close(Undefined());
@@ -1321,22 +1341,13 @@ METHOD(SetLineCap) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetLineJoin) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
-
-  return scope.Close(Undefined());
-}
-
 METHOD(SetLineJoin) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
+  int j = args[0]->IntegerValue();
+  ctx->paint.setStrokeJoin((SkPaint::Join)j);
 
   return scope.Close(Undefined());
 }
