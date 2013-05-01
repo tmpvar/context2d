@@ -801,6 +801,8 @@ module.exports.createContext = function(canvas, w, h) {
       return lineWidth;
     },
     set : function(width) {
+      width = Number(width);
+
       if (width < 0 || !width || !valid(width)) {
         return;
       }
