@@ -129,7 +129,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(PutImageData);
 
     // line caps/joins
-    OBJECT_METHOD(GetLineWidth);
     OBJECT_METHOD(SetLineWidth);
     OBJECT_METHOD(SetLineCap);
     OBJECT_METHOD(SetLineJoin);

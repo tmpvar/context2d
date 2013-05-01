@@ -110,7 +110,6 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(CreateImageData, createImageData);
   PROTOTYPE_METHOD(GetImageData, getImageData);
   PROTOTYPE_METHOD(PutImageData, putImageData);
-  PROTOTYPE_METHOD(GetLineWidth, getLineWidth);
   PROTOTYPE_METHOD(SetLineWidth, setLineWidth);
   PROTOTYPE_METHOD(SetLineCap, setLineCap);
   PROTOTYPE_METHOD(SetLineJoin, setLineJoin);
@@ -1301,14 +1300,6 @@ METHOD(PutImageData) {
 
 
   return scope.Close(Undefined());
-}
-
-METHOD(GetLineWidth) {
-  HandleScope scope;
-
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  return scope.Close(Number::New(ctx->paint.getStrokeWidth()));
 }
 
 METHOD(SetLineWidth) {

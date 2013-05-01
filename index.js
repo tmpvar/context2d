@@ -794,9 +794,20 @@ module.exports.createContext = function(canvas, w, h) {
     return new ImageData(buf, w, h);
   };
 
+
+  var lineWidth = 1;
   Object.defineProperty(ret, 'lineWidth', {
-    get : ret.getLineWidth.bind(ret),
-    set : ret.setLineWidth.bind(ret)
+    get : function() {
+      return lineWidth;
+    },
+    set : function(width) {
+      if (width < 0 || !width || !valid(width)) {
+        return;
+      }
+
+      lineWidth = width;
+      ret.setLineWidth(width);
+    }
   });
 
 
