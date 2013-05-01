@@ -2,3 +2,5 @@ node_modules
 build
 test/philip
 out.png
+.DS_Store
+test/.DS_Store
