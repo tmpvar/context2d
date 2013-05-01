@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.imageData.create1.basic',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.imageData.create1.basic',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -13,11 +14,11 @@ test('2d.imageData.create1.basic',null, function(t) {
 
   helpers.assertNotEqual(t, ctx.createImageData(ctx.createImageData(1, 1)), null, "ctx.createImageData(ctx.createImageData(1, 1))", "null");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create1.initial',null, function(t) {
+test(module, '2d.imageData.create1.initial',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -37,11 +38,11 @@ test('2d.imageData.create1.initial',null, function(t) {
           isTransparentBlack = false;
   helpers.ok(t, isTransparentBlack, "isTransparentBlack");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create1.type',null, function(t) {
+test(module, '2d.imageData.create1.type',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -56,11 +57,11 @@ test('2d.imageData.create1.type',null, function(t) {
   helpers.ok(t, imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
   helpers.ok(t, imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create1.zero',null, function(t) {
+test(module, '2d.imageData.create1.zero',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -71,11 +72,11 @@ test('2d.imageData.create1.zero',null, function(t) {
     ctx.createImageData(null);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(null)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.basic',null, function(t) {
+test(module, '2d.imageData.create2.basic',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -84,11 +85,11 @@ test('2d.imageData.create2.basic',null, function(t) {
 
   helpers.assertNotEqual(t, ctx.createImageData(1, 1), null, "ctx.createImageData(1, 1)", "null");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.initial',null, function(t) {
+test(module, '2d.imageData.create2.initial',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -105,11 +106,11 @@ test('2d.imageData.create2.initial',null, function(t) {
           isTransparentBlack = false;
   helpers.ok(t, isTransparentBlack, "isTransparentBlack");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.large',null, function(t) {
+test(module, '2d.imageData.create2.large',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -126,11 +127,11 @@ test('2d.imageData.create2.large',null, function(t) {
           isTransparentBlack = false;
   helpers.ok(t, isTransparentBlack, "isTransparentBlack");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.negative',null, function(t) {
+test(module, '2d.imageData.create2.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -145,11 +146,11 @@ test('2d.imageData.create2.negative',null, function(t) {
   helpers.assertEqual(t, imgdata2.data.length, imgdata3.data.length, "imgdata2.data.length", "imgdata3.data.length");
   helpers.assertEqual(t, imgdata3.data.length, imgdata4.data.length, "imgdata3.data.length", "imgdata4.data.length");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.nonfinite',null, function(t) {
+test(module, '2d.imageData.create2.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -178,11 +179,11 @@ test('2d.imageData.create2.nonfinite',null, function(t) {
     ctx.createImageData(Infinity, Infinity);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createImageData(Infinity, Infinity)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.round',null, function(t) {
+test(module, '2d.imageData.create2.round',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -194,11 +195,11 @@ test('2d.imageData.create2.round',null, function(t) {
   helpers.assertEqual(t, imgdata1.width, imgdata2.width, "imgdata1.width", "imgdata2.width");
   helpers.assertEqual(t, imgdata1.height, imgdata2.height, "imgdata1.height", "imgdata2.height");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.tiny',null, function(t) {
+test(module, '2d.imageData.create2.tiny',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -215,11 +216,11 @@ test('2d.imageData.create2.tiny',null, function(t) {
           isTransparentBlack = false;
   helpers.ok(t, isTransparentBlack, "isTransparentBlack");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.type',null, function(t) {
+test(module, '2d.imageData.create2.type',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -234,11 +235,11 @@ test('2d.imageData.create2.type',null, function(t) {
   helpers.ok(t, imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
   helpers.ok(t, imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.create2.zero',null, function(t) {
+test(module, '2d.imageData.create2.zero',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -255,11 +256,11 @@ test('2d.imageData.create2.zero',null, function(t) {
     ctx.createImageData(0, 0);
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createImageData(0, 0)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.basic',null, function(t) {
+test(module, '2d.imageData.get.basic',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -268,11 +269,11 @@ test('2d.imageData.get.basic',null, function(t) {
 
   helpers.assertNotEqual(t, ctx.getImageData(0, 0, 100, 50), null, "ctx.getImageData(0, 0, 100, 50)", "null");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.clamp',null, function(t) {
+test(module, '2d.imageData.get.clamp',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -292,11 +293,11 @@ test('2d.imageData.get.clamp',null, function(t) {
   helpers.assertEqual(t, imgdata2.data[1], 255, "imgdata2.data[\""+(1)+"\"]", "255");
   helpers.assertEqual(t, imgdata2.data[2], 255, "imgdata2.data[\""+(2)+"\"]", "255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.length',null, function(t) {
+test(module, '2d.imageData.get.length',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -306,11 +307,11 @@ test('2d.imageData.get.length',null, function(t) {
   var imgdata = ctx.getImageData(0, 0, 10, 10);
   helpers.assertEqual(t, imgdata.data.length, imgdata.width*imgdata.height*4, "imgdata.data.length", "imgdata.width*imgdata.height*4");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.nonfinite',null, function(t) {
+test(module, '2d.imageData.get.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -387,11 +388,11 @@ test('2d.imageData.get.nonfinite',null, function(t) {
     ctx.getImageData(10, 10, Infinity, Infinity);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.getImageData(10, 10, Infinity, Infinity)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.nonpremul',null, function(t) {
+test(module, '2d.imageData.get.nonpremul',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -407,11 +408,11 @@ test('2d.imageData.get.nonpremul',null, function(t) {
   helpers.ok(t, imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
   helpers.ok(t, imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.order.alpha',null, function(t) {
+test(module, '2d.imageData.get.order.alpha',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -424,11 +425,11 @@ test('2d.imageData.get.order.alpha',null, function(t) {
   helpers.ok(t, imgdata.data[3] < 200, "imgdata.data[\""+(3)+"\"] < 200");
   helpers.ok(t, imgdata.data[3] > 100, "imgdata.data[\""+(3)+"\"] > 100");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.order.cols',null, function(t) {
+test(module, '2d.imageData.get.order.cols',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -444,11 +445,11 @@ test('2d.imageData.get.order.cols',null, function(t) {
   helpers.assertEqual(t, imgdata.data[Math.round(imgdata.width/2*4)], 255, "imgdata.data[Math.round(imgdata.width/2*4)]", "255");
   helpers.assertEqual(t, imgdata.data[Math.round((imgdata.height/2)*imgdata.width*4)], 0, "imgdata.data[Math.round((imgdata.height/2)*imgdata.width*4)]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.order.rgb',null, function(t) {
+test(module, '2d.imageData.get.order.rgb',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -467,11 +468,11 @@ test('2d.imageData.get.order.rgb',null, function(t) {
   helpers.assertEqual(t, imgdata.data[6], 0xCC, "imgdata.data[\""+(6)+"\"]", "0xCC");
   helpers.assertEqual(t, imgdata.data[7], 255, "imgdata.data[\""+(7)+"\"]", "255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.order.rows',null, function(t) {
+test(module, '2d.imageData.get.order.rows',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -487,11 +488,11 @@ test('2d.imageData.get.order.rows',null, function(t) {
   helpers.assertEqual(t, imgdata.data[Math.floor(imgdata.width/2*4)], 0, "imgdata.data[Math.floor(imgdata.width/2*4)]", "0");
   helpers.assertEqual(t, imgdata.data[(imgdata.height/2)*imgdata.width*4], 255, "imgdata.data[(imgdata.height/2)*imgdata.width*4]", "255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.range',null, function(t) {
+test(module, '2d.imageData.get.range',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -507,11 +508,11 @@ test('2d.imageData.get.range',null, function(t) {
   var imgdata2 = ctx.getImageData(30, 15, 1, 1);
   helpers.assertEqual(t, imgdata2.data[0], 255, "imgdata2.data[\""+(0)+"\"]", "255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.source.negative',null, function(t) {
+test(module, '2d.imageData.get.source.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -539,11 +540,11 @@ test('2d.imageData.get.source.negative',null, function(t) {
   helpers.assertEqual(t, imgdata2.data[2], 0, "imgdata2.data[\""+(2)+"\"]", "0");
   helpers.assertEqual(t, imgdata2.data[3], 0, "imgdata2.data[\""+(3)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.source.outside',null, function(t) {
+test(module, '2d.imageData.get.source.outside',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -577,11 +578,11 @@ test('2d.imageData.get.source.outside',null, function(t) {
   helpers.assertEqual(t, imgdata4.data[2], 0, "imgdata4.data[\""+(2)+"\"]", "0");
   helpers.assertEqual(t, imgdata4.data[3], 0, "imgdata4.data[\""+(3)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.source.size',null, function(t) {
+test(module, '2d.imageData.get.source.size',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -593,11 +594,11 @@ test('2d.imageData.get.source.size',null, function(t) {
   helpers.ok(t, imgdata2.width > imgdata1.width, "imgdata2.width > imgdata1.width");
   helpers.ok(t, imgdata2.height > imgdata1.height, "imgdata2.height > imgdata1.height");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.tiny',null, function(t) {
+test(module, '2d.imageData.get.tiny',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -609,11 +610,11 @@ test('2d.imageData.get.tiny',null, function(t) {
   helpers.assertEqual(t, imgdata.width, 1, "imgdata.width", "1");
   helpers.assertEqual(t, imgdata.height, 1, "imgdata.height", "1");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.type',null, function(t) {
+test(module, '2d.imageData.get.type',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -628,11 +629,11 @@ test('2d.imageData.get.type',null, function(t) {
   helpers.ok(t, imgdata.thisImplementsImageData, "imgdata.thisImplementsImageData");
   helpers.ok(t, imgdata.data.thisImplementsCanvasPixelArray, "imgdata.data.thisImplementsCanvasPixelArray");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.unaffected','green-100x50.png', function(t) {
+test(module, '2d.imageData.get.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -656,11 +657,11 @@ test('2d.imageData.get.unaffected','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.get.zero',null, function(t) {
+test(module, '2d.imageData.get.zero',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -677,22 +678,22 @@ test('2d.imageData.get.zero',null, function(t) {
     ctx.getImageData(1, 1, 0, 0);
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.getImageData(1, 1, 0, 0)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.ctor',null, function(t) {
+test(module, '2d.imageData.object.ctor',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
   helpers.assertNotEqual(t, window.ImageData, undefined, "window.ImageData", "undefined");
   try { var _thrown = false; new window.ImageData(1,1); } catch (e) { _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception: new window.ImageData(1,1)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.nan',null, function(t) {
+test(module, '2d.imageData.object.nan',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -707,11 +708,11 @@ test('2d.imageData.object.nan',null, function(t) {
   imgdata.data[0] = "cheese";
   helpers.assertEqual(t, imgdata.data[0], 0, "imgdata.data[\""+(0)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.properties',null, function(t) {
+test(module, '2d.imageData.object.properties',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -723,11 +724,11 @@ test('2d.imageData.object.properties',null, function(t) {
   helpers.assertEqual(t, typeof(imgdata.height), 'number', "typeof(imgdata.height)", "'number'");
   helpers.assertEqual(t, typeof(imgdata.data), 'object', "typeof(imgdata.data)", "'object'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.readonly',null, function(t) {
+test(module, '2d.imageData.object.readonly',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -749,11 +750,11 @@ test('2d.imageData.object.readonly',null, function(t) {
   helpers.assertEqual(t, imgdata.data[2], 0, "imgdata.data[\""+(2)+"\"]", "0");
   helpers.assertEqual(t, imgdata.data[3], 0, "imgdata.data[\""+(3)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.round',null, function(t) {
+test(module, '2d.imageData.object.round',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -790,11 +791,11 @@ test('2d.imageData.object.round',null, function(t) {
   imgdata.data[0] = -1.5;
   helpers.assertEqual(t, imgdata.data[0], 255, "imgdata.data[\""+(0)+"\"]", "255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.set',null, function(t) {
+test(module, '2d.imageData.object.set',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -807,11 +808,11 @@ test('2d.imageData.object.set',null, function(t) {
   imgdata.data[0] = 200;
   helpers.assertEqual(t, imgdata.data[0], 200, "imgdata.data[\""+(0)+"\"]", "200");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.string',null, function(t) {
+test(module, '2d.imageData.object.string',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -829,11 +830,11 @@ test('2d.imageData.object.string',null, function(t) {
   imgdata.data[0] = " +130e0 ";
   helpers.assertEqual(t, imgdata.data[0], 130, "imgdata.data[\""+(0)+"\"]", "130");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.undefined',null, function(t) {
+test(module, '2d.imageData.object.undefined',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -845,11 +846,11 @@ test('2d.imageData.object.undefined',null, function(t) {
   imgdata.data[0] = undefined;
   helpers.assertEqual(t, imgdata.data[0], 0, "imgdata.data[\""+(0)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.object.wrap',null, function(t) {
+test(module, '2d.imageData.object.wrap',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -875,11 +876,11 @@ test('2d.imageData.object.wrap',null, function(t) {
   imgdata.data[0] = Infinity;
   helpers.assertEqual(t, imgdata.data[0], 0, "imgdata.data[\""+(0)+"\"]", "0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.alpha','2d.imageData.put.alpha.png', function(t) {
+test(module, '2d.imageData.put.alpha','2d.imageData.put.alpha.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -894,11 +895,11 @@ test('2d.imageData.put.alpha','2d.imageData.put.alpha.png', function(t) {
   ctx.putImageData(imgdata, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,64, "50,25", "0,255,0,64", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.basic','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -913,11 +914,11 @@ test('2d.imageData.put.basic','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.clip','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -936,11 +937,11 @@ test('2d.imageData.put.clip','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.created','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.created','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -959,11 +960,11 @@ test('2d.imageData.put.created','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.cross','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.cross','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -980,11 +981,11 @@ test('2d.imageData.put.cross','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.dirty.negative','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.dirty.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1010,11 +1011,11 @@ test('2d.imageData.put.dirty.negative','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 50,15, 0,255,0,255, "50,15", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 50,45, 0,255,0,255, "50,45", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.dirty.outside','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.dirty.outside','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1042,11 +1043,11 @@ test('2d.imageData.put.dirty.outside','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 1,25, 0,255,0,255, "1,25", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 1,45, 0,255,0,255, "1,45", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.dirty.rect1','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.dirty.rect1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1072,11 +1073,11 @@ test('2d.imageData.put.dirty.rect1','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 50,15, 0,255,0,255, "50,15", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 50,45, 0,255,0,255, "50,45", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.dirty.rect2','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.dirty.rect2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1102,11 +1103,11 @@ test('2d.imageData.put.dirty.rect2','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 50,15, 0,255,0,255, "50,15", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 50,45, 0,255,0,255, "50,45", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.dirty.zero','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.dirty.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1121,11 +1122,11 @@ test('2d.imageData.put.dirty.zero','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 0, 0, 0, 0, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.modified','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.modified','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1145,11 +1146,11 @@ test('2d.imageData.put.modified','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 45, 20);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.nonfinite',null, function(t) {
+test(module, '2d.imageData.put.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1404,11 +1405,11 @@ test('2d.imageData.put.nonfinite',null, function(t) {
     ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, Infinity);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.putImageData(imgdata, 10, 10, 10, 10, Infinity, Infinity)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.null',null, function(t) {
+test(module, '2d.imageData.put.null',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1419,11 +1420,11 @@ test('2d.imageData.put.null',null, function(t) {
     ctx.putImageData(null, 0, 0);
   } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(null, 0, 0)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.path','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1439,11 +1440,11 @@ test('2d.imageData.put.path','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.unaffected','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1464,11 +1465,11 @@ test('2d.imageData.put.unaffected','green-100x50.png', function(t) {
   ctx.putImageData(imgdata, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.unchanged',null, function(t) {
+test(module, '2d.imageData.put.unchanged',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1494,11 +1495,11 @@ test('2d.imageData.put.unchanged',null, function(t) {
       helpers.assertEqual(t, olddata[i], imgdata2.data[i], "olddata[\""+(i)+"\"]", "imgdata2.data[\""+(i)+"\"]");
   }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.imageData.put.wrongtype','green-100x50.png', function(t) {
+test(module, '2d.imageData.put.wrongtype','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1516,6 +1517,6 @@ test('2d.imageData.put.wrongtype','green-100x50.png', function(t) {
     ctx.putImageData(42, 0, 0);
   } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.putImageData(42, 0, 0)"); }
 
-  t.end()
+  t.done()
 });
 

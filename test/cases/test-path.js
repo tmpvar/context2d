@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.path.arc.angle.1','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.path.arc.angle.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -20,11 +21,11 @@ test('2d.path.arc.angle.1','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.angle.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.angle.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -40,11 +41,11 @@ test('2d.path.arc.angle.2','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.angle.3','green-100x50.png', function(t) {
+test(module, '2d.path.arc.angle.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -60,11 +61,11 @@ test('2d.path.arc.angle.3','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.angle.4','green-100x50.png', function(t) {
+test(module, '2d.path.arc.angle.4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -83,11 +84,11 @@ test('2d.path.arc.angle.4','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.angle.5','green-100x50.png', function(t) {
+test(module, '2d.path.arc.angle.5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -103,11 +104,11 @@ test('2d.path.arc.angle.5','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.angle.6','green-100x50.png', function(t) {
+test(module, '2d.path.arc.angle.6','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -126,11 +127,11 @@ test('2d.path.arc.angle.6','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.empty','green-100x50.png', function(t) {
+test(module, '2d.path.arc.empty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -146,11 +147,11 @@ test('2d.path.arc.empty','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.end','green-100x50.png', function(t) {
+test(module, '2d.path.arc.end','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -168,11 +169,11 @@ test('2d.path.arc.end','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.negative',null, function(t) {
+test(module, '2d.path.arc.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -183,11 +184,11 @@ test('2d.path.arc.negative',null, function(t) {
     ctx.arc(0, 0, -1, 0, 0, true);
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arc(0, 0, -1, 0, 0, true)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.nonempty','green-100x50.png', function(t) {
+test(module, '2d.path.arc.nonempty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -204,11 +205,11 @@ test('2d.path.arc.nonempty','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.arc.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -267,11 +268,11 @@ test('2d.path.arc.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.scale.1','green-100x50.png', function(t) {
+test(module, '2d.path.arc.scale.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -307,11 +308,11 @@ test('2d.path.arc.scale.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.scale.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.scale.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -337,11 +338,11 @@ test('2d.path.arc.scale.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.selfintersect.1','green-100x50.png', function(t) {
+test(module, '2d.path.arc.selfintersect.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -361,11 +362,11 @@ test('2d.path.arc.selfintersect.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.selfintersect.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.selfintersect.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -389,11 +390,11 @@ test('2d.path.arc.selfintersect.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 97,3, 0,255,0,255, "97,3", "0,255,0,255");
   helpers.assertPixel(t, canvas, 2,48, 0,255,0,255, "2,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.shape.1','green-100x50.png', function(t) {
+test(module, '2d.path.arc.shape.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -414,11 +415,11 @@ test('2d.path.arc.shape.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 20,48, 0,255,0,255, "20,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.shape.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.shape.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -439,11 +440,11 @@ test('2d.path.arc.shape.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 20,48, 0,255,0,255, "20,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.shape.3','green-100x50.png', function(t) {
+test(module, '2d.path.arc.shape.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -463,11 +464,11 @@ test('2d.path.arc.shape.3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.shape.4','green-100x50.png', function(t) {
+test(module, '2d.path.arc.shape.4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -487,11 +488,11 @@ test('2d.path.arc.shape.4','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.shape.5','green-100x50.png', function(t) {
+test(module, '2d.path.arc.shape.5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -511,11 +512,11 @@ test('2d.path.arc.shape.5','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.twopie.1','green-100x50.png', function(t) {
+test(module, '2d.path.arc.twopie.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -531,11 +532,11 @@ test('2d.path.arc.twopie.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.twopie.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.twopie.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -551,11 +552,11 @@ test('2d.path.arc.twopie.2','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.twopie.3','green-100x50.png', function(t) {
+test(module, '2d.path.arc.twopie.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -571,11 +572,11 @@ test('2d.path.arc.twopie.3','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.twopie.4','green-100x50.png', function(t) {
+test(module, '2d.path.arc.twopie.4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -591,11 +592,11 @@ test('2d.path.arc.twopie.4','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.zero.1','green-100x50.png', function(t) {
+test(module, '2d.path.arc.zero.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -611,11 +612,11 @@ test('2d.path.arc.zero.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.zero.2','green-100x50.png', function(t) {
+test(module, '2d.path.arc.zero.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -631,11 +632,11 @@ test('2d.path.arc.zero.2','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,20, 0,255,0,255, "50,20", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arc.zeroradius','green-100x50.png', function(t) {
+test(module, '2d.path.arc.zeroradius','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -652,11 +653,11 @@ test('2d.path.arc.zeroradius','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.coincide.1','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.coincide.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -684,11 +685,11 @@ test('2d.path.arcTo.coincide.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.coincide.2','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.coincide.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -706,11 +707,11 @@ test('2d.path.arcTo.coincide.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.collinear.1','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.collinear.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -735,11 +736,11 @@ test('2d.path.arcTo.collinear.1','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.collinear.2','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.collinear.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -764,11 +765,11 @@ test('2d.path.arcTo.collinear.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.collinear.3','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.collinear.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -798,11 +799,11 @@ test('2d.path.arcTo.collinear.3','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.ensuresubpath.1','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.ensuresubpath.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -818,11 +819,11 @@ test('2d.path.arcTo.ensuresubpath.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.ensuresubpath.2','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.ensuresubpath.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -839,11 +840,11 @@ test('2d.path.arcTo.ensuresubpath.2','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.negative',null, function(t) {
+test(module, '2d.path.arcTo.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -854,11 +855,11 @@ test('2d.path.arcTo.negative',null, function(t) {
     ctx.arcTo(0, 0, 0, 0, -1);
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.arcTo(0, 0, 0, 0, -1)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -915,11 +916,11 @@ test('2d.path.arcTo.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.scale','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.scale','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -948,11 +949,11 @@ test('2d.path.arcTo.scale','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.shape.curve1','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.shape.curve1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -994,11 +995,11 @@ test('2d.path.arcTo.shape.curve1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 80,46, 0,255,0,255, "80,46", "0,255,0,255");
   helpers.assertPixel(t, canvas, 65,45, 0,255,0,255, "65,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.shape.curve2','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.shape.curve2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1039,11 +1040,11 @@ test('2d.path.arcTo.shape.curve2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 80,45, 0,255,0,255, "80,45", "0,255,0,255");
   helpers.assertPixel(t, canvas, 80,46, 0,255,0,255, "80,46", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.shape.end','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.shape.end','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1065,11 +1066,11 @@ test('2d.path.arcTo.shape.end','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.shape.start','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.shape.start','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1091,11 +1092,11 @@ test('2d.path.arcTo.shape.start','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.transformation','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.transformation','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1123,11 +1124,11 @@ test('2d.path.arcTo.transformation','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.zero.1','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.zero.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1152,11 +1153,11 @@ test('2d.path.arcTo.zero.1','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.arcTo.zero.2','green-100x50.png', function(t) {
+test(module, '2d.path.arcTo.zero.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1181,11 +1182,11 @@ test('2d.path.arcTo.zero.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.beginPath','green-100x50.png', function(t) {
+test(module, '2d.path.beginPath','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1200,11 +1201,11 @@ test('2d.path.beginPath','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.basic','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1221,11 +1222,11 @@ test('2d.path.bezierCurveTo.basic','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1242,11 +1243,11 @@ test('2d.path.bezierCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1263,11 +1264,11 @@ test('2d.path.bezierCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1358,11 +1359,11 @@ test('2d.path.bezierCurveTo.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.scaled','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.scaled','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1384,11 +1385,11 @@ test('2d.path.bezierCurveTo.scaled','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.bezierCurveTo.shape','green-100x50.png', function(t) {
+test(module, '2d.path.bezierCurveTo.shape','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1409,11 +1410,11 @@ test('2d.path.bezierCurveTo.shape','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.basic.1','green-100x50.png', function(t) {
+test(module, '2d.path.clip.basic.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1432,11 +1433,11 @@ test('2d.path.clip.basic.1','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.basic.2','green-100x50.png', function(t) {
+test(module, '2d.path.clip.basic.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1455,11 +1456,11 @@ test('2d.path.clip.basic.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.empty','green-100x50.png', function(t) {
+test(module, '2d.path.clip.empty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1477,11 +1478,11 @@ test('2d.path.clip.empty','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.intersect','green-100x50.png', function(t) {
+test(module, '2d.path.clip.intersect','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1503,11 +1504,11 @@ test('2d.path.clip.intersect','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.unaffected','green-100x50.png', function(t) {
+test(module, '2d.path.clip.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1531,11 +1532,11 @@ test('2d.path.clip.unaffected','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.winding.1','green-100x50.png', function(t) {
+test(module, '2d.path.clip.winding.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1562,11 +1563,11 @@ test('2d.path.clip.winding.1','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.clip.winding.2','green-100x50.png', function(t) {
+test(module, '2d.path.clip.winding.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1597,11 +1598,11 @@ test('2d.path.clip.winding.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.closePath.empty','green-100x50.png', function(t) {
+test(module, '2d.path.closePath.empty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1615,11 +1616,11 @@ test('2d.path.closePath.empty','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.closePath.newline','green-100x50.png', function(t) {
+test(module, '2d.path.closePath.newline','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1638,11 +1639,11 @@ test('2d.path.closePath.newline','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.closePath.nextpoint','green-100x50.png', function(t) {
+test(module, '2d.path.closePath.nextpoint','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1660,11 +1661,11 @@ test('2d.path.closePath.nextpoint','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.closed.basic','green-100x50.png', function(t) {
+test(module, '2d.path.fill.closed.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1683,11 +1684,11 @@ test('2d.path.fill.closed.basic','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.closed.unaffected','green-100x50.png', function(t) {
+test(module, '2d.path.fill.closed.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1709,11 +1710,11 @@ test('2d.path.fill.closed.unaffected','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 90,10, 0,255,0,255, "90,10", "0,255,0,255");
   helpers.assertPixel(t, canvas, 10,40, 0,255,0,255, "10,40", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.overlap','2d.path.fill.overlap.png', function(t) {
+test(module, '2d.path.fill.overlap','2d.path.fill.overlap.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1731,11 +1732,11 @@ test('2d.path.fill.overlap','2d.path.fill.overlap.png', function(t) {
   
   helpers.assertPixelApprox(t, canvas, 50,25, 0,127,0,255, "50,25", "0,127,0,255", 1);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.winding.add','green-100x50.png', function(t) {
+test(module, '2d.path.fill.winding.add','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1759,11 +1760,11 @@ test('2d.path.fill.winding.add','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.winding.subtract.1','green-100x50.png', function(t) {
+test(module, '2d.path.fill.winding.subtract.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1787,11 +1788,11 @@ test('2d.path.fill.winding.subtract.1','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.winding.subtract.2','green-100x50.png', function(t) {
+test(module, '2d.path.fill.winding.subtract.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1814,11 +1815,11 @@ test('2d.path.fill.winding.subtract.2','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.fill.winding.subtract.3','green-100x50.png', function(t) {
+test(module, '2d.path.fill.winding.subtract.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1847,11 +1848,11 @@ test('2d.path.fill.winding.subtract.3','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.initial','green-100x50.png', function(t) {
+test(module, '2d.path.initial','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1865,11 +1866,11 @@ test('2d.path.initial','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.arc',null, function(t) {
+test(module, '2d.path.isPointInPath.arc',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1886,11 +1887,11 @@ test('2d.path.isPointInPath.arc',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(30, 30), false, "ctx.isPointInPath(30, 30)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(70, 30), false, "ctx.isPointInPath(70, 30)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.basic.1',null, function(t) {
+test(module, '2d.path.isPointInPath.basic.1',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1901,11 +1902,11 @@ test('2d.path.isPointInPath.basic.1',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(10, 10), true, "ctx.isPointInPath(10, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(30, 10), false, "ctx.isPointInPath(30, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.basic.2',null, function(t) {
+test(module, '2d.path.isPointInPath.basic.2',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1916,11 +1917,11 @@ test('2d.path.isPointInPath.basic.2',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(10, 10), false, "ctx.isPointInPath(10, 10)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(30, 10), true, "ctx.isPointInPath(30, 10)", "true");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.bezier',null, function(t) {
+test(module, '2d.path.isPointInPath.bezier',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1950,11 +1951,11 @@ test('2d.path.isPointInPath.bezier',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(75, 20), false, "ctx.isPointInPath(75, 20)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(75, 30), false, "ctx.isPointInPath(75, 30)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.bigarc',null, function(t) {
+test(module, '2d.path.isPointInPath.bigarc',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1971,11 +1972,11 @@ test('2d.path.isPointInPath.bigarc',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(30, 30), false, "ctx.isPointInPath(30, 30)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(70, 30), false, "ctx.isPointInPath(70, 30)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.edge',null, function(t) {
+test(module, '2d.path.isPointInPath.edge',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1996,11 +1997,11 @@ test('2d.path.isPointInPath.edge',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(-0.01, 10), false, "ctx.isPointInPath(-0.01, 10)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(20.01, 10), false, "ctx.isPointInPath(20.01, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.empty',null, function(t) {
+test(module, '2d.path.isPointInPath.empty',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2009,11 +2010,11 @@ test('2d.path.isPointInPath.empty',null, function(t) {
 
   helpers.assertEqual(t, ctx.isPointInPath(0, 0), false, "ctx.isPointInPath(0, 0)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.nonfinite',null, function(t) {
+test(module, '2d.path.isPointInPath.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2029,11 +2030,11 @@ test('2d.path.isPointInPath.nonfinite',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(0, NaN), false, "ctx.isPointInPath(0, NaN)", "false");
   helpers.assertEqual(t, ctx.isPointInPath(NaN, NaN), false, "ctx.isPointInPath(NaN, NaN)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.outside',null, function(t) {
+test(module, '2d.path.isPointInPath.outside',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2049,11 +2050,11 @@ test('2d.path.isPointInPath.outside',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(30, 0), true, "ctx.isPointInPath(30, 0)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(30, 20), false, "ctx.isPointInPath(30, 20)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.subpath',null, function(t) {
+test(module, '2d.path.isPointInPath.subpath',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2069,11 +2070,11 @@ test('2d.path.isPointInPath.subpath',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(30, 10), true, "ctx.isPointInPath(30, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(50, 10), true, "ctx.isPointInPath(50, 10)", "true");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.transform.1',null, function(t) {
+test(module, '2d.path.isPointInPath.transform.1',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2089,11 +2090,11 @@ test('2d.path.isPointInPath.transform.1',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(69, 10), true, "ctx.isPointInPath(69, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(71, 10), false, "ctx.isPointInPath(71, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.transform.2',null, function(t) {
+test(module, '2d.path.isPointInPath.transform.2',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2109,11 +2110,11 @@ test('2d.path.isPointInPath.transform.2',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(69, 10), true, "ctx.isPointInPath(69, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(71, 10), false, "ctx.isPointInPath(71, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.transform.3',null, function(t) {
+test(module, '2d.path.isPointInPath.transform.3',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2129,11 +2130,11 @@ test('2d.path.isPointInPath.transform.3',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(69, 10), true, "ctx.isPointInPath(69, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(71, 10), false, "ctx.isPointInPath(71, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.unclosed',null, function(t) {
+test(module, '2d.path.isPointInPath.unclosed',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2147,11 +2148,11 @@ test('2d.path.isPointInPath.unclosed',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(10, 10), true, "ctx.isPointInPath(10, 10)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(30, 10), false, "ctx.isPointInPath(30, 10)", "false");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.isPointInPath.winding',null, function(t) {
+test(module, '2d.path.isPointInPath.winding',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2180,11 +2181,11 @@ test('2d.path.isPointInPath.winding',null, function(t) {
   helpers.assertEqual(t, ctx.isPointInPath(25, 45), true, "ctx.isPointInPath(25, 45)", "true");
   helpers.assertEqual(t, ctx.isPointInPath(45, 45), true, "ctx.isPointInPath(45, 45)", "true");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.lineTo.basic','green-100x50.png', function(t) {
+test(module, '2d.path.lineTo.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2201,11 +2202,11 @@ test('2d.path.lineTo.basic','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.lineTo.ensuresubpath.1','green-100x50.png', function(t) {
+test(module, '2d.path.lineTo.ensuresubpath.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2221,11 +2222,11 @@ test('2d.path.lineTo.ensuresubpath.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.lineTo.ensuresubpath.2','green-100x50.png', function(t) {
+test(module, '2d.path.lineTo.ensuresubpath.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2242,11 +2243,11 @@ test('2d.path.lineTo.ensuresubpath.2','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.lineTo.nextpoint','green-100x50.png', function(t) {
+test(module, '2d.path.lineTo.nextpoint','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2264,11 +2265,11 @@ test('2d.path.lineTo.nextpoint','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.lineTo.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.lineTo.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2291,11 +2292,11 @@ test('2d.path.lineTo.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.moveTo.basic','green-100x50.png', function(t) {
+test(module, '2d.path.moveTo.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2313,11 +2314,11 @@ test('2d.path.moveTo.basic','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 90,25, 0,255,0,255, "90,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.moveTo.multiple','green-100x50.png', function(t) {
+test(module, '2d.path.moveTo.multiple','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2335,11 +2336,11 @@ test('2d.path.moveTo.multiple','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.moveTo.newsubpath','green-100x50.png', function(t) {
+test(module, '2d.path.moveTo.newsubpath','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2357,11 +2358,11 @@ test('2d.path.moveTo.newsubpath','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.moveTo.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.moveTo.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2383,11 +2384,11 @@ test('2d.path.moveTo.nonfinite','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.basic','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2404,11 +2405,11 @@ test('2d.path.quadraticCurveTo.basic','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.ensuresubpath.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2425,11 +2426,11 @@ test('2d.path.quadraticCurveTo.ensuresubpath.1','green-100x50.png', function(t) 
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.ensuresubpath.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2446,11 +2447,11 @@ test('2d.path.quadraticCurveTo.ensuresubpath.2','green-100x50.png', function(t) 
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2489,11 +2490,11 @@ test('2d.path.quadraticCurveTo.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.scaled','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.scaled','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2515,11 +2516,11 @@ test('2d.path.quadraticCurveTo.scaled','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.quadraticCurveTo.shape','green-100x50.png', function(t) {
+test(module, '2d.path.quadraticCurveTo.shape','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2540,11 +2541,11 @@ test('2d.path.quadraticCurveTo.shape','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.basic','green-100x50.png', function(t) {
+test(module, '2d.path.rect.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2558,11 +2559,11 @@ test('2d.path.rect.basic','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.closed','green-100x50.png', function(t) {
+test(module, '2d.path.rect.closed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2578,11 +2579,11 @@ test('2d.path.rect.closed','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.end.1','green-100x50.png', function(t) {
+test(module, '2d.path.rect.end.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2598,11 +2599,11 @@ test('2d.path.rect.end.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.end.2','green-100x50.png', function(t) {
+test(module, '2d.path.rect.end.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2623,11 +2624,11 @@ test('2d.path.rect.end.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.negative',null, function(t) {
+test(module, '2d.path.rect.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2648,11 +2649,11 @@ test('2d.path.rect.negative',null, function(t) {
   helpers.assertPixel(t, canvas, 25,37, 0,255,0,255, "25,37", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,37, 0,255,0,255, "75,37", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.newsubpath','green-100x50.png', function(t) {
+test(module, '2d.path.rect.newsubpath','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2670,11 +2671,11 @@ test('2d.path.rect.newsubpath','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.path.rect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2713,11 +2714,11 @@ test('2d.path.rect.nonfinite','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 90,45, 0,255,0,255, "90,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.selfintersect','green-100x50.png', function(t) {
+test(module, '2d.path.rect.selfintersect','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2733,11 +2734,11 @@ test('2d.path.rect.selfintersect','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.winding',null, function(t) {
+test(module, '2d.path.rect.winding',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2758,11 +2759,11 @@ test('2d.path.rect.winding',null, function(t) {
   helpers.assertPixel(t, canvas, 25,37, 0,255,0,255, "25,37", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,37, 0,255,0,255, "75,37", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.1','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2778,11 +2779,11 @@ test('2d.path.rect.zero.1','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.2','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2798,11 +2799,11 @@ test('2d.path.rect.zero.2','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.3','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2818,11 +2819,11 @@ test('2d.path.rect.zero.3','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.4','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2838,11 +2839,11 @@ test('2d.path.rect.zero.4','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.5','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2858,11 +2859,11 @@ test('2d.path.rect.zero.5','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.rect.zero.6','green-100x50.png', function(t) {
+test(module, '2d.path.rect.zero.6','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2880,11 +2881,11 @@ test('2d.path.rect.zero.6','green-100x50.png', function(t) {
   ctx.stroke();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.empty','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.empty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2906,11 +2907,11 @@ test('2d.path.stroke.empty','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.overlap','2d.path.stroke.overlap.png', function(t) {
+test(module, '2d.path.stroke.overlap','2d.path.stroke.overlap.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2930,11 +2931,11 @@ test('2d.path.stroke.overlap','2d.path.stroke.overlap.png', function(t) {
   
   helpers.assertPixelApprox(t, canvas, 50,25, 0,127,0,255, "50,25", "0,127,0,255", 1);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.arc','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.arc','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2961,11 +2962,11 @@ test('2d.path.stroke.prune.arc','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.closed','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.closed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -2988,11 +2989,11 @@ test('2d.path.stroke.prune.closed','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.corner','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.corner','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3017,11 +3018,11 @@ test('2d.path.stroke.prune.corner','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.curve','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.curve','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3048,11 +3049,11 @@ test('2d.path.stroke.prune.curve','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.line','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.line','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3074,11 +3075,11 @@ test('2d.path.stroke.prune.line','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.prune.rect','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.prune.rect','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3101,11 +3102,11 @@ test('2d.path.stroke.prune.rect','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.scale1','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.scale1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3141,11 +3142,11 @@ test('2d.path.stroke.scale1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.scale2','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.scale2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3183,11 +3184,11 @@ test('2d.path.stroke.scale2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.skew','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.skew','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3239,11 +3240,11 @@ test('2d.path.stroke.skew','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,49, 0,255,0,255, "50,49", "0,255,0,255");
   helpers.assertPixel(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.unaffected','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3267,11 +3268,11 @@ test('2d.path.stroke.unaffected','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.stroke.union','green-100x50.png', function(t) {
+test(module, '2d.path.stroke.union','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3291,11 +3292,11 @@ test('2d.path.stroke.union','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.transformation.basic','green-100x50.png', function(t) {
+test(module, '2d.path.transformation.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3313,11 +3314,11 @@ test('2d.path.transformation.basic','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.transformation.changing','green-100x50.png', function(t) {
+test(module, '2d.path.transformation.changing','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3341,11 +3342,11 @@ test('2d.path.transformation.changing','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.path.transformation.multiple','green-100x50.png', function(t) {
+test(module, '2d.path.transformation.multiple','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -3374,6 +3375,6 @@ test('2d.path.transformation.multiple','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

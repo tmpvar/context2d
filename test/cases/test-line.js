@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.line.cap.butt','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.line.cap.butt','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -47,11 +48,11 @@ test('2d.line.cap.butt','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 75,35, 0,255,0,255, "75,35", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,36, 0,255,0,255, "75,36", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.closed','green-100x50.png', function(t) {
+test(module, '2d.line.cap.closed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -79,11 +80,11 @@ test('2d.line.cap.closed','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.invalid',null, function(t) {
+test(module, '2d.line.cap.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -117,11 +118,11 @@ test('2d.line.cap.invalid',null, function(t) {
   ctx.lineCap = 'bevel';
   helpers.assertEqual(t, ctx.lineCap, 'butt', "ctx.lineCap", "'butt'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.open','green-100x50.png', function(t) {
+test(module, '2d.line.cap.open','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -149,11 +150,11 @@ test('2d.line.cap.open','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.round','green-100x50.png', function(t) {
+test(module, '2d.line.cap.round','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -212,11 +213,11 @@ test('2d.line.cap.round','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 75,43, 0,255,0,255, "75,43", "0,255,0,255");
   helpers.assertPixel(t, canvas, 82,43, 0,255,0,255, "82,43", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.square','green-100x50.png', function(t) {
+test(module, '2d.line.cap.square','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -259,11 +260,11 @@ test('2d.line.cap.square','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 75,45, 0,255,0,255, "75,45", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,46, 0,255,0,255, "75,46", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cap.valid',null, function(t) {
+test(module, '2d.line.cap.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -279,11 +280,11 @@ test('2d.line.cap.valid',null, function(t) {
   ctx.lineCap = 'square';
   helpers.assertEqual(t, ctx.lineCap, 'square', "ctx.lineCap", "'square'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.cross','green-100x50.png', function(t) {
+test(module, '2d.line.cross','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -308,11 +309,11 @@ test('2d.line.cross','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.defaults',null, function(t) {
+test(module, '2d.line.defaults',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -324,11 +325,11 @@ test('2d.line.defaults',null, function(t) {
   helpers.assertEqual(t, ctx.lineJoin, 'miter', "ctx.lineJoin", "'miter'");
   helpers.assertEqual(t, ctx.miterLimit, 10, "ctx.miterLimit", "10");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.bevel','green-100x50.png', function(t) {
+test(module, '2d.line.join.bevel','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -390,11 +391,11 @@ test('2d.line.join.bevel','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 86,15, 0,255,0,255, "86,15", "0,255,0,255");
   helpers.assertPixel(t, canvas, 86,14, 0,255,0,255, "86,14", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.closed','green-100x50.png', function(t) {
+test(module, '2d.line.join.closed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -421,11 +422,11 @@ test('2d.line.join.closed','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.invalid',null, function(t) {
+test(module, '2d.line.join.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -459,11 +460,11 @@ test('2d.line.join.invalid',null, function(t) {
   ctx.lineJoin = 'butt';
   helpers.assertEqual(t, ctx.lineJoin, 'bevel', "ctx.lineJoin", "'bevel'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.miter','green-100x50.png', function(t) {
+test(module, '2d.line.join.miter','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -516,11 +517,11 @@ test('2d.line.join.miter','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 91,9, 0,255,0,255, "91,9", "0,255,0,255");
   helpers.assertPixel(t, canvas, 92,8, 0,255,0,255, "92,8", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.open','green-100x50.png', function(t) {
+test(module, '2d.line.join.open','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -547,11 +548,11 @@ test('2d.line.join.open','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.parallel','green-100x50.png', function(t) {
+test(module, '2d.line.join.parallel','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -575,11 +576,11 @@ test('2d.line.join.parallel','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.round','green-100x50.png', function(t) {
+test(module, '2d.line.join.round','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -639,11 +640,11 @@ test('2d.line.join.round','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 88,13, 0,255,0,255, "88,13", "0,255,0,255");
   helpers.assertPixel(t, canvas, 88,12, 0,255,0,255, "88,12", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.join.valid',null, function(t) {
+test(module, '2d.line.join.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -659,11 +660,11 @@ test('2d.line.join.valid',null, function(t) {
   ctx.lineJoin = 'miter';
   helpers.assertEqual(t, ctx.lineJoin, 'miter', "ctx.lineJoin", "'miter'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.acute','green-100x50.png', function(t) {
+test(module, '2d.line.miter.acute','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -697,11 +698,11 @@ test('2d.line.miter.acute','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.exceeded','green-100x50.png', function(t) {
+test(module, '2d.line.miter.exceeded','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -727,11 +728,11 @@ test('2d.line.miter.exceeded','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.invalid',null, function(t) {
+test(module, '2d.line.miter.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -761,11 +762,11 @@ test('2d.line.miter.invalid',null, function(t) {
   ctx.miterLimit = NaN;
   helpers.assertEqual(t, ctx.miterLimit, 1.5, "ctx.miterLimit", "1.5");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.lineedge','green-100x50.png', function(t) {
+test(module, '2d.line.miter.lineedge','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -788,11 +789,11 @@ test('2d.line.miter.lineedge','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.obtuse','green-100x50.png', function(t) {
+test(module, '2d.line.miter.obtuse','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -826,11 +827,11 @@ test('2d.line.miter.obtuse','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.rightangle','green-100x50.png', function(t) {
+test(module, '2d.line.miter.rightangle','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -856,11 +857,11 @@ test('2d.line.miter.rightangle','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.valid',null, function(t) {
+test(module, '2d.line.miter.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -879,11 +880,11 @@ test('2d.line.miter.valid',null, function(t) {
   ctx.miterLimit = 1000;
   helpers.assertEqual(t, ctx.miterLimit, 1000, "ctx.miterLimit", "1000");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.miter.within','green-100x50.png', function(t) {
+test(module, '2d.line.miter.within','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -909,11 +910,11 @@ test('2d.line.miter.within','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.union','green-100x50.png', function(t) {
+test(module, '2d.line.union','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -941,11 +942,11 @@ test('2d.line.union','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,1, 0,255,0,255, "25,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 48,48, 0,255,0,255, "48,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.width.basic','green-100x50.png', function(t) {
+test(module, '2d.line.width.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -990,11 +991,11 @@ test('2d.line.width.basic','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 85,25, 0,255,0,255, "85,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 86,25, 0,255,0,255, "86,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.width.invalid',null, function(t) {
+test(module, '2d.line.width.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1024,11 +1025,11 @@ test('2d.line.width.invalid',null, function(t) {
   ctx.lineWidth = NaN;
   helpers.assertEqual(t, ctx.lineWidth, 1.5, "ctx.lineWidth", "1.5");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.width.scaledefault','green-100x50.png', function(t) {
+test(module, '2d.line.width.scaledefault','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1050,11 +1051,11 @@ test('2d.line.width.scaledefault','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,5, 0,255,0,255, "50,5", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,45, 0,255,0,255, "50,45", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.width.transformed','green-100x50.png', function(t) {
+test(module, '2d.line.width.transformed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1105,11 +1106,11 @@ test('2d.line.width.transformed','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 85,25, 0,255,0,255, "85,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 86,25, 0,255,0,255, "86,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.line.width.valid',null, function(t) {
+test(module, '2d.line.width.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1128,6 +1129,6 @@ test('2d.line.width.valid',null, function(t) {
   ctx.lineWidth = 1000;
   helpers.assertEqual(t, ctx.lineWidth, 1000, "ctx.lineWidth", "1000");
 
-  t.end()
+  t.done()
 });
 

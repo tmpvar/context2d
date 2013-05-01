@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.fillRect.basic','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.fillRect.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -15,11 +16,11 @@ test('2d.fillRect.basic','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.clip','green-100x50.png', function(t) {
+test(module, '2d.fillRect.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -41,11 +42,11 @@ test('2d.fillRect.clip','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.negative','green-100x50.png', function(t) {
+test(module, '2d.fillRect.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -64,11 +65,11 @@ test('2d.fillRect.negative','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,37, 0,255,0,255, "25,37", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,37, 0,255,0,255, "75,37", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.fillRect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -105,11 +106,11 @@ test('2d.fillRect.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.path','green-100x50.png', function(t) {
+test(module, '2d.fillRect.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -124,11 +125,11 @@ test('2d.fillRect.path','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.shadow','green-100x50.png', function(t) {
+test(module, '2d.fillRect.shadow','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -144,11 +145,11 @@ test('2d.fillRect.shadow','green-100x50.png', function(t) {
   ctx.fillRect(0, -50, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.transform','green-100x50.png', function(t) {
+test(module, '2d.fillRect.transform','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -161,11 +162,11 @@ test('2d.fillRect.transform','green-100x50.png', function(t) {
   ctx.fillRect(0, -5, 10, 5);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillRect.zero','green-100x50.png', function(t) {
+test(module, '2d.fillRect.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -180,6 +181,6 @@ test('2d.fillRect.zero','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 0, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

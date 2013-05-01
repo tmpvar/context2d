@@ -1039,12 +1039,15 @@ METHOD(Arc) {
   SkScalar ea = SkDoubleToScalar(args[4]->NumberValue());
   bool ccw = args[5]->BooleanValue();
 
+  SkPath subpath;
 
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  subpath.transform(currentTransform);
 
   // TODO: probably could get the last point
   //       and compare it with x/y
   if (!ctx->path.isEmpty()) {
-    ctx->path.lineTo(x, y);
+    subpath.lineTo(x, y);
   }
 
   if (!ccw) {
@@ -1056,18 +1059,22 @@ METHOD(Arc) {
       ea = fmodf(ea, TAU);
     }
 
-    ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
+    subpath.addArc(rect, DEGREES(sa), DEGREES(ea));
   } else if (sa != ea) {
 
     if (sa > ea + TAU) {
-      ctx->path.addCircle(x, y, r, SkPath::kCCW_Direction);
+      subpath.addCircle(x, y, r, SkPath::kCCW_Direction);
+    } else if (ea < sa + TAU) {
+      subpath.addCircle(x, y, r, SkPath::kCCW_Direction);
     } else {
       SkRect rect = {
         x+r, y+r, x-r, y-r
       };
-      ctx->path.addArc(rect, DEGREES(ea), DEGREES(sa));
+      subpath.addArc(rect, DEGREES(ea), DEGREES(sa));
     }
   }
+
+  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }

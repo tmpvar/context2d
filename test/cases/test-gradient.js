@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.gradient.empty','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.gradient.empty','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -18,11 +19,11 @@ test('2d.gradient.empty','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.alpha','2d.gradient.interpolate.alpha.png', function(t) {
+test(module, '2d.gradient.interpolate.alpha','2d.gradient.interpolate.alpha.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -40,11 +41,11 @@ test('2d.gradient.interpolate.alpha','2d.gradient.interpolate.alpha.png', functi
   helpers.assertPixelApprox(t, canvas, 50,25, 127,127,127,255, "50,25", "127,127,127,255", 3);
   helpers.assertPixelApprox(t, canvas, 75,25, 63,63,191,255, "75,25", "63,63,191,255", 3);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.colour','2d.gradient.interpolate.colour.png', function(t) {
+test(module, '2d.gradient.interpolate.colour','2d.gradient.interpolate.colour.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -60,11 +61,11 @@ test('2d.gradient.interpolate.colour','2d.gradient.interpolate.colour.png', func
   helpers.assertPixelApprox(t, canvas, 50,25, 127,127,127,255, "50,25", "127,127,127,255", 3);
   helpers.assertPixelApprox(t, canvas, 75,25, 63,63,191,255, "75,25", "63,63,191,255", 3);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.colouralpha','2d.gradient.interpolate.colouralpha.png', function(t) {
+test(module, '2d.gradient.interpolate.colouralpha','2d.gradient.interpolate.colouralpha.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -80,11 +81,11 @@ test('2d.gradient.interpolate.colouralpha','2d.gradient.interpolate.colouralpha.
   helpers.assertPixelApprox(t, canvas, 50,25, 127,127,127,127, "50,25", "127,127,127,127", 3);
   helpers.assertPixelApprox(t, canvas, 75,25, 63,63,191,191, "75,25", "63,63,191,191", 3);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.multiple','2d.gradient.interpolate.multiple.png', function(t) {
+test(module, '2d.gradient.interpolate.multiple','2d.gradient.interpolate.multiple.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -102,11 +103,11 @@ test('2d.gradient.interpolate.multiple','2d.gradient.interpolate.multiple.png', 
   helpers.assertPixelApprox(t, canvas, 100,25, 0,255,255,255, "100,25", "0,255,255,255", 3);
   helpers.assertPixelApprox(t, canvas, 150,25, 127,127,255,255, "150,25", "127,127,255,255", 3);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.outside','green-100x50.png', function(t) {
+test(module, '2d.gradient.interpolate.outside','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -126,11 +127,11 @@ test('2d.gradient.interpolate.outside','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 80,25, 0,255,0,255, "80,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.overlap','2d.gradient.interpolate.overlap.png', function(t) {
+test(module, '2d.gradient.interpolate.overlap','2d.gradient.interpolate.overlap.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -164,11 +165,11 @@ test('2d.gradient.interpolate.overlap','2d.gradient.interpolate.overlap.png', fu
   helpers.assertPixelApprox(t, canvas, 149,25, 0,0,255,255, "149,25", "0,0,255,255", 16);
   helpers.assertPixelApprox(t, canvas, 151,25, 255,255,0,255, "151,25", "255,255,0,255", 16);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.overlap2','green-100x50.png', function(t) {
+test(module, '2d.gradient.interpolate.overlap2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -192,11 +193,11 @@ test('2d.gradient.interpolate.overlap2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 60,25, 0,255,0,255, "60,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 80,25, 0,255,0,255, "80,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.solid','green-100x50.png', function(t) {
+test(module, '2d.gradient.interpolate.solid','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -210,11 +211,11 @@ test('2d.gradient.interpolate.solid','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.vertical','2d.gradient.interpolate.vertical.png', function(t) {
+test(module, '2d.gradient.interpolate.vertical','2d.gradient.interpolate.vertical.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -230,11 +231,11 @@ test('2d.gradient.interpolate.vertical','2d.gradient.interpolate.vertical.png', 
   helpers.assertPixelApprox(t, canvas, 50,25, 127,127,127,255, "50,25", "127,127,127,255", 5);
   helpers.assertPixelApprox(t, canvas, 50,37, 63,63,191,255, "50,37", "63,63,191,255", 10);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.interpolate.zerosize','green-100x50.png', function(t) {
+test(module, '2d.gradient.interpolate.zerosize','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -251,11 +252,11 @@ test('2d.gradient.interpolate.zerosize','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 40,20, 0,255,0,255, "40,20", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.linear.nonfinite',null, function(t) {
+test(module, '2d.gradient.linear.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -332,11 +333,11 @@ test('2d.gradient.linear.nonfinite',null, function(t) {
     ctx.createLinearGradient(0, 0, Infinity, Infinity);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createLinearGradient(0, 0, Infinity, Infinity)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.linear.transform.1','green-100x50.png', function(t) {
+test(module, '2d.gradient.linear.transform.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -355,11 +356,11 @@ test('2d.gradient.linear.transform.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.linear.transform.2','green-100x50.png', function(t) {
+test(module, '2d.gradient.linear.transform.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -379,11 +380,11 @@ test('2d.gradient.linear.transform.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.linear.transform.3','green-100x50.png', function(t) {
+test(module, '2d.gradient.linear.transform.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -403,11 +404,11 @@ test('2d.gradient.linear.transform.3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.compare',null, function(t) {
+test(module, '2d.gradient.object.compare',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -420,11 +421,11 @@ test('2d.gradient.object.compare',null, function(t) {
   ctx.fillStyle = g1;
   helpers.assertEqual(t, ctx.fillStyle, g1, "ctx.fillStyle", "g1");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.crosscanvas','green-100x50.png', function(t) {
+test(module, '2d.gradient.object.crosscanvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -440,11 +441,11 @@ test('2d.gradient.object.crosscanvas','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.invalidcolour',null, function(t) {
+test(module, '2d.gradient.object.invalidcolour',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -459,11 +460,11 @@ test('2d.gradient.object.invalidcolour',null, function(t) {
     g.addColorStop(0, 'undefined');
   } catch (e) { if (e.code != DOMException.SYNTAX_ERR) t.fail("Failed assertion: expected exception of type SYNTAX_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type SYNTAX_ERR: g.addColorStop(0, 'undefined')"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.invalidoffset',null, function(t) {
+test(module, '2d.gradient.object.invalidoffset',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -487,11 +488,11 @@ test('2d.gradient.object.invalidoffset',null, function(t) {
     g.addColorStop(NaN, '#000');
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: g.addColorStop(NaN, '#000')"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.return',null, function(t) {
+test(module, '2d.gradient.object.return',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -508,11 +509,11 @@ test('2d.gradient.object.return',null, function(t) {
   helpers.assertNotEqual(t, g2.addColorStop, undefined, "g2.addColorStop", "undefined");
   helpers.assertEqual(t, g2.thisImplementsCanvasGradient, true, "g2.thisImplementsCanvasGradient", "true");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.object.update','green-100x50.png', function(t) {
+test(module, '2d.gradient.object.update','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -528,11 +529,11 @@ test('2d.gradient.object.update','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.behind','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.behind','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -558,11 +559,11 @@ test('2d.gradient.radial.cone.behind','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.beside','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.beside','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -588,11 +589,11 @@ test('2d.gradient.radial.cone.beside','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.bottom','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.bottom','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -618,11 +619,11 @@ test('2d.gradient.radial.cone.bottom','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.cylinder','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.cylinder','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -648,11 +649,11 @@ test('2d.gradient.radial.cone.cylinder','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.front','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.front','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -678,11 +679,11 @@ test('2d.gradient.radial.cone.front','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.shape1','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.shape1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -717,11 +718,11 @@ test('2d.gradient.radial.cone.shape1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.shape2','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.shape2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -756,11 +757,11 @@ test('2d.gradient.radial.cone.shape2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.cone.top','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.cone.top','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -786,11 +787,11 @@ test('2d.gradient.radial.cone.top','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.equal','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.equal','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -816,11 +817,11 @@ test('2d.gradient.radial.equal','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.inside1','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.inside1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -846,11 +847,11 @@ test('2d.gradient.radial.inside1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.inside2','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.inside2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -876,11 +877,11 @@ test('2d.gradient.radial.inside2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.inside3','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.inside3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -907,11 +908,11 @@ test('2d.gradient.radial.inside3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.negative',null, function(t) {
+test(module, '2d.gradient.radial.negative',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -928,11 +929,11 @@ test('2d.gradient.radial.negative',null, function(t) {
     ctx.createRadialGradient(0, 0, -0.1, 0, 0, -0.1);
   } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.createRadialGradient(0, 0, -0.1, 0, 0, -0.1)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.nonfinite',null, function(t) {
+test(module, '2d.gradient.radial.nonfinite',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1165,11 +1166,11 @@ test('2d.gradient.radial.nonfinite',null, function(t) {
     ctx.createRadialGradient(0, 0, 1, 0, Infinity, Infinity);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: ctx.createRadialGradient(0, 0, 1, 0, Infinity, Infinity)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.outside1','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.outside1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1195,11 +1196,11 @@ test('2d.gradient.radial.outside1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.outside2','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.outside2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1225,11 +1226,11 @@ test('2d.gradient.radial.outside2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.outside3','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.outside3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1256,11 +1257,11 @@ test('2d.gradient.radial.outside3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.touch1','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.touch1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1286,11 +1287,11 @@ test('2d.gradient.radial.touch1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.touch2','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.touch2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1318,11 +1319,11 @@ test('2d.gradient.radial.touch2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.touch3','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.touch3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1348,11 +1349,11 @@ test('2d.gradient.radial.touch3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,48, 0,255,0,255, "50,48", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.transform.1','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.transform.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1372,11 +1373,11 @@ test('2d.gradient.radial.transform.1','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.transform.2','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.transform.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1397,11 +1398,11 @@ test('2d.gradient.radial.transform.2','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.gradient.radial.transform.3','green-100x50.png', function(t) {
+test(module, '2d.gradient.radial.transform.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1422,6 +1423,6 @@ test('2d.gradient.radial.transform.3','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

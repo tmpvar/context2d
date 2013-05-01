@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.drawImage.3arg','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.drawImage.3arg','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' },
@@ -27,12 +28,12 @@ test('2d.drawImage.3arg','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.5arg','green-100x50.png', function(t) {
+test(module, '2d.drawImage.5arg','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' },
@@ -56,12 +57,12 @@ test('2d.drawImage.5arg','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.9arg.basic','green-100x50.png', function(t) {
+test(module, '2d.drawImage.9arg.basic','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../images/green.png' }
@@ -80,12 +81,12 @@ test('2d.drawImage.9arg.basic','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.9arg.destpos','green-100x50.png', function(t) {
+test(module, '2d.drawImage.9arg.destpos','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' },
@@ -109,12 +110,12 @@ test('2d.drawImage.9arg.destpos','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.9arg.destsize','green-100x50.png', function(t) {
+test(module, '2d.drawImage.9arg.destsize','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' },
@@ -138,12 +139,12 @@ test('2d.drawImage.9arg.destsize','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.9arg.sourcepos','green-100x50.png', function(t) {
+test(module, '2d.drawImage.9arg.sourcepos','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../images/rgrg-256x256.png' }
@@ -162,12 +163,12 @@ test('2d.drawImage.9arg.sourcepos','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.9arg.sourcesize','green-100x50.png', function(t) {
+test(module, '2d.drawImage.9arg.sourcesize','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'rgrg-256x256.png' , url: __dirname + '/../images/rgrg-256x256.png' }
@@ -193,12 +194,12 @@ test('2d.drawImage.9arg.sourcesize','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 20,30, 0,255,0,255, "20,30", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 80,30, 0,255,0,255, "80,30", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.alpha','green-100x50.png', function(t) {
+test(module, '2d.drawImage.alpha','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -215,12 +216,12 @@ test('2d.drawImage.alpha','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.animated.apng','green-100x50.png', function(t) {
+test(module, '2d.drawImage.animated.apng','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-gr.png' , url: __dirname + '/../images/anim-gr.png' }
@@ -240,7 +241,7 @@ test('2d.drawImage.animated.apng','green-100x50.png', function(t) {
 });
 
 
-test('2d.drawImage.animated.gif','green-100x50.png', function(t) {
+test(module, '2d.drawImage.animated.gif','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-gr.gif' , url: __dirname + '/../images/anim-gr.gif' }
@@ -260,7 +261,7 @@ test('2d.drawImage.animated.gif','green-100x50.png', function(t) {
 });
 
 
-test('2d.drawImage.animated.poster','green-100x50.png', function(t) {
+test(module, '2d.drawImage.animated.poster','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'anim-poster-gr.png' , url: __dirname + '/../images/anim-poster-gr.png' }
@@ -274,12 +275,12 @@ test('2d.drawImage.animated.poster','green-100x50.png', function(t) {
     ctx.drawImage(images['anim-poster-gr.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.broken','green-100x50.png', function(t) {
+test(module, '2d.drawImage.broken','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'broken.png' , url: __dirname + '/../images/broken.png' }
@@ -296,12 +297,12 @@ test('2d.drawImage.broken','green-100x50.png', function(t) {
     helpers.assertEqual(t, img.complete, false, "img.complete", "false");
     ctx.drawImage(img, 0, 0);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.canvas','green-100x50.png', function(t) {
+test(module, '2d.drawImage.canvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -323,11 +324,11 @@ test('2d.drawImage.canvas','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.clip','green-100x50.png', function(t) {
+test(module, '2d.drawImage.clip','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -345,12 +346,12 @@ test('2d.drawImage.clip','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.composite','green-100x50.png', function(t) {
+test(module, '2d.drawImage.composite','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -367,12 +368,12 @@ test('2d.drawImage.composite','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.floatsource','green-100x50.png', function(t) {
+test(module, '2d.drawImage.floatsource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../images/green.png' }
@@ -386,12 +387,12 @@ test('2d.drawImage.floatsource','green-100x50.png', function(t) {
     ctx.drawImage(images['green.png'], 10.1, 10.1, 0.1, 0.1, 0, 0, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.incomplete','green-100x50.png', function(t) {
+test(module, '2d.drawImage.incomplete','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -404,11 +405,11 @@ test('2d.drawImage.incomplete','green-100x50.png', function(t) {
   helpers.assertEqual(t, img.complete, false, "img.complete", "false");
   ctx.drawImage(img, 0, 0);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.negativedest','green-100x50.png', function(t) {
+test(module, '2d.drawImage.negativedest','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../images/ggrr-256x256.png' }
@@ -434,12 +435,12 @@ test('2d.drawImage.negativedest','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.negativedir','green-100x50.png', function(t) {
+test(module, '2d.drawImage.negativedir','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../images/ggrr-256x256.png' }
@@ -465,12 +466,12 @@ test('2d.drawImage.negativedir','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.negativesource','green-100x50.png', function(t) {
+test(module, '2d.drawImage.negativesource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'ggrr-256x256.png' , url: __dirname + '/../images/ggrr-256x256.png' }
@@ -496,12 +497,12 @@ test('2d.drawImage.negativesource','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.drawImage.nonfinite','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -818,12 +819,12 @@ test('2d.drawImage.nonfinite','green-100x50.png', function(t) {
     ctx.drawImage(red, 0, 0, 100, 50, 0, 0, Infinity, Infinity);
     helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.nowrap','green-100x50.png', function(t) {
+test(module, '2d.drawImage.nowrap','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'redtransparent.png' , url: __dirname + '/../images/redtransparent.png' }
@@ -841,12 +842,12 @@ test('2d.drawImage.nowrap','green-100x50.png', function(t) {
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 55,25, 0,255,0,255, "55,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.null',null, function(t) {
+test(module, '2d.drawImage.null',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -857,11 +858,11 @@ test('2d.drawImage.null',null, function(t) {
     ctx.drawImage(null, 0, 0);
   } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(null, 0, 0)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.outsidesource','green-100x50.png', function(t) {
+test(module, '2d.drawImage.outsidesource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'green.png' , url: __dirname + '/../images/green.png' },
@@ -902,12 +903,12 @@ test('2d.drawImage.outsidesource','green-100x50.png', function(t) {
     } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 110, 60, -20, -20, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.path','green-100x50.png', function(t) {
+test(module, '2d.drawImage.path','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -924,12 +925,12 @@ test('2d.drawImage.path','green-100x50.png', function(t) {
     ctx.fill();
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.self.1','green-100x50.png', function(t) {
+test(module, '2d.drawImage.self.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -947,11 +948,11 @@ test('2d.drawImage.self.1','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.self.2','green-100x50.png', function(t) {
+test(module, '2d.drawImage.self.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -971,11 +972,11 @@ test('2d.drawImage.self.2','green-100x50.png', function(t) {
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,49, 0,255,0,255, "99,49", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.transform','green-100x50.png', function(t) {
+test(module, '2d.drawImage.transform','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -992,12 +993,12 @@ test('2d.drawImage.transform','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.drawImage.wrongtype',null, function(t) {
+test(module, '2d.drawImage.wrongtype',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1017,11 +1018,11 @@ test('2d.drawImage.wrongtype',null, function(t) {
     ctx.drawImage(document.createElement('p'), 0, 0);
   } catch (e) { if (e.code != DOMException.TYPE_MISMATCH_ERR) t.fail("Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type TYPE_MISMATCH_ERR: ctx.drawImage(document.createElement('p'), 0, 0)"); }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.zerocanvas','green-100x50.png', function(t) {
+test(module, '2d.drawImage.zerocanvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1052,11 +1053,11 @@ test('2d.drawImage.zerocanvas','green-100x50.png', function(t) {
   
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.drawImage.zerosource','green-100x50.png', function(t) {
+test(module, '2d.drawImage.zerosource','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -1080,7 +1081,7 @@ test('2d.drawImage.zerosource','green-100x50.png', function(t) {
     } catch (e) { if (e.code != DOMException.INDEX_SIZE_ERR) t.fail("Failed assertion: expected exception of type INDEX_SIZE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INDEX_SIZE_ERR: ctx.drawImage(images['red.png'], 10, 10, 0, 0, 0, 0, 100, 50)"); }
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 

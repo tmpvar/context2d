@@ -2,7 +2,7 @@ var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
 var util = require('util');
 var TAU = Math.PI*2;
-
+//
 var valid = function(a) {
   return !isNaN(a) && isFinite(a);
 };
@@ -841,7 +841,11 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     lineTo(x, y);
-  })
+  });
+
+  override('measureText', function(measureText, str) {
+    return { width: 0, height: 0};
+  });
 
   return ret;
 };

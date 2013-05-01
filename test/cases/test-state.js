@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.state.saverestore.bitmap','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.state.saverestore.bitmap','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -19,11 +20,11 @@ test('2d.state.saverestore.bitmap','green-100x50.png', function(t) {
   ctx.restore();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.clip','green-100x50.png', function(t) {
+test(module, '2d.state.saverestore.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -40,11 +41,11 @@ test('2d.state.saverestore.clip','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.fillStyle',null, function(t) {
+test(module, '2d.state.saverestore.fillStyle',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -67,11 +68,11 @@ test('2d.state.saverestore.fillStyle',null, function(t) {
   helpers.assertEqual(t, ctx.fillStyle, old, "ctx.fillStyle", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.font',null, function(t) {
+test(module, '2d.state.saverestore.font',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -94,11 +95,11 @@ test('2d.state.saverestore.font',null, function(t) {
   helpers.assertEqual(t, ctx.font, old, "ctx.font", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.globalAlpha',null, function(t) {
+test(module, '2d.state.saverestore.globalAlpha',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -121,11 +122,11 @@ test('2d.state.saverestore.globalAlpha',null, function(t) {
   helpers.assertEqual(t, ctx.globalAlpha, old, "ctx.globalAlpha", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.globalCompositeOperation',null, function(t) {
+test(module, '2d.state.saverestore.globalCompositeOperation',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -148,11 +149,11 @@ test('2d.state.saverestore.globalCompositeOperation',null, function(t) {
   helpers.assertEqual(t, ctx.globalCompositeOperation, old, "ctx.globalCompositeOperation", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.lineCap',null, function(t) {
+test(module, '2d.state.saverestore.lineCap',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -175,11 +176,11 @@ test('2d.state.saverestore.lineCap',null, function(t) {
   helpers.assertEqual(t, ctx.lineCap, old, "ctx.lineCap", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.lineJoin',null, function(t) {
+test(module, '2d.state.saverestore.lineJoin',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -202,11 +203,11 @@ test('2d.state.saverestore.lineJoin',null, function(t) {
   helpers.assertEqual(t, ctx.lineJoin, old, "ctx.lineJoin", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.lineWidth',null, function(t) {
+test(module, '2d.state.saverestore.lineWidth',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -229,11 +230,11 @@ test('2d.state.saverestore.lineWidth',null, function(t) {
   helpers.assertEqual(t, ctx.lineWidth, old, "ctx.lineWidth", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.miterLimit',null, function(t) {
+test(module, '2d.state.saverestore.miterLimit',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -256,11 +257,11 @@ test('2d.state.saverestore.miterLimit',null, function(t) {
   helpers.assertEqual(t, ctx.miterLimit, old, "ctx.miterLimit", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.path','green-100x50.png', function(t) {
+test(module, '2d.state.saverestore.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -276,11 +277,11 @@ test('2d.state.saverestore.path','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.shadowBlur',null, function(t) {
+test(module, '2d.state.saverestore.shadowBlur',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -303,11 +304,11 @@ test('2d.state.saverestore.shadowBlur',null, function(t) {
   helpers.assertEqual(t, ctx.shadowBlur, old, "ctx.shadowBlur", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.shadowColor',null, function(t) {
+test(module, '2d.state.saverestore.shadowColor',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -330,11 +331,11 @@ test('2d.state.saverestore.shadowColor',null, function(t) {
   helpers.assertEqual(t, ctx.shadowColor, old, "ctx.shadowColor", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.shadowOffsetX',null, function(t) {
+test(module, '2d.state.saverestore.shadowOffsetX',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -357,11 +358,11 @@ test('2d.state.saverestore.shadowOffsetX',null, function(t) {
   helpers.assertEqual(t, ctx.shadowOffsetX, old, "ctx.shadowOffsetX", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.shadowOffsetY',null, function(t) {
+test(module, '2d.state.saverestore.shadowOffsetY',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -384,11 +385,11 @@ test('2d.state.saverestore.shadowOffsetY',null, function(t) {
   helpers.assertEqual(t, ctx.shadowOffsetY, old, "ctx.shadowOffsetY", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.stack',null, function(t) {
+test(module, '2d.state.saverestore.stack',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -406,11 +407,11 @@ test('2d.state.saverestore.stack',null, function(t) {
   ctx.restore();
   helpers.assertEqual(t, ctx.lineWidth, 1, "ctx.lineWidth", "1");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.stackdepth',null, function(t) {
+test(module, '2d.state.saverestore.stackdepth',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -429,11 +430,11 @@ test('2d.state.saverestore.stackdepth',null, function(t) {
       ctx.restore();
   }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.strokeStyle',null, function(t) {
+test(module, '2d.state.saverestore.strokeStyle',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -456,11 +457,11 @@ test('2d.state.saverestore.strokeStyle',null, function(t) {
   helpers.assertEqual(t, ctx.strokeStyle, old, "ctx.strokeStyle", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.textAlign',null, function(t) {
+test(module, '2d.state.saverestore.textAlign',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -483,11 +484,11 @@ test('2d.state.saverestore.textAlign',null, function(t) {
   helpers.assertEqual(t, ctx.textAlign, old, "ctx.textAlign", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.textBaseline',null, function(t) {
+test(module, '2d.state.saverestore.textBaseline',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -510,11 +511,11 @@ test('2d.state.saverestore.textBaseline',null, function(t) {
   helpers.assertEqual(t, ctx.textBaseline, old, "ctx.textBaseline", "old");
   ctx.restore();
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.transformation','green-100x50.png', function(t) {
+test(module, '2d.state.saverestore.transformation','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -530,11 +531,11 @@ test('2d.state.saverestore.transformation','green-100x50.png', function(t) {
   ctx.fillRect(-200, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.state.saverestore.underflow',null, function(t) {
+test(module, '2d.state.saverestore.underflow',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -547,6 +548,6 @@ test('2d.state.saverestore.underflow',null, function(t) {
   ctx.restore();
   helpers.assertEqual(t, ctx.lineWidth, 0.5, "ctx.lineWidth", "0.5");
 
-  t.end()
+  t.done()
 });
 

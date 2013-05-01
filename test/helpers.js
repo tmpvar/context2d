@@ -1,6 +1,5 @@
 var context = require('../');
 var domino = require('domino');
-var test = require('tap').test;
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
 var fs = require('fs');
@@ -14,19 +13,21 @@ background.src = __dirname + '/images/background-tiled.png';
 background.listeners = 10;
 
 var testQueue = [];
-module.exports.test = function(name, image, fn) {
+module.exports.test = function(module, name, image, fn) {
   var skip = {
     '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517',
-    '2d.drawImage.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1'
+    '2d.drawImage.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1',
+    '2d.pattern.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1'
   };
+
 
   if (skip[name]) {
     console.log('SKIPPED:', name, '(see: ' + skip[name], ')');
-    return;
+    return function(t) { t.done() } ;
   }
 
 
-  var wrapper = function(t) {
+  module.exports[name] = function(t) {
     if (image) {
       t.image = new Image();
       t.image.onload = function() {
@@ -42,7 +43,11 @@ module.exports.test = function(name, image, fn) {
           ];
         };
 
-        fn(t);
+        try {
+          fn(t);
+        } catch (e) {
+          t.done(e);
+        }
       }
 
       t.image.on('error', function() {
@@ -52,28 +57,13 @@ module.exports.test = function(name, image, fn) {
       t.image.src = __dirname + '/images/' + image;
 
     } else {
-      fn(t);
+      try {
+        fn(t);
+      } catch (e) {
+        t.done(e);
+      }
     }
   };
-
-  var match;
-  if (argv.n) {
-    match = argv.n === name
-  } else {
-    match = !match && !argv.t || name.indexOf(argv.t) > -1;
-  }
-
-
-  if (match) {
-    if (!background.complete) {
-      background.setMaxListeners(background.listeners++);
-      background.on('load', function() {
-        test(name, wrapper);
-      });
-    } else {
-      test(name, wrapper);
-    }
-  }
 };
 
 module.exports.createWindow = function() {
@@ -155,26 +145,34 @@ module.exports.Window = function() {
 
 var getLastArgs = function(args, start) {
   var a = [];
-  while (a.length < args.length) {
-    a = args[a.length];
-  }
-
+  Array.prototype.push.apply(a, args);
   return a.slice(start);
 };
 
 module.exports.ok = function(t, val) {
   if (!val) {
-    t.fail(getLastArgs(1).join(','));
+    t.fail(getLastArgs(arguments,2).join(','));
   }
 }
 
+module.exports.wrapFunction = function(t, cb) {
+  return function() {
+    try {
+      cb();
+    } catch (e) {
+      t.done(e);
+    }
+    t.done()
+  }
+};
+
 
 module.exports.assertEqual = function(t, a, b) {
-  t.equal(a, b, getLastArgs(3).join(','));
+  t.equal(a, b, getLastArgs(arguments,3).join(','));
 };
 
 module.exports.assertNotEqual = function(t, a, b) {
-  t.notEqual(a, b, getLastArgs(3).join(','));
+  t.notEqual(a, b, getLastArgs(arguments,3).join(','));
 };
 
 
@@ -202,7 +200,7 @@ module.exports.assertPixelApprox = function(t, canvas, x,y, r,g,b,a, pos, color,
   // Add +1 for 2d.gradient.interpolate.colouralpha
   // which was off by 4 on the blue channel with tolerance of 3
   if (diff > (tolerance + 1)) {
-    t.fail('Failed assertion: got pixel [' +
+    t.done('Failed assertion: got pixel [' +
             JSON.stringify(c) + '] at ('+x+','+y+'), expected ['+
             r+','+g+','+b+','+a+'] +/- '+tolerance);
   }
@@ -210,7 +208,7 @@ module.exports.assertPixelApprox = function(t, canvas, x,y, r,g,b,a, pos, color,
 
 module.exports.assertMatch = function(t, a, b, text_a, text_b) {
   if (!a.match(b)) {
-    t.fail('Failed assertion ' + text_a + ' matches ' + text_b +
+    t.done('Failed assertion ' + text_a + ' matches ' + text_b +
         ' (got ' + a + ')');
   }
 }
@@ -233,15 +231,19 @@ module.exports.loadImages = function(t, array, fn) {
     images[o.id].onload = function() {
       total--;
       if (!total) {
-        fn(images);
+        try {
+          fn(images);
+        } catch (e) {
+          t.done(e);
+        }
       }
     };
 
     images[o.id].on('error', function(e) {
       if (o.url.indexOf('broken') === -1) {
-        t.fail('IMAGE ERROR:' +  o.id + e);
+        t.done('IMAGE ERROR:' +  o.id + e);
       }
-      t.end();
+      t.done();
     });
 
     images[o.id].src = o.url;

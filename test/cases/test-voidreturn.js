@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.voidreturn',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.voidreturn',null, function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -52,7 +53,7 @@ test('2d.voidreturn',null, function(t) {
     helpers.assertEqual(t, ctx.drawImage(canvas, 0, 0, 1, 1, 0, 0, 0, 0), undefined, "ctx.drawImage(canvas, 0, 0, 1, 1, 0, 0, 0, 0)", "undefined");
     helpers.assertEqual(t, ctx.createLinearGradient(0, 0, 0, 0).addColorStop(0, 'white'), undefined, "ctx.createLinearGradient(0, 0, 0, 0).addColorStop(0, 'white')", "undefined");
 
-    t.end()
+    t.done()
   });
 });
 

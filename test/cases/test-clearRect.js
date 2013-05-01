@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.clearRect.basic','clear-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.clearRect.basic','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -16,11 +17,11 @@ test('2d.clearRect.basic','clear-100x50.png', function(t) {
   ctx.clearRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.clip','green-100x50.png', function(t) {
+test(module, '2d.clearRect.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -41,11 +42,11 @@ test('2d.clearRect.clip','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.globalalpha','clear-100x50.png', function(t) {
+test(module, '2d.clearRect.globalalpha','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -58,11 +59,11 @@ test('2d.clearRect.globalalpha','clear-100x50.png', function(t) {
   ctx.clearRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.globalcomposite','clear-100x50.png', function(t) {
+test(module, '2d.clearRect.globalcomposite','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -75,11 +76,11 @@ test('2d.clearRect.globalcomposite','clear-100x50.png', function(t) {
   ctx.clearRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.negative','clear-100x50.png', function(t) {
+test(module, '2d.clearRect.negative','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -97,11 +98,11 @@ test('2d.clearRect.negative','clear-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,37, 0,0,0,0, "25,37", "0,0,0,0");
   helpers.assertPixel(t, canvas, 75,37, 0,0,0,0, "75,37", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.clearRect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -137,11 +138,11 @@ test('2d.clearRect.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.path','green-100x50.png', function(t) {
+test(module, '2d.clearRect.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -155,11 +156,11 @@ test('2d.clearRect.path','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.shadow','green-100x50.png', function(t) {
+test(module, '2d.clearRect.shadow','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -175,11 +176,11 @@ test('2d.clearRect.shadow','green-100x50.png', function(t) {
   ctx.clearRect(0, -50, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.transform','clear-100x50.png', function(t) {
+test(module, '2d.clearRect.transform','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -193,11 +194,11 @@ test('2d.clearRect.transform','clear-100x50.png', function(t) {
   ctx.clearRect(0, -5, 10, 5);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.clearRect.zero','green-100x50.png', function(t) {
+test(module, '2d.clearRect.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -211,6 +212,6 @@ test('2d.clearRect.zero','green-100x50.png', function(t) {
   ctx.clearRect(0, 0, 0, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

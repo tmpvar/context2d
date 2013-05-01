@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.getcontext.exists',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.getcontext.exists',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -13,11 +14,11 @@ test('2d.getcontext.exists',null, function(t) {
 
   helpers.assertNotEqual(t, canvas.getContext('2d'), null, "canvas.getContext('2d')", "null");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.getcontext.shared','green-100x50.png', function(t) {
+test(module, '2d.getcontext.shared','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -30,11 +31,11 @@ test('2d.getcontext.shared','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.getcontext.unique',null, function(t) {
+test(module, '2d.getcontext.unique',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -43,6 +44,6 @@ test('2d.getcontext.unique',null, function(t) {
 
   helpers.assertEqual(t, canvas.getContext('2d'), canvas.getContext('2d'), "canvas.getContext('2d')", "canvas.getContext('2d')");
 
-  t.end()
+  t.done()
 });
 

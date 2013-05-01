@@ -28,7 +28,8 @@ files.forEach(function(file) {
       'var Canvas = helpers.Canvas;',
       'var Image = helpers.Image;',
       'var DOMException = helpers.DOMException;',
-      'var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };'
+      'var wrapFunction = helpers.wrapFunction;',
+      ''
     ];
   }
 
@@ -60,7 +61,8 @@ files.forEach(function(file) {
     expected = "'" + expectedMatch[1] + "'";
   }
 
-  test.push("test('" + title + "'," + expected + ", function(t) {");
+  var titleString = "'" + title + "'";
+  test.push("test(module, " + titleString + "," + expected + ", function(t) {");
 
   var imageMatches = contents.match(/<img[^>]+/gi);
   var images = [];
@@ -128,7 +130,7 @@ files.forEach(function(file) {
   test.push(testString);
 
   test.push('');
-  !deferred && test.push(pad() + 't.end()');
+  !deferred && test.push(pad() + 't.done()');
 
   if (images.length) {
     indent-=2;

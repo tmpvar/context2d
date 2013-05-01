@@ -4,7 +4,7 @@
   "description": "the 2d context part of Canvas",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test/test.js",
     "install": "node-gyp rebuild"
   },
   "repository": {
@@ -19,7 +19,10 @@
   "dependencies": {
     "bindings": "~1.1.0",
     "csscolorparser": "~1.0.1",
-    "htmlimage": "~1.0.0",
-    "optimist": "~0.4.0"
+    "htmlimage": "~1.0.0"
+  },
+  "devDependencies" : {
+    "optimist": "~0.4.0",
+    "hound": "~1.0.4"
   }
 }

@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.coordinatespace','2d.coordinatespace.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.coordinatespace','2d.coordinatespace.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -21,6 +22,6 @@ test('2d.coordinatespace','2d.coordinatespace.png', function(t) {
   helpers.assertPixel(t, canvas, 75,37, 0,0,255,255, "75,37", "0,0,255,255");
   _requireManualCheck(); // because we can't tell that getPixelData isn't using the wrong coordinate space too
 
-  t.end()
+  t.done()
 });
 

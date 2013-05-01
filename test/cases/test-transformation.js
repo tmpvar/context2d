@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.transformation.order','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.transformation.order','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -20,11 +21,11 @@ test('2d.transformation.order','green-100x50.png', function(t) {
   ctx.fillRect(0, -50, 50, 50);
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.direction','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.direction','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -39,11 +40,11 @@ test('2d.transformation.rotate.direction','green-100x50.png', function(t) {
   ctx.fillRect(0, -100, 50, 100);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -63,11 +64,11 @@ test('2d.transformation.rotate.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.radians','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.radians','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -82,11 +83,11 @@ test('2d.transformation.rotate.radians','green-100x50.png', function(t) {
   ctx.fillRect(-100, -50, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.wrap','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.wrap','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -106,11 +107,11 @@ test('2d.transformation.rotate.wrap','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 98,2, 0,255,0,255, "98,2", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,47, 0,255,0,255, "98,47", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.wrapnegative','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.wrapnegative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -127,11 +128,11 @@ test('2d.transformation.rotate.wrapnegative','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 98,2, 0,255,0,255, "98,2", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,47, 0,255,0,255, "98,47", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.rotate.zero','green-100x50.png', function(t) {
+test(module, '2d.transformation.rotate.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -146,11 +147,11 @@ test('2d.transformation.rotate.zero','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.basic','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -165,11 +166,11 @@ test('2d.transformation.scale.basic','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 50, 12.5);
   helpers.assertPixel(t, canvas, 90,40, 0,255,0,255, "90,40", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.large','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.large','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -184,11 +185,11 @@ test('2d.transformation.scale.large','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 1, 1);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.multiple','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.multiple','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -204,11 +205,11 @@ test('2d.transformation.scale.multiple','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 50, 25);
   helpers.assertPixel(t, canvas, 90,40, 0,255,0,255, "90,40", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.negative','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -232,11 +233,11 @@ test('2d.transformation.scale.negative','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -260,11 +261,11 @@ test('2d.transformation.scale.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.scale.zero','green-100x50.png', function(t) {
+test(module, '2d.transformation.scale.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -293,11 +294,11 @@ test('2d.transformation.scale.zero','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.setTransform.multiple','green-100x50.png', function(t) {
+test(module, '2d.transformation.setTransform.multiple','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -313,11 +314,11 @@ test('2d.transformation.setTransform.multiple','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 50, 25);
   helpers.assertPixel(t, canvas, 75,35, 0,255,0,255, "75,35", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.setTransform.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.transformation.setTransform.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -409,11 +410,11 @@ test('2d.transformation.setTransform.nonfinite','green-100x50.png', function(t) 
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.setTransform.skewed','green-100x50.png', function(t) {
+test(module, '2d.transformation.setTransform.skewed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -450,11 +451,11 @@ test('2d.transformation.setTransform.skewed','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 39,31, 0,255,0,255, "39,31", "0,255,0,255");
   helpers.assertPixel(t, canvas, 61,31, 0,255,0,255, "61,31", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.transform.identity','green-100x50.png', function(t) {
+test(module, '2d.transformation.transform.identity','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -469,11 +470,11 @@ test('2d.transformation.transform.identity','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.transform.multiply','green-100x50.png', function(t) {
+test(module, '2d.transformation.transform.multiply','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -489,11 +490,11 @@ test('2d.transformation.transform.multiply','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.transform.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.transformation.transform.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -585,11 +586,11 @@ test('2d.transformation.transform.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.transform.skewed','green-100x50.png', function(t) {
+test(module, '2d.transformation.transform.skewed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -626,11 +627,11 @@ test('2d.transformation.transform.skewed','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 39,31, 0,255,0,255, "39,31", "0,255,0,255");
   helpers.assertPixel(t, canvas, 61,31, 0,255,0,255, "61,31", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.translate.basic','green-100x50.png', function(t) {
+test(module, '2d.transformation.translate.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -645,11 +646,11 @@ test('2d.transformation.translate.basic','green-100x50.png', function(t) {
   ctx.fillRect(-100, -50, 100, 50);
   helpers.assertPixel(t, canvas, 90,40, 0,255,0,255, "90,40", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.transformation.translate.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.transformation.translate.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -673,6 +674,6 @@ test('2d.transformation.translate.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

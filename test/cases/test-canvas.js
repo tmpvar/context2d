@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.canvas.readonly',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.canvas.readonly',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -17,11 +18,11 @@ test('2d.canvas.readonly',null, function(t) {
   try { ctx.canvas = c; } catch (e) {} // TODO: not sure whether this should throw or not...
   helpers.assertEqual(t, ctx.canvas, d, "ctx.canvas", "d");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.canvas.reference',null, function(t) {
+test(module, '2d.canvas.reference',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -30,6 +31,6 @@ test('2d.canvas.reference',null, function(t) {
 
   helpers.assertEqual(t, ctx.canvas, canvas, "ctx.canvas", "canvas");
 
-  t.end()
+  t.done()
 });
 

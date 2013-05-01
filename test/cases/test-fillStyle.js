@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.fillStyle.default',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.fillStyle.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -13,11 +14,11 @@ test('2d.fillStyle.default',null, function(t) {
 
   helpers.assertEqual(t, ctx.fillStyle, '#000000', "ctx.fillStyle", "'#000000'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.get.semitransparent',null, function(t) {
+test(module, '2d.fillStyle.get.semitransparent',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -27,11 +28,11 @@ test('2d.fillStyle.get.semitransparent',null, function(t) {
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   helpers.assertMatch(t, ctx.fillStyle, /^rgba\(255, 255, 255, 0\.4\d+\)$/, "ctx.fillStyle", "/^rgba\\(255, 255, 255, 0\\.4\\d+\\)$/");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.get.solid',null, function(t) {
+test(module, '2d.fillStyle.get.solid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -41,11 +42,11 @@ test('2d.fillStyle.get.solid',null, function(t) {
   ctx.fillStyle = '#fa0';
   helpers.assertEqual(t, ctx.fillStyle, '#ffaa00', "ctx.fillStyle", "'#ffaa00'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.get.transparent',null, function(t) {
+test(module, '2d.fillStyle.get.transparent',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -55,11 +56,11 @@ test('2d.fillStyle.get.transparent',null, function(t) {
   ctx.fillStyle = 'rgba(0,0,0,0)';
   helpers.assertEqual(t, ctx.fillStyle, 'rgba(0, 0, 0, 0.0)', "ctx.fillStyle", "'rgba(0, 0, 0, 0.0)'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.invalidstring','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.invalidstring','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -73,11 +74,11 @@ test('2d.fillStyle.invalidstring','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.invalidtype','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.invalidtype','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -91,11 +92,11 @@ test('2d.fillStyle.invalidtype','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.current.basic','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.current.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -108,11 +109,11 @@ test('2d.fillStyle.parse.current.basic','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.current.changed','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.current.changed','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -126,11 +127,11 @@ test('2d.fillStyle.parse.current.changed','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.current.removed','2d.fillStyle.parse.current.removed.png', function(t) {
+test(module, '2d.fillStyle.parse.current.removed','2d.fillStyle.parse.current.removed.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -155,11 +156,11 @@ test('2d.fillStyle.parse.current.removed','2d.fillStyle.parse.current.removed.pn
   
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,255, "50,25", "0,0,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hex3','2d.fillStyle.parse.hex3.png', function(t) {
+test(module, '2d.fillStyle.parse.hex3','2d.fillStyle.parse.hex3.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -171,11 +172,11 @@ test('2d.fillStyle.parse.hex3','2d.fillStyle.parse.hex3.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hex6','2d.fillStyle.parse.hex6.png', function(t) {
+test(module, '2d.fillStyle.parse.hex6','2d.fillStyle.parse.hex6.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -187,11 +188,11 @@ test('2d.fillStyle.parse.hex6','2d.fillStyle.parse.hex6.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-1','2d.fillStyle.parse.hsl-1.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-1','2d.fillStyle.parse.hsl-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -203,11 +204,11 @@ test('2d.fillStyle.parse.hsl-1','2d.fillStyle.parse.hsl-1.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-2','2d.fillStyle.parse.hsl-2.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-2','2d.fillStyle.parse.hsl-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -219,11 +220,11 @@ test('2d.fillStyle.parse.hsl-2','2d.fillStyle.parse.hsl-2.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-3','2d.fillStyle.parse.hsl-3.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-3','2d.fillStyle.parse.hsl-3.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -235,11 +236,11 @@ test('2d.fillStyle.parse.hsl-3','2d.fillStyle.parse.hsl-3.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-4','2d.fillStyle.parse.hsl-4.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-4','2d.fillStyle.parse.hsl-4.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -251,11 +252,11 @@ test('2d.fillStyle.parse.hsl-4','2d.fillStyle.parse.hsl-4.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-5','2d.fillStyle.parse.hsl-5.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-5','2d.fillStyle.parse.hsl-5.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -267,11 +268,11 @@ test('2d.fillStyle.parse.hsl-5','2d.fillStyle.parse.hsl-5.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-1','2d.fillStyle.parse.hsl-clamp-1.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-clamp-1','2d.fillStyle.parse.hsl-clamp-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -283,11 +284,11 @@ test('2d.fillStyle.parse.hsl-clamp-1','2d.fillStyle.parse.hsl-clamp-1.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-2','2d.fillStyle.parse.hsl-clamp-2.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-clamp-2','2d.fillStyle.parse.hsl-clamp-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -299,11 +300,11 @@ test('2d.fillStyle.parse.hsl-clamp-2','2d.fillStyle.parse.hsl-clamp-2.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 127,127,127,255, "50,25", "127,127,127,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-3','2d.fillStyle.parse.hsl-clamp-3.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-clamp-3','2d.fillStyle.parse.hsl-clamp-3.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -315,11 +316,11 @@ test('2d.fillStyle.parse.hsl-clamp-3','2d.fillStyle.parse.hsl-clamp-3.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 255,255,255,255, "50,25", "255,255,255,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsl-clamp-4','2d.fillStyle.parse.hsl-clamp-4.png', function(t) {
+test(module, '2d.fillStyle.parse.hsl-clamp-4','2d.fillStyle.parse.hsl-clamp-4.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -331,11 +332,11 @@ test('2d.fillStyle.parse.hsl-clamp-4','2d.fillStyle.parse.hsl-clamp-4.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,255, "50,25", "0,0,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-1','2d.fillStyle.parse.hsla-1.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-1','2d.fillStyle.parse.hsla-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -347,11 +348,11 @@ test('2d.fillStyle.parse.hsla-1','2d.fillStyle.parse.hsla-1.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,127, "50,25", "0,255,0,127");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-2','2d.fillStyle.parse.hsla-2.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-2','2d.fillStyle.parse.hsla-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -363,11 +364,11 @@ test('2d.fillStyle.parse.hsla-2','2d.fillStyle.parse.hsla-2.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-1','2d.fillStyle.parse.hsla-clamp-1.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-1','2d.fillStyle.parse.hsla-clamp-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -379,11 +380,11 @@ test('2d.fillStyle.parse.hsla-clamp-1','2d.fillStyle.parse.hsla-clamp-1.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-2','2d.fillStyle.parse.hsla-clamp-2.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-2','2d.fillStyle.parse.hsla-clamp-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -395,11 +396,11 @@ test('2d.fillStyle.parse.hsla-clamp-2','2d.fillStyle.parse.hsla-clamp-2.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 127,127,127,255, "50,25", "127,127,127,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-3','2d.fillStyle.parse.hsla-clamp-3.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-3','2d.fillStyle.parse.hsla-clamp-3.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -411,11 +412,11 @@ test('2d.fillStyle.parse.hsla-clamp-3','2d.fillStyle.parse.hsla-clamp-3.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 255,255,255,255, "50,25", "255,255,255,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-4','2d.fillStyle.parse.hsla-clamp-4.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-4','2d.fillStyle.parse.hsla-clamp-4.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -427,11 +428,11 @@ test('2d.fillStyle.parse.hsla-clamp-4','2d.fillStyle.parse.hsla-clamp-4.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,255, "50,25", "0,0,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-5','2d.fillStyle.parse.hsla-clamp-5.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-5','2d.fillStyle.parse.hsla-clamp-5.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -443,11 +444,11 @@ test('2d.fillStyle.parse.hsla-clamp-5','2d.fillStyle.parse.hsla-clamp-5.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.hsla-clamp-6','2d.fillStyle.parse.hsla-clamp-6.png', function(t) {
+test(module, '2d.fillStyle.parse.hsla-clamp-6','2d.fillStyle.parse.hsla-clamp-6.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -459,11 +460,11 @@ test('2d.fillStyle.parse.hsla-clamp-6','2d.fillStyle.parse.hsla-clamp-6.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.html4','2d.fillStyle.parse.html4.png', function(t) {
+test(module, '2d.fillStyle.parse.html4','2d.fillStyle.parse.html4.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -475,11 +476,11 @@ test('2d.fillStyle.parse.html4','2d.fillStyle.parse.html4.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -491,11 +492,11 @@ test('2d.fillStyle.parse.invalid.hex1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -507,11 +508,11 @@ test('2d.fillStyle.parse.invalid.hex2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex3','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -523,11 +524,11 @@ test('2d.fillStyle.parse.invalid.hex3','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex4','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -539,11 +540,11 @@ test('2d.fillStyle.parse.invalid.hex4','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex5','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -555,11 +556,11 @@ test('2d.fillStyle.parse.invalid.hex5','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex6','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex6','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -571,11 +572,11 @@ test('2d.fillStyle.parse.invalid.hex6','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex7','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex7','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -587,11 +588,11 @@ test('2d.fillStyle.parse.invalid.hex7','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hex8','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hex8','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -603,11 +604,11 @@ test('2d.fillStyle.parse.invalid.hex8','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsl-1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -619,11 +620,11 @@ test('2d.fillStyle.parse.invalid.hsl-1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsl-2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -635,11 +636,11 @@ test('2d.fillStyle.parse.invalid.hsl-2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-3','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsl-3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -651,11 +652,11 @@ test('2d.fillStyle.parse.invalid.hsl-3','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-4','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsl-4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -667,11 +668,11 @@ test('2d.fillStyle.parse.invalid.hsl-4','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsl-5','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsl-5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -683,11 +684,11 @@ test('2d.fillStyle.parse.invalid.hsl-5','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsla-1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsla-1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -699,11 +700,11 @@ test('2d.fillStyle.parse.invalid.hsla-1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.hsla-2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.hsla-2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -715,11 +716,11 @@ test('2d.fillStyle.parse.invalid.hsla-2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.name-1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.name-1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -731,11 +732,11 @@ test('2d.fillStyle.parse.invalid.name-1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.name-2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.name-2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -747,11 +748,11 @@ test('2d.fillStyle.parse.invalid.name-2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.name-3','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.name-3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -763,11 +764,11 @@ test('2d.fillStyle.parse.invalid.name-3','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -779,11 +780,11 @@ test('2d.fillStyle.parse.invalid.rgb-1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -795,11 +796,11 @@ test('2d.fillStyle.parse.invalid.rgb-2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-3','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -811,11 +812,11 @@ test('2d.fillStyle.parse.invalid.rgb-3','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-4','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -827,11 +828,11 @@ test('2d.fillStyle.parse.invalid.rgb-4','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-5','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -843,11 +844,11 @@ test('2d.fillStyle.parse.invalid.rgb-5','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-6','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-6','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -859,11 +860,11 @@ test('2d.fillStyle.parse.invalid.rgb-6','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgb-7','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgb-7','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -875,11 +876,11 @@ test('2d.fillStyle.parse.invalid.rgb-7','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-1','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgba-1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -891,11 +892,11 @@ test('2d.fillStyle.parse.invalid.rgba-1','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-2','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgba-2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -907,11 +908,11 @@ test('2d.fillStyle.parse.invalid.rgba-2','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-3','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgba-3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -923,11 +924,11 @@ test('2d.fillStyle.parse.invalid.rgba-3','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-4','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgba-4','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -939,11 +940,11 @@ test('2d.fillStyle.parse.invalid.rgba-4','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.invalid.rgba-5','green-100x50.png', function(t) {
+test(module, '2d.fillStyle.parse.invalid.rgba-5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -955,11 +956,11 @@ test('2d.fillStyle.parse.invalid.rgba-5','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-1','2d.fillStyle.parse.rgb-clamp-1.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-clamp-1','2d.fillStyle.parse.rgb-clamp-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -971,11 +972,11 @@ test('2d.fillStyle.parse.rgb-clamp-1','2d.fillStyle.parse.rgb-clamp-1.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-2','2d.fillStyle.parse.rgb-clamp-2.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-clamp-2','2d.fillStyle.parse.rgb-clamp-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -987,11 +988,11 @@ test('2d.fillStyle.parse.rgb-clamp-2','2d.fillStyle.parse.rgb-clamp-2.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-3','2d.fillStyle.parse.rgb-clamp-3.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-clamp-3','2d.fillStyle.parse.rgb-clamp-3.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1003,11 +1004,11 @@ test('2d.fillStyle.parse.rgb-clamp-3','2d.fillStyle.parse.rgb-clamp-3.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-4','2d.fillStyle.parse.rgb-clamp-4.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-clamp-4','2d.fillStyle.parse.rgb-clamp-4.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1019,11 +1020,11 @@ test('2d.fillStyle.parse.rgb-clamp-4','2d.fillStyle.parse.rgb-clamp-4.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-clamp-5','2d.fillStyle.parse.rgb-clamp-5.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-clamp-5','2d.fillStyle.parse.rgb-clamp-5.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1035,11 +1036,11 @@ test('2d.fillStyle.parse.rgb-clamp-5','2d.fillStyle.parse.rgb-clamp-5.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-num','2d.fillStyle.parse.rgb-num.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-num','2d.fillStyle.parse.rgb-num.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1051,11 +1052,11 @@ test('2d.fillStyle.parse.rgb-num','2d.fillStyle.parse.rgb-num.png', function(t) 
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgb-percent','2d.fillStyle.parse.rgb-percent.png', function(t) {
+test(module, '2d.fillStyle.parse.rgb-percent','2d.fillStyle.parse.rgb-percent.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1067,11 +1068,11 @@ test('2d.fillStyle.parse.rgb-percent','2d.fillStyle.parse.rgb-percent.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-clamp-1','2d.fillStyle.parse.rgba-clamp-1.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-clamp-1','2d.fillStyle.parse.rgba-clamp-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1083,11 +1084,11 @@ test('2d.fillStyle.parse.rgba-clamp-1','2d.fillStyle.parse.rgba-clamp-1.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-clamp-2','2d.fillStyle.parse.rgba-clamp-2.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-clamp-2','2d.fillStyle.parse.rgba-clamp-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1099,11 +1100,11 @@ test('2d.fillStyle.parse.rgba-clamp-2','2d.fillStyle.parse.rgba-clamp-2.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-num-1','2d.fillStyle.parse.rgba-num-1.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-num-1','2d.fillStyle.parse.rgba-num-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1115,11 +1116,11 @@ test('2d.fillStyle.parse.rgba-num-1','2d.fillStyle.parse.rgba-num-1.png', functi
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,127, "50,25", "0,255,0,127");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-num-2','2d.fillStyle.parse.rgba-num-2.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-num-2','2d.fillStyle.parse.rgba-num-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1131,11 +1132,11 @@ test('2d.fillStyle.parse.rgba-num-2','2d.fillStyle.parse.rgba-num-2.png', functi
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,127, "50,25", "0,255,0,127");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-percent','2d.fillStyle.parse.rgba-percent.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-percent','2d.fillStyle.parse.rgba-percent.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1147,11 +1148,11 @@ test('2d.fillStyle.parse.rgba-percent','2d.fillStyle.parse.rgba-percent.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,127, "50,25", "0,255,0,127");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-solid-1','2d.fillStyle.parse.rgba-solid-1.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-solid-1','2d.fillStyle.parse.rgba-solid-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1163,11 +1164,11 @@ test('2d.fillStyle.parse.rgba-solid-1','2d.fillStyle.parse.rgba-solid-1.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.rgba-solid-2','2d.fillStyle.parse.rgba-solid-2.png', function(t) {
+test(module, '2d.fillStyle.parse.rgba-solid-2','2d.fillStyle.parse.rgba-solid-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1179,11 +1180,11 @@ test('2d.fillStyle.parse.rgba-solid-2','2d.fillStyle.parse.rgba-solid-2.png', fu
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.svg-1','2d.fillStyle.parse.svg-1.png', function(t) {
+test(module, '2d.fillStyle.parse.svg-1','2d.fillStyle.parse.svg-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1195,11 +1196,11 @@ test('2d.fillStyle.parse.svg-1','2d.fillStyle.parse.svg-1.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 128,128,128,255, "50,25", "128,128,128,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.svg-2','2d.fillStyle.parse.svg-2.png', function(t) {
+test(module, '2d.fillStyle.parse.svg-2','2d.fillStyle.parse.svg-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1211,11 +1212,11 @@ test('2d.fillStyle.parse.svg-2','2d.fillStyle.parse.svg-2.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 128,128,128,255, "50,25", "128,128,128,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.system',null, function(t) {
+test(module, '2d.fillStyle.parse.system',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1226,11 +1227,11 @@ test('2d.fillStyle.parse.system',null, function(t) {
   ctx.fillStyle = 'ThreeDDarkShadow';
   helpers.assertMatch(t, ctx.fillStyle, /^#(?!(FF0000|ff0000|f00)$)/, "ctx.fillStyle", "/^#(?!(FF0000|ff0000|f00)$)/"); // test that it's not red
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.transparent-1','2d.fillStyle.parse.transparent-1.png', function(t) {
+test(module, '2d.fillStyle.parse.transparent-1','2d.fillStyle.parse.transparent-1.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1242,11 +1243,11 @@ test('2d.fillStyle.parse.transparent-1','2d.fillStyle.parse.transparent-1.png', 
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.fillStyle.parse.transparent-2','2d.fillStyle.parse.transparent-2.png', function(t) {
+test(module, '2d.fillStyle.parse.transparent-2','2d.fillStyle.parse.transparent-2.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1258,6 +1259,6 @@ test('2d.fillStyle.parse.transparent-2','2d.fillStyle.parse.transparent-2.png', 
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 

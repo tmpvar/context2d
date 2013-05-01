@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -26,12 +27,12 @@ test('2d.composite.canvas.copy','2d.composite.canvas.copy.png', function(t) {
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,191, "50,25", "255,255,0,191", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.destination-atop','2d.composite.canvas.destination-atop.png', function(t) {
+test(module, '2d.composite.canvas.destination-atop','2d.composite.canvas.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -53,12 +54,12 @@ test('2d.composite.canvas.destination-atop','2d.composite.canvas.destination-ato
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 127,255,127,191, "50,25", "127,255,127,191", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.png', function(t) {
+test(module, '2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -80,12 +81,12 @@ test('2d.composite.canvas.destination-in','2d.composite.canvas.destination-in.pn
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,95, "50,25", "0,255,255,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.png', function(t) {
+test(module, '2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -107,12 +108,12 @@ test('2d.composite.canvas.destination-out','2d.composite.canvas.destination-out.
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,31, "50,25", "0,255,255,31", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.destination-over','2d.composite.canvas.destination-over.png', function(t) {
+test(module, '2d.composite.canvas.destination-over','2d.composite.canvas.destination-over.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -134,12 +135,12 @@ test('2d.composite.canvas.destination-over','2d.composite.canvas.destination-ove
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 109,255,145,223, "50,25", "109,255,145,223", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t) {
+test(module, '2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -161,12 +162,12 @@ test('2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', function(t
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,127,255, "50,25", "191,255,127,255", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', function(t) {
+test(module, '2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -188,12 +189,12 @@ test('2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.png', fu
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,63,127, "50,25", "191,255,63,127", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', function(t) {
+test(module, '2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -215,12 +216,12 @@ test('2d.composite.canvas.source-in','2d.composite.canvas.source-in.png', functi
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,95, "50,25", "255,255,0,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', function(t) {
+test(module, '2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -242,12 +243,12 @@ test('2d.composite.canvas.source-out','2d.composite.canvas.source-out.png', func
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,95, "50,25", "255,255,0,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', function(t) {
+test(module, '2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -269,12 +270,12 @@ test('2d.composite.canvas.source-over','2d.composite.canvas.source-over.png', fu
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 218,255,36,223, "50,25", "218,255,36,223", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t) {
+test(module, '2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -296,12 +297,12 @@ test('2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t) {
     ctx.drawImage(canvas2, 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,63,127, "50,25", "191,255,63,127", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.clip.copy','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.copy','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -318,11 +319,11 @@ test('2d.composite.clip.copy','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.destination-atop','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.destination-atop','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -339,11 +340,11 @@ test('2d.composite.clip.destination-atop','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.destination-in','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.destination-in','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -360,11 +361,11 @@ test('2d.composite.clip.destination-in','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.destination-out','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.destination-out','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -381,11 +382,11 @@ test('2d.composite.clip.destination-out','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.destination-over','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.destination-over','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -402,11 +403,11 @@ test('2d.composite.clip.destination-over','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.lighter','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.lighter','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -423,11 +424,11 @@ test('2d.composite.clip.lighter','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.source-atop','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.source-atop','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -444,11 +445,11 @@ test('2d.composite.clip.source-atop','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.source-in','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.source-in','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -465,11 +466,11 @@ test('2d.composite.clip.source-in','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.source-out','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.source-out','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -486,11 +487,11 @@ test('2d.composite.clip.source-out','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.source-over','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.source-over','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -507,11 +508,11 @@ test('2d.composite.clip.source-over','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.clip.xor','green-100x50.png', function(t) {
+test(module, '2d.composite.clip.xor','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -528,11 +529,11 @@ test('2d.composite.clip.xor','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.canvas','green-100x50.png', function(t) {
+test(module, '2d.composite.globalAlpha.canvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -552,11 +553,11 @@ test('2d.composite.globalAlpha.canvas','green-100x50.png', function(t) {
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 2,253,0,255, "50,25", "2,253,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.canvaspattern','green-100x50.png', function(t) {
+test(module, '2d.composite.globalAlpha.canvaspattern','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -577,11 +578,11 @@ test('2d.composite.globalAlpha.canvaspattern','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 2,253,0,255, "50,25", "2,253,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.default',null, function(t) {
+test(module, '2d.composite.globalAlpha.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -590,11 +591,11 @@ test('2d.composite.globalAlpha.default',null, function(t) {
 
   helpers.assertEqual(t, ctx.globalAlpha, 1.0, "ctx.globalAlpha", "1.0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.fill','green-100x50.png', function(t) {
+test(module, '2d.composite.globalAlpha.fill','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -608,11 +609,11 @@ test('2d.composite.globalAlpha.fill','green-100x50.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 2,253,0,255, "50,25", "2,253,0,255", 2);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.image','green-100x50.png', function(t) {
+test(module, '2d.composite.globalAlpha.image','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -629,12 +630,12 @@ test('2d.composite.globalAlpha.image','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 2,253,0,255, "50,25", "2,253,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.globalAlpha.imagepattern','green-100x50.png', function(t) {
+test(module, '2d.composite.globalAlpha.imagepattern','green-100x50.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'red.png' , url: __dirname + '/../images/red.png' }
@@ -652,12 +653,12 @@ test('2d.composite.globalAlpha.imagepattern','green-100x50.png', function(t) {
     ctx.fillRect(0, 0, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 2,253,0,255, "50,25", "2,253,0,255", 2);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.globalAlpha.invalid',null, function(t) {
+test(module, '2d.composite.globalAlpha.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -673,11 +674,11 @@ test('2d.composite.globalAlpha.invalid',null, function(t) {
   ctx.globalAlpha = NaN;
   helpers.assertEqual(t, ctx.globalAlpha, a, "ctx.globalAlpha", "a");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.globalAlpha.range',null, function(t) {
+test(module, '2d.composite.globalAlpha.range',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -695,11 +696,11 @@ test('2d.composite.globalAlpha.range',null, function(t) {
   ctx.globalAlpha = 1;
   helpers.assertEqual(t, ctx.globalAlpha, 1, "ctx.globalAlpha", "1");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.image.copy','2d.composite.image.copy.png', function(t) {
+test(module, '2d.composite.image.copy','2d.composite.image.copy.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -716,12 +717,12 @@ test('2d.composite.image.copy','2d.composite.image.copy.png', function(t) {
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,191, "50,25", "255,255,0,191", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.destination-atop','2d.composite.image.destination-atop.png', function(t) {
+test(module, '2d.composite.image.destination-atop','2d.composite.image.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -738,12 +739,12 @@ test('2d.composite.image.destination-atop','2d.composite.image.destination-atop.
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 127,255,127,191, "50,25", "127,255,127,191", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.destination-in','2d.composite.image.destination-in.png', function(t) {
+test(module, '2d.composite.image.destination-in','2d.composite.image.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -760,12 +761,12 @@ test('2d.composite.image.destination-in','2d.composite.image.destination-in.png'
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,95, "50,25", "0,255,255,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.destination-out','2d.composite.image.destination-out.png', function(t) {
+test(module, '2d.composite.image.destination-out','2d.composite.image.destination-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -782,12 +783,12 @@ test('2d.composite.image.destination-out','2d.composite.image.destination-out.pn
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,31, "50,25", "0,255,255,31", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.destination-over','2d.composite.image.destination-over.png', function(t) {
+test(module, '2d.composite.image.destination-over','2d.composite.image.destination-over.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -804,12 +805,12 @@ test('2d.composite.image.destination-over','2d.composite.image.destination-over.
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 109,255,145,223, "50,25", "109,255,145,223", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.lighter','2d.composite.image.lighter.png', function(t) {
+test(module, '2d.composite.image.lighter','2d.composite.image.lighter.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -826,12 +827,12 @@ test('2d.composite.image.lighter','2d.composite.image.lighter.png', function(t) 
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,127,255, "50,25", "191,255,127,255", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.source-atop','2d.composite.image.source-atop.png', function(t) {
+test(module, '2d.composite.image.source-atop','2d.composite.image.source-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -848,12 +849,12 @@ test('2d.composite.image.source-atop','2d.composite.image.source-atop.png', func
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,63,127, "50,25", "191,255,63,127", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.source-in','2d.composite.image.source-in.png', function(t) {
+test(module, '2d.composite.image.source-in','2d.composite.image.source-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -870,12 +871,12 @@ test('2d.composite.image.source-in','2d.composite.image.source-in.png', function
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,95, "50,25", "255,255,0,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.source-out','2d.composite.image.source-out.png', function(t) {
+test(module, '2d.composite.image.source-out','2d.composite.image.source-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -892,12 +893,12 @@ test('2d.composite.image.source-out','2d.composite.image.source-out.png', functi
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,95, "50,25", "255,255,0,95", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.source-over','2d.composite.image.source-over.png', function(t) {
+test(module, '2d.composite.image.source-over','2d.composite.image.source-over.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -914,12 +915,12 @@ test('2d.composite.image.source-over','2d.composite.image.source-over.png', func
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 218,255,36,223, "50,25", "218,255,36,223", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.image.xor','2d.composite.image.xor.png', function(t) {
+test(module, '2d.composite.image.xor','2d.composite.image.xor.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow75.png' , url: __dirname + '/../images/yellow75.png' }
@@ -936,12 +937,12 @@ test('2d.composite.image.xor','2d.composite.image.xor.png', function(t) {
     ctx.drawImage(images['yellow75.png'], 0, 0);
     helpers.assertPixelApprox(t, canvas, 50,25, 191,255,63,127, "50,25", "191,255,63,127", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.operation.casesensitive',null, function(t) {
+test(module, '2d.composite.operation.casesensitive',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -952,11 +953,11 @@ test('2d.composite.operation.casesensitive',null, function(t) {
   ctx.globalCompositeOperation = 'Source-over';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.clear',null, function(t) {
+test(module, '2d.composite.operation.clear',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -967,11 +968,11 @@ test('2d.composite.operation.clear',null, function(t) {
   ctx.globalCompositeOperation = 'clear';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.darker',null, function(t) {
+test(module, '2d.composite.operation.darker',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -982,11 +983,11 @@ test('2d.composite.operation.darker',null, function(t) {
   ctx.globalCompositeOperation = 'darker';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.default',null, function(t) {
+test(module, '2d.composite.operation.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -995,11 +996,11 @@ test('2d.composite.operation.default',null, function(t) {
 
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'source-over', "ctx.globalCompositeOperation", "'source-over'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.get',null, function(t) {
+test(module, '2d.composite.operation.get',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1015,11 +1016,11 @@ test('2d.composite.operation.get',null, function(t) {
       helpers.assertEqual(t, ctx.globalCompositeOperation, modes[i], "ctx.globalCompositeOperation", "modes[\""+(i)+"\"]");
   }
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.highlight',null, function(t) {
+test(module, '2d.composite.operation.highlight',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1030,11 +1031,11 @@ test('2d.composite.operation.highlight',null, function(t) {
   ctx.globalCompositeOperation = 'highlight';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.nullsuffix',null, function(t) {
+test(module, '2d.composite.operation.nullsuffix',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1045,11 +1046,11 @@ test('2d.composite.operation.nullsuffix',null, function(t) {
   ctx.globalCompositeOperation = 'source-over\0';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.over',null, function(t) {
+test(module, '2d.composite.operation.over',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1060,11 +1061,11 @@ test('2d.composite.operation.over',null, function(t) {
   ctx.globalCompositeOperation = 'over';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.operation.unrecognised',null, function(t) {
+test(module, '2d.composite.operation.unrecognised',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1075,11 +1076,11 @@ test('2d.composite.operation.unrecognised',null, function(t) {
   ctx.globalCompositeOperation = 'nonexistent';
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'xor', "ctx.globalCompositeOperation", "'xor'");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.copy','2d.composite.solid.copy.png', function(t) {
+test(module, '2d.composite.solid.copy','2d.composite.solid.copy.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1093,11 +1094,11 @@ test('2d.composite.solid.copy','2d.composite.solid.copy.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,255, "50,25", "255,255,0,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.destination-atop','2d.composite.solid.destination-atop.png', function(t) {
+test(module, '2d.composite.solid.destination-atop','2d.composite.solid.destination-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1111,11 +1112,11 @@ test('2d.composite.solid.destination-atop','2d.composite.solid.destination-atop.
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,255, "50,25", "0,255,255,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.destination-in','2d.composite.solid.destination-in.png', function(t) {
+test(module, '2d.composite.solid.destination-in','2d.composite.solid.destination-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1129,11 +1130,11 @@ test('2d.composite.solid.destination-in','2d.composite.solid.destination-in.png'
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,255, "50,25", "0,255,255,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.destination-out','2d.composite.solid.destination-out.png', function(t) {
+test(module, '2d.composite.solid.destination-out','2d.composite.solid.destination-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1147,11 +1148,11 @@ test('2d.composite.solid.destination-out','2d.composite.solid.destination-out.pn
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.destination-over','2d.composite.solid.destination-over.png', function(t) {
+test(module, '2d.composite.solid.destination-over','2d.composite.solid.destination-over.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1165,11 +1166,11 @@ test('2d.composite.solid.destination-over','2d.composite.solid.destination-over.
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,255,255, "50,25", "0,255,255,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.lighter','2d.composite.solid.lighter.png', function(t) {
+test(module, '2d.composite.solid.lighter','2d.composite.solid.lighter.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1183,11 +1184,11 @@ test('2d.composite.solid.lighter','2d.composite.solid.lighter.png', function(t) 
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 255,255,255,255, "50,25", "255,255,255,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.source-atop','2d.composite.solid.source-atop.png', function(t) {
+test(module, '2d.composite.solid.source-atop','2d.composite.solid.source-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1201,11 +1202,11 @@ test('2d.composite.solid.source-atop','2d.composite.solid.source-atop.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,255, "50,25", "255,255,0,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.source-in','2d.composite.solid.source-in.png', function(t) {
+test(module, '2d.composite.solid.source-in','2d.composite.solid.source-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1219,11 +1220,11 @@ test('2d.composite.solid.source-in','2d.composite.solid.source-in.png', function
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,255, "50,25", "255,255,0,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.source-out','2d.composite.solid.source-out.png', function(t) {
+test(module, '2d.composite.solid.source-out','2d.composite.solid.source-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1237,11 +1238,11 @@ test('2d.composite.solid.source-out','2d.composite.solid.source-out.png', functi
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.source-over','2d.composite.solid.source-over.png', function(t) {
+test(module, '2d.composite.solid.source-over','2d.composite.solid.source-over.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1255,11 +1256,11 @@ test('2d.composite.solid.source-over','2d.composite.solid.source-over.png', func
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 255,255,0,255, "50,25", "255,255,0,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.solid.xor','2d.composite.solid.xor.png', function(t) {
+test(module, '2d.composite.solid.xor','2d.composite.solid.xor.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1273,11 +1274,11 @@ test('2d.composite.solid.xor','2d.composite.solid.xor.png', function(t) {
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.copy','2d.composite.transparent.copy.png', function(t) {
+test(module, '2d.composite.transparent.copy','2d.composite.transparent.copy.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1291,11 +1292,11 @@ test('2d.composite.transparent.copy','2d.composite.transparent.copy.png', functi
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,255,191, "50,25", "0,0,255,191", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.destination-atop','2d.composite.transparent.destination-atop.png', function(t) {
+test(module, '2d.composite.transparent.destination-atop','2d.composite.transparent.destination-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1309,11 +1310,11 @@ test('2d.composite.transparent.destination-atop','2d.composite.transparent.desti
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,127,127,191, "50,25", "0,127,127,191", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.destination-in','2d.composite.transparent.destination-in.png', function(t) {
+test(module, '2d.composite.transparent.destination-in','2d.composite.transparent.destination-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1327,11 +1328,11 @@ test('2d.composite.transparent.destination-in','2d.composite.transparent.destina
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,95, "50,25", "0,255,0,95", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.destination-out','2d.composite.transparent.destination-out.png', function(t) {
+test(module, '2d.composite.transparent.destination-out','2d.composite.transparent.destination-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1345,11 +1346,11 @@ test('2d.composite.transparent.destination-out','2d.composite.transparent.destin
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,31, "50,25", "0,255,0,31", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.destination-over','2d.composite.transparent.destination-over.png', function(t) {
+test(module, '2d.composite.transparent.destination-over','2d.composite.transparent.destination-over.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1363,11 +1364,11 @@ test('2d.composite.transparent.destination-over','2d.composite.transparent.desti
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,145,109,223, "50,25", "0,145,109,223", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.lighter','2d.composite.transparent.lighter.png', function(t) {
+test(module, '2d.composite.transparent.lighter','2d.composite.transparent.lighter.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1381,11 +1382,11 @@ test('2d.composite.transparent.lighter','2d.composite.transparent.lighter.png', 
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,127,191,255, "50,25", "0,127,191,255", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.source-atop','2d.composite.transparent.source-atop.png', function(t) {
+test(module, '2d.composite.transparent.source-atop','2d.composite.transparent.source-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1399,11 +1400,11 @@ test('2d.composite.transparent.source-atop','2d.composite.transparent.source-ato
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,63,191,127, "50,25", "0,63,191,127", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.source-in','2d.composite.transparent.source-in.png', function(t) {
+test(module, '2d.composite.transparent.source-in','2d.composite.transparent.source-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1417,11 +1418,11 @@ test('2d.composite.transparent.source-in','2d.composite.transparent.source-in.pn
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,255,95, "50,25", "0,0,255,95", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.source-out','2d.composite.transparent.source-out.png', function(t) {
+test(module, '2d.composite.transparent.source-out','2d.composite.transparent.source-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1435,11 +1436,11 @@ test('2d.composite.transparent.source-out','2d.composite.transparent.source-out.
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,255,95, "50,25", "0,0,255,95", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.source-over','2d.composite.transparent.source-over.png', function(t) {
+test(module, '2d.composite.transparent.source-over','2d.composite.transparent.source-over.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1453,11 +1454,11 @@ test('2d.composite.transparent.source-over','2d.composite.transparent.source-ove
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,36,218,223, "50,25", "0,36,218,223", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.transparent.xor','2d.composite.transparent.xor.png', function(t) {
+test(module, '2d.composite.transparent.xor','2d.composite.transparent.xor.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1471,11 +1472,11 @@ test('2d.composite.transparent.xor','2d.composite.transparent.xor.png', function
   ctx.fillRect(0, 0, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,63,191,127, "50,25", "0,63,191,127", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.fill.copy','2d.composite.uncovered.fill.copy.png', function(t) {
+test(module, '2d.composite.uncovered.fill.copy','2d.composite.uncovered.fill.copy.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1490,11 +1491,11 @@ test('2d.composite.uncovered.fill.copy','2d.composite.uncovered.fill.copy.png', 
   ctx.fillRect(0, 50, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.fill.destination-atop','2d.composite.uncovered.fill.destination-atop.png', function(t) {
+test(module, '2d.composite.uncovered.fill.destination-atop','2d.composite.uncovered.fill.destination-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1509,11 +1510,11 @@ test('2d.composite.uncovered.fill.destination-atop','2d.composite.uncovered.fill
   ctx.fillRect(0, 50, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.fill.destination-in','2d.composite.uncovered.fill.destination-in.png', function(t) {
+test(module, '2d.composite.uncovered.fill.destination-in','2d.composite.uncovered.fill.destination-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1528,11 +1529,11 @@ test('2d.composite.uncovered.fill.destination-in','2d.composite.uncovered.fill.d
   ctx.fillRect(0, 50, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.fill.source-in','2d.composite.uncovered.fill.source-in.png', function(t) {
+test(module, '2d.composite.uncovered.fill.source-in','2d.composite.uncovered.fill.source-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1547,11 +1548,11 @@ test('2d.composite.uncovered.fill.source-in','2d.composite.uncovered.fill.source
   ctx.fillRect(0, 50, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.fill.source-out','2d.composite.uncovered.fill.source-out.png', function(t) {
+test(module, '2d.composite.uncovered.fill.source-out','2d.composite.uncovered.fill.source-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1566,11 +1567,11 @@ test('2d.composite.uncovered.fill.source-out','2d.composite.uncovered.fill.sourc
   ctx.fillRect(0, 50, 100, 50);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.image.copy','2d.composite.uncovered.image.copy.png', function(t) {
+test(module, '2d.composite.uncovered.image.copy','2d.composite.uncovered.image.copy.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1588,12 +1589,12 @@ test('2d.composite.uncovered.image.copy','2d.composite.uncovered.image.copy.png'
     helpers.assertPixelApprox(t, canvas, 15,15, 0,0,0,0, "15,15", "0,0,0,0", 5);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.image.destination-atop','2d.composite.uncovered.image.destination-atop.png', function(t) {
+test(module, '2d.composite.uncovered.image.destination-atop','2d.composite.uncovered.image.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1611,12 +1612,12 @@ test('2d.composite.uncovered.image.destination-atop','2d.composite.uncovered.ima
     helpers.assertPixelApprox(t, canvas, 15,15, 0,0,0,0, "15,15", "0,0,0,0", 5);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.image.destination-in','2d.composite.uncovered.image.destination-in.png', function(t) {
+test(module, '2d.composite.uncovered.image.destination-in','2d.composite.uncovered.image.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1634,12 +1635,12 @@ test('2d.composite.uncovered.image.destination-in','2d.composite.uncovered.image
     helpers.assertPixelApprox(t, canvas, 15,15, 0,0,0,0, "15,15", "0,0,0,0", 5);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.image.source-in','2d.composite.uncovered.image.source-in.png', function(t) {
+test(module, '2d.composite.uncovered.image.source-in','2d.composite.uncovered.image.source-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1657,12 +1658,12 @@ test('2d.composite.uncovered.image.source-in','2d.composite.uncovered.image.sour
     helpers.assertPixelApprox(t, canvas, 15,15, 0,0,0,0, "15,15", "0,0,0,0", 5);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.image.source-out','2d.composite.uncovered.image.source-out.png', function(t) {
+test(module, '2d.composite.uncovered.image.source-out','2d.composite.uncovered.image.source-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1680,12 +1681,12 @@ test('2d.composite.uncovered.image.source-out','2d.composite.uncovered.image.sou
     helpers.assertPixelApprox(t, canvas, 15,15, 0,0,0,0, "15,15", "0,0,0,0", 5);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.nocontext.copy','2d.composite.uncovered.nocontext.copy.png', function(t) {
+test(module, '2d.composite.uncovered.nocontext.copy','2d.composite.uncovered.nocontext.copy.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1699,11 +1700,11 @@ test('2d.composite.uncovered.nocontext.copy','2d.composite.uncovered.nocontext.c
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.nocontext.destination-atop','2d.composite.uncovered.nocontext.destination-atop.png', function(t) {
+test(module, '2d.composite.uncovered.nocontext.destination-atop','2d.composite.uncovered.nocontext.destination-atop.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1717,11 +1718,11 @@ test('2d.composite.uncovered.nocontext.destination-atop','2d.composite.uncovered
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.nocontext.destination-in','2d.composite.uncovered.nocontext.destination-in.png', function(t) {
+test(module, '2d.composite.uncovered.nocontext.destination-in','2d.composite.uncovered.nocontext.destination-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1735,11 +1736,11 @@ test('2d.composite.uncovered.nocontext.destination-in','2d.composite.uncovered.n
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.nocontext.source-in','2d.composite.uncovered.nocontext.source-in.png', function(t) {
+test(module, '2d.composite.uncovered.nocontext.source-in','2d.composite.uncovered.nocontext.source-in.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1753,11 +1754,11 @@ test('2d.composite.uncovered.nocontext.source-in','2d.composite.uncovered.nocont
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.nocontext.source-out','2d.composite.uncovered.nocontext.source-out.png', function(t) {
+test(module, '2d.composite.uncovered.nocontext.source-out','2d.composite.uncovered.nocontext.source-out.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -1771,11 +1772,11 @@ test('2d.composite.uncovered.nocontext.source-out','2d.composite.uncovered.nocon
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.composite.uncovered.pattern.copy','2d.composite.uncovered.pattern.copy.png', function(t) {
+test(module, '2d.composite.uncovered.pattern.copy','2d.composite.uncovered.pattern.copy.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1793,12 +1794,12 @@ test('2d.composite.uncovered.pattern.copy','2d.composite.uncovered.pattern.copy.
     ctx.fillRect(0, 50, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.pattern.destination-atop','2d.composite.uncovered.pattern.destination-atop.png', function(t) {
+test(module, '2d.composite.uncovered.pattern.destination-atop','2d.composite.uncovered.pattern.destination-atop.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1816,12 +1817,12 @@ test('2d.composite.uncovered.pattern.destination-atop','2d.composite.uncovered.p
     ctx.fillRect(0, 50, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.pattern.destination-in','2d.composite.uncovered.pattern.destination-in.png', function(t) {
+test(module, '2d.composite.uncovered.pattern.destination-in','2d.composite.uncovered.pattern.destination-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1839,12 +1840,12 @@ test('2d.composite.uncovered.pattern.destination-in','2d.composite.uncovered.pat
     ctx.fillRect(0, 50, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.pattern.source-in.png', function(t) {
+test(module, '2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.pattern.source-in.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1862,12 +1863,12 @@ test('2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.pattern.
     ctx.fillRect(0, 50, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 
 
-test('2d.composite.uncovered.pattern.source-out','2d.composite.uncovered.pattern.source-out.png', function(t) {
+test(module, '2d.composite.uncovered.pattern.source-out','2d.composite.uncovered.pattern.source-out.png', function(t) {
 
   helpers.loadImages(t, [
     { id : 'yellow.png' , url: __dirname + '/../images/yellow.png' }
@@ -1885,7 +1886,7 @@ test('2d.composite.uncovered.pattern.source-out','2d.composite.uncovered.pattern
     ctx.fillRect(0, 50, 100, 50);
     helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
-    t.end()
+    t.done()
   });
 });
 

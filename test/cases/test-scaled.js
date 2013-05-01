@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.scaled','2d.scaled.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.scaled','2d.scaled.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -16,6 +17,6 @@ test('2d.scaled','2d.scaled.png', function(t) {
   ctx.fillStyle = '#0ff';
   ctx.fillRect(0, 0, 25, 10);
 
-  t.end()
+  t.done()
 });
 

@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.strokeStyle.default',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.strokeStyle.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -13,6 +14,6 @@ test('2d.strokeStyle.default',null, function(t) {
 
   helpers.assertEqual(t, ctx.strokeStyle, '#000000', "ctx.strokeStyle", "'#000000'");
 
-  t.end()
+  t.done()
 });
 

@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.strokeRect.basic','green-100x50.png', function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.strokeRect.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -16,11 +17,11 @@ test('2d.strokeRect.basic','green-100x50.png', function(t) {
   ctx.strokeRect(25, 24, 50, 2);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.clip','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -43,11 +44,11 @@ test('2d.strokeRect.clip','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.globalalpha','clear-100x50.png', function(t) {
+test(module, '2d.strokeRect.globalalpha','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -60,11 +61,11 @@ test('2d.strokeRect.globalalpha','clear-100x50.png', function(t) {
   ctx.strokeRect(25, 24, 50, 2);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.globalcomposite','clear-100x50.png', function(t) {
+test(module, '2d.strokeRect.globalcomposite','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -77,11 +78,11 @@ test('2d.strokeRect.globalcomposite','clear-100x50.png', function(t) {
   ctx.strokeRect(25, 24, 50, 2);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.negative','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -101,11 +102,11 @@ test('2d.strokeRect.negative','green-100x50.png', function(t) {
   helpers.assertPixel(t, canvas, 25,37, 0,255,0,255, "25,37", "0,255,0,255");
   helpers.assertPixel(t, canvas, 75,37, 0,255,0,255, "75,37", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.nonfinite','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -143,11 +144,11 @@ test('2d.strokeRect.nonfinite','green-100x50.png', function(t) {
   
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.path','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -163,11 +164,11 @@ test('2d.strokeRect.path','green-100x50.png', function(t) {
   ctx.fill();
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.shadow','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.shadow','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -186,11 +187,11 @@ test('2d.strokeRect.shadow','green-100x50.png', function(t) {
   ctx.strokeRect(0, -75, 100, 50);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.transform','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.transform','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -204,11 +205,11 @@ test('2d.strokeRect.transform','green-100x50.png', function(t) {
   ctx.strokeRect(2.5, -2.6, 5, 0.2);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.zero.1','clear-100x50.png', function(t) {
+test(module, '2d.strokeRect.zero.1','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -220,11 +221,11 @@ test('2d.strokeRect.zero.1','clear-100x50.png', function(t) {
   ctx.strokeRect(50, 25, 0, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.zero.2','clear-100x50.png', function(t) {
+test(module, '2d.strokeRect.zero.2','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -238,11 +239,11 @@ test('2d.strokeRect.zero.2','clear-100x50.png', function(t) {
   ctx.strokeRect(50, 25, 0, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.zero.3','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.zero.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -254,11 +255,11 @@ test('2d.strokeRect.zero.3','green-100x50.png', function(t) {
   ctx.strokeRect(0, 25, 100, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.zero.4','clear-100x50.png', function(t) {
+test(module, '2d.strokeRect.zero.4','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -271,11 +272,11 @@ test('2d.strokeRect.zero.4','clear-100x50.png', function(t) {
   ctx.strokeRect(100, 25, 100, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0");
 
-  t.end()
+  t.done()
 });
 
 
-test('2d.strokeRect.zero.5','green-100x50.png', function(t) {
+test(module, '2d.strokeRect.zero.5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -288,6 +289,6 @@ test('2d.strokeRect.zero.5','green-100x50.png', function(t) {
   ctx.strokeRect(100, 25, 100, 0);
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
-  t.end()
+  t.done()
 });
 

@@ -3,8 +3,9 @@ var test = helpers.test;
 var Canvas = helpers.Canvas;
 var Image = helpers.Image;
 var DOMException = helpers.DOMException;
-var wrapFunction = function(t, cb) { return function() { cb(); t.end() } };
-test('2d.missingargs',null, function(t) {
+var wrapFunction = helpers.wrapFunction;
+
+test(module, '2d.missingargs',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
@@ -318,6 +319,6 @@ test('2d.missingargs',null, function(t) {
     g.addColorStop(0);
   } catch (e) { if (e.code != DOMException.NOT_SUPPORTED_ERR) t.fail("Failed assertion: expected exception of type NOT_SUPPORTED_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type NOT_SUPPORTED_ERR: g.addColorStop(0)"); }
 
-  t.end()
+  t.done()
 });
 
