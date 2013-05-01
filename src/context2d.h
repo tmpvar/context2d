@@ -27,9 +27,8 @@ class Context2D : public ObjectWrap {
   public:
     static void Init(v8::Handle<v8::Object> exports);
     SkCanvas *canvas;
-    SkPath path;
+    SkPath path, subpath;
     SkPaint paint, shadowPaint;
-
     SkXfermode::Mode globalCompositeOperation;
     double globalAlpha, shadowX, shadowY, shadowBlur;
 
@@ -43,6 +42,7 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(ToBuffer);
     OBJECT_METHOD(GetPixel);
     OBJECT_METHOD(Resize);
+    OBJECT_METHOD(DumpState);
 
     // state
     OBJECT_METHOD(Save); // push state on state stack

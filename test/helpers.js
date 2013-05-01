@@ -134,6 +134,7 @@ module.exports.createCanvas = function(doc, w, h) {
 
     el.ctx.debug = function() {
       module.exports.output(el.ctx);
+      ctx.dumpState();
     }
 
 //    el.ctx.drawImage(background, 0, 0);

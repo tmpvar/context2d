@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define TAU M_PI*2
 using namespace node;
 using namespace v8;
 
@@ -33,7 +34,7 @@ using namespace v8;
        FunctionTemplate::New(name)->GetFunction()); \
 
 #define METHOD(name) Handle<Value> Context2D::name(const Arguments& args)
-
+#define DEGREES(rads) rads * 180/M_PI
 
 void Context2D::Init(v8::Handle<v8::Object> exports) {
   SkAutoGraphics ag;
@@ -44,6 +45,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 
   // Non-standard
   PROTOTYPE_METHOD(ToPngBuffer, toPngBuffer);
+  PROTOTYPE_METHOD(DumpState, dumpState);
   PROTOTYPE_METHOD(ToBuffer, toBuffer);
   PROTOTYPE_METHOD(GetPixel, getPixel);
   PROTOTYPE_METHOD(Resize, resize);
@@ -184,6 +186,17 @@ METHOD(Resize) {
   return scope.Close(Undefined());
 }
 
+METHOD(DumpState) {
+  HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  SkMatrix44 matrix(ctx->canvas->getTotalMatrix());
+  matrix.dump();
+  ctx->path.dump();
+
+  return scope.Close(Undefined());
+}
+
 METHOD(GetPixel) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
@@ -287,10 +300,10 @@ METHOD(Scale) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   if (!args[0]->IsUndefined() && !args[1]->IsUndefined()) {
-    double x = args[0]->NumberValue();
-    double y = args[1]->NumberValue();
-
-    ctx->canvas->scale(x, y);
+    ctx->canvas->scale(
+      SkDoubleToScalar(args[0]->NumberValue()),
+      SkDoubleToScalar(args[1]->NumberValue())
+    );
   }
 
   return scope.Close(Undefined());
@@ -300,10 +313,9 @@ METHOD(Rotate) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  if (!args[0]->IsUndefined() && args[1]->IsUndefined()) {
-    double rads = args[0]->NumberValue();
-    double degs = rads * 180/M_PI;
-    ctx->canvas->rotate(degs);
+  if (!args[0]->IsUndefined()) {
+    SkScalar rads = SkDoubleToScalar(args[0]->NumberValue());
+    ctx->canvas->rotate(DEGREES(rads));
   }
 
   return scope.Close(Undefined());
@@ -313,9 +325,9 @@ METHOD(Translate) {
   HandleScope scope;
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  if (!args[0]->IsUndefined()) {
-    double x = args[0]->NumberValue();
-    double y = args[1]->NumberValue();
+  if (!args[0]->IsUndefined() && !args[0]->IsUndefined()) {
+    SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+    SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
     ctx->canvas->translate(x, y);
   }
@@ -845,7 +857,7 @@ METHOD(BeginPath) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->path.reset();
+  ctx->path.rewind();
 
   return scope.Close(Undefined());
 }
@@ -854,10 +866,13 @@ METHOD(Fill) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  SkPaint fillPaint;
-  fillPaint.setColor(ctx->paint.getColor());
-  ctx->paint.setStyle(SkPaint::kFill_Style);
-  ctx->canvas->drawPath(ctx->path, ctx->paint);
+
+  ctx->canvas->save();
+    ctx->canvas->resetMatrix();
+    SkPaint fillPaint(ctx->paint);
+    ctx->paint.setStyle(SkPaint::kFill_Style);
+    ctx->canvas->drawPath(ctx->path, ctx->paint);
+  ctx->canvas->restore();
 
   return scope.Close(Undefined());
 }
@@ -865,9 +880,14 @@ METHOD(Fill) {
 METHOD(Stroke) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
+  ctx->canvas->save();
+    ctx->canvas->resetMatrix();
+    SkPaint strokePaint(ctx->paint);
+    strokePaint.setStyle(SkPaint::kStroke_Style);
+    ctx->canvas->drawPath(ctx->path, strokePaint);
+  ctx->canvas->restore();
 
   return scope.Close(Undefined());
 }
@@ -877,10 +897,9 @@ METHOD(Clip) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  // TODO: do we need to close before clipping?
   ctx->path.close();
   ctx->canvas->clipPath(ctx->path, SkRegion::kReplace_Op, true);
-
-
 
   return scope.Close(Undefined());
 }
@@ -907,9 +926,19 @@ METHOD(ClosePath) {
 METHOD(MoveTo) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkPath subpath;
 
+  subpath.moveTo(
+    SkDoubleToScalar(args[0]->NumberValue()),
+    SkDoubleToScalar(args[1]->NumberValue())
+  );
+
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  subpath.transform(currentTransform);
+
+  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }
@@ -917,9 +946,20 @@ METHOD(MoveTo) {
 METHOD(LineTo) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
+  SkPoint pt;
+  if (!ctx->path.getLastPt(&pt)) {
+    ctx->path.moveTo(x, y);
+  }
+
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  ctx->path.transform(currentTransform);
+  ctx->path.lineTo(x, y);
+  ctx->path.setLastPt(x, y);
 
   return scope.Close(Undefined());
 }
@@ -947,9 +987,15 @@ METHOD(BezierCurveTo) {
 METHOD(ArcTo) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar x1 = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y1 = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar x2 = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar y2 = SkDoubleToScalar(args[3]->NumberValue());
+  SkScalar r = SkDoubleToScalar(args[4]->NumberValue());
 
+  ctx->path.arcTo(x1, y1, x2, y2, r);
 
   return scope.Close(Undefined());
 }
@@ -959,12 +1005,17 @@ METHOD(Rect) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  double x = args[0]->NumberValue();
-  double y = args[1]->NumberValue();
-  double w = args[2]->NumberValue();
-  double h = args[3]->NumberValue();
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar w = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
 
-  ctx->path.addRect(x, y, x+w, y+h);
+  SkRect src = SkRect::MakeXYWH(x, y, w, h);
+  SkPath subpath;
+  subpath.addRect(src);
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  subpath.transform(currentTransform);
+  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }
@@ -972,9 +1023,44 @@ METHOD(Rect) {
 METHOD(Arc) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar r = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar sa = SkDoubleToScalar(args[3]->NumberValue());
+  SkScalar ea = SkDoubleToScalar(args[4]->NumberValue());
+  bool ccw = args[5]->BooleanValue();
 
 
+
+  // TODO: probably could get the last point
+  //       and compare it with x/y
+  if (!ctx->path.isEmpty()) {
+    ctx->path.lineTo(x, y);
+  }
+
+  if (!ccw) {
+    SkRect rect = {
+      x-r, y-r, x+r, y+r
+    };
+
+    if (sa > ea + TAU) {
+      ea = fmodf(ea, TAU);
+    }
+
+    ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
+  } else if (sa != ea) {
+
+    if (sa > ea + TAU) {
+      ctx->path.addCircle(x, y, r, SkPath::kCCW_Direction);
+    } else {
+      SkRect rect = {
+        x+r, y+r, x-r, y-r
+      };
+      ctx->path.addArc(rect, DEGREES(ea), DEGREES(sa));
+    }
+  }
 
   return scope.Close(Undefined());
 }
@@ -1201,19 +1287,16 @@ METHOD(PutImageData) {
 METHOD(GetLineWidth) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
-
-  return scope.Close(Undefined());
+  return scope.Close(Number::New(ctx->paint.getStrokeWidth()));
 }
 
 METHOD(SetLineWidth) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  ctx->paint.setStrokeWidth(SkDoubleToScalar(args[0]->NumberValue()));
 
   return scope.Close(Undefined());
 }

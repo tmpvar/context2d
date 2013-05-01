@@ -1,6 +1,7 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
 var util = require('util');
+var TAU = Math.PI*2;
 
 var valid = function(a) {
   return !isNaN(a) && isFinite(a);
@@ -290,6 +291,42 @@ module.exports.createContext = function(canvas, w, h) {
           color[3] = color[3] * 255;
           ret.setFillStyle.apply(ret, color);
         }
+      }
+    }
+  });
+
+  var stroke;
+  Object.defineProperty(ret, 'strokeStyle', {
+    get : function() {
+      return stroke;
+    },
+    set : function(c) {
+      if (!c) {
+        return;
+      }
+
+      if (c === 'currentColor') {
+        if (canvas.getAttribute) {
+          var style = canvas.getAttribute('style') || '';
+          var currentMatch = style.match(/color: ?([^\);]+)/);
+          if (currentMatch && currentMatch.length > 1) {
+            c = currentMatch[1];
+          } else {
+            c = '#000000';
+          }
+        } else {
+          c = '#000000';
+        }
+      }
+
+
+      var color = csscolor(c);
+      if (color) {
+        fill = color.string;
+        color = color.array;
+
+        color[3] = color[3] * 255;
+        ret.setFillStyle.apply(ret, color);
       }
     }
   });
@@ -710,12 +747,47 @@ module.exports.createContext = function(canvas, w, h) {
     w = Math.round(Math.abs(w)) || 1;
     h = Math.round(Math.abs(h)) || 1;
 
-
-
     var buf = new CanvasPixelArray(w * h * 4);
     buf.fill(0);
     return new ImageData(buf, w, h);
   };
+
+  Object.defineProperty(ret, 'lineWidth', {
+    get : ret.getLineWidth.bind(ret),
+    set : ret.setLineWidth.bind(ret)
+  });
+
+
+  override('arc', function(arc, x, y, radius, startAngle, endAngle, ccw) {
+    if (!valid(x) ||
+        !valid(y) ||
+        !valid(radius) ||
+        !valid(startAngle) ||
+        !valid(endAngle) ||
+        !valid(ccw))
+    {
+      return;
+    }
+
+    if (radius < 0) {
+      throw new DOMException('radius must be > 0', DOMException.INDEX_SIZE_ERR);
+    }
+
+    arc(x, y, radius, startAngle, endAngle, ccw);
+  })
+
+  override('arcTo', function(arcTo, x1, y1, x2, y2, radius) {
+
+    arcTo(x1, y1, x2, y2, radius);
+  })
+
+  override('lineTo', function(lineTo, x, y) {
+    if (!valid(x) || !valid(y)) {
+      return;
+    }
+
+    lineTo(x, y);
+  })
 
   return ret;
 };
