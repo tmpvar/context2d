@@ -608,7 +608,6 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
-//            attribute double miterLimit; // (default 10)
 //   void setLineDash(sequence<double> segments); // default empty
 //   sequence<double> getLineDash();
 //            attribute double lineDashOffset;
@@ -761,7 +760,17 @@ module.exports.createContext = function(canvas, w, h) {
     return new ImageData(obj.data, obj.width, obj.height);
   });
 
-  override('putImageData', function(putImageData, id, dx, dy) {
+  override('putImageData', function(putImageData, id, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+    if (!valid(dx) ||
+        !valid(dy) ||
+        (typeof dirtyX !== 'undefined' && !valid(dirtyX)) ||
+        (typeof dirtyY !== 'undefined' && !valid(dirtyY)) ||
+        (typeof dirtyWidth !== 'undefined' && !valid(dirtyWidth)) ||
+        (typeof dirtyHeight !== 'undefined' && !valid(dirtyHeight)))
+    {
+      throw new DOMException('invalid coords', DOMException.NOT_SUPPORTED_ERR);
+    }
+
     if (!id) {
       throw new DOMException('invalid datatype', DOMException.TYPE_MISMATCH_ERR);
     }
