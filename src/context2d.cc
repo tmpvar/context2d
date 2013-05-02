@@ -999,9 +999,30 @@ METHOD(QuadraticCurveTo) {
 METHOD(BezierCurveTo) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar x1 = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y1 = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar x2 = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar y2 = SkDoubleToScalar(args[3]->NumberValue());
+  SkScalar x3 = SkDoubleToScalar(args[4]->NumberValue());
+  SkScalar y3 = SkDoubleToScalar(args[5]->NumberValue());
 
+  SkPath subpath;
+
+  SkPoint pt;
+  if (!ctx->path.getLastPt(&pt)) {
+    subpath.moveTo(x1, y1);
+  } else {
+    subpath.moveTo(pt);
+  }
+
+  subpath.cubicTo(x1, y1, x2, y2, x3, y3);
+
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  subpath.transform(currentTransform);
+
+  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }

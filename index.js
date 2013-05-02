@@ -869,6 +869,20 @@ module.exports.createContext = function(canvas, w, h) {
     quadraticCurveTo(cpx, cpy, x, y);
   });
 
+  override('bezierCurveTo', function(bezierCurveTo, x1, y1, x2, y2, x3, y3) {
+    if (!valid(x1) ||
+        !valid(y1) ||
+        !valid(x2) ||
+        !valid(y2) ||
+        !valid(x3) ||
+        !valid(y3))
+    {
+      return;
+    }
+
+    bezierCurveTo(x1, y1, x2, y2, x3, y3);
+  });
+
   override('moveTo', function(moveTo, x, y) {
     if (!valid(x) || !valid(y)) {
       return;
