@@ -1062,18 +1062,32 @@ METHOD(Arc) {
       ea = fmodf(ea, TAU);
     }
 
+    if (sa == 0 && ea < 0) {
+      ea = fabs(ea);
+    }
+
     subpath.addArc(rect, DEGREES(sa), DEGREES(ea));
   } else if (sa != ea) {
 
-    if (sa > ea + TAU) {
-      subpath.addCircle(x, y, r, SkPath::kCCW_Direction);
-    } else if (ea < sa + TAU) {
+    double diff = TAU-fabs(sa - ea);
+
+    if (sa > ea + TAU || (diff < 0 && diff > -.0001)) {
       subpath.addCircle(x, y, r, SkPath::kCCW_Direction);
     } else {
+
       SkRect rect = {
-        x+r, y+r, x-r, y-r
+        x-r, y-r, x+r, y+r
       };
-      subpath.addArc(rect, DEGREES(ea), DEGREES(sa));
+
+      if (ea > sa + TAU) {
+        ea = fmodf(ea, TAU);
+        sa = fmodf(sa, TAU);
+        subpath.addArc(rect, DEGREES(sa), DEGREES(-ea));
+      } else if (sa == 0 && ea-sa > 0) {
+        subpath.addArc(rect, DEGREES(sa), DEGREES(-ea));
+      } else {
+        subpath.addArc(rect, DEGREES(sa), DEGREES(ea));
+      }
     }
   }
 
