@@ -867,6 +867,11 @@ METHOD(BeginPath) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->path.rewind();
+  ctx->subpath.rewind();
+
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  ctx->path.transform(currentTransform);
+  ctx->subpath.transform(currentTransform);
 
   return scope.Close(Undefined());
 }
@@ -876,12 +881,7 @@ METHOD(Fill) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  ctx->canvas->save();
-    ctx->canvas->resetMatrix();
-    SkPaint fillPaint(ctx->paint);
-    ctx->paint.setStyle(SkPaint::kFill_Style);
-    ctx->canvas->drawPath(ctx->path, ctx->paint);
-  ctx->canvas->restore();
+  ctx->canvas->drawPath(ctx->path, ctx->paint);
 
   return scope.Close(Undefined());
 }
@@ -891,10 +891,7 @@ METHOD(Stroke) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  ctx->canvas->save();
-    ctx->canvas->resetMatrix();
-    ctx->canvas->drawPath(ctx->path, ctx->strokePaint);
-  ctx->canvas->restore();
+  ctx->canvas->drawPath(ctx->path, ctx->strokePaint);
 
   return scope.Close(Undefined());
 }
@@ -903,6 +900,7 @@ METHOD(Clip) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
   ctx->canvas->clipPath(ctx->path, SkRegion::kIntersect_Op, true);
 
   return scope.Close(Undefined());
@@ -1044,8 +1042,7 @@ METHOD(Arc) {
   SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
   subpath.transform(currentTransform);
 
-  // TODO: probably could get the last point
-  //       and compare it with x/y
+
   if (!ctx->path.isEmpty()) {
     subpath.lineTo(x, y);
   }
