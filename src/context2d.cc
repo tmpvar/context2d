@@ -914,11 +914,14 @@ METHOD(Clip) {
 METHOD(IsPointInPath) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
+  bool contained = ctx->path.contains(x, y) || ctx->subpath.contains(x,y);
 
-  return scope.Close(Undefined());
+  return scope.Close(Boolean::New(contained));
 }
 
 METHOD(ClosePath) {
