@@ -903,10 +903,7 @@ METHOD(Clip) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  // TODO: do we need to close before clipping?
-  ctx->path.close();
-  ctx->canvas->clipPath(ctx->path, SkRegion::kReplace_Op, true);
+  ctx->canvas->clipPath(ctx->path, SkRegion::kIntersect_Op, true);
 
   return scope.Close(Undefined());
 }
