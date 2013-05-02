@@ -831,6 +831,14 @@ module.exports.createContext = function(canvas, w, h) {
   })
 
   override('arcTo', function(arcTo, x1, y1, x2, y2, radius) {
+    if (!valid(x1) ||
+        !valid(y1) ||
+        !valid(x2) ||
+        !valid(y2) ||
+        !valid(radius))
+    {
+      return;
+    }
 
     arcTo(x1, y1, x2, y2, radius);
   })
@@ -841,6 +849,21 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     lineTo(x, y);
+  });
+
+  override('moveTo', function(moveTo, x, y) {
+    if (!valid(x) || !valid(y)) {
+      return;
+    }
+
+    moveTo(x, y);
+  });
+
+  override('rect', function(rect, x, y, w, h) {
+    if (!valid(x) || !valid(y) || !valid(w) || !valid(h)) {
+      return;
+    }
+    rect(x, y, w, h);
   });
 
   override('measureText', function(measureText, str) {
