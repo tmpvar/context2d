@@ -204,11 +204,17 @@ if (argv.w) {
     if (file.match(/\.(h|cc|cpp)/)) {
       log('[recompiling]')
       exec('node-gyp configure build', function(e, out, err) {
+
         if (e) {
           log('ERROR:');
-          process.stdout.write(out);
-          process.error.write(err);
+          err.split('\n').forEach(function(line) {
+            if (line.indexOf('gyp') < 0) {
+              console.log(line);
+            }
+          });
+
         } else {
+          exec('touch ' + __filename);
           rerun();
         }
       });
