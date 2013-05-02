@@ -846,6 +846,10 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
+    if (radius < 0) {
+      throw new DOMException('radius must be > 0', DOMException.INDEX_SIZE_ERR);
+    }
+
     arcTo(x1, y1, x2, y2, radius);
   })
 
