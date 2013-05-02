@@ -741,6 +741,10 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('strokeRect', function(strokeRect, x, y, w, h) {
+    if (!valid(x) || !valid(y) || !valid(w) || !valid(h)) {
+      return;
+    }
+
 
     if (!w && !h) {
       return;
