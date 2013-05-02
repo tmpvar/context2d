@@ -866,12 +866,10 @@ METHOD(BeginPath) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->path.rewind();
-  ctx->subpath.rewind();
+  ctx->path.reset();
 
   SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
   ctx->path.transform(currentTransform);
-  ctx->subpath.transform(currentTransform);
 
   return scope.Close(Undefined());
 }
@@ -914,7 +912,7 @@ METHOD(IsPointInPath) {
   SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
-  bool contained = ctx->path.contains(x, y) || ctx->subpath.contains(x,y);
+  bool contained = ctx->path.contains(x, y);
 
   return scope.Close(Boolean::New(contained));
 }
@@ -935,7 +933,7 @@ METHOD(MoveTo) {
 
   SkPath subpath;
 
-  subpath.moveTo(
+  subpath.setLastPt(
     SkDoubleToScalar(args[0]->NumberValue()),
     SkDoubleToScalar(args[1]->NumberValue())
   );
@@ -972,9 +970,28 @@ METHOD(LineTo) {
 METHOD(QuadraticCurveTo) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar cpx = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar cpy = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar x = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[3]->NumberValue());
 
+  SkPath subpath;
+
+  SkPoint pt;
+  if (!ctx->path.getLastPt(&pt)) {
+    subpath.moveTo(cpx, cpy);
+    subpath.quadTo(cpx, cpy, x, y);
+  } else {
+    subpath.setLastPt(pt);
+    subpath.quadTo(cpx*2, cpy, x, y);
+  }
+
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  subpath.transform(currentTransform);
+
+  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }

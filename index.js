@@ -861,6 +861,14 @@ module.exports.createContext = function(canvas, w, h) {
     lineTo(x, y);
   });
 
+  override('quadraticCurveTo', function(quadraticCurveTo, cpx, cpy, x, y) {
+    if (!valid(cpx) || !valid(cpy) || !valid(x) || !valid(y)) {
+      return;
+    }
+
+    quadraticCurveTo(cpx, cpy, x, y);
+  });
+
   override('moveTo', function(moveTo, x, y) {
     if (!valid(x) || !valid(y)) {
       return;
