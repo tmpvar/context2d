@@ -630,8 +630,51 @@ module.exports.createContext = function(canvas, w, h) {
 //   sequence<double> getLineDash();
 //            attribute double lineDashOffset;
 //            attribute DOMString font; // (default 10px sans-serif)
-//            attribute DOMString textAlign; // "start", "end", "left", "right", "center" (default: "start")
-//            attribute DOMString textBaseline; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
+
+  var textAlign = 'start';
+  var textAlignMap = {
+    "start" : 1,
+    "end" : 1,
+    "left" : 1,
+    "right" : 1,
+    "center" : 1
+  };
+
+  Object.defineProperty(ret, 'textAlign', {
+    get : function() { return textAlign; },
+    set : function(val) {
+      if (!val || !textAlignMap[val]) {
+        return;
+      }
+
+      textAlign = val;
+      ret.setTextAlign(val);
+    }
+  });
+
+
+  var textBaseline = 'alphabetic';
+  var textBaselineMap = {
+    "top" : 1,
+    "hanging" : 1,
+    "middle" : 1,
+    "alphabetic": 1,
+    "ideographic" : 1,
+    "bottom" : 1
+  };
+
+  Object.defineProperty(ret, 'textBaseline', {
+    get : function() { return textBaseline; },
+    set : function(val) {
+      if (!val || !textBaselineMap[val]) {
+        return;
+      }
+
+      textBaseline = val;
+      ret.setTextBaseline(val);
+    }
+  });
+
 
 
   // The real work here is done in .setFillStyle and friends
