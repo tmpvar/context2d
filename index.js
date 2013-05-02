@@ -524,17 +524,35 @@ module.exports.createContext = function(canvas, w, h) {
 
   Object.defineProperty(ret, 'shadowOffsetX', {
     get : ret.getShadowOffsetX.bind(ret),
-    set : ret.setShadowOffsetX.bind(ret)
+    set : function(val) {
+      if (!valid(val)) {
+        return;
+      }
+
+      ret.setShadowOffsetX(val);
+    }
   });
 
   Object.defineProperty(ret, 'shadowOffsetY', {
     get : ret.getShadowOffsetY.bind(ret),
-    set : ret.setShadowOffsetY.bind(ret)
+    set : function(val) {
+      if (!valid(val)) {
+        return;
+      }
+
+      ret.setShadowOffsetY(val);
+    }
   });
 
   Object.defineProperty(ret, 'shadowBlur', {
     get : ret.getShadowBlur.bind(ret),
-    set : ret.setShadowBlur.bind(ret)
+    set : function(val) {
+      if (val < 0 || !valid(val)) {
+        return;
+      }
+
+      ret.setShadowBlur(val);
+    }
   });
 
   var shadowColor = 'rgba(0,0,0,0)'
