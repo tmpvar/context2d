@@ -597,6 +597,16 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
+  var miterLimit = 10;
+  Object.defineProperty(ret, 'miterLimit', {
+    get: function() { return miterLimit; },
+    set: function(val) {
+      if (valid(val) && val > 0) {
+        miterLimit = val;
+        ret.setMiterLimit(val);
+      }
+    }
+  });
 
 //            attribute double miterLimit; // (default 10)
 //   void setLineDash(sequence<double> segments); // default empty

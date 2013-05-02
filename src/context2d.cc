@@ -1417,9 +1417,11 @@ METHOD(GetMiterLimit) {
 METHOD(SetMiterLimit) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  SkScalar limit = SkDoubleToScalar(args[0]->NumberValue());
 
+  ctx->strokePaint.setStrokeMiter(limit);
 
   return scope.Close(Undefined());
 }
