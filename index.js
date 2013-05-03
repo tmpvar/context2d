@@ -34,6 +34,14 @@ DOMException.NAMESPACE_ERR                  = 14;
 DOMException.INVALID_ACCESS_ERR             = 15;
 
 
+var requireArgs = function(args, required) {
+  if (args.length < required) {
+    throw new DOMException('invalid number of args', DOMException.NOT_SUPPORTED_ERR);
+  }
+}
+
+
+
 function CanvasGradient(type, opts) {
 
   Object.keys(opts).forEach(function(key) {
@@ -55,6 +63,7 @@ function CanvasGradient(type, opts) {
   var last = -1;
   var count = 0;
   this.addColorStop = function(offset, color) {
+    requireArgs(arguments, 2);
 
     if (isNaN(offset) || !isFinite(offset) || offset < 0 || offset > 1) {
       throw new DOMException(
@@ -147,9 +156,25 @@ function CanvasGradient(type, opts) {
 module.exports.CanvasGradient = CanvasGradient;
 
 function ImageData(buffer, w, h) {
-  this.width = w;
-  this.height = h;
-  this.data = buffer;
+  if (!buffer || !w || !h) {
+    throw new Error('invalid argument count');
+  }
+
+  if (!(buffer instanceof CanvasPixelArray)) {
+    buffer = new CanvasPixelArray(buffer);
+  }
+
+  Object.defineProperty(this, 'width', {
+    get: function() { return w; }
+  });
+
+  Object.defineProperty(this, 'height', {
+    get: function() { return h; }
+  });
+
+  Object.defineProperty(this, 'data', {
+    get : function() { return buffer }
+  });
 }
 
 module.exports.ImageData = ImageData;
@@ -159,6 +184,7 @@ function CanvasPixelArray() {
 }
 
 util.inherits(CanvasPixelArray, Buffer);
+
 
 module.exports.CanvasPixelArray = CanvasPixelArray;
 
@@ -331,6 +357,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   ret.drawImage = function(i) {
+    requireArgs(arguments, 3);
+
     var args = [];
     Array.prototype.push.apply(args, arguments);
     args.shift();
@@ -679,8 +707,14 @@ module.exports.createContext = function(canvas, w, h) {
 
   // The real work here is done in .setFillStyle and friends
   ret.createPattern = function(obj, mode) {
+    requireArgs(arguments, 2);
+
     if (!obj) {
-      return;
+      throw new DOMException('invalid pattern', DOMException.TYPE_MISMATCH_ERR);
+    }
+
+    if (!obj.width || !obj.height) {
+      throw new DOMException('invalid object size', DOMException.INVALID_STATE_ERR);
     }
 
     if (obj.ctx) {
@@ -696,6 +730,8 @@ module.exports.createContext = function(canvas, w, h) {
   };
 
   ret.createLinearGradient = function(x0, y0, x1, y1) {
+    requireArgs(arguments, 4);
+
     return new CanvasGradient('linear', {
       x0 : x0,
       y0 : y0,
@@ -716,6 +752,8 @@ module.exports.createContext = function(canvas, w, h) {
   };
 
   ret.setTransform = function(a,b,c,d,e,f) {
+    requireArgs(arguments, 6);
+
     if (!valid(a) ||
         !valid(b) ||
         !valid(c) ||
@@ -732,6 +770,8 @@ module.exports.createContext = function(canvas, w, h) {
   };
 
   override('fillRect', function(fillRect, x, y, w, h) {
+    requireArgs(arguments, 5);
+
     if (fill && fill.type === 'gradient') {
       if (!fill.apply(ret)) {
         return;
@@ -740,7 +780,23 @@ module.exports.createContext = function(canvas, w, h) {
     fillRect(x, y, w, h);
   });
 
+  override('clearRect', function(clearRect, x, y, w, h) {
+    requireArgs(arguments, 5);
+
+    if (!valid(x) || !valid(y) || !valid(w) || !valid(h)) {
+      return;
+    }
+
+    if (!w && !h) {
+      return;
+    }
+
+    clearRect(x, y, w, h);
+  });
+
   override('strokeRect', function(strokeRect, x, y, w, h) {
+    requireArgs(arguments, 5);
+
     if (!valid(x) || !valid(y) || !valid(w) || !valid(h)) {
       return;
     }
@@ -754,6 +810,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('scale', function(scale, x, y) {
+    requireArgs(arguments, 3);
+
     if (!valid(x) || !valid(y)) {
       return;
     }
@@ -761,6 +819,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('translate', function(translate, x, y) {
+    requireArgs(arguments, 3);
+
     if (!valid(x) || !valid(y)) {
       return;
     }
@@ -768,6 +828,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('transform', function(transform, a, b, c, d, e, f) {
+    requireArgs(arguments, 7);
+
     if (!valid(a) ||
         !valid(b) ||
         !valid(c) ||
@@ -781,6 +843,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('rotate', function(rotate, rads) {
+    requireArgs(arguments, 2);
+
     if (!valid(rads)) {
       return;
     }
@@ -895,8 +959,28 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
+  override('isPointInPath', function(isPointInPath, x, y) {
+    requireArgs(arguments, 3);
+
+    return isPointInPath(x, y);
+  });
+
+  override('fillText', function(fillText, str, x, y) {
+    requireArgs(arguments, 4);
+
+    fillText(str, x, y);
+  });
+
+  override('strokeText', function(strokeText, str, x, y) {
+    requireArgs(arguments, 4);
+
+    strokeText(str, x, y);
+  });
+
 
   override('arc', function(arc, x, y, radius, startAngle, endAngle, ccw) {
+    requireArgs(arguments, 7);
+
     if (!valid(x) ||
         !valid(y) ||
         !valid(radius) ||
@@ -921,6 +1005,8 @@ module.exports.createContext = function(canvas, w, h) {
   })
 
   override('arcTo', function(arcTo, x1, y1, x2, y2, radius) {
+    requireArgs(arguments, 6);
+
     if (!valid(x1) ||
         !valid(y1) ||
         !valid(x2) ||
@@ -938,6 +1024,8 @@ module.exports.createContext = function(canvas, w, h) {
   })
 
   override('lineTo', function(lineTo, x, y) {
+    requireArgs(arguments, 3);
+
     if (!valid(x) || !valid(y)) {
       return;
     }
@@ -946,6 +1034,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('quadraticCurveTo', function(quadraticCurveTo, cpx, cpy, x, y) {
+    requireArgs(arguments, 5);
+
     if (!valid(cpx) || !valid(cpy) || !valid(x) || !valid(y)) {
       return;
     }
@@ -954,6 +1044,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('bezierCurveTo', function(bezierCurveTo, x1, y1, x2, y2, x3, y3) {
+    requireArgs(arguments, 7);
+
     if (!valid(x1) ||
         !valid(y1) ||
         !valid(x2) ||
@@ -968,6 +1060,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('moveTo', function(moveTo, x, y) {
+    requireArgs(arguments, 3);
+
     if (!valid(x) || !valid(y)) {
       return;
     }
@@ -976,6 +1070,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('rect', function(rect, x, y, w, h) {
+    requireArgs(arguments, 5);
+
     if (!valid(x) || !valid(y) || !valid(w) || !valid(h)) {
       return;
     }
@@ -983,6 +1079,8 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   override('measureText', function(measureText, str) {
+    requireArgs(arguments, 2);
+
     return { width: 0, height: 0};
   });
 
