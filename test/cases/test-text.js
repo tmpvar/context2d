@@ -12,9 +12,9 @@ test(module, '2d.text.align.default',null, function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  //helpers.assertEqual(t, ctx.textAlign, 'start', "ctx.textAlign", "'start'");
+  helpers.assertEqual(t, ctx.textAlign, 'start', "ctx.textAlign", "'start'");
 
-  //t.done()
+  t.done()
 });
 
 
