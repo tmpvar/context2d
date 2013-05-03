@@ -836,10 +836,14 @@ METHOD(StrokeRect) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  double x = args[0]->NumberValue();
-  double y = args[1]->NumberValue();
-  double w = args[2]->NumberValue();
-  double h = args[3]->NumberValue();
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar w = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
+
+  SkPaint p(ctx->strokePaint);
+  p.setXfermodeMode(ctx->globalCompositeOperation);
+  p.setAlpha(ctx->globalAlpha);
 
   double bx = (x < 0) ? x : 0;
   double by = (y < 0) ? y : 0;
@@ -849,15 +853,70 @@ METHOD(StrokeRect) {
 
   double bw = w+x > dw ? w+x : dw;
   double bh = h+y > dh ? h+y : dh;
+  double lineWidth = ctx->strokePaint.getStrokeWidth();
+  double halfLineWidth = lineWidth/2;
 
   SkRect bounds = {
     bx, by, bw, bh
   };
 
+  int count = ctx->canvas->saveLayer(&bounds, &p);
 
-  SkPaint paint(ctx->paint);
-  ctx->canvas->drawRect(bounds, paint);
+  if (!h || !w) {
+    SkPath subpath;
+    subpath.moveTo(x, y);
+    if (!w) {
+      subpath.lineTo(x, y+h);
+    } else {
+      subpath.lineTo(x+w, y);
+    }
 
+    ctx->path.addPath(subpath);
+
+    SkPaint p(ctx->strokePaint);
+
+    switch (p.getStrokeJoin()) {
+      case SkPaint::kRound_Join:
+        p.setStrokeCap(SkPaint::kRound_Cap);
+      break;
+
+      case SkPaint::kMiter_Join:
+        p.setStrokeCap(SkPaint::kButt_Cap);
+      break;
+    }
+
+    ctx->canvas->drawPath(ctx->path, p);
+
+  } else {
+
+    if (SkColorGetA(ctx->shadowPaint.getColor()) &&
+        (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
+       )
+    {
+
+      // Draw a shadow if applicable
+      ctx->shadowPaint.setMaskFilter(SkBlurMaskFilter::Create(
+        ctx->shadowBlur,
+        SkBlurMaskFilter::kSolid_BlurStyle
+        // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
+      ));
+
+      double sx = x+ctx->shadowX;
+      double sy = y+ctx->shadowY;
+
+      ctx->canvas->drawRectCoords(
+        sx,
+        sy,
+        sx+w + halfLineWidth,
+        sy+h + halfLineWidth,
+        ctx->shadowPaint
+      );
+    }
+
+    ctx->canvas->drawRectCoords(x,y,x+w, y+h, ctx->strokePaint);
+  }
+
+  ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
 }
