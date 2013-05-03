@@ -4,7 +4,7 @@ var util = require('util');
 var TAU = Math.PI*2;
 //
 var valid = function(a) {
-  return !isNaN(a) && isFinite(a);
+  return typeof a !== 'undefined' && !isNaN(a) && isFinite(a);
 };
 
 // TODO: prefer to lookup ownerDocument and find the DOMException
@@ -711,17 +711,17 @@ module.exports.createContext = function(canvas, w, h) {
   })
 
   var textAlignMap = {
-    start : 1,
+    start : 0,
     end : 1,
-    left : 1,
-    right : 1,
-    center : 1
+    left : 2,
+    right : 3,
+    center : 4
   };
 
   Object.defineProperty(ret, 'textAlign', {
     get : function() { return state.textAlign; },
     set : function(val) {
-      if (!val || !textAlignMap[val]) {
+      if (!val || typeof textAlignMap[val] === 'undefined') {
         return;
       }
 
@@ -732,18 +732,18 @@ module.exports.createContext = function(canvas, w, h) {
 
 
   var textBaselineMap = {
-    top : 1,
+    top : 0,
     hanging : 1,
-    middle : 1,
-    alphabetic: 1,
-    ideographic : 1,
-    bottom : 1
+    middle : 2,
+    alphabetic: 3,
+    ideographic : 4,
+    bottom : 5
   };
 
   Object.defineProperty(ret, 'textBaseline', {
     get : function() { return state.textBaseline; },
     set : function(val) {
-      if (!val || !textBaselineMap[val]) {
+      if (!val || typeof textBaselineMap[val] === 'undefined') {
         return;
       }
 
@@ -888,6 +888,7 @@ module.exports.createContext = function(canvas, w, h) {
     ) {
       return;
     }
+
     transform(a, b, c, d, e, f);
   });
 
