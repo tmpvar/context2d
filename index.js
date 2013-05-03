@@ -188,7 +188,51 @@ util.inherits(CanvasPixelArray, Buffer);
 
 module.exports.CanvasPixelArray = CanvasPixelArray;
 
+
+function ContextState() {
+
+}
+
+ContextState.prototype = {
+  fillStyle: '#000000',
+  strokeStyle: '#000000',
+  shadowOffsetX: 0,
+  shadowOffsetY: 0,
+  shadowColor: 'rgba(0,0,0,0)',
+  textAlign: 'start',
+  textBaseline: 'alphabetic',
+  globalCompositeOperation: 'source-over',
+  globalAlpha: 1,
+  font: '10px sans-serif',
+  lineWidth : 1,
+  lineCap : 'butt',
+  lineJoin : 'miter',
+  miterLimit : 10,
+  apply: function(ctx) {
+    var that = this;
+    Object.keys(this).forEach(function(key) {
+      if (typeof that[key] !== 'function') {
+        ctx[key] = that[key];
+      }
+    });
+  },
+  clone : function() {
+    var ret = new ContextState();
+    var that = this;
+    Object.keys(this).forEach(function(key) {
+      if (typeof that[key] !== 'function' && that[key] !== ret[key]) {
+        ret[key] = that[key];
+      }
+    });
+
+    return ret;
+  }
+};
+
 module.exports.createContext = function(canvas, w, h) {
+
+  var state = new ContextState();
+  var stateStack = [];
 
   canvas = canvas || {
     width : w || 300,
@@ -238,18 +282,18 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   Object.defineProperty(ret, 'globalAlpha', {
-    get : ret.getGlobalAlpha.bind(ret),
+    get : function() { return state.globalAlpha; },
     set : function(v) {
       if (!isNaN(v) && isFinite(v) && v >= 0 && v <= 1) {
+        state.globalAlpha = v;
         ret.setGlobalAlpha(v);
       }
     }
   });
 
-  var globalCompositeOperation = 'source-over';
   Object.defineProperty(ret, 'globalCompositeOperation', {
     get : function() {
-      return globalCompositeOperation;
+      return state.globalCompositeOperation;
     },
     set : function(str) {
       var mapping = {
@@ -267,18 +311,18 @@ module.exports.createContext = function(canvas, w, h) {
       };
 
       if (mapping[str]) {
-        globalCompositeOperation = str;
+        state.globalCompositeOperation = str;
         ret.setGlobalCompositeOperation(mapping[str]);
       }
     }
   });
 
-  var fill = '#000000';
+
 
 
   Object.defineProperty(ret, 'fillStyle', {
     get : function() {
-      return fill;
+      return state.fillStyle;
     },
     set : function(c) {
       if (!c) {
@@ -303,15 +347,15 @@ module.exports.createContext = function(canvas, w, h) {
         if (c.type === 'pattern') {
           var id = c.obj.imageData
           ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
-          fill = c;
+          state.fillStyle = c;
         } else if (c.type === 'gradient') {
-          fill = c;
+          state.fillStyle = c;
         }
         return;
       } else {
         var color = csscolor(c);
-        if (color) {
-          fill = color.string;
+        if (state.fillStyle) {
+          state.fillStyle = color.string;
           color = color.array;
 
           color[3] = color[3] * 255;
@@ -321,10 +365,9 @@ module.exports.createContext = function(canvas, w, h) {
     }
   });
 
-  var stroke = "#000000";
   Object.defineProperty(ret, 'strokeStyle', {
     get : function() {
-      return stroke;
+      return state.strokeStyle;
     },
     set : function(c) {
       if (!c) {
@@ -347,7 +390,7 @@ module.exports.createContext = function(canvas, w, h) {
 
       var color = csscolor(c);
       if (color) {
-        fill = color.string;
+        state.strokeStyle = color.string;
         color = color.array;
 
         color[3] = color[3] * 255;
@@ -551,45 +594,50 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   Object.defineProperty(ret, 'shadowOffsetX', {
-    get : ret.getShadowOffsetX.bind(ret),
+    get : function() { return state.shadowOffsetX; },
     set : function(val) {
       if (!valid(val)) {
         return;
       }
+
+      state.shadowOffsetX = val;
 
       ret.setShadowOffsetX(val);
     }
   });
 
   Object.defineProperty(ret, 'shadowOffsetY', {
-    get : ret.getShadowOffsetY.bind(ret),
+    get : function() { return state.shadowOffsetY; },
     set : function(val) {
       if (!valid(val)) {
         return;
       }
+
+      state.shadowOffsetY = val;
 
       ret.setShadowOffsetY(val);
     }
   });
 
   Object.defineProperty(ret, 'shadowBlur', {
-    get : ret.getShadowBlur.bind(ret),
+    get : function() { return state.shadowBlur; },
     set : function(val) {
       if (val < 0 || !valid(val)) {
         return;
       }
 
+      state.shadowBlur = val;
+
       ret.setShadowBlur(val);
     }
   });
 
-  var shadowColor = 'rgba(0,0,0,0)'
   Object.defineProperty(ret, 'shadowColor', {
-    get : function() { return shadowColor; },
+    get : function() { return state.shadowColor; },
     set : function(c) {
       var color = csscolor(c);
       if (color) {
-        shadowColor = color.string;
+        state.shadowColor = color.string;
         color = color.array;
 
         color[3] = color[3] * 255;
@@ -599,8 +647,6 @@ module.exports.createContext = function(canvas, w, h) {
           color[2],
           color[3]
         );
-
-        ret.setFillStyle.apply(ret, color);
       }
     }
   });
@@ -610,15 +656,14 @@ module.exports.createContext = function(canvas, w, h) {
     round : 1,
     bevel : 2
   };
-  var lineJoin = 'miter';
 
   Object.defineProperty(ret, 'lineJoin', {
     get : function() {
-      return lineJoin;
+      return state.lineJoin;
     },
     set : function(val) {
       if (typeof lineJoinMap[val] !== 'undefined') {
-        lineJoin = val;
+        state.lineJoin = val;
         ret.setLineJoin(lineJoinMap[val]);
       }
     }
@@ -629,26 +674,25 @@ module.exports.createContext = function(canvas, w, h) {
     round : 1,
     square : 2
   };
-  var lineCap = 'butt';
 
   Object.defineProperty(ret, 'lineCap', {
     get : function() {
-      return lineCap;
+      return state.lineCap;
     },
     set : function(val) {
       if (typeof lineCapMap[val] !== 'undefined') {
-        lineCap = val;
+        state.lineCap = val;
         ret.setLineCap(lineCapMap[val]);
       }
     }
   });
 
-  var miterLimit = 10;
+
   Object.defineProperty(ret, 'miterLimit', {
-    get: function() { return miterLimit; },
+    get: function() { return state.miterLimit; },
     set: function(val) {
       if (valid(val) && val > 0) {
-        miterLimit = val;
+        state.miterLimit = val;
         ret.setMiterLimit(val);
       }
     }
@@ -657,48 +701,53 @@ module.exports.createContext = function(canvas, w, h) {
 //   void setLineDash(sequence<double> segments); // default empty
 //   sequence<double> getLineDash();
 //            attribute double lineDashOffset;
-//            attribute DOMString font; // (default 10px sans-serif)
 
-  var textAlign = 'start';
+  Object.defineProperty(ret, 'font', {
+    get: function() { return state.font; },
+    set: function(val) {
+      state.font = val;
+      ret.setFont(val);
+    }
+  })
+
   var textAlignMap = {
-    "start" : 1,
-    "end" : 1,
-    "left" : 1,
-    "right" : 1,
-    "center" : 1
+    start : 1,
+    end : 1,
+    left : 1,
+    right : 1,
+    center : 1
   };
 
   Object.defineProperty(ret, 'textAlign', {
-    get : function() { return textAlign; },
+    get : function() { return state.textAlign; },
     set : function(val) {
       if (!val || !textAlignMap[val]) {
         return;
       }
 
-      textAlign = val;
+      state.textAlign = val;
       ret.setTextAlign(val);
     }
   });
 
 
-  var textBaseline = 'alphabetic';
   var textBaselineMap = {
-    "top" : 1,
-    "hanging" : 1,
-    "middle" : 1,
-    "alphabetic": 1,
-    "ideographic" : 1,
-    "bottom" : 1
+    top : 1,
+    hanging : 1,
+    middle : 1,
+    alphabetic: 1,
+    ideographic : 1,
+    bottom : 1
   };
 
   Object.defineProperty(ret, 'textBaseline', {
-    get : function() { return textBaseline; },
+    get : function() { return state.textBaseline; },
     set : function(val) {
       if (!val || !textBaselineMap[val]) {
         return;
       }
 
-      textBaseline = val;
+      state.textBaseline = val;
       ret.setTextBaseline(val);
     }
   });
@@ -772,8 +821,8 @@ module.exports.createContext = function(canvas, w, h) {
   override('fillRect', function(fillRect, x, y, w, h) {
     requireArgs(arguments, 5);
 
-    if (fill && fill.type === 'gradient') {
-      if (!fill.apply(ret)) {
+    if (state.fillStyle && state.fillStyle.type === 'gradient') {
+      if (!state.fillStyle.apply(ret)) {
         return;
       }
     }
@@ -942,10 +991,9 @@ module.exports.createContext = function(canvas, w, h) {
   };
 
 
-  var lineWidth = 1;
   Object.defineProperty(ret, 'lineWidth', {
     get : function() {
-      return lineWidth;
+      return state.lineWidth;
     },
     set : function(width) {
       width = Number(width);
@@ -954,7 +1002,7 @@ module.exports.createContext = function(canvas, w, h) {
         return;
       }
 
-      lineWidth = width;
+      state.lineWidth = width;
       ret.setLineWidth(width);
     }
   });
@@ -1083,6 +1131,23 @@ module.exports.createContext = function(canvas, w, h) {
 
     return { width: 0, height: 0};
   });
+
+  override('save', function(save) {
+    stateStack.push(state);
+    state = state.clone();
+    save();
+  });
+
+  override('restore', function(restore) {
+    var tmp = stateStack.pop(state);
+
+    if (tmp) {
+      state = tmp;
+      state.apply(ret);
+      restore();
+    }
+  });
+
 
   return ret;
 };
