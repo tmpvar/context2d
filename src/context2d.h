@@ -2,6 +2,7 @@
 #define _CONTEXT_H_
 
 #define SK_DEBUG 1
+#define SK_DUMP_ENABLED
 #define DUMP_IMAGEREF_LIFECYCLE
 
 #include <node.h>
