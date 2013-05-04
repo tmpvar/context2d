@@ -36,6 +36,7 @@ class Context2D : public ObjectWrap {
   private:
     Context2D(int w, int h);
     ~Context2D();
+    SkColor computeShadowColor();
 
     static Persistent<Function> constructor;
     OBJECT_METHOD(New);

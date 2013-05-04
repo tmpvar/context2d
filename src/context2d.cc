@@ -153,6 +153,47 @@ Context2D::~Context2D() {
   this->canvas->unref();
 }
 
+SkColor Context2D::computeShadowColor() {
+  // Compute the actual fill color
+  SkColor fillColor = this->paint.getColor();
+  SkColor shadowColor = this->shadowPaint.getColor();
+  if (SkColorGetA(fillColor) < 255) {
+    double ratio = SkColorGetA(fillColor)/255.0;
+
+    uint8_t red = SkColorGetR(shadowColor);
+    if (!red) {
+      red = fmodl(SkColorGetR(fillColor)/ratio, 255);
+    } else {
+      red = (red + fmodl(SkColorGetR(fillColor)/ratio, 255)) / 2;
+    }
+
+    uint8_t green = SkColorGetG(shadowColor);
+    if (!green) {
+      green = fmodl(SkColorGetG(fillColor)/ratio, 255);
+    } else {
+      green = (green + fmodl(SkColorGetG(fillColor)/ratio, 255)) / 2;
+    }
+
+    uint8_t blue = SkColorGetB(shadowColor);
+    if (!blue) {
+      blue = fmodl(SkColorGetB(fillColor)/ratio, 255);
+    } else {
+      blue = (blue + fmodl(SkColorGetB(fillColor)/ratio, 255)) / 2;
+    }
+
+    return SkColorSetARGBInline(
+      SkColorGetA(shadowColor),
+      red,
+      green,
+      blue
+    );
+  } else {
+    return shadowColor;
+  }
+}
+
+
+
 METHOD(New) {
   HandleScope scope;
 
@@ -787,34 +828,35 @@ METHOD(FillRect) {
     bx, by, bw, bh
   };
 
-  SkPaint p;
+  SkPaint p(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
   int count = ctx->canvas->saveLayer(&bounds, &p);
 
-
   if (SkColorGetA(ctx->shadowPaint.getColor()) &&
       (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
      )
   {
+    SkPaint shadow;
+    shadow.setColor(ctx->computeShadowColor());
 
     // Draw a shadow if applicable
-    ctx->shadowPaint.setMaskFilter(SkBlurMaskFilter::Create(
+    shadow.setMaskFilter(SkBlurMaskFilter::Create(
       ctx->shadowBlur,
       SkBlurMaskFilter::kSolid_BlurStyle
       // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
     ));
 
-    double sx = x+ctx->shadowX;
-    double sy = y+ctx->shadowY;
+    double sx = fabs(x+ctx->shadowX);
+    double sy = fabs(y+ctx->shadowY);
 
     ctx->canvas->drawRectCoords(
       sx,
       sy,
       sx+w,
       sy+h,
-      ctx->shadowPaint
+      shadow
     );
   }
 
