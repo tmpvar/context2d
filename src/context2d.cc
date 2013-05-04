@@ -978,6 +978,20 @@ METHOD(IsPointInPath) {
   SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
+  SkRect bounds = ctx->path.getBounds();
+  double d = 0.00001;
+  if (bounds.left() >= x) {
+    x+=d;
+  } else if (bounds.right() <= x) {
+    x-=d;
+  }
+
+  if (bounds.top() >= y) {
+    y+=d;
+  } else if (bounds.bottom() <= y) {
+    y-=d;
+  }
+
   bool contained = ctx->path.contains(x, y);
 
   return scope.Close(Boolean::New(contained));
