@@ -347,8 +347,12 @@ module.exports.createContext = function(canvas, w, h) {
       if (c.type) {
         if (c.type === 'pattern') {
           var id = c.obj.imageData
-          ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
-          state.fillStyle = c;
+          if (id) {
+            ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
+            state.fillStyle = c;
+          } else {
+            ret.fillStyle = 'rgba(0, 0, 0, 0.0)';
+          }
         } else if (c.type === 'gradient') {
           state.fillStyle = c;
         }
