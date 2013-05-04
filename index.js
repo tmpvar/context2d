@@ -1,5 +1,6 @@
 var Context2D = require('bindings')('context2d').Context2D;
 var csscolor = require('./lib/color');
+var cssfont = require('cssfontparser');
 var util = require('util');
 var TAU = Math.PI*2;
 //
@@ -39,7 +40,6 @@ var requireArgs = function(args, required) {
     throw new DOMException('invalid number of args', DOMException.NOT_SUPPORTED_ERR);
   }
 }
-
 
 
 function CanvasGradient(type, opts) {
@@ -707,13 +707,24 @@ module.exports.createContext = function(canvas, w, h) {
 //   sequence<double> getLineDash();
 //            attribute double lineDashOffset;
 
+
   Object.defineProperty(ret, 'font', {
-    get: function() { return state.font; },
-    set: function(val) {
-      state.font = val;
-      ret.setFont(val);
+    get : function() {
+      return state.font;
+    },
+    set: function (val) {
+      if (!val || val.indexOf('inherit') > -1) {
+        return
+      }
+
+      var f = cssfont(val, state.font);
+      console.log(f);
+      if (f && f.family !== 'default' && f.family !== 'initial') {
+        state.font = f.toString();
+      }
     }
   })
+
 
   var textAlignMap = {
     start : 0,

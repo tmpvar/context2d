@@ -1011,6 +1011,9 @@ test(module, '2d.text.font.parse.size.percentage',null, function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
+  // setup via css
+  ctx.font = '144px serif';
+
   ctx.font = '50% serif';
   helpers.assertEqual(t, ctx.font, '72px serif', "ctx.font", "'72px serif'");
   canvas.setAttribute('style', 'font-size: 100px');
