@@ -354,7 +354,7 @@ module.exports.createContext = function(canvas, w, h) {
         return;
       } else {
         var color = csscolor(c);
-        if (state.fillStyle) {
+        if (color) {
           state.fillStyle = color.string;
           color = color.array;
 
