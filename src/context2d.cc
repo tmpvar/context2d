@@ -948,7 +948,14 @@ METHOD(Stroke) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  ctx->canvas->drawPath(ctx->path, ctx->strokePaint);
+  SkPaint stroke(ctx->strokePaint);
+
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
+  SkScalar newLineWidth = m.mapRadius(lineWidth);
+  stroke.setStrokeWidth(newLineWidth);
+
+  ctx->canvas->drawPath(ctx->path, stroke);
 
   return scope.Close(Undefined());
 }
@@ -996,9 +1003,6 @@ METHOD(MoveTo) {
     SkDoubleToScalar(args[0]->NumberValue()),
     SkDoubleToScalar(args[1]->NumberValue())
   );
-
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
 
   ctx->path.addPath(subpath);
 
