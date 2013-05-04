@@ -767,6 +767,10 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid object size', DOMException.INVALID_STATE_ERR);
     }
 
+    if (typeof mode === 'undefined') {
+      throw new DOMException('invalid pattern mode', DOMException.SYNTAX_ERR);
+    }
+
     if (obj.ctx) {
       obj = obj.ctx;
     }
