@@ -172,6 +172,36 @@ module.exports.wrapFunction = function(t, cb) {
 };
 
 
+module.exports.compareWithImage = function(t, ctx, message) {
+
+  var contextData = ctx.toBuffer();
+  var expectedData = t.image.imageData.data;
+
+  var where = contextData.length;
+  var miss = 0;
+
+  for (var i=0; i<contextData.length; i+=4) {
+    // Red mean fail.
+    if (contextData[i]) {
+      t.fail('red detected! @ ' + where);
+    }
+  }
+
+  // compare solid components
+  while(where--) {
+    if (expectedData[where] === 255 && Math.abs(contextData[where] - expectedData[where]) > 5) {
+      miss++;
+    }
+  }
+
+  var percent = miss/contextData.length
+
+  // sentinel for detecting > 1% difference of major components
+  if (percent > .01) {
+    t.fail('image are not equal..');
+  }
+}
+
 module.exports.assertEqual = function(t, a, b) {
   t.equal(a, b, getLastArgs(arguments,3).join(','));
 };

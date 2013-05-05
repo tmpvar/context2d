@@ -356,7 +356,7 @@ test(module, '2d.text.draw.baseline.bottom','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 1000, 500);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -497,6 +497,8 @@ test(module, '2d.text.draw.fill.basic','2d.text.draw.fill.basic.png', function(t
   ctx.font = '35px Arial, sans-serif';
   ctx.fillText('PASS', 5, 35);
 
+  helpers.compareWithImage(t, ctx, "doesn't match image");
+
   t.done()
 });
 
@@ -560,6 +562,8 @@ test(module, '2d.text.draw.fill.maxWidth.large','2d.text.draw.fill.maxWidth.larg
   ctx.font = '35px Arial, sans-serif';
   ctx.fillText('PASS', 5, 35, 200);
 
+  helpers.compareWithImage(t, ctx, "doesn't match image");
+
   t.done()
 });
 
@@ -577,6 +581,8 @@ test(module, '2d.text.draw.fill.maxWidth.small','green-100x50.png', function(t) 
   ctx.font = '35px Arial, sans-serif';
   ctx.fillText('fail fail fail fail fail', -100, 35, 90);
 
+  helpers.compareWithImage(t, ctx, "doesn't match image");
+
   t.done()
 });
 
@@ -593,6 +599,8 @@ test(module, '2d.text.draw.fill.maxWidth.zero','green-100x50.png', function(t) {
   ctx.fillStyle = '#f00';
   ctx.font = '35px Arial, sans-serif';
   ctx.fillText('fail fail fail fail fail', 5, 35, 0);
+
+  helpers.compareWithImage(t, ctx, "doesn't match image");
 
   t.done()
 });
@@ -613,6 +621,8 @@ test(module, '2d.text.draw.fill.rtl','2d.text.draw.fill.rtl.png', function(t) {
   ctx.strokeStyle = '#f00';
   ctx.font = '35px Arial, sans-serif';
   ctx.fillText('\u202eFAIL \xa0 \xa0 SSAP', 5, 35);
+
+  helpers.compareWithImage(t, ctx, "doesn't match image");
 
   t.done()
 });
@@ -733,6 +743,8 @@ test(module, '2d.text.draw.kern.consistent','green-100x50.png', function(t) {
   ctx.fillText('ToToToToToToTo', -50, 45);
   ctx.strokeText('VAVAVAVAVAVAVA', -50, 25);
   ctx.strokeText('ToToToToToToTo', -50, 45);
+
+  helpers.compareWithImage(t, ctx, "doesn't match image");
 
   t.done()
 });
@@ -879,6 +891,8 @@ test(module, '2d.text.draw.stroke.basic','2d.text.draw.stroke.basic.png', functi
   ctx.lineWidth = 1;
   ctx.font = '35px Arial, sans-serif';
   ctx.strokeText('PASS', 5, 35);
+
+  helpers.compareWithImage(t, ctx, "doesn't match image");
 
   t.done()
 });
