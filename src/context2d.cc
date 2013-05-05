@@ -18,11 +18,13 @@
 #include <SkImageEncoder.h>
 #include <SkRect.h>
 #include <SkRegion.h>
+#include <SkPixelRef.h>
 #include <SkTypefaceCache.h>
 #include <SkTypeface.h>
 #include <SkMatrix44.h>
 #include <SkXfermode.h>
 #include <SkBitmapProcShader.h>
+#include <SkUnPreMultiply.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -1516,50 +1518,50 @@ METHOD(GetImageData) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  SkDevice* device = ctx->canvas->getDevice();
 
   int32_t sx = args[0]->IntegerValue();
   int32_t sy = args[1]->IntegerValue();
   int32_t sw = args[2]->IntegerValue();
   int32_t sh = args[3]->IntegerValue();
-  SkIRect srcRect = { sx, sy, sx+sw, sy+sh };
 
-  SkIRect bounds;
-  bounds.set(0, 0, device->width(), device->height());
-  if (!bounds.intersect(srcRect)) {
-      return scope.Close(Undefined());
+  SkIRect srcRect = SkIRect::MakeXYWH(sx, sy, sw, sh);
+
+  ctx->canvas->flush();
+  SkBitmap masterBitmap = ctx->canvas->getDevice()->accessBitmap(true);
+
+  masterBitmap.lockPixels();
+
+  //pxref->readPixels(&bitmap, &srcRect);
+  Buffer *buffer = Buffer::New(sw*sh*4);
+  SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer);
+
+  uint32_t loc = 0;
+  for (uint32_t y = sy; y<sh+sy; y++) {
+    for (uint32_t x = sx; x<sw+sx; x++) {
+      buffer_ptr[loc++] = masterBitmap.getColor(x, y);
+    }
   }
 
-  SkBitmap bitmap;
-  bitmap.setConfig(
-    SkBitmap::kARGB_8888_Config,
-    bounds.width(),
-    bounds.height()
-  );
+  masterBitmap.unlockPixels();
 
-  if (ctx->canvas->readPixels(&bitmap, bounds.fLeft, bounds.fTop)) {
 
-    size_t size = bitmap.getSize();
+// TODO: consider using masterBitmap.extractSubset
+//       tried it before, but had issues with it pulling
+//       the full row of pixels instead of a subset.
+//  Also tried with SkPixelRef directly with the same result.
+//  Perhaps using a the GPU device will help with this?
 
-    bitmap.lockPixels();
-    Buffer *buffer = Buffer::New(size);
-    memcpy(Buffer::Data(buffer), (const char *)bitmap.getPixels(), size);
-    bitmap.unlockPixels();
+  Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
+  Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
-    Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
-    Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
-    Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
-    Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
+  Handle<Object> obj = Object::New();
+  obj->Set(String::NewSymbol("width"), Number::New(sw));
+  obj->Set(String::NewSymbol("height"), Number::New(sh));
+  obj->Set(String::NewSymbol("data"), actualBuffer);
 
-    Handle<Object> obj = Object::New();
-    obj->Set(String::NewSymbol("width"), Number::New(bounds.width()));
-    obj->Set(String::NewSymbol("height"), Number::New(bounds.height()));
-    obj->Set(String::NewSymbol("data"), actualBuffer);
-
-    return scope.Close(obj);
-  }
-
-  return scope.Close(Undefined());
+  return scope.Close(obj);
 }
 
 METHOD(PutImageData) {
