@@ -1056,6 +1056,30 @@ module.exports.createContext = function(canvas, w, h) {
   override('fillText', function(fillText, str, x, y) {
     requireArgs(arguments, 4);
 
+    var width = ret.measureText(str).width;
+
+    switch (ret.textAlign) {
+      case 'center':
+        x -= width/2;
+      break;
+
+      case 'end':
+        if (x > 0) {
+          x -= width;
+        }
+      break;
+
+      case 'start':
+        if (x > 0) {
+          x -= width;
+        }
+      break;
+
+      case 'right':
+        x -= width;
+      break;
+    }
+
     fillText(str, x, y);
   });
 
