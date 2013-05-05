@@ -161,7 +161,7 @@ test(module, '2d.text.draw.align.center','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -187,7 +187,7 @@ test(module, '2d.text.draw.align.end.ltr','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -198,6 +198,8 @@ test(module, '2d.text.draw.align.end.rtl','green-100x50.png', function(t) {
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
+
+  canvas.dir = 'rtl';
 
   ctx.font = '50px CanvasTest';
 
@@ -213,7 +215,7 @@ test(module, '2d.text.draw.align.end.rtl','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -239,7 +241,7 @@ test(module, '2d.text.draw.align.left','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -265,7 +267,7 @@ test(module, '2d.text.draw.align.right','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -291,7 +293,7 @@ test(module, '2d.text.draw.align.start.ltr','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -302,6 +304,8 @@ test(module, '2d.text.draw.align.start.rtl','green-100x50.png', function(t) {
 
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
+
+  canvas.dir = 'rtl';
 
   ctx.font = '50px CanvasTest';
 
@@ -317,7 +321,7 @@ test(module, '2d.text.draw.align.start.rtl','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -343,7 +347,7 @@ test(module, '2d.text.draw.baseline.alphabetic','green-100x50.png', function(t) 
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -352,7 +356,7 @@ test(module, '2d.text.draw.baseline.bottom','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(document, 1000, 500);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -363,13 +367,14 @@ test(module, '2d.text.draw.baseline.bottom','green-100x50.png', function(t) {
       ctx.fillStyle = '#0f0';
       ctx.textBaseline = 'bottom';
       ctx.fillText('CC', 0, 50);
+
       helpers.assertPixelApprox(t, canvas, 5,5, 0,255,0,255, "5,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -395,7 +400,7 @@ test(module, '2d.text.draw.baseline.hanging','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -421,7 +426,7 @@ test(module, '2d.text.draw.baseline.ideographic','green-100x50.png', function(t)
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -447,7 +452,7 @@ test(module, '2d.text.draw.baseline.middle','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -473,7 +478,7 @@ test(module, '2d.text.draw.baseline.top','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 5,45, 0,255,0,255, "5,45", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 95,45, 0,255,0,255, "95,45", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -514,7 +519,7 @@ test(module, '2d.text.draw.fill.maxWidth.bound','green-100x50.png', function(t) 
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -537,7 +542,7 @@ test(module, '2d.text.draw.fill.maxWidth.fontface','green-100x50.png', function(
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -600,6 +605,8 @@ test(module, '2d.text.draw.fill.rtl','2d.text.draw.fill.rtl.png', function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
+  canvas.dir = 'rtl';
+
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, 100, 50);
   ctx.fillStyle = '#0f0';
@@ -657,7 +664,7 @@ test(module, '2d.text.draw.fontface','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -680,7 +687,7 @@ test(module, '2d.text.draw.fontface.notinpage','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -704,7 +711,7 @@ test(module, '2d.text.draw.fontface.repeat','green-100x50.png', function(t) {
       helpers.assertPixelApprox(t, canvas, 95,5, 0,255,0,255, "95,5", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -747,7 +754,7 @@ test(module, '2d.text.draw.space.basic','green-100x50.png', function(t) {
       ctx.fillText('E EE', -100, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -769,7 +776,7 @@ test(module, '2d.text.draw.space.collapse.end','green-100x50.png', function(t) {
       ctx.fillText('EE ', 100, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -790,7 +797,7 @@ test(module, '2d.text.draw.space.collapse.nonspace','green-100x50.png', function
       ctx.fillText('E\x0b EE', -150, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -799,7 +806,7 @@ test(module, '2d.text.draw.space.collapse.other','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(document, 1000, 500);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -811,7 +818,7 @@ test(module, '2d.text.draw.space.collapse.other','green-100x50.png', function(t)
       ctx.fillText('E \x09\x0a\x0c\x0d  \x09\x0a\x0c\x0dEE', -100, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -832,7 +839,7 @@ test(module, '2d.text.draw.space.collapse.space','green-100x50.png', function(t)
       ctx.fillText('E  EE', -100, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -853,7 +860,7 @@ test(module, '2d.text.draw.space.collapse.start','green-100x50.png', function(t)
       ctx.fillText(' EE', 0, 37.5);
       helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
       helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-  }), 500);
+  }), 0);
 
 });
 
@@ -1011,7 +1018,7 @@ test(module, '2d.text.font.parse.size.percentage',null, function(t) {
   var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  // setup via css
+  // set in the html
   ctx.font = '144px serif';
 
   ctx.font = '50% serif';
@@ -1052,7 +1059,7 @@ test(module, '2d.text.measure.width.basic',null, function(t) {
 
       ctx.font = '100px CanvasTest';
       helpers.assertEqual(t, ctx.measureText('A').width, 100, "ctx.measureText('A').width", "100");
-  }), 500);
+  }), 0);
 
 });
 
@@ -1067,7 +1074,7 @@ test(module, '2d.text.measure.width.empty',null, function(t) {
   setTimeout(wrapFunction(t, function () {
       ctx.font = '50px CanvasTest';
       helpers.assertEqual(t, ctx.measureText("").width, 0, "ctx.measureText(\"\").width", "0");
-  }), 500);
+  }), 0);
 
 });
 
@@ -1088,7 +1095,7 @@ test(module, '2d.text.measure.width.space',null, function(t) {
 
       helpers.assertEqual(t, ctx.measureText(' AB').width, 100, "ctx.measureText(' AB').width", "100");
       helpers.assertEqual(t, ctx.measureText('AB ').width, 100, "ctx.measureText('AB ').width", "100");
-  }), 500);
+  }), 0);
 
 });
 
