@@ -198,7 +198,8 @@ var run = function(complete) {
 if (argv.w) {
   var watcher = hound.watch(__dirname + '/../lib');
   watcher.watch(__dirname + '/../index.js');
-  watcher.watch(__dirname + '/../src')
+  watcher.watch(__dirname + '/../src');
+  watcher.watch(__dirname + '/../deps/skia/src/');
 
   watcher.on('change', function(file) {
     if (file.match(/\.(h|cc|cpp)/)) {
