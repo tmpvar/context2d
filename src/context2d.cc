@@ -102,7 +102,6 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(StrokeText, strokeText);
   PROTOTYPE_METHOD(MeasureText, measureText);
   PROTOTYPE_METHOD(SetFont, setFont);
-  PROTOTYPE_METHOD(GetTextAlign, getTextAlign);
   PROTOTYPE_METHOD(SetTextAlign, setTextAlign);
   PROTOTYPE_METHOD(GetTextBaseline, getTextBaseline);
   PROTOTYPE_METHOD(SetTextBaseline, setTextBaseline);
@@ -1318,7 +1317,21 @@ METHOD(MeasureText) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   String::Utf8Value string(args[0]);
 
-  return scope.Close(Number::New(ctx->paint.measureText(*string, string.length())));
+  SkRect bounds;
+
+  SkScalar width = ctx->paint.measureText(
+    *string,
+    string.length(),
+    &bounds
+    // TODO: scale
+  );
+
+
+  Handle<Object> obj = Object::New();
+  obj->Set(String::NewSymbol("width"), Number::New(width));
+  obj->Set(String::NewSymbol("height"), Number::New(bounds.height()));
+
+  return scope.Close(obj);
 }
 
 METHOD(SetFont) {
@@ -1360,22 +1373,14 @@ METHOD(SetFont) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetTextAlign) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
-
-  return scope.Close(Undefined());
-}
-
 METHOD(SetTextAlign) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
+  SkPaint::Align align = (SkPaint::Align)args[0]->IntegerValue();
+  ctx->paint.setTextAlign(align);
+  ctx->strokePaint.setTextAlign(align);
 
   return scope.Close(Undefined());
 }

@@ -115,7 +115,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(StrokeText);
     OBJECT_METHOD(MeasureText);
     OBJECT_METHOD(SetFont);
-    OBJECT_METHOD(GetTextAlign);
     OBJECT_METHOD(SetTextAlign);
     OBJECT_METHOD(GetTextBaseline);
     OBJECT_METHOD(SetTextBaseline);

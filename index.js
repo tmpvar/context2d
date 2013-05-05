@@ -240,6 +240,8 @@ module.exports.createContext = function(canvas, w, h) {
     height: h || 150
   };
 
+  canvas.dir = canvas.dir || 'ltr';
+
   var ret = new Context2D(canvas.width, canvas.height);
 
   var override = function(orig, fn) {
@@ -747,10 +749,10 @@ module.exports.createContext = function(canvas, w, h) {
 
   var textAlignMap = {
     start : 0,
-    end : 1,
-    left : 2,
-    right : 3,
-    center : 4
+    end : 2,
+    left : 0,
+    center : 1,
+    right : 2
   };
 
   Object.defineProperty(ret, 'textAlign', {
@@ -761,7 +763,14 @@ module.exports.createContext = function(canvas, w, h) {
       }
 
       state.textAlign = val;
-      ret.setTextAlign(val);
+      var intVal = textAlignMap[val] || 0;
+
+      if (canvas.dir === 'rtl') {
+        intVal += 2;
+        if (intVal > 2) { intVal = 0;}
+      }
+
+      ret.setTextAlign(intVal);
     }
   });
 
@@ -1053,34 +1062,40 @@ module.exports.createContext = function(canvas, w, h) {
     return isPointInPath(x, y);
   });
 
+  var spaceex = /\s/;
   override('fillText', function(fillText, str, x, y) {
     requireArgs(arguments, 4);
 
-    var width = ret.measureText(str).width;
+    var bounds = ret.measureText(str);
+    bounds.height -= y;
 
-    switch (ret.textAlign) {
-      case 'center':
-        x -= width/2;
+    var emsquare = cssfont(state.font).size;
+    var padding = (bounds.height-emsquare);
+
+    switch (state.textBaseline) {
+      case 'bottom':
+        y -= (bounds.height-emsquare)/2;
       break;
 
-      case 'end':
-        if (x > 0) {
-          x -= width;
-        }
+      case 'ideographic':
+        y += padding/8;
       break;
 
-      case 'start':
-        if (x > 0) {
-          x -= width;
-        }
+      case 'middle':
+        y += emsquare/4;
       break;
 
-      case 'right':
-        x -= width;
+      case 'top':
+        y += emsquare * .75;
+      break;
+
+      case 'hanging':
+        y += ((bounds.height-emsquare)/2) - padding/8;
       break;
     }
 
-    fillText(str, x, y);
+
+    fillText(str.trim(), x, y);
   });
 
   override('strokeText', function(strokeText, str, x, y) {
@@ -1194,12 +1209,10 @@ module.exports.createContext = function(canvas, w, h) {
     requireArgs(arguments, 2);
 
     if (!str) {
-      return { width: 0 };
+      return { width: 0, height: 0 };
     }
 
-    return {
-      width : measureText(str)
-    };
+    return measureText(str);
   });
 
   override('save', function(save) {
