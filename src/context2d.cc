@@ -142,10 +142,17 @@ Context2D::Context2D(int w, int h) {
   this->paint.setLCDRenderText(true);
   this->paint.setHinting(SkPaint::kSlight_Hinting);
   this->paint.setSubpixelText(true);
+  this->paint.setAntiAlias(true);
+  this->paint.setDither(true);
 
   this->strokePaint.setColor(SK_ColorBLACK);
   this->strokePaint.setStrokeMiter(10);
   this->strokePaint.setStyle(SkPaint::kStroke_Style);
+  this->strokePaint.setLCDRenderText(true);
+  this->strokePaint.setHinting(SkPaint::kSlight_Hinting);
+  this->strokePaint.setSubpixelText(true);
+  this->strokePaint.setAntiAlias(true);
+  this->strokePaint.setDither(true);
 
   this->shadowX = 0;
   this->shadowY = 0;
@@ -1310,9 +1317,19 @@ METHOD(FillText) {
 METHOD(StrokeText) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  String::Utf8Value string(args[0]);
+  SkScalar x = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[2]->NumberValue());
+  size_t length = string.length();
 
+  if (!args[3]->IsUndefined()) {
+    SkScalar maxWidth = SkDoubleToScalar(args[3]->NumberValue());
+    length = ctx->strokePaint.breakText(*string, length, maxWidth);
+  }
+
+  ctx->canvas->drawText(*string, length, x, y, ctx->strokePaint);
 
   return scope.Close(Undefined());
 }
@@ -1351,6 +1368,7 @@ METHOD(SetFont) {
 
   SkScalar fontSize = SkDoubleToScalar(args[3]->NumberValue());
   ctx->paint.setTextSize(fontSize);
+  ctx->strokePaint.setTextSize(fontSize);
 
   SkTypeface::Style style = SkTypeface::kNormal;
 
@@ -1373,7 +1391,8 @@ METHOD(SetFont) {
   }
 
   if (face) {
-    ctx->paint.setTypeface(face)->unref();
+    ctx->paint.setTypeface(face);
+    ctx->strokePaint.setTypeface(face);
   }
 
   return scope.Close(Undefined());
