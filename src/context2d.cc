@@ -265,18 +265,16 @@ METHOD(GetPixel) {
 
   // TODO: validity and bounds
   SkColor color = bitmap.getColor(
-    args[0]->NumberValue(),
-    args[1]->NumberValue()
+    SkDoubleToScalar(args[0]->NumberValue()),
+    SkDoubleToScalar(args[1]->NumberValue())
   );
-
-  bitmap.unlockPixels();
 
   obj->Set(String::NewSymbol("r"), Number::New(SkColorGetR(color)));
   obj->Set(String::NewSymbol("g"), Number::New(SkColorGetG(color)));
   obj->Set(String::NewSymbol("b"), Number::New(SkColorGetB(color)));
   obj->Set(String::NewSymbol("a"), Number::New(SkColorGetA(color)));
 
-
+  bitmap.unlockPixels();
 
   return scope.Close(obj);
 }
@@ -1460,11 +1458,6 @@ METHOD(DrawImageBuffer) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  // if (!Buffer::HasInstance(args[0])) {
-  //   return ThrowException(Exception::Error(
-  //               String::New("First argument needs to be a buffer")));
-  // }
-
   Local<Object> buffer_obj = args[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
 
@@ -1536,9 +1529,16 @@ METHOD(GetImageData) {
   SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer);
 
   uint32_t loc = 0;
+  SkColor current;
   for (uint32_t y = sy; y<sh+sy; y++) {
     for (uint32_t x = sx; x<sw+sx; x++) {
-      buffer_ptr[loc++] = masterBitmap.getColor(x, y);
+      current = masterBitmap.getColor(x, y);
+      buffer_ptr[loc++] = SkColorSetARGBInline(
+        SkColorGetA(current),
+        SkColorGetB(current),
+        SkColorGetG(current),
+        SkColorGetR(current)
+      );
     }
   }
 
