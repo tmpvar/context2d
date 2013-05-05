@@ -806,7 +806,7 @@ test(module, '2d.text.draw.space.collapse.other','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 1000, 500);
+  var canvas = helpers.createCanvas(document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
