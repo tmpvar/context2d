@@ -1520,7 +1520,7 @@ METHOD(GetImageData) {
   SkIRect srcRect = SkIRect::MakeXYWH(sx, sy, sw, sh);
 
   ctx->canvas->flush();
-  SkBitmap masterBitmap = ctx->canvas->getDevice()->accessBitmap(true);
+  SkBitmap masterBitmap = ctx->canvas->getDevice()->accessBitmap(false);
 
   masterBitmap.lockPixels();
 
@@ -1567,9 +1567,43 @@ METHOD(GetImageData) {
 METHOD(PutImageData) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  Local<Object> buffer_obj = args[0]->ToObject();
+  SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer_obj);
 
+  SkScalar sx = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar sy = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar w = SkDoubleToScalar(args[3]->NumberValue());
+  SkScalar h = SkDoubleToScalar(args[4]->NumberValue());
+
+  ctx->canvas->flush();
+
+  SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(true);
+  bitmap.lockPixels();
+  SkColor *dest;
+
+  // TODO: sanity, don't overflow the bounds of this canvas with getAddr
+
+  uint32_t loc = 0;
+  SkColor current;
+  for (uint32_t y = sy; y<h+sy; y++) {
+    for (uint32_t x = sx; x<w+sx; x++) {
+
+      dest = (SkColor *)bitmap.getAddr(x, y);
+
+      current = buffer_ptr[loc++];
+
+      *dest = SkPreMultiplyARGB(
+        SkColorGetA(current),
+        SkColorGetB(current),
+        SkColorGetG(current),
+        SkColorGetR(current)
+      );
+    }
+  }
+
+  bitmap.unlockPixels();
 
   return scope.Close(Undefined());
 }

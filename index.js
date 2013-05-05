@@ -966,6 +966,19 @@ module.exports.createContext = function(canvas, w, h) {
 
     validateWH(sw, sh);
 
+    if (sw + sx < 0 ||
+        sh + sy < 0 ||
+        sx + sw > ret.width ||
+        sh + sy > ret.height)
+    {
+      sw = Math.abs(sw);
+      sh = Math.abs(sh);
+
+      var buf = new Buffer(sw * sh * 4);
+      buf.fill(0);
+      return new ImageData(buf, sw, sh);
+    }
+
 
     if (sw < 0) {
       sx += sw;
@@ -1006,13 +1019,7 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid datatype', DOMException.TYPE_MISMATCH_ERR);
     }
 
-    // ret.drawImage({
-    //   width : id.width,
-    //   height: id.height,
-    //   imageData : id
-    // }, dx, dy);
-
-    //putImageData(id, dx, dy);
+    putImageData(new Buffer(id.data), dx, dy, id.width, id.height);
   })
 
   ret.createImageData = function(obj, h) {
