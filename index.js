@@ -1062,11 +1062,18 @@ module.exports.createContext = function(canvas, w, h) {
     return isPointInPath(x, y);
   });
 
-  var spaceex = /\s/;
+  var nonspaceRemoval = /[\x00-\x1f]+[\x00-\x1f ]+[\x00-\x1f]+/g;
+  var collapseText = function(str) {
+    str = str.replace(/  /g, ' ');
+    return str.replace(nonspaceRemoval, '').trim();
+  };
+
   override('fillText', function(fillText, str, x, y, maxWidth) {
     requireArgs(arguments, 4);
 
+
     var bounds = ret.measureText(str);
+    str = bounds.collapsedString;
     bounds.height -= y;
 
     var emsquare = cssfont(state.font).size;
@@ -1094,8 +1101,7 @@ module.exports.createContext = function(canvas, w, h) {
       break;
     }
 
-
-    fillText(str.trim(), x, y, maxWidth);
+    fillText(str, x, y, maxWidth);
   });
 
   override('strokeText', function(strokeText, str, x, y) {
@@ -1212,7 +1218,12 @@ module.exports.createContext = function(canvas, w, h) {
       return { width: 0, height: 0 };
     }
 
-    return measureText(str);
+    str = collapseText(str);
+
+    var ret = measureText(str);
+    ret.collapsedString = str;
+
+    return ret;
   });
 
   override('save', function(save) {
