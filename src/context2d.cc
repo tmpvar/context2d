@@ -1295,8 +1295,14 @@ METHOD(FillText) {
   String::Utf8Value string(args[0]);
   SkScalar x = SkDoubleToScalar(args[1]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[2]->NumberValue());
+  size_t length = string.length();
 
-  ctx->canvas->drawText(*string, string.length(), x, y, ctx->paint);
+  if (!args[3]->IsUndefined()) {
+    SkScalar maxWidth = SkDoubleToScalar(args[3]->NumberValue());
+    length = ctx->paint.breakText(*string, length, maxWidth);
+  }
+
+  ctx->canvas->drawText(*string, length, x, y, ctx->paint);
 
   return scope.Close(Undefined());
 }

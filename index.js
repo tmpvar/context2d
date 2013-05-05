@@ -1063,7 +1063,7 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
   var spaceex = /\s/;
-  override('fillText', function(fillText, str, x, y) {
+  override('fillText', function(fillText, str, x, y, maxWidth) {
     requireArgs(arguments, 4);
 
     var bounds = ret.measureText(str);
@@ -1095,7 +1095,7 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
 
-    fillText(str.trim(), x, y);
+    fillText(str.trim(), x, y, maxWidth);
   });
 
   override('strokeText', function(strokeText, str, x, y) {
