@@ -3,6 +3,8 @@ var domino = require('domino');
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
 var fs = require('fs');
+var CanvasFontBuffer = fs.readFileSync(__dirname + '/philip/orig/fonts/CanvasTest.ttf');
+
 
 // In the tests, this is specified in a css style. I really
 // Do not want to have to have a dom to run these so I've
@@ -17,7 +19,8 @@ module.exports.test = function(module, name, image, fn) {
   var skip = {
     '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517',
     '2d.drawImage.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1',
-    '2d.pattern.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1'
+    '2d.pattern.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1',
+    '2d.text.draw.fill.rtl' : '../deps/skia/src/core/SkUtils.cpp:143: failed assertion "(c & 0xC0) != 0x80"'
   };
 
 
@@ -127,6 +130,8 @@ module.exports.createCanvas = function(doc, w, h) {
       module.exports.output(el.ctx);
       ctx.dumpState();
     }
+
+    el.ctx.addFont('CanvasTest', CanvasFontBuffer);
 
 //    el.ctx.drawImage(background, 0, 0);
     return el.ctx;

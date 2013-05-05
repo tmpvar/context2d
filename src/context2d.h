@@ -6,6 +6,7 @@
 #define DUMP_IMAGEREF_LIFECYCLE
 
 #include <node.h>
+#include <SkFontMgr.h>
 #include <SkCanvas.h>
 #include <SkPaint.h>
 #include <SkPath.h>
@@ -32,7 +33,6 @@ class Context2D : public ObjectWrap {
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
     double globalAlpha, shadowX, shadowY, shadowBlur;
-
   private:
     Context2D(int w, int h);
     ~Context2D();
@@ -45,6 +45,7 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(GetPixel);
     OBJECT_METHOD(Resize);
     OBJECT_METHOD(DumpState);
+    OBJECT_METHOD(AddFont);
 
     // state
     OBJECT_METHOD(Save); // push state on state stack
@@ -113,7 +114,6 @@ class Context2D : public ObjectWrap {
     OBJECT_METHOD(FillText);
     OBJECT_METHOD(StrokeText);
     OBJECT_METHOD(MeasureText);
-    OBJECT_METHOD(GetFont);
     OBJECT_METHOD(SetFont);
     OBJECT_METHOD(GetTextAlign);
     OBJECT_METHOD(SetTextAlign);

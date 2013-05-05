@@ -11,12 +11,14 @@
 #include <SkDevice.h>
 #include <SkBlurMaskFilter.h>
 #include <SkData.h>
+#include <SkFontMgr.h>
 #include <SkGraphics.h>
 #include <SkGradientShader.h>
 #include <SkShader.h>
 #include <SkImageEncoder.h>
 #include <SkRect.h>
 #include <SkRegion.h>
+#include <SkTypefaceCache.h>
 #include <SkTypeface.h>
 #include <SkMatrix44.h>
 #include <SkXfermode.h>
@@ -49,6 +51,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(ToBuffer, toBuffer);
   PROTOTYPE_METHOD(GetPixel, getPixel);
   PROTOTYPE_METHOD(Resize, resize);
+  PROTOTYPE_METHOD(AddFont, addFont);
 
 
   // Standard
@@ -98,7 +101,6 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(FillText, fillText);
   PROTOTYPE_METHOD(StrokeText, strokeText);
   PROTOTYPE_METHOD(MeasureText, measureText);
-  PROTOTYPE_METHOD(GetFont, getFont);
   PROTOTYPE_METHOD(SetFont, setFont);
   PROTOTYPE_METHOD(GetTextAlign, getTextAlign);
   PROTOTYPE_METHOD(SetTextAlign, setTextAlign);
@@ -138,6 +140,9 @@ Context2D::Context2D(int w, int h) {
   this->paint.setXfermodeMode(this->globalCompositeOperation);
   this->paint.setColor(SK_ColorBLACK);
   this->paint.setStyle(SkPaint::kFill_Style);
+  this->paint.setLCDRenderText(true);
+  this->paint.setHinting(SkPaint::kSlight_Hinting);
+  this->paint.setSubpixelText(true);
 
   this->strokePaint.setColor(SK_ColorBLACK);
   this->strokePaint.setStrokeMiter(10);
@@ -1286,9 +1291,13 @@ METHOD(Ellipse) {
 METHOD(FillText) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  String::Utf8Value string(args[0]);
+  SkScalar x = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[2]->NumberValue());
 
+  ctx->canvas->drawText(*string, string.length(), x, y, ctx->paint);
 
   return scope.Close(Undefined());
 }
@@ -1306,29 +1315,47 @@ METHOD(StrokeText) {
 METHOD(MeasureText) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  String::Utf8Value string(args[0]);
 
-
-
-  return scope.Close(Undefined());
-}
-
-METHOD(GetFont) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
-
-  return scope.Close(Undefined());
+  return scope.Close(Number::New(ctx->paint.measureText(*string, string.length())));
 }
 
 METHOD(SetFont) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
+  bool isBold = args[1]->IntegerValue();
+  bool isItalic = args[2]->IntegerValue();
+
+  SkScalar fontSize = SkDoubleToScalar(args[3]->NumberValue());
+  ctx->paint.setTextSize(fontSize);
+
+  SkTypeface::Style style = SkTypeface::kNormal;
+
+  if (isBold && isItalic) {
+    style = SkTypeface::kBoldItalic;
+  } else if (isBold) {
+    style = SkTypeface::kBold;
+  } else if (isItalic) {
+    style = SkTypeface::kItalic;
+  }
+
+  SkTypeface *face = NULL;
+
+  if (args[0]->IsString()) {
+    String::Utf8Value family(args[0]);
+    face = SkTypeface::CreateFromName(*family, style);
+  } else if (args[0]->IsNumber()) {
+    SkFontID id = args[0]->Uint32Value();
+    face = SkTypefaceCache::FindByID(id);
+  }
+
+  if (face) {
+    ctx->paint.setTypeface(face)->unref();
+  }
 
   return scope.Close(Undefined());
 }
@@ -1371,6 +1398,29 @@ METHOD(SetTextBaseline) {
 
 
   return scope.Close(Undefined());
+}
+
+METHOD(AddFont) {
+  HandleScope scope;
+
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+
+  Local<Object> buffer_obj = args[0]->ToObject();
+  char *buffer_data = Buffer::Data(buffer_obj);
+  size_t buffer_length = Buffer::Length(buffer_obj);
+
+  SkData *data = SkData::NewWithCopy((void *)buffer_data, buffer_length);
+  SkAutoTUnref<SkStream> stream(SkNEW_ARGS(SkMemoryStream, (data)));
+  SkTypeface* face = SkTypeface::CreateFromStream(stream);
+
+  SkTypefaceCache::Add(face, face->style());
+
+//  ctx->paint.setTypeface(face);
+//  ctx->paint.setTextSize(50);
+  data->unref();
+
+
+  return scope.Close(Number::New(face->uniqueID()));
 }
 
 METHOD(DrawImageBuffer) {

@@ -708,6 +708,16 @@ module.exports.createContext = function(canvas, w, h) {
 //            attribute double lineDashOffset;
 
 
+  var fontCache = {};
+  override('addFont', function(addFont, name, buffer) {
+
+    var fontId = addFont(buffer);
+    fontCache[name] = fontId;
+    return fontId;
+  });
+
+
+
   Object.defineProperty(ret, 'font', {
     get : function() {
       return state.font;
@@ -718,12 +728,21 @@ module.exports.createContext = function(canvas, w, h) {
       }
 
       var f = cssfont(val, state.font);
-      console.log(f);
       if (f && f.family !== 'default' && f.family !== 'initial') {
         state.font = f.toString();
+
+        var family = f.family.split(', ')[0];
+
+        if (fontCache[family]) {
+          family = fontCache[family];
+        }
+
+        ret.setFont(
+          family,
+          false, false, f.size);
       }
     }
-  })
+  });
 
 
   var textAlignMap = {
@@ -1150,7 +1169,13 @@ module.exports.createContext = function(canvas, w, h) {
   override('measureText', function(measureText, str) {
     requireArgs(arguments, 2);
 
-    return { width: 0, height: 0};
+    if (!str) {
+      return { width: 0 };
+    }
+
+    return {
+      width : measureText(str)
+    };
   });
 
   override('save', function(save) {
@@ -1168,7 +1193,6 @@ module.exports.createContext = function(canvas, w, h) {
       restore();
     }
   });
-
 
   return ret;
 };
