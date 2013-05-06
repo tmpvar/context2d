@@ -188,8 +188,8 @@ util.inherits(CanvasPixelArray, Buffer);
 
 module.exports.CanvasPixelArray = CanvasPixelArray;
 
-function CanvasPattern(obj, x, y) {
-  this.obj = obj;
+function CanvasPattern(id, x, y) {
+  this.imageData = new ImageData(id.data, id.width, id.height);
   this.x = x;
   this.y = y;
 }
@@ -358,9 +358,9 @@ module.exports.createContext = function(canvas, w, h) {
 
       if (c.type) {
         if (c.type === 'pattern') {
-          var id = c.obj.imageData
+          var id = c.imageData;
           if (id) {
-            ret.setFillStylePattern(id.data, id.width, id.height, !!c.x, !!c.y);
+            ret.setFillStylePattern(new Buffer(id.data), id.width, id.height, !!c.x, !!c.y);
             state.fillStyle = c;
           } else {
             ret.fillStyle = 'rgba(0, 0, 0, 0.0)';
@@ -839,7 +839,13 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     if (obj.ctx) {
-      obj = obj.ctx;
+      obj = obj.ctx.imageData;
+    } else if (obj.src) {
+      obj = obj.imageData;
+    } else {
+      var buf = new Buffer(obj.width*obj.height*4);
+      buf.fill(0);
+      obj = new ImageData(buf, obj.width, obj.height);
     }
 
     return new CanvasPattern(
@@ -892,11 +898,40 @@ module.exports.createContext = function(canvas, w, h) {
   override('fillRect', function(fillRect, x, y, w, h) {
     requireArgs(arguments, 5);
 
-    if (state.fillStyle && state.fillStyle.type === 'gradient') {
-      if (!state.fillStyle.apply(ret)) {
-        return;
+    if (state.fillStyle) {
+      var fs = state.fillStyle;
+      if (fs.type) {
+        if (fs.type === 'gradient') {
+          if (!state.fillStyle.apply(ret)) {
+            return;
+          }
+
+        } else if (fs.type === 'pattern') {
+
+          // no repeat gets clamped to 0 as per
+          // - 2d.pattern.paint.norepeat.coord3
+          // - 2d.pattern.paint.repeatx.coord1
+          if (((fs.y && !fs.x) || (!fs.y && !fs.x)) && x < 0) {
+            w += x;
+            x = 0;
+          }
+
+          if (((fs.x && !fs.y) || (!fs.y && !fs.x)) && y < 0) {
+            h += y;
+            y = 0;
+          }
+
+          if (!fs.y && fs.x && h > fs.imageData.height) {
+            h = fs.imageData.height;
+          }
+
+          if (!fs.x && fs.y && w > fs.imageData.width) {
+            w = fs.imageData.width;
+          }
+        }
       }
     }
+
     fillRect(x, y, w, h);
   });
 
