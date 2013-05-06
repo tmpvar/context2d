@@ -797,12 +797,18 @@ module.exports.createContext = function(canvas, w, h) {
   });
 
 
+  var patternModeMap = {
+    'repeat' : 1,
+    'repeat-x' : 1,
+    'repeat-y' : 1,
+    'no-repeat' : 1
+  };
 
   // The real work here is done in .setFillStyle and friends
   ret.createPattern = function(obj, mode) {
     requireArgs(arguments, 2);
 
-    if (!obj) {
+    if (!obj || typeof obj === 'string' || obj.split) {
       throw new DOMException('invalid pattern', DOMException.TYPE_MISMATCH_ERR);
     }
 
@@ -810,7 +816,7 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid object size', DOMException.INVALID_STATE_ERR);
     }
 
-    if (typeof mode === 'undefined') {
+    if (mode && typeof patternModeMap[mode] === 'undefined') {
       throw new DOMException('invalid pattern mode', DOMException.SYNTAX_ERR);
     }
 
