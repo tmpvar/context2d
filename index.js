@@ -188,6 +188,16 @@ util.inherits(CanvasPixelArray, Buffer);
 
 module.exports.CanvasPixelArray = CanvasPixelArray;
 
+function CanvasPattern(obj, x, y) {
+  this.obj = obj;
+  this.x = x;
+  this.y = y;
+}
+
+CanvasPattern.prototype.type = 'pattern';
+
+module.exports.CanvasPattern = CanvasPattern;
+
 
 function ContextState() {
 
@@ -812,8 +822,16 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid pattern', DOMException.TYPE_MISMATCH_ERR);
     }
 
+    if (typeof obj.complete !== 'undefined' && !obj.complete) {
+      return null;
+    }
+
     if (!obj.width || !obj.height) {
       throw new DOMException('invalid object size', DOMException.INVALID_STATE_ERR);
+    }
+
+    if (mode === undefined) {
+      throw new DOMException('invalid pattern mode', DOMException.SYNTAX_ERR);
     }
 
     if (mode && typeof patternModeMap[mode] === 'undefined') {
@@ -824,12 +842,11 @@ module.exports.createContext = function(canvas, w, h) {
       obj = obj.ctx;
     }
 
-    return {
-      type : 'pattern',
-      obj : obj,
-      x : mode === 'repeat' || mode === 'repeat-x',
-      y : mode === 'repeat' || mode === 'repeat-y',
-    };
+    return new CanvasPattern(
+      obj,
+      mode === 'repeat' || mode === 'repeat-x',
+      mode === 'repeat' || mode === 'repeat-y'
+    );
   };
 
   ret.createLinearGradient = function(x0, y0, x1, y1) {

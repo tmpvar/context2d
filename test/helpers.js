@@ -74,7 +74,7 @@ module.exports.createWindow = function() {
   window.CanvasGradient = context.CanvasGradient;
   window.ImageData = context.ImageData;
   window.CanvasPixelArray = context.CanvasPixelArray;
-
+  window.CanvasPattern = context.CanvasPattern;
 
 
   return window;
