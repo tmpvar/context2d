@@ -1019,7 +1019,42 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('invalid datatype', DOMException.TYPE_MISMATCH_ERR);
     }
 
-    putImageData(new Buffer(id.data), dx, dy, id.width, id.height);
+    var width = dirtyWidth;
+    var height = dirtyHeight;
+    dirtyX = dirtyX || 0;
+    dirtyY = dirtyY || 0;
+
+    if (typeof dirtyWidth === 'undefined') {
+      width = id.width;
+    }
+
+    if (typeof dirtyHeight === 'undefined') {
+      height = id.height;
+    }
+
+    if (width < 0) {
+      dirtyX += width;
+      width = Math.abs(width);
+    }
+
+    if (height < 0) {
+      dirtyY += height;
+      height = Math.abs(height);
+    }
+
+    if (width + dx > ret.width) {
+      width = ret.width - (dx + width)
+    }
+
+    if (height + dy > ret.height) {
+      height = ret.height - (dy + height)
+    }
+
+    if (width <= 0 || height <= 0 || dx + dirtyX < 0 || dirtyX < 0 || dy + dirtyY < 0  || dirtyY < 0) {
+      return;
+    }
+
+    putImageData(new Buffer(id.data), dx, dy, dirtyX, dirtyY, width, height, id.width);
   })
 
   ret.createImageData = function(obj, h) {

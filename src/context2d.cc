@@ -1571,11 +1571,16 @@ METHOD(PutImageData) {
 
   Local<Object> buffer_obj = args[0]->ToObject();
   SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer_obj);
+  size_t buffer_length = Buffer::Length(buffer_obj);
 
-  SkScalar sx = SkDoubleToScalar(args[1]->NumberValue());
-  SkScalar sy = SkDoubleToScalar(args[2]->NumberValue());
-  SkScalar w = SkDoubleToScalar(args[3]->NumberValue());
-  SkScalar h = SkDoubleToScalar(args[4]->NumberValue());
+  int sx = args[1]->IntegerValue();
+  int sy = args[2]->IntegerValue();
+  int dx = args[3]->IntegerValue();
+  int dy = args[4]->IntegerValue();
+  int dw  = args[5]->IntegerValue();
+  int dh  = args[6]->IntegerValue();
+
+  int w  = args[7]->IntegerValue();
 
   ctx->canvas->flush();
 
@@ -1583,16 +1588,19 @@ METHOD(PutImageData) {
   bitmap.lockPixels();
   SkColor *dest;
 
-  // TODO: sanity, don't overflow the bounds of this canvas with getAddr
-
-  uint32_t loc = 0;
+  size_t loc = 0;
   SkColor current;
-  for (uint32_t y = sy; y<h+sy; y++) {
-    for (uint32_t x = sx; x<w+sx; x++) {
 
-      dest = (SkColor *)bitmap.getAddr(x, y);
+  for (uint32_t cy = 0; cy<dh; cy++) {
+    for (uint32_t cx = 0; cx<dw; cx++) {
 
-      current = buffer_ptr[loc++];
+      dest = (SkColor *)bitmap.getAddr(cx+dx+sx, cy+dy+sy);
+
+      loc = (dy + cy)*w + dx + cx;
+
+      assert(loc < buffer_length);
+
+      current = buffer_ptr[loc];
 
       *dest = SkPreMultiplyARGB(
         SkColorGetA(current),
