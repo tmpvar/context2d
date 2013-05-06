@@ -235,7 +235,7 @@ test(module, '2d.drawImage.animated.apng','green-100x50.png', function(t) {
     setTimeout(wrapFunction(t, function () {
         ctx.drawImage(images['anim-gr.png'], 0, 0);
         helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
-    }), 500);
+    }), 0);
 
   });
 });
@@ -255,7 +255,7 @@ test(module, '2d.drawImage.animated.gif','green-100x50.png', function(t) {
     setTimeout(wrapFunction(t, function () {
         ctx.drawImage(images['anim-gr.gif'], 0, 0);
         helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
-    }), 500);
+    }), 0);
 
   });
 });
