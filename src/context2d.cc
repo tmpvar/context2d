@@ -512,33 +512,34 @@ METHOD(SetStrokeStyle) {
 METHOD(SetFillStylePattern) {
   HandleScope scope;
 
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  // if (!Buffer::HasInstance(args[0])) {
-  //   return ThrowException(Exception::Error(
-  //               String::New("First argument needs to be a buffer")));
-  // }
+  if (!Buffer::HasInstance(args[0])) {
+    return ThrowException(Exception::Error(
+                String::New("First argument needs to be a buffer")));
+  }
 
-  // Local<Object> buffer_obj = args[0]->ToObject();
-  // char *buffer_data = Buffer::Data(buffer_obj);
+  Local<Object> buffer_obj = args[0]->ToObject();
+  char *buffer_data = Buffer::Data(buffer_obj);
 
-  // double w = args[1]->NumberValue();
-  // double h = args[2]->NumberValue();
-  // SkShader::TileMode repeatX = args[3]->BooleanValue() ?
-  //                              SkShader::kRepeat_TileMode :
-  //                              SkShader::kClamp_TileMode;
+  double w = args[1]->NumberValue();
+  double h = args[2]->NumberValue();
+  SkShader::TileMode repeatX = args[3]->BooleanValue() ?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
 
-  // SkShader::TileMode repeatY = args[4]->BooleanValue()?
-  //                              SkShader::kRepeat_TileMode :
-  //                              SkShader::kClamp_TileMode;
+  SkShader::TileMode repeatY = args[4]->BooleanValue()?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
 
-  // SkBitmap src;
+  SkBitmap src;
 
-  //src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  //src.setPixels(buffer_data);
+  src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  src.setPixels(buffer_data);
 
-  //SkBitmapProcShader shader(src, repeatX, repeatY);
-  //ctx->fillPaint.setShader(&shader);
+  SkBitmapProcShader *shader = SkNEW_ARGS(SkBitmapProcShader, (src, repeatX, repeatY));
+  ctx->paint.setShader(shader);
+  shader->unref();
 
   return scope.Close(Undefined());
 }
