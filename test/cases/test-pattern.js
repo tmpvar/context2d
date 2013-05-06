@@ -16,16 +16,14 @@ test(module, '2d.pattern.animated.gif','green-100x50.png', function(t) {
     var canvas = helpers.createCanvas(document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    setTimeout(function () {
-        var pattern = ctx.createPattern(images['anim-gr.gif'], 'repeat');
-        ctx.fillStyle = pattern;
-        ctx.fillRect(0, 0, 50, 50);
-        setTimeout(wrapFunction(t, function () {
-            ctx.fillRect(50, 0, 50, 50);
-            helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
-            helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
-        }), 250);
-    }, 250);
+    var pattern = ctx.createPattern(images['anim-gr.gif'], 'repeat');
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, 50, 50);
+    setTimeout(wrapFunction(t, function () {
+      ctx.fillRect(50, 0, 50, 50);
+      helpers.assertPixelApprox(t, canvas, 25,25, 0,255,0,255, "25,25", "0,255,0,255", 2);
+      helpers.assertPixelApprox(t, canvas, 75,25, 0,255,0,255, "75,25", "0,255,0,255", 2);
+    }), 0);
 
   });
 });
@@ -365,18 +363,18 @@ test(module, '2d.pattern.modify.image1','green-100x50.png', function(t) {
 
     var img = images['green.png'];
     var pattern = ctx.createPattern(img, 'no-repeat');
-    
-    img.onload = wrapFunction(function ()
+
+    img.onload = wrapFunction(t, function ()
     {
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, 100, 50);
-    
+
         helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
         helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
     });
-    img.src = '../philip/orig/images/red.png';
+    img.src = __dirname + '/../images/red.png';
 
   });
 });
@@ -399,18 +397,18 @@ test(module, '2d.pattern.modify.image2','green-100x50.png', function(t) {
     ctx.fillRect(0, 0, 100, 50);
     ctx.fillStyle = '#00f';
     ctx.fillRect(0, 0, 100, 50);
-    
-    img.onload = wrapFunction(function ()
+
+    img.onload = wrapFunction(t, function ()
     {
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, 100, 50);
-    
+
         helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
         helpers.assertPixel(t, canvas, 1,48, 0,255,0,255, "1,48", "0,255,0,255");
         helpers.assertPixel(t, canvas, 98,48, 0,255,0,255, "98,48", "0,255,0,255");
     });
-    img.src = '../philip/orig/images/red.png';
+    img.src = __dirname + '/../images/red.png';
 
   });
 });
