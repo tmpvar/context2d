@@ -928,14 +928,10 @@ METHOD(StrokeRect) {
 
     SkPaint p(ctx->strokePaint);
 
-    switch (p.getStrokeJoin()) {
-      case SkPaint::kRound_Join:
-        p.setStrokeCap(SkPaint::kRound_Cap);
-      break;
-
-      case SkPaint::kMiter_Join:
-        p.setStrokeCap(SkPaint::kButt_Cap);
-      break;
+    if (p.getStrokeJoin() == SkPaint::kRound_Join) {
+      p.setStrokeCap(SkPaint::kRound_Cap);
+    } else if (p.getStrokeJoin() == SkPaint::kMiter_Join) {
+      p.setStrokeCap(SkPaint::kButt_Cap);
     }
 
     ctx->canvas->drawPath(ctx->path, p);
@@ -1433,8 +1429,6 @@ METHOD(SetTextBaseline) {
 METHOD(AddFont) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
   Local<Object> buffer_obj = args[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
   size_t buffer_length = Buffer::Length(buffer_obj);
@@ -1445,10 +1439,7 @@ METHOD(AddFont) {
 
   SkTypefaceCache::Add(face, face->style());
 
-//  ctx->paint.setTypeface(face);
-//  ctx->paint.setTextSize(50);
   data->unref();
-
 
   return scope.Close(Number::New(face->uniqueID()));
 }
@@ -1528,10 +1519,10 @@ METHOD(GetImageData) {
   Buffer *buffer = Buffer::New(sw*sh*4);
   SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer);
 
-  uint32_t loc = 0;
+  int32_t loc = 0;
   SkColor current;
-  for (uint32_t y = sy; y<sh+sy; y++) {
-    for (uint32_t x = sx; x<sw+sx; x++) {
+  for (int32_t y = sy; y<sh+sy; y++) {
+    for (int32_t x = sx; x<sw+sx; x++) {
       current = masterBitmap.getColor(x, y);
       buffer_ptr[loc++] = SkColorSetARGBInline(
         SkColorGetA(current),
@@ -1591,8 +1582,8 @@ METHOD(PutImageData) {
   size_t loc = 0;
   SkColor current;
 
-  for (uint32_t cy = 0; cy<dh; cy++) {
-    for (uint32_t cx = 0; cx<dw; cx++) {
+  for (int32_t cy = 0; cy<dh; cy++) {
+    for (int32_t cx = 0; cx<dw; cx++) {
 
       dest = (SkColor *)bitmap.getAddr(cx+dx+sx, cy+dy+sy);
 
