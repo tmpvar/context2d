@@ -171,16 +171,28 @@ Context2D::~Context2D() {
 }
 
 void Context2D::setupShadow(SkPaint *paint) {
-
-  if (SkColorGetA(this->shadowPaint.getColor()) &&
+  SkColor shadowColor = this->shadowPaint.getColor();
+  int shadowAlpha = SkColorGetA(this->shadowPaint.getColor());
+  if (shadowAlpha &&
       (this->shadowX || this->shadowY || this->shadowBlur))
   {
+
+    if (shadowAlpha == 255) {
+      shadowAlpha = SkColorGetA(paint->getColor());
+    }
+
+    SkColor c = SkColorSetARGBInline(
+      shadowAlpha,
+      SkColorGetR(shadowColor),
+      SkColorGetG(shadowColor),
+      SkColorGetB(shadowColor)
+    );
 
     SkDrawLooper* dl = new SkBlurDrawLooper(
       this->shadowBlur,
       this->shadowX,
       this->shadowY,
-      this->shadowPaint.getColor(),
+      c,
       SkBlurDrawLooper::kHighQuality_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag
     );
     SkSafeUnref(paint->setLooper(dl));
@@ -822,7 +834,7 @@ METHOD(FillRect) {
     bx, by, bw, bh
   };
 
-  SkPaint p(ctx->paint);
+  SkPaint p;
   SkPaint spaint(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
