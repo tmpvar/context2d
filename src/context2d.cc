@@ -847,12 +847,14 @@ METHOD(FillRect) {
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
-  int count = ctx->canvas->saveLayer(&bounds, &p);
+  int count;
 
   if (SkColorGetA(ctx->shadowPaint.getColor()) &&
       (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
      )
   {
+
+    count = ctx->canvas->saveLayer(&bounds, &p);
     SkPaint shadow;
     shadow.setColor(ctx->computeShadowColor());
 
@@ -873,8 +875,12 @@ METHOD(FillRect) {
       sy+h,
       shadow
     );
+
+    ctx->canvas->restoreToCount(count);
   }
 
+
+  count = ctx->canvas->saveLayer(&bounds, &p);
   ctx->canvas->drawRectCoords(
     x,
     y,
