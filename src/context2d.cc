@@ -14,6 +14,7 @@
 #include <SkData.h>
 #include <SkFontMgr.h>
 #include <SkGraphics.h>
+#include <SkColorFilter.h>
 #include <SkGradientShader.h>
 #include <SkShader.h>
 #include <SkImageEncoder.h>
@@ -170,7 +171,7 @@ Context2D::~Context2D() {
   this->canvas->unref();
 }
 
-void Context2D::setupShadow(SkPaint *paint) {
+bool Context2D::setupShadow(SkPaint *paint) {
   SkColor shadowColor = this->shadowPaint.getColor();
   int shadowAlpha = SkColorGetA(this->shadowPaint.getColor());
   if (shadowAlpha &&
@@ -188,16 +189,24 @@ void Context2D::setupShadow(SkPaint *paint) {
       SkColorGetB(shadowColor)
     );
 
+    SkMatrix m = this->canvas->getTotalMatrix();
+
+    SkPoint shadowOffset;
+    m.mapXY(this->shadowX, this->shadowY, &shadowOffset);
+
     SkDrawLooper* dl = new SkBlurDrawLooper(
       this->shadowBlur,
       this->shadowX,
       this->shadowY,
       c,
-      SkBlurDrawLooper::kHighQuality_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag
+      SkBlurDrawLooper::kAll_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag | SkBlurDrawLooper::kIgnoreTransform_BlurFlag
     );
     SkSafeUnref(paint->setLooper(dl));
-  }
 
+
+    return true;
+  }
+  return false;
 }
 
 
@@ -837,19 +846,20 @@ METHOD(FillRect) {
   SkPaint p;
   SkPaint spaint(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
+  p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
-  ctx->setupShadow(&spaint);
+  int count;
 
-  int count = ctx->canvas->saveLayer(&bounds, &p);
-  ctx->canvas->drawRectCoords(
-    x,
-    y,
-    x+w,
-    y+h,
-    spaint
-  );
+  if (ctx->setupShadow(&spaint)) {
+    count = ctx->canvas->saveLayer(&bounds, &p);
+    ctx->canvas->drawRectCoords(x, y, x+w, y+h, spaint);
+    ctx->canvas->drawRectCoords(x, y, x+w, y+h, ctx->shadowPaint);
+    ctx->canvas->restoreToCount(count);
+  }
 
+  count = ctx->canvas->saveLayer(&bounds, &p);
+  ctx->canvas->drawRectCoords(x, y, x+w, y+h, ctx->paint);
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
@@ -909,6 +919,9 @@ METHOD(StrokeRect) {
   } else {
 
     SkPaint spaint(ctx->strokePaint);
+
+    // TODO: in order to do this properly, it needs to be done like
+    //       fillRect
     ctx->setupShadow(&spaint);
 
     ctx->canvas->drawRectCoords(x,y,x+w, y+h, spaint);
@@ -966,6 +979,9 @@ METHOD(Stroke) {
   layerPaint.setAlpha(ctx->globalAlpha);
 
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
+
+  // TODO: in order to do this properly, it needs to be done like
+  //       fillRect
   ctx->setupShadow(&stroke);
   ctx->canvas->drawPath(ctx->path, stroke);
   ctx->canvas->restoreToCount(count);
@@ -1410,6 +1426,8 @@ METHOD(DrawImageBuffer) {
   layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
   layerPaint.setAlpha(ctx->globalAlpha);
 
+  // TODO: in order to do this properly, it needs to be done like
+  //       fillRect
   ctx->setupShadow(&spaint);
 
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
