@@ -1015,6 +1015,42 @@ METHOD(Stroke) {
     SkScalar newLineWidth = m.mapRadius(lineWidth);
   }
 
+ SkRect bounds = {
+    0, 0,
+    ctx->canvas->getDevice()->width(),
+    ctx->canvas->getDevice()->height()
+  };
+
+  SkPaint layerPaint;
+  layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
+  layerPaint.setAlpha(ctx->globalAlpha);
+
+  int count;
+  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
+      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
+     )
+  {
+    count = ctx->canvas->saveLayer(&bounds, &layerPaint);
+    SkPaint shadow(ctx->shadowPaint);
+    shadow.setStyle(SkPaint::kStroke_Style);
+    shadow.setStrokeWidth(ctx->strokePaint.getStrokeWidth());
+    shadow.setStrokeCap(ctx->strokePaint.getStrokeCap());
+    shadow.setStrokeMiter(ctx->strokePaint.getStrokeMiter());
+    shadow.setStrokeJoin(ctx->strokePaint.getStrokeJoin());
+    shadow.setColor(ctx->computeShadowColor());
+    // Draw a shadow if applicable
+    shadow.setMaskFilter(SkBlurMaskFilter::Create(
+      ctx->shadowBlur,
+      SkBlurMaskFilter::kSolid_BlurStyle
+      // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
+    ));
+
+    ctx->canvas->translate(ctx->shadowX, ctx->shadowY);
+
+    ctx->canvas->drawPath(ctx->path, shadow);
+    ctx->canvas->restoreToCount(count);
+  }
+
   ctx->canvas->drawPath(ctx->path, stroke);
 
   return scope.Close(Undefined());
