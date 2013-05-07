@@ -10,8 +10,7 @@
 #include <SkStream.h>
 #include <SkDevice.h>
 #include <SkBlurDrawLooper.h>
-// TODO: redo the shadow code if the above works
-#include <SkBlurMaskFilter.h>
+
 #include <SkData.h>
 #include <SkFontMgr.h>
 #include <SkGraphics.h>
@@ -171,45 +170,23 @@ Context2D::~Context2D() {
   this->canvas->unref();
 }
 
-SkColor Context2D::computeShadowColor() {
-  // Compute the actual fill color
-  SkColor fillColor = this->paint.getColor();
-  SkColor shadowColor = this->shadowPaint.getColor();
-  if (SkColorGetA(fillColor) < 255) {
-    double ratio = SkColorGetA(fillColor)/255.0;
+void Context2D::setupShadow(SkPaint *paint) {
 
-    uint8_t red = SkColorGetR(shadowColor);
-    if (!red) {
-      red = fmodl(SkColorGetR(fillColor)/ratio, 255);
-    } else {
-      red = (red + fmodl(SkColorGetR(fillColor)/ratio, 255)) / 2;
-    }
+  if (SkColorGetA(this->shadowPaint.getColor()) &&
+      (this->shadowX || this->shadowY || this->shadowBlur))
+  {
 
-    uint8_t green = SkColorGetG(shadowColor);
-    if (!green) {
-      green = fmodl(SkColorGetG(fillColor)/ratio, 255);
-    } else {
-      green = (green + fmodl(SkColorGetG(fillColor)/ratio, 255)) / 2;
-    }
-
-    uint8_t blue = SkColorGetB(shadowColor);
-    if (!blue) {
-      blue = fmodl(SkColorGetB(fillColor)/ratio, 255);
-    } else {
-      blue = (blue + fmodl(SkColorGetB(fillColor)/ratio, 255)) / 2;
-    }
-
-    return SkColorSetARGBInline(
-      SkColorGetA(shadowColor),
-      red,
-      green,
-      blue
+    SkDrawLooper* dl = new SkBlurDrawLooper(
+      this->shadowBlur,
+      this->shadowX,
+      this->shadowY,
+      this->shadowPaint.getColor(),
+      SkBlurDrawLooper::kHighQuality_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag
     );
-  } else {
-    return shadowColor;
+    SkSafeUnref(paint->setLooper(dl));
   }
-}
 
+}
 
 
 METHOD(New) {
@@ -846,49 +823,19 @@ METHOD(FillRect) {
   };
 
   SkPaint p(ctx->paint);
+  SkPaint spaint(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
-  int count;
+  ctx->setupShadow(&spaint);
 
-  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
-      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
-     )
-  {
-
-    count = ctx->canvas->saveLayer(&bounds, &p);
-    SkPaint shadow;
-    shadow.setColor(ctx->computeShadowColor());
-
-    // Draw a shadow if applicable
-    shadow.setMaskFilter(SkBlurMaskFilter::Create(
-      ctx->shadowBlur,
-      SkBlurMaskFilter::kSolid_BlurStyle
-      // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
-    ));
-
-    double sx = fabs(x+ctx->shadowX);
-    double sy = fabs(y+ctx->shadowY);
-
-    ctx->canvas->drawRectCoords(
-      sx,
-      sy,
-      sx+w,
-      sy+h,
-      shadow
-    );
-
-    ctx->canvas->restoreToCount(count);
-  }
-
-
-  count = ctx->canvas->saveLayer(&bounds, &p);
+  int count = ctx->canvas->saveLayer(&bounds, &p);
   ctx->canvas->drawRectCoords(
     x,
     y,
     x+w,
     y+h,
-    ctx->paint
+    spaint
   );
 
   ctx->canvas->restoreToCount(count);
@@ -919,7 +866,6 @@ METHOD(StrokeRect) {
   double bw = w+x > dw ? w+x : dw;
   double bh = h+y > dh ? h+y : dh;
   double lineWidth = ctx->strokePaint.getStrokeWidth();
-  double halfLineWidth = lineWidth/2;
 
   SkRect bounds = {
     bx, by, bw, bh
@@ -950,31 +896,10 @@ METHOD(StrokeRect) {
 
   } else {
 
-    if (SkColorGetA(ctx->shadowPaint.getColor()) &&
-        (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
-       )
-    {
+    SkPaint spaint(ctx->strokePaint);
+    ctx->setupShadow(&spaint);
 
-      // Draw a shadow if applicable
-      ctx->shadowPaint.setMaskFilter(SkBlurMaskFilter::Create(
-        ctx->shadowBlur,
-        SkBlurMaskFilter::kSolid_BlurStyle
-        // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
-      ));
-
-      double sx = x+ctx->shadowX;
-      double sy = y+ctx->shadowY;
-
-      ctx->canvas->drawRectCoords(
-        sx,
-        sy,
-        sx+w + halfLineWidth,
-        sy+h + halfLineWidth,
-        ctx->shadowPaint
-      );
-    }
-
-    ctx->canvas->drawRectCoords(x,y,x+w, y+h, ctx->strokePaint);
+    ctx->canvas->drawRectCoords(x,y,x+w, y+h, spaint);
   }
 
   ctx->canvas->restoreToCount(count);
@@ -1028,33 +953,10 @@ METHOD(Stroke) {
   layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
   layerPaint.setAlpha(ctx->globalAlpha);
 
-  int count;
-  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
-      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
-     )
-  {
-    count = ctx->canvas->saveLayer(&bounds, &layerPaint);
-    SkPaint shadow(ctx->shadowPaint);
-    shadow.setStyle(SkPaint::kStroke_Style);
-    shadow.setStrokeWidth(ctx->strokePaint.getStrokeWidth());
-    shadow.setStrokeCap(ctx->strokePaint.getStrokeCap());
-    shadow.setStrokeMiter(ctx->strokePaint.getStrokeMiter());
-    shadow.setStrokeJoin(ctx->strokePaint.getStrokeJoin());
-    shadow.setColor(ctx->computeShadowColor());
-    // Draw a shadow if applicable
-    shadow.setMaskFilter(SkBlurMaskFilter::Create(
-      ctx->shadowBlur,
-      SkBlurMaskFilter::kSolid_BlurStyle
-      // TODO: consider SkBlurMaskFilter::kHighQuality_BlurFlag
-    ));
-
-    ctx->canvas->translate(ctx->shadowX, ctx->shadowY);
-
-    ctx->canvas->drawPath(ctx->path, shadow);
-    ctx->canvas->restoreToCount(count);
-  }
-
+  int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
+  ctx->setupShadow(&stroke);
   ctx->canvas->drawPath(ctx->path, stroke);
+  ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
 }
@@ -1496,20 +1398,7 @@ METHOD(DrawImageBuffer) {
   layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
   layerPaint.setAlpha(ctx->globalAlpha);
 
-  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
-      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
-     )
-  {
-
-    SkDrawLooper* dl = new SkBlurDrawLooper(
-      ctx->shadowBlur,
-      ctx->shadowX,
-      ctx->shadowY,
-      ctx->shadowPaint.getColor(),
-      SkBlurDrawLooper::kHighQuality_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag
-    );
-    SkSafeUnref(spaint.setLooper(dl));
-  }
+  ctx->setupShadow(&spaint);
 
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
   ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &spaint);
