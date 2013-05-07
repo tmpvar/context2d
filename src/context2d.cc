@@ -9,6 +9,8 @@
 
 #include <SkStream.h>
 #include <SkDevice.h>
+#include <SkBlurDrawLooper.h>
+// TODO: redo the shadow code if the above works
 #include <SkBlurMaskFilter.h>
 #include <SkData.h>
 #include <SkFontMgr.h>
@@ -1490,12 +1492,27 @@ METHOD(DrawImageBuffer) {
     ctx->canvas->getDevice()->height()
   };
 
-  SkPaint layerPaint;
+  SkPaint layerPaint, spaint;
   layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
   layerPaint.setAlpha(ctx->globalAlpha);
 
+  if (SkColorGetA(ctx->shadowPaint.getColor()) &&
+      (ctx->shadowX || ctx->shadowY || ctx->shadowBlur)
+     )
+  {
+
+    SkDrawLooper* dl = new SkBlurDrawLooper(
+      ctx->shadowBlur,
+      ctx->shadowX,
+      ctx->shadowY,
+      ctx->shadowPaint.getColor(),
+      SkBlurDrawLooper::kHighQuality_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag
+    );
+    SkSafeUnref(spaint.setLooper(dl));
+  }
+
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
-  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, NULL);
+  ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &spaint);
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());

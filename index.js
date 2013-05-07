@@ -525,9 +525,14 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
-    if (dx < 0 || dy < 0) {
-      return;
-    }
+    // if ((dx < 0 || dy < 0)) {
+    //   if (!ret.shadowOffsetX &&
+    //       !ret.shadowOffsetY &&
+    //       !ret.shadowBlur)
+    //   {
+    //     return;
+    //   }
+    // }
 
     if (!valid(dw) ||
         !valid(dh) ||
@@ -572,9 +577,7 @@ module.exports.createContext = function(canvas, w, h) {
     }
 
     var clamp = function(a, alt) {
-      if (a < 0) {
-        return 0;
-      } else if (a>alt) {
+      if (a>alt) {
         return alt;
       }
       return a;
