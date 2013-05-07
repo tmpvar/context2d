@@ -33,6 +33,7 @@ class Context2D : public ObjectWrap {
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
     double globalAlpha, shadowX, shadowY, shadowBlur;
+    bool defaultLineWidth;
   private:
     Context2D(int w, int h);
     ~Context2D();

@@ -149,12 +149,15 @@ Context2D::Context2D(int w, int h) {
 
   this->strokePaint.setColor(SK_ColorBLACK);
   this->strokePaint.setStrokeMiter(10);
+  this->strokePaint.setStrokeWidth(1);
   this->strokePaint.setStyle(SkPaint::kStroke_Style);
   this->strokePaint.setLCDRenderText(true);
   this->strokePaint.setHinting(SkPaint::kSlight_Hinting);
   this->strokePaint.setSubpixelText(true);
   this->strokePaint.setAntiAlias(true);
   this->strokePaint.setDither(true);
+
+  this->defaultLineWidth = true;
 
   this->shadowX = 0;
   this->shadowY = 0;
@@ -1000,9 +1003,11 @@ METHOD(Stroke) {
 
   SkPaint stroke(ctx->strokePaint);
 
-  SkMatrix m = ctx->canvas->getTotalMatrix();
-  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
-  SkScalar newLineWidth = m.mapRadius(lineWidth);
+  if (!ctx->defaultLineWidth) {
+    SkMatrix m = ctx->canvas->getTotalMatrix();
+    SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
+    SkScalar newLineWidth = m.mapRadius(lineWidth);
+  }
 
   ctx->canvas->drawPath(ctx->path, stroke);
 
@@ -1590,6 +1595,7 @@ METHOD(SetLineWidth) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->strokePaint.setStrokeWidth(SkDoubleToScalar(args[0]->NumberValue()));
+  ctx->defaultLineWidth = false;
 
   return scope.Close(Undefined());
 }
