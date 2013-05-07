@@ -975,10 +975,10 @@ METHOD(BeginPath) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->path.reset();
+  ctx->path.rewind();
 
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  ctx->path.transform(currentTransform);
+  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  // ctx->path.transform(currentTransform);
 
   return scope.Close(Undefined());
 }
@@ -1003,7 +1003,6 @@ METHOD(Stroke) {
   SkMatrix m = ctx->canvas->getTotalMatrix();
   SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
   SkScalar newLineWidth = m.mapRadius(lineWidth);
-  stroke.setStrokeWidth(newLineWidth);
 
   ctx->canvas->drawPath(ctx->path, stroke);
 
@@ -1061,14 +1060,10 @@ METHOD(MoveTo) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  SkPath subpath;
-
-  subpath.setLastPt(
+  ctx->path.moveTo(
     SkDoubleToScalar(args[0]->NumberValue()),
     SkDoubleToScalar(args[1]->NumberValue())
   );
-
-  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }
@@ -1081,15 +1076,11 @@ METHOD(LineTo) {
   SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
-  SkPoint pt;
-  if (!ctx->path.getLastPt(&pt)) {
+  if (ctx->path.isEmpty()) {
     ctx->path.moveTo(x, y);
   }
 
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  ctx->path.transform(currentTransform);
   ctx->path.lineTo(x, y);
-  ctx->path.setLastPt(x, y);
 
   return scope.Close(Undefined());
 }
@@ -1106,19 +1097,11 @@ METHOD(QuadraticCurveTo) {
 
   SkPath subpath;
 
-  SkPoint pt;
-  if (!ctx->path.getLastPt(&pt)) {
-    subpath.moveTo(cpx, cpy);
-    subpath.quadTo(cpx, cpy, x, y);
-  } else {
-    subpath.setLastPt(pt);
-    subpath.quadTo(cpx*2, cpy, x, y);
+  if (ctx->path.isEmpty()) {
+    ctx->path.moveTo(x, y);
   }
 
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
-
-  ctx->path.addPath(subpath);
+  ctx->path.quadTo(cpx, cpy, x, y);
 
   return scope.Close(Undefined());
 }
@@ -1135,21 +1118,14 @@ METHOD(BezierCurveTo) {
   SkScalar x3 = SkDoubleToScalar(args[4]->NumberValue());
   SkScalar y3 = SkDoubleToScalar(args[5]->NumberValue());
 
-  SkPath subpath;
-
   SkPoint pt;
   if (!ctx->path.getLastPt(&pt)) {
-    subpath.moveTo(x1, y1);
+    ctx->path.moveTo(x1, y1);
   } else {
-    subpath.moveTo(pt);
+    ctx->path.moveTo(pt);
   }
 
-  subpath.cubicTo(x1, y1, x2, y2, x3, y3);
-
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
-
-  ctx->path.addPath(subpath);
+  ctx->path.cubicTo(x1, y1, x2, y2, x3, y3);
 
   return scope.Close(Undefined());
 }
@@ -1228,14 +1204,14 @@ METHOD(Arc) {
   SkScalar ea = SkDoubleToScalar(args[4]->NumberValue());
   bool ccw = args[5]->BooleanValue();
 
-  SkPath subpath;
+  // SkPath subpath = ctx->path;
 
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
+  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  // subpath.transform(currentTransform);
 
 
   if (!ctx->path.isEmpty()) {
-    subpath.lineTo(x, y);
+    ctx->path.lineTo(x, y);
   }
 
   if (!ccw) {
@@ -1251,13 +1227,13 @@ METHOD(Arc) {
       ea = fabs(ea);
     }
 
-    subpath.addArc(rect, DEGREES(sa), DEGREES(ea));
+    ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
   } else if (sa != ea) {
 
     double diff = TAU-fabs(sa - ea);
 
     if (sa > ea + TAU || (diff < 0 && diff > -.0001)) {
-      subpath.addCircle(x, y, r, SkPath::kCCW_Direction);
+      ctx->path.addCircle(x, y, r, SkPath::kCCW_Direction);
     } else {
 
       SkRect rect = {
@@ -1267,16 +1243,17 @@ METHOD(Arc) {
       if (ea > sa + TAU) {
         ea = fmodf(ea, TAU);
         sa = fmodf(sa, TAU);
-        subpath.addArc(rect, DEGREES(sa), DEGREES(-ea));
-      } else if (sa == 0 && ea-sa > 0) {
-        subpath.addArc(rect, DEGREES(sa), DEGREES(-ea));
+        ctx->path.arcTo(rect, DEGREES(ea), DEGREES(sa), false);
+
+      } else if (sa == 0) {
+        ctx->path.arcTo(rect, DEGREES(sa), -DEGREES(fabs(sa-ea)), false);
+      } else if (ea == 0) {
+        ctx->path.arcTo(rect, DEGREES(sa), -DEGREES(fabs(ea-sa)), false);
       } else {
-        subpath.addArc(rect, DEGREES(sa), DEGREES(ea));
+        ctx->path.arcTo(rect, DEGREES(sa), DEGREES(ea), false);
       }
     }
   }
-
-  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }
