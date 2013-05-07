@@ -525,15 +525,6 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
-    // if ((dx < 0 || dy < 0)) {
-    //   if (!ret.shadowOffsetX &&
-    //       !ret.shadowOffsetY &&
-    //       !ret.shadowBlur)
-    //   {
-    //     return;
-    //   }
-    // }
-
     if (!valid(dw) ||
         !valid(dh) ||
         !valid(sw) ||
