@@ -1009,13 +1009,14 @@ METHOD(Stroke) {
 
   SkPaint stroke(ctx->strokePaint);
 
-  if (!ctx->defaultLineWidth) {
+  if (ctx->defaultLineWidth) {
     SkMatrix m = ctx->canvas->getTotalMatrix();
     SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
     SkScalar newLineWidth = m.mapRadius(lineWidth);
+    stroke.setStrokeWidth(newLineWidth);
   }
 
- SkRect bounds = {
+  SkRect bounds = {
     0, 0,
     ctx->canvas->getDevice()->width(),
     ctx->canvas->getDevice()->height()
