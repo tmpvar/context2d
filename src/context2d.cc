@@ -1103,7 +1103,7 @@ METHOD(QuadraticCurveTo) {
   SkPath subpath;
 
   if (ctx->path.isEmpty()) {
-    ctx->path.moveTo(x, y);
+    ctx->path.moveTo(cpx, cpy);
   }
 
   ctx->path.quadTo(cpx, cpy, x, y);
