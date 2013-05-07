@@ -1253,7 +1253,11 @@ module.exports.createContext = function(canvas, w, h) {
       throw new DOMException('radius must be > 0', DOMException.INDEX_SIZE_ERR);
     }
 
-    arcTo(x1, y1, x2, y2, radius);
+    if (x1 === x2 && y1 === y2 || radius === 0) {
+      ret.lineTo(x1, y1);
+    } else {
+      arcTo(x1, y1, x2, y2, radius);
+    }
   })
 
   override('lineTo', function(lineTo, x, y) {

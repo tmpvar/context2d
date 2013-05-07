@@ -1146,33 +1146,20 @@ METHOD(ArcTo) {
   SkScalar y2 = SkDoubleToScalar(args[3]->NumberValue());
   SkScalar r = SkDoubleToScalar(args[4]->NumberValue());
 
-  SkPath subpath;
+  SkMatrix currentTransform(ctx->canvas->getTotalMatrix());
 
-  SkPoint pt;
-
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
+  SkPoint pt, p0, p1, p2;
+  currentTransform.mapXY(x1, y1, &p1);
 
   bool hasPoint = ctx->path.getLastPt(&pt);
-  if (
-    (hasPoint && pt.equals(x1, y1)) ||
-    (x1 == x2 && y1 == y2)
-  ) {
-
-    subpath.moveTo(pt.x(), pt.y());
-    subpath.lineTo(x1, y1);
+  if (pt.equals(x1, y1)) {
+    return scope.Close(Undefined());
+  } else if (!hasPoint) {
+    ctx->path.moveTo(p1);
   } else {
-
-    if (!hasPoint) {
-      subpath.moveTo(x1, y1);
-    } else {
-      subpath.moveTo(pt);
-    }
-
-    subpath.arcTo(x1, y1, x2, y2, r);
+    currentTransform.mapXY(x2, y2, &p2);
+    ctx->path.arcTo(p1, p2, r);
   }
-
-  ctx->path.addPath(subpath);
 
   return scope.Close(Undefined());
 }
