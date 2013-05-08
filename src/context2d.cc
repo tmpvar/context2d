@@ -407,13 +407,17 @@ METHOD(Transform) {
     SkScalar e = SkDoubleToScalar(args[4]->NumberValue());
     SkScalar f = SkDoubleToScalar(args[5]->NumberValue());
 
-    SkMatrix44 m;
+    SkMatrix m;
 
-    m.set3x3(
-      a, c, e,
-      b, d, f,
-      0, 0, 1
-    );
+    m[0] = a;
+    m[1] = c;
+    m[2] = e;
+    m[3] = b;
+    m[4] = d;
+    m[5] = f;
+    m[6] = 0;
+    m[7] = 0;
+    m[8] = 1;
 
     Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
