@@ -889,6 +889,8 @@ METHOD(StrokeRect) {
   double bh = h+y > dh ? h+y : dh;
   double lineWidth = ctx->strokePaint.getStrokeWidth();
 
+  // TODO: apply transform to strokeWidth
+
   SkRect bounds = {
     bx, by, bw, bh
   };
@@ -938,8 +940,8 @@ METHOD(BeginPath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->path.rewind();
 
-  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  // ctx->path.transform(currentTransform);
+  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  ctx->path.transform(currentTransform);
 
   return scope.Close(Undefined());
 }
@@ -949,8 +951,12 @@ METHOD(Fill) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
+  ctx->canvas->save();
+  ctx->canvas->resetMatrix();
+
   ctx->canvas->drawPath(ctx->path, ctx->paint);
 
+  ctx->canvas->restore();
   return scope.Close(Undefined());
 }
 
@@ -961,12 +967,20 @@ METHOD(Stroke) {
 
   SkPaint stroke(ctx->strokePaint);
 
-  if (ctx->defaultLineWidth) {
-    SkMatrix m = ctx->canvas->getTotalMatrix();
-    SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
-    SkScalar newLineWidth = m.mapRadius(lineWidth);
-    stroke.setStrokeWidth(newLineWidth);
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+  SkScalar sx = m.getScaleX();
+  SkScalar sy = m.getScaleY();
+  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
+  SkScalar newLineWidth;
+
+  if (sx != 1 && sy != 1) {
+    newLineWidth = m.mapRadius(lineWidth);
+  } else if (sx != 1) {
+    newLineWidth = sx * lineWidth;
+  } else {
+    newLineWidth = sy * lineWidth;
   }
+  stroke.setStrokeWidth(fabs(newLineWidth));
 
   SkRect bounds = {
     0, 0,
@@ -983,7 +997,10 @@ METHOD(Stroke) {
   // TODO: in order to do this properly, it needs to be done like
   //       fillRect
   ctx->setupShadow(&stroke);
+  ctx->canvas->save();
+  ctx->canvas->resetMatrix();
   ctx->canvas->drawPath(ctx->path, stroke);
+  ctx->canvas->restore();
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
@@ -1040,10 +1057,16 @@ METHOD(MoveTo) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  ctx->path.moveTo(
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+
+  SkPoint pt;
+  m.mapXY(
     SkDoubleToScalar(args[0]->NumberValue()),
-    SkDoubleToScalar(args[1]->NumberValue())
+    SkDoubleToScalar(args[1]->NumberValue()),
+    &pt
   );
+
+  ctx->path.moveTo(pt);
 
   return scope.Close(Undefined());
 }
@@ -1053,14 +1076,20 @@ METHOD(LineTo) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
-  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+
+  SkPoint pt;
+  m.mapXY(
+    SkDoubleToScalar(args[0]->NumberValue()),
+    SkDoubleToScalar(args[1]->NumberValue()),
+    &pt
+  );
 
   if (ctx->path.isEmpty()) {
-    ctx->path.moveTo(x, y);
+    ctx->path.moveTo(pt);
   }
 
-  ctx->path.lineTo(x, y);
+  ctx->path.lineTo(pt);
 
   return scope.Close(Undefined());
 }
@@ -1163,6 +1192,7 @@ METHOD(Arc) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
+  SkMatrix currentTransform(ctx->canvas->getTotalMatrix());
 
   SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
@@ -1171,21 +1201,15 @@ METHOD(Arc) {
   SkScalar ea = SkDoubleToScalar(args[4]->NumberValue());
   bool ccw = args[5]->BooleanValue();
 
-  // SkPath subpath = ctx->path;
-
-  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  // subpath.transform(currentTransform);
-
-
   if (!ctx->path.isEmpty()) {
     ctx->path.lineTo(x, y);
   }
 
-  if (!ccw) {
-    SkRect rect = {
-      x-r, y-r, x+r, y+r
-    };
+  SkRect rect;
 
+  currentTransform.mapRect(&rect, SkRect::MakeLTRB(x-r, y-r, x+r, y+r));
+
+  if (!ccw) {
     if (sa > ea + TAU) {
       ea = fmodf(ea, TAU);
     }
@@ -1203,24 +1227,20 @@ METHOD(Arc) {
       ctx->path.addCircle(x, y, r, SkPath::kCCW_Direction);
     } else {
 
-      SkRect rect = {
-        x-r, y-r, x+r, y+r
-      };
-
       if (ea > sa + TAU) {
         ea = fmodf(ea, TAU);
         sa = fmodf(sa, TAU);
-        ctx->path.arcTo(rect, DEGREES(ea), DEGREES(sa), false);
-
+        ctx->path.addArc(rect, 360-DEGREES(sa), DEGREES(ea));
       } else if (sa == 0) {
-        ctx->path.arcTo(rect, DEGREES(sa), -DEGREES(fabs(sa-ea)), false);
+        ctx->path.addArc(rect, DEGREES(sa), -DEGREES(fabs(sa-ea)));
       } else if (ea == 0) {
-        ctx->path.arcTo(rect, DEGREES(sa), -DEGREES(fabs(ea-sa)), false);
+        ctx->path.addArc(rect, DEGREES(sa), -DEGREES(fabs(ea-sa)));
       } else {
-        ctx->path.arcTo(rect, DEGREES(sa), DEGREES(ea), false);
+        ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
       }
     }
   }
+
 
   return scope.Close(Undefined());
 }
@@ -1561,6 +1581,7 @@ METHOD(SetLineWidth) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->strokePaint.setStrokeWidth(SkDoubleToScalar(args[0]->NumberValue()));
+
   ctx->defaultLineWidth = false;
 
   return scope.Close(Undefined());
