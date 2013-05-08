@@ -1132,14 +1132,21 @@ METHOD(BezierCurveTo) {
   SkScalar x3 = SkDoubleToScalar(args[4]->NumberValue());
   SkScalar y3 = SkDoubleToScalar(args[5]->NumberValue());
 
-  SkPoint pt;
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+
+  SkPoint pt, p1, p2, p3;
+
+  m.mapXY(x1, y1, &p1);
+  m.mapXY(x2, y2, &p2);
+  m.mapXY(x3, y3, &p3);
+
   if (!ctx->path.getLastPt(&pt)) {
     ctx->path.moveTo(x1, y1);
   } else {
     ctx->path.moveTo(pt);
   }
 
-  ctx->path.cubicTo(x1, y1, x2, y2, x3, y3);
+  ctx->path.cubicTo(p1, p2, p3);
 
   return scope.Close(Undefined());
 }
