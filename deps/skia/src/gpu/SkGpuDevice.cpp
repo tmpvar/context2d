@@ -671,11 +671,11 @@ void SkGpuDevice::drawRect(const SkDraw& draw, const SkRect& rect,
         usePath = true;
     }
     if (!usePath && paint.isAntiAlias() && !fContext->getMatrix().rectStaysRect()) {
-#ifdef SHADER_AA_FILL_RECT
+#if defined(SHADER_AA_FILL_RECT) || !defined(IGNORE_ROT_AA_RECT_OPT)
         if (doStroke) {
 #endif
             usePath = true;
-#ifdef SHADER_AA_FILL_RECT
+#if defined(SHADER_AA_FILL_RECT) || !defined(IGNORE_ROT_AA_RECT_OPT)
         } else {
             usePath = !fContext->getMatrix().preservesRightAngles();
         }
@@ -713,7 +713,7 @@ void SkGpuDevice::drawRRect(const SkDraw& draw, const SkRRect& rect,
     CHECK_FOR_NODRAW_ANNOTATION(paint);
     CHECK_SHOULD_DRAW(draw, false);
 
-    bool usePath = !rect.isSimple() || !paint.isAntiAlias();
+    bool usePath = !rect.isSimple();
     // another two reasons we might need to call drawPath...
     if (paint.getMaskFilter() || paint.getPathEffect()) {
         usePath = true;
@@ -1366,12 +1366,6 @@ void SkGpuDevice::internalDrawBitmap(const SkBitmap& bitmap,
                                      GrPaint* grPaint) {
     SkASSERT(bitmap.width() <= fContext->getMaxTextureSize() &&
              bitmap.height() <= fContext->getMaxTextureSize());
-
-    SkAutoLockPixels alp(bitmap, !bitmap.getTexture());
-    if (!bitmap.getTexture() && !bitmap.readyToDraw()) {
-        SkDebugf("nothing to draw\n");
-        return;
-    }
 
     GrTexture* texture;
     SkAutoCachedTexture act(this, bitmap, &params, &texture);

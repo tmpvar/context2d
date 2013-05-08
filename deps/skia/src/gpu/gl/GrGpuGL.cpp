@@ -161,8 +161,6 @@ GrGpuGL::GrGpuGL(const GrGLContext& ctx, GrContext* context)
     GrGLClearErr(fGLContext.interface());
 
     if (gPrintStartupSpew) {
-        const GrGLubyte* ext;
-        GL_CALL_RET(ext, GetString(GR_GL_EXTENSIONS));
         const GrGLubyte* vendor;
         const GrGLubyte* renderer;
         const GrGLubyte* version;
@@ -174,7 +172,9 @@ GrGpuGL::GrGpuGL(const GrGLContext& ctx, GrContext* context)
         GrPrintf("------ VENDOR %s\n", vendor);
         GrPrintf("------ RENDERER %s\n", renderer);
         GrPrintf("------ VERSION %s\n",  version);
-        GrPrintf("------ EXTENSIONS\n %s \n", ext);
+        GrPrintf("------ EXTENSIONS\n");
+        ctx.info().extensions().print();
+        GrPrintf("\n");
         ctx.info().caps()->print();
     }
 
@@ -931,6 +931,11 @@ GrTexture* GrGpuGL::onCreateTexture(const GrTextureDesc& desc,
         if (glTexDesc.fWidth > maxRTSize || glTexDesc.fHeight > maxRTSize) {
             return return_null_texture();
         }
+    } else {
+        int maxSize = this->caps()->maxTextureSize();
+        if (glTexDesc.fWidth > maxSize || glTexDesc.fHeight > maxSize) {
+            return return_null_texture();
+        }
     }
 
     GL_CALL(GenTextures(1, &glTexDesc.fTextureID));
@@ -1004,8 +1009,8 @@ namespace {
 const GrGLuint kUnknownBitCount = GrGLStencilBuffer::kUnknownBitCount;
 
 void inline get_stencil_rb_sizes(const GrGLInterface* gl,
-                                 GrGLuint rb,
                                  GrGLStencilBuffer::Format* format) {
+
     // we shouldn't ever know one size and not the other
     GrAssert((kUnknownBitCount == format->fStencilBits) ==
              (kUnknownBitCount == format->fTotalBits));
@@ -1071,7 +1076,7 @@ bool GrGpuGL::createStencilBufferForRenderTarget(GrRenderTarget* rt,
             // After sized formats we attempt an unsized format and take
             // whatever sizes GL gives us. In that case we query for the size.
             GrGLStencilBuffer::Format format = sFmt;
-            get_stencil_rb_sizes(this->glInterface(), sbID, &format);
+            get_stencil_rb_sizes(this->glInterface(), &format);
             static const bool kIsWrapped = false;
             SkAutoTUnref<GrStencilBuffer> sb(SkNEW_ARGS(GrGLStencilBuffer,
                                                   (this, kIsWrapped, sbID, width, height,
