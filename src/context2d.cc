@@ -1104,13 +1104,18 @@ METHOD(QuadraticCurveTo) {
   SkScalar x = SkDoubleToScalar(args[2]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[3]->NumberValue());
 
-  SkPath subpath;
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+  SkPoint cp, p;
+
+  m.mapXY(cpx, cpy, &cp);
+  m.mapXY(x, y, &p);
+
 
   if (ctx->path.isEmpty()) {
-    ctx->path.moveTo(cpx, cpy);
+    ctx->path.moveTo(cp);
   }
 
-  ctx->path.quadTo(cpx, cpy, x, y);
+  ctx->path.quadTo(cp, p);
 
   return scope.Close(Undefined());
 }
