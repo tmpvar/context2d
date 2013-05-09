@@ -61,14 +61,11 @@ class Context2D : public ObjectWrap {
 
     // compositing
     OBJECT_METHOD(SetGlobalAlpha);
-    OBJECT_METHOD(GetGlobalAlpha);
     OBJECT_METHOD(SetGlobalCompositeOperation);
-    OBJECT_METHOD(GetGlobalCompositeOperation);
 
     // gradients
     OBJECT_METHOD(SetLinearGradientShader);
     OBJECT_METHOD(SetRadialGradientShader);
-
 
     // image smoothing
     OBJECT_METHOD(SetImageSmoothingEnabled);

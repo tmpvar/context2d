@@ -67,9 +67,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(Transform, transform);
   PROTOTYPE_METHOD(ResetMatrix, resetMatrix);
   PROTOTYPE_METHOD(SetGlobalAlpha, setGlobalAlpha);
-  PROTOTYPE_METHOD(GetGlobalAlpha, getGlobalAlpha);
   PROTOTYPE_METHOD(SetGlobalCompositeOperation, setGlobalCompositeOperation);
-  PROTOTYPE_METHOD(GetGlobalCompositeOperation, getGlobalCompositeOperation);
   PROTOTYPE_METHOD(SetImageSmoothingEnabled, setImageSmoothingEnabled);
   PROTOTYPE_METHOD(GetImageSmoothingEnabled, getImageSmoothingEnabled);
   PROTOTYPE_METHOD(SetStrokeStyle, setStrokeStyle);
@@ -447,29 +445,11 @@ METHOD(SetGlobalAlpha) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetGlobalAlpha) {
-  HandleScope scope;
-
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  return scope.Close(Number::New(ctx->globalAlpha/255));
-}
-
 METHOD(SetGlobalCompositeOperation) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->globalCompositeOperation = (SkXfermode::Mode)args[0]->IntegerValue();
-
-  return scope.Close(Undefined());
-}
-
-METHOD(GetGlobalCompositeOperation) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-
 
   return scope.Close(Undefined());
 }
