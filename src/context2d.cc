@@ -944,8 +944,8 @@ METHOD(BeginPath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->path.rewind();
 
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  ctx->path.transform(currentTransform);
+  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
+  // ctx->path.transform(currentTransform);
 
   return scope.Close(Undefined());
 }
@@ -1160,25 +1160,40 @@ METHOD(ArcTo) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  SkScalar x1 = SkDoubleToScalar(args[0]->NumberValue());
-  SkScalar y1 = SkDoubleToScalar(args[1]->NumberValue());
-  SkScalar x2 = SkDoubleToScalar(args[2]->NumberValue());
-  SkScalar y2 = SkDoubleToScalar(args[3]->NumberValue());
+  SkMatrix m(ctx->canvas->getTotalMatrix());
+
+  SkScalar tx = m.getTranslateX();
+  SkScalar ty = m.getTranslateY();
+  SkScalar sx = m.getScaleX();
+  SkScalar sy = m.getScaleY();
+
+  SkScalar x1 = SkDoubleToScalar(args[0]->NumberValue() * sx) + tx;
+  SkScalar y1 = SkDoubleToScalar(args[1]->NumberValue() * sy) + ty;
+  SkScalar x2 = SkDoubleToScalar(args[2]->NumberValue() * sx) + tx;
+  SkScalar y2 = SkDoubleToScalar(args[3]->NumberValue() * sy) + ty;
   SkScalar r = SkDoubleToScalar(args[4]->NumberValue());
 
-  SkMatrix currentTransform(ctx->canvas->getTotalMatrix());
+  if (sx != 1 && sy != 1) {
+    r = m.mapRadius(r);
+  } else if (sx != 1) {
+    r = sx * r;
+  } else {
+    r = sy * r;
+  }
 
-  SkPoint pt, p0, p1, p2;
-  currentTransform.mapXY(x1, y1, &p1);
+  SkPoint pt;
 
   bool hasPoint = ctx->path.getLastPt(&pt);
   if (pt.equals(x1, y1)) {
     return scope.Close(Undefined());
   } else if (!hasPoint) {
-    ctx->path.moveTo(p1);
+    ctx->path.moveTo(x1, y1);
   } else {
-    currentTransform.mapXY(x2, y2, &p2);
-    ctx->path.arcTo(p1, p2, r);
+
+    ctx->path.arcTo(x1, y1, x2, y2, r);
+    if (sx != 1 || sy != 1) {
+      ctx->path.lineTo(x2, y2);
+    }
   }
 
   return scope.Close(Undefined());
