@@ -82,13 +82,9 @@ class Context2D : public ObjectWrap {
 
     // shadows
     OBJECT_METHOD(SetShadowOffsetX);
-    OBJECT_METHOD(GetShadowOffsetX);
     OBJECT_METHOD(SetShadowOffsetY);
-    OBJECT_METHOD(GetShadowOffsetY);
     OBJECT_METHOD(SetShadowBlur);
-    OBJECT_METHOD(GetShadowBlur);
     OBJECT_METHOD(SetShadowColor);
-    OBJECT_METHOD(GetShadowColor);
 
     // rects
     OBJECT_METHOD(ClearRect);

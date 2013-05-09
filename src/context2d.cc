@@ -78,13 +78,9 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
   PROTOTYPE_METHOD(SetLinearGradientShader, setLinearGradientShader);
   PROTOTYPE_METHOD(SetRadialGradientShader, setRadialGradientShader);
   PROTOTYPE_METHOD(SetShadowOffsetX, setShadowOffsetX);
-  PROTOTYPE_METHOD(GetShadowOffsetX, getShadowOffsetX);
   PROTOTYPE_METHOD(SetShadowOffsetY, setShadowOffsetY);
-  PROTOTYPE_METHOD(GetShadowOffsetY, getShadowOffsetY);
   PROTOTYPE_METHOD(SetShadowBlur, setShadowBlur);
-  PROTOTYPE_METHOD(GetShadowBlur, getShadowBlur);
   PROTOTYPE_METHOD(SetShadowColor, setShadowColor);
-  PROTOTYPE_METHOD(GetShadowColor, getShadowColor);
   PROTOTYPE_METHOD(ClearRect, clearRect);
   PROTOTYPE_METHOD(FillRect, fillRect);
   PROTOTYPE_METHOD(StrokeRect, strokeRect);
@@ -724,14 +720,6 @@ METHOD(SetShadowOffsetX) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetShadowOffsetX) {
-  HandleScope scope;
-
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  return scope.Close(Number::New(ctx->shadowX));
-}
-
 METHOD(SetShadowOffsetY) {
   HandleScope scope;
 
@@ -741,14 +729,6 @@ METHOD(SetShadowOffsetY) {
   return scope.Close(Undefined());
 }
 
-METHOD(GetShadowOffsetY) {
-  HandleScope scope;
-
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  return scope.Close(Number::New(ctx->shadowY));
-}
-
 METHOD(SetShadowBlur) {
   HandleScope scope;
 
@@ -756,14 +736,6 @@ METHOD(SetShadowBlur) {
   ctx->shadowBlur = args[0]->NumberValue();
 
   return scope.Close(Undefined());
-}
-
-METHOD(GetShadowBlur) {
-  HandleScope scope;
-
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
-  return scope.Close(Number::New(ctx->shadowBlur));
 }
 
 METHOD(SetShadowColor) {
@@ -780,16 +752,6 @@ METHOD(SetShadowColor) {
   U8CPU b = args[2]->NumberValue();
 
   ctx->shadowPaint.setColor(SkColorSetARGBInline(a,r,g,b));
-
-
-  return scope.Close(Undefined());
-}
-
-METHOD(GetShadowColor) {
-  HandleScope scope;
-
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-
 
 
   return scope.Close(Undefined());
