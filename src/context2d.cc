@@ -40,7 +40,7 @@ using namespace v8;
        FunctionTemplate::New(name)->GetFunction()); \
 
 #define METHOD(name) Handle<Value> Context2D::name(const Arguments& args)
-#define DEGREES(rads) rads * 180/M_PI
+#define DEGREES(rads) (rads) * (180/M_PI)
 
 void Context2D::Init(v8::Handle<v8::Object> exports) {
   SkAutoGraphics ag;
@@ -1151,9 +1151,8 @@ METHOD(Rect) {
   SkScalar w = SkDoubleToScalar(args[2]->NumberValue());
   SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
 
-  SkRect src = SkRect::MakeXYWH(x, y, w, h);
   SkPath subpath;
-  subpath.addRect(src);
+  subpath.addRect(SkRect::MakeXYWH(x, y, w, h));
   SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
   subpath.transform(currentTransform);
   ctx->path.addPath(subpath);
@@ -1165,7 +1164,7 @@ METHOD(Arc) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  SkMatrix currentTransform(ctx->canvas->getTotalMatrix());
+  SkMatrix m = ctx->canvas->getTotalMatrix();
 
   SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
@@ -1174,46 +1173,57 @@ METHOD(Arc) {
   SkScalar ea = SkDoubleToScalar(args[4]->NumberValue());
   bool ccw = args[5]->BooleanValue();
 
+
+  SkPoint pt;
+  m.mapXY(x, y, &pt);
+
   if (!ctx->path.isEmpty()) {
-    ctx->path.lineTo(x, y);
+    ctx->path.lineTo(pt);
   }
 
   SkRect rect;
-
-  currentTransform.mapRect(&rect, SkRect::MakeLTRB(x-r, y-r, x+r, y+r));
+  m.mapRect(&rect, SkRect::MakeLTRB(x-r, y-r, x+r, y+r));
 
   if (!ccw) {
-    if (sa > ea + TAU) {
+    if (sa > ea+TAU) {
       ea = fmodf(ea, TAU);
+      sa = fmodf(sa, TAU);
     }
-
-    if (sa == 0 && ea < 0) {
-      ea = fabs(ea);
-    }
-
-    ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
-  } else if (sa != ea) {
-
-    double diff = TAU-fabs(sa - ea);
-
-    if (sa > ea + TAU || (diff < 0 && diff > -.0001)) {
-      ctx->path.addCircle(x, y, r, SkPath::kCCW_Direction);
-    } else {
-
-      if (ea > sa + TAU) {
-        ea = fmodf(ea, TAU);
-        sa = fmodf(sa, TAU);
-        ctx->path.addArc(rect, 360-DEGREES(sa), DEGREES(ea));
-      } else if (sa == 0) {
-        ctx->path.addArc(rect, DEGREES(sa), -DEGREES(fabs(sa-ea)));
-      } else if (ea == 0) {
-        ctx->path.addArc(rect, DEGREES(sa), -DEGREES(fabs(ea-sa)));
-      } else {
-        ctx->path.addArc(rect, DEGREES(sa), DEGREES(ea));
-      }
+  } else {
+    if (ea > sa+TAU) {
+      ea = fmodf(ea, TAU);
+      sa = fmodf(sa, TAU);
     }
   }
 
+  SkScalar diff = ea-sa;
+  if (diff > TAU) {
+    diff = fmodf(diff, TAU);
+  }
+
+  SkScalar startDegrees = fmodf(DEGREES(sa), 360.0);
+  SkScalar sweepDegrees = DEGREES(diff);
+
+  if (sweepDegrees == 0 || sweepDegrees >= 360 || sweepDegrees <= -360 || ea > sa+TAU) {
+    ctx->path.arcTo(rect, startDegrees, 0, false);
+    ctx->path.addOval(
+      rect,
+      ccw ? SkPath::kCCW_Direction : SkPath::kCW_Direction
+    );
+
+    ctx->path.arcTo(rect, startDegrees + sweepDegrees, 0, true);
+
+  } else {
+
+    sweepDegrees = fmodf(sweepDegrees, 360);
+
+    if (ccw && sweepDegrees >= 0) {
+      sweepDegrees -= 360;
+    } else if (!ccw && sweepDegrees <= 0) {
+      sweepDegrees += 360;
+    }
+    ctx->path.arcTo(rect, startDegrees, sweepDegrees, false);
+  }
 
   return scope.Close(Undefined());
 }

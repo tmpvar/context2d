@@ -1218,14 +1218,18 @@ module.exports.createContext = function(canvas, w, h) {
       return;
     }
 
+    if (radius < 0) {
+      throw new DOMException('radius must be > 0', DOMException.INDEX_SIZE_ERR);
+    }
+
+    if (startAngle === endAngle) {
+      return;
+    }
+
     var diff = TAU-Math.abs(startAngle - endAngle);
 
     if (ccw && diff > 0 && diff < 0.0001) {
       return;
-    }
-
-    if (radius < 0) {
-      throw new DOMException('radius must be > 0', DOMException.INDEX_SIZE_ERR);
     }
 
     arc(x, y, radius, startAngle, endAngle, ccw);
