@@ -62,7 +62,9 @@ function gm_test {
 
   rm -rf $ACTUAL_OUTPUT_DIR
   mkdir -p $ACTUAL_OUTPUT_DIR
-  COMMAND="$GM_BINARY $GM_ARGS --writeJsonSummaryPath $JSON_SUMMARY_FILE"
+
+  COMMAND="$GM_BINARY $GM_ARGS --writeJsonSummaryPath $JSON_SUMMARY_FILE --writePath $ACTUAL_OUTPUT_DIR/writePath --mismatchPath $ACTUAL_OUTPUT_DIR/mismatchPath"
+
   echo "$COMMAND" >$ACTUAL_OUTPUT_DIR/command_line
   $COMMAND >$ACTUAL_OUTPUT_DIR/stdout 2>$ACTUAL_OUTPUT_DIR/stderr
   echo $? >$ACTUAL_OUTPUT_DIR/return_value
@@ -76,6 +78,17 @@ function gm_test {
   mv $ACTUAL_OUTPUT_DIR/stdout-tmp $ACTUAL_OUTPUT_DIR/stdout
   grep ^GM: $ACTUAL_OUTPUT_DIR/stderr >$ACTUAL_OUTPUT_DIR/stderr-tmp
   mv $ACTUAL_OUTPUT_DIR/stderr-tmp $ACTUAL_OUTPUT_DIR/stderr
+
+  # Replace image file contents with just the filename, for two reasons:
+  # 1. Image file encoding may vary by platform
+  # 2. https://code.google.com/p/chromium/issues/detail?id=169600
+  #    ('gcl/upload.py fail to upload binary files to rietveld')
+  for IMAGEFILE in $(ls $ACTUAL_OUTPUT_DIR/*/*/*.png); do
+    echo "[contents of $IMAGEFILE]" >$IMAGEFILE
+  done
+  for MISMATCHDIR in $(ls -d $ACTUAL_OUTPUT_DIR/mismatchPath/*); do
+    echo "Created additional file to make sure directory isn't empty, because self-test cannot handle empty directories." >$MISMATCHDIR/bogusfile
+  done
 
   compare_directories $EXPECTED_OUTPUT_DIR $ACTUAL_OUTPUT_DIR
 }
