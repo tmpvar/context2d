@@ -9,12 +9,12 @@ test(module, '2d.transformation.order','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.scale(2, 1);
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#0f0';
@@ -29,12 +29,12 @@ test(module, '2d.transformation.rotate.direction','green-100x50.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, -100, 50, 100);
@@ -48,20 +48,20 @@ test(module, '2d.transformation.rotate.nonfinite','green-100x50.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 10);
   ctx.rotate(Infinity);
   ctx.rotate(-Infinity);
   ctx.rotate(NaN);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -10, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -72,12 +72,12 @@ test(module, '2d.transformation.rotate.radians','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.rotate(Math.PI); // should fail obviously if this is 3.1 degrees
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -50, 100, 50);
@@ -91,12 +91,12 @@ test(module, '2d.transformation.rotate.wrap','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.rotate(Math.PI * (1 + 4096)); // == pi (mod 2*pi)
   // We need about pi +/- 0.001 in order to get correct-looking results
   // 32-bit floats can store pi*4097 with precision 2^-10, so that should
@@ -115,12 +115,12 @@ test(module, '2d.transformation.rotate.wrapnegative','green-100x50.png', functio
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.rotate(-Math.PI * (1 + 4096));
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -50, 100, 50);
@@ -136,12 +136,12 @@ test(module, '2d.transformation.rotate.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.rotate(0);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
@@ -155,12 +155,12 @@ test(module, '2d.transformation.scale.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.scale(2, 4);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 50, 12.5);
@@ -174,12 +174,12 @@ test(module, '2d.transformation.scale.large','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.scale(1e5, 1e5);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 1, 1);
@@ -193,12 +193,12 @@ test(module, '2d.transformation.scale.multiple','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.scale(Math.sqrt(2), Math.sqrt(2));
   ctx.scale(Math.sqrt(2), Math.sqrt(2));
   ctx.fillStyle = '#0f0';
@@ -213,18 +213,18 @@ test(module, '2d.transformation.scale.negative','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.save();
   ctx.scale(-1, 1);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-50, 0, 50, 50);
   ctx.restore();
-  
+
   ctx.save();
   ctx.scale(1, -1);
   ctx.fillStyle = '#0f0';
@@ -241,12 +241,12 @@ test(module, '2d.transformation.scale.nonfinite','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 10);
   ctx.scale(Infinity, 0.1);
   ctx.scale(-Infinity, 0.1);
@@ -255,10 +255,10 @@ test(module, '2d.transformation.scale.nonfinite','green-100x50.png', function(t)
   ctx.scale(0.1, -Infinity);
   ctx.scale(0.1, NaN);
   ctx.scale(Infinity, Infinity);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -10, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -269,29 +269,29 @@ test(module, '2d.transformation.scale.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.save();
   ctx.translate(50, 0);
   ctx.scale(0, 1);
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
   ctx.restore();
-  
+
   ctx.save();
   ctx.translate(0, 25);
   ctx.scale(1, 0);
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
   ctx.restore();
-  
+
   // Firefox has a bug where it renders the canvas as empty and toDataURL throws an exception
   canvas.toDataURL();
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -302,12 +302,12 @@ test(module, '2d.transformation.setTransform.multiple','green-100x50.png', funct
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.setTransform(1/2,0, 0,1/2, 0,0);
   ctx.setTransform(2,0, 0,2, 0,0);
   ctx.fillStyle = '#0f0';
@@ -322,12 +322,12 @@ test(module, '2d.transformation.setTransform.nonfinite','green-100x50.png', func
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 10);
   ctx.setTransform(Infinity, 0, 0, 0, 0, 0);
   ctx.setTransform(-Infinity, 0, 0, 0, 0, 0);
@@ -404,10 +404,10 @@ test(module, '2d.transformation.setTransform.nonfinite','green-100x50.png', func
   ctx.setTransform(0, 0, 0, Infinity, Infinity, Infinity);
   ctx.setTransform(0, 0, 0, Infinity, 0, Infinity);
   ctx.setTransform(0, 0, 0, 0, Infinity, Infinity);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -10, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -418,7 +418,7 @@ test(module, '2d.transformation.setTransform.skewed','green-100x50.png', functio
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Create green with a red square ring inside it
@@ -428,7 +428,7 @@ test(module, '2d.transformation.setTransform.skewed','green-100x50.png', functio
   ctx.fillRect(20, 10, 60, 30);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(40, 20, 20, 10);
-  
+
   // Draw a skewed shape to fill that gap, to make sure it is aligned correctly
   ctx.setTransform(1,4, 2,3, 5,6);
   // Post-transform coordinates:
@@ -459,12 +459,12 @@ test(module, '2d.transformation.transform.identity','green-100x50.png', function
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.transform(1,0, 0,1, 0,0);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
@@ -478,12 +478,12 @@ test(module, '2d.transformation.transform.multiply','green-100x50.png', function
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.transform(1,2, 3,4, 5,6);
   ctx.transform(-2,1, 3/2,-1/2, 1,-2);
   ctx.fillStyle = '#0f0';
@@ -498,12 +498,12 @@ test(module, '2d.transformation.transform.nonfinite','green-100x50.png', functio
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 10);
   ctx.transform(Infinity, 0, 0, 0, 0, 0);
   ctx.transform(-Infinity, 0, 0, 0, 0, 0);
@@ -580,10 +580,10 @@ test(module, '2d.transformation.transform.nonfinite','green-100x50.png', functio
   ctx.transform(0, 0, 0, Infinity, Infinity, Infinity);
   ctx.transform(0, 0, 0, Infinity, 0, Infinity);
   ctx.transform(0, 0, 0, 0, Infinity, Infinity);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -10, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -594,7 +594,7 @@ test(module, '2d.transformation.transform.skewed','green-100x50.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // Create green with a red square ring inside it
@@ -604,7 +604,7 @@ test(module, '2d.transformation.transform.skewed','green-100x50.png', function(t
   ctx.fillRect(20, 10, 60, 30);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(40, 20, 20, 10);
-  
+
   // Draw a skewed shape to fill that gap, to make sure it is aligned correctly
   ctx.transform(1,4, 2,3, 5,6);
   // Post-transform coordinates:
@@ -635,12 +635,12 @@ test(module, '2d.transformation.translate.basic','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 50);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -50, 100, 50);
@@ -654,12 +654,12 @@ test(module, '2d.transformation.translate.nonfinite','green-100x50.png', functio
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.translate(100, 10);
   ctx.translate(Infinity, 0.1);
   ctx.translate(-Infinity, 0.1);
@@ -668,10 +668,10 @@ test(module, '2d.transformation.translate.nonfinite','green-100x50.png', functio
   ctx.translate(0.1, -Infinity);
   ctx.translate(0.1, NaN);
   ctx.translate(Infinity, Infinity);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(-100, -10, 100, 50);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()

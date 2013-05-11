@@ -147,6 +147,11 @@ var run = function(complete) {
         passedTests++;
         argv.v && log('  √ ' + test.name);
       } else {
+        if (argv.f) {
+          console.log(e);
+          test.ctx && test.ctx.debug();
+        }
+
         failedTests++;
         log('  ✖ ' + test.name);
         log('     ', e.actual || e.stack || e);
@@ -166,6 +171,7 @@ var run = function(complete) {
       // assert.fail = function(msg) {
       //   throw new Error(msg);
       // };
+      assert.context = test;
       test.fn(assert);
     } catch (e) {
       result(e);

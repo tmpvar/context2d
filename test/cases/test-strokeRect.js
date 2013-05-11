@@ -9,7 +9,7 @@ test(module, '2d.strokeRect.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';
@@ -25,23 +25,23 @@ test(module, '2d.strokeRect.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.beginPath();
   ctx.rect(0, 0, 16, 16);
   ctx.clip();
-  
+
   ctx.strokeStyle = '#f00';
   ctx.lineWidth = 50;
   ctx.strokeRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 16, 16);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -52,7 +52,7 @@ test(module, '2d.strokeRect.globalalpha','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0;
@@ -69,7 +69,7 @@ test(module, '2d.strokeRect.globalcomposite','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'source-in';
@@ -86,7 +86,7 @@ test(module, '2d.strokeRect.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -110,12 +110,12 @@ test(module, '2d.strokeRect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.strokeStyle = '#f00';
   ctx.lineWidth = 150;
   ctx.strokeRect(Infinity, 0, 100, 50);
@@ -141,7 +141,7 @@ test(module, '2d.strokeRect.nonfinite','green-100x50.png', function(t) {
   ctx.strokeRect(0, Infinity, Infinity, Infinity);
   ctx.strokeRect(0, Infinity, 100, Infinity);
   ctx.strokeRect(0, 0, Infinity, Infinity);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -152,7 +152,7 @@ test(module, '2d.strokeRect.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.beginPath();
@@ -172,7 +172,7 @@ test(module, '2d.strokeRect.shadow','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -195,7 +195,7 @@ test(module, '2d.strokeRect.transform','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.scale(10, 10);
@@ -213,7 +213,7 @@ test(module, '2d.strokeRect.zero.1','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -229,7 +229,7 @@ test(module, '2d.strokeRect.zero.2','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -247,7 +247,7 @@ test(module, '2d.strokeRect.zero.3','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';
@@ -263,7 +263,7 @@ test(module, '2d.strokeRect.zero.4','clear-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#f00';
@@ -280,7 +280,7 @@ test(module, '2d.strokeRect.zero.5','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.strokeStyle = '#0f0';

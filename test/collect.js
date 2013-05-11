@@ -110,7 +110,7 @@ files.forEach(function(file) {
   testString = testString.trim();
 
   testString = testString.replace(/document.getElementById\(([^\)]+)\)/ig, "images[$1]");
-  testString = testString.replace(/document.createElement\(.canvas.\)/g,'helpers.createCanvas(document)');
+  testString = testString.replace(/document.createElement\(.canvas.\)/g,'helpers.createCanvas(t, document)');
   testString = testString.replace(/new Canvas\(/g,'new Canvas(document)');
   testString = testString.replace(/_assert\(/g, 'helpers.ok(t, ');
   testString = testString.replace(/_assertSame\(/g, 'helpers.assertEqual(t, ');

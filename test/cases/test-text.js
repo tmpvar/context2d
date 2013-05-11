@@ -9,7 +9,7 @@ test(module, '2d.text.align.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.textAlign, 'start', "ctx.textAlign", "'start'");
@@ -22,7 +22,7 @@ test(module, '2d.text.align.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.textAlign = 'start';
@@ -49,7 +49,7 @@ test(module, '2d.text.align.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.textAlign = 'start';
@@ -75,7 +75,7 @@ test(module, '2d.text.baseline.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.textBaseline, 'alphabetic', "ctx.textBaseline", "'alphabetic'");
@@ -88,7 +88,7 @@ test(module, '2d.text.baseline.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.textBaseline = 'top';
@@ -115,7 +115,7 @@ test(module, '2d.text.baseline.valid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.textBaseline = 'top';
@@ -144,7 +144,7 @@ test(module, '2d.text.draw.align.center','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -170,7 +170,7 @@ test(module, '2d.text.draw.align.end.ltr','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -196,7 +196,7 @@ test(module, '2d.text.draw.align.end.rtl','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   canvas.dir = 'rtl';
@@ -224,7 +224,7 @@ test(module, '2d.text.draw.align.left','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -250,7 +250,7 @@ test(module, '2d.text.draw.align.right','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -276,7 +276,7 @@ test(module, '2d.text.draw.align.start.ltr','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -302,7 +302,7 @@ test(module, '2d.text.draw.align.start.rtl','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   canvas.dir = 'rtl';
@@ -330,7 +330,7 @@ test(module, '2d.text.draw.baseline.alphabetic','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -356,7 +356,7 @@ test(module, '2d.text.draw.baseline.bottom','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -383,7 +383,7 @@ test(module, '2d.text.draw.baseline.hanging','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -409,7 +409,7 @@ test(module, '2d.text.draw.baseline.ideographic','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -435,7 +435,7 @@ test(module, '2d.text.draw.baseline.middle','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -461,7 +461,7 @@ test(module, '2d.text.draw.baseline.top','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -487,7 +487,7 @@ test(module, '2d.text.draw.fill.basic','2d.text.draw.fill.basic.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#000';
@@ -507,7 +507,7 @@ test(module, '2d.text.draw.fill.maxWidth.bound','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -530,7 +530,7 @@ test(module, '2d.text.draw.fill.maxWidth.fontface','green-100x50.png', function(
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -553,7 +553,7 @@ test(module, '2d.text.draw.fill.maxWidth.large','2d.text.draw.fill.maxWidth.larg
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#000';
@@ -572,7 +572,7 @@ test(module, '2d.text.draw.fill.maxWidth.small','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -591,7 +591,7 @@ test(module, '2d.text.draw.fill.maxWidth.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -610,7 +610,7 @@ test(module, '2d.text.draw.fill.rtl','2d.text.draw.fill.rtl.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   canvas.dir = 'rtl';
@@ -632,7 +632,7 @@ test(module, '2d.text.draw.fill.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -660,7 +660,7 @@ test(module, '2d.text.draw.fontface','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '67px CanvasTest';
@@ -683,7 +683,7 @@ test(module, '2d.text.draw.fontface.notinpage','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '67px CanvasTest';
@@ -706,7 +706,7 @@ test(module, '2d.text.draw.fontface.repeat','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -730,7 +730,7 @@ test(module, '2d.text.draw.kern.consistent','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -754,7 +754,7 @@ test(module, '2d.text.draw.space.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -775,7 +775,7 @@ test(module, '2d.text.draw.space.collapse.end','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -797,7 +797,7 @@ test(module, '2d.text.draw.space.collapse.nonspace','green-100x50.png', function
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -818,7 +818,7 @@ test(module, '2d.text.draw.space.collapse.other','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -839,7 +839,7 @@ test(module, '2d.text.draw.space.collapse.space','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -860,7 +860,7 @@ test(module, '2d.text.draw.space.collapse.start','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '50px CanvasTest';
@@ -881,7 +881,7 @@ test(module, '2d.text.draw.stroke.basic','2d.text.draw.stroke.basic.png', functi
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#000';
@@ -902,7 +902,7 @@ test(module, '2d.text.draw.stroke.unaffected','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -931,7 +931,7 @@ test(module, '2d.text.font.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.font, '10px sans-serif', "ctx.font", "'10px sans-serif'");
@@ -944,7 +944,7 @@ test(module, '2d.text.font.parse.basic',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '20px serif';
@@ -961,7 +961,7 @@ test(module, '2d.text.font.parse.complex',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = 'small-caps italic 400 12px/2 Unknown Font, sans-serif';
@@ -975,7 +975,7 @@ test(module, '2d.text.font.parse.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = '20px serif';
@@ -1013,10 +1013,10 @@ test(module, '2d.text.font.parse.size.percentage.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   var ctx2 = canvas2.getContext('2d');
   ctx.font = '1000% serif';
   helpers.assertEqual(t, ctx.font, '100px serif', "ctx.font", "'100px serif'");
@@ -1029,7 +1029,7 @@ test(module, '2d.text.font.parse.size.percentage',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   // set in the html
@@ -1048,7 +1048,7 @@ test(module, '2d.text.font.parse.system',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.font = 'message-box';
@@ -1062,7 +1062,7 @@ test(module, '2d.text.measure.width.basic',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   setTimeout(wrapFunction(t, function () {
@@ -1082,7 +1082,7 @@ test(module, '2d.text.measure.width.empty',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   setTimeout(wrapFunction(t, function () {
@@ -1097,7 +1097,7 @@ test(module, '2d.text.measure.width.space',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   setTimeout(wrapFunction(t, function () {

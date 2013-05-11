@@ -80,7 +80,7 @@ module.exports.createWindow = function() {
   return window;
 }
 
-module.exports.createCanvas = function(doc, w, h) {
+module.exports.createCanvas = function(t, doc, w, h) {
   w = w || 300;
   h = h || 150;
 
@@ -130,6 +130,7 @@ module.exports.createCanvas = function(doc, w, h) {
       module.exports.output(el.ctx);
       ctx.dumpState();
     }
+    t.context.ctx = ctx;
 
     el.ctx.addFont('CanvasTest', CanvasFontBuffer);
 

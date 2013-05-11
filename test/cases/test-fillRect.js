@@ -9,7 +9,7 @@ test(module, '2d.fillRect.basic','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -24,22 +24,22 @@ test(module, '2d.fillRect.clip','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.beginPath();
   ctx.rect(0, 0, 16, 16);
   ctx.clip();
-  
+
   ctx.fillStyle = '#f00';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 16, 16);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -50,7 +50,7 @@ test(module, '2d.fillRect.negative','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -73,12 +73,12 @@ test(module, '2d.fillRect.nonfinite','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#f00';
   ctx.fillRect(Infinity, 0, 100, 50);
   ctx.fillRect(-Infinity, 0, 100, 50);
@@ -103,7 +103,7 @@ test(module, '2d.fillRect.nonfinite','green-100x50.png', function(t) {
   ctx.fillRect(0, Infinity, Infinity, Infinity);
   ctx.fillRect(0, Infinity, 100, Infinity);
   ctx.fillRect(0, 0, Infinity, Infinity);
-  
+
   helpers.assertPixel(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255");
 
   t.done()
@@ -114,7 +114,7 @@ test(module, '2d.fillRect.path','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.beginPath();
@@ -133,7 +133,7 @@ test(module, '2d.fillRect.shadow','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#f00';
@@ -153,7 +153,7 @@ test(module, '2d.fillRect.transform','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.scale(10, 10);
@@ -170,7 +170,7 @@ test(module, '2d.fillRect.zero','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';

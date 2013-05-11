@@ -13,10 +13,10 @@ test(module, '2d.composite.canvas.copy','2d.composite.canvas.copy.png', function
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -40,10 +40,10 @@ test(module, '2d.composite.canvas.destination-atop','2d.composite.canvas.destina
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -67,10 +67,10 @@ test(module, '2d.composite.canvas.destination-in','2d.composite.canvas.destinati
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -94,10 +94,10 @@ test(module, '2d.composite.canvas.destination-out','2d.composite.canvas.destinat
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -121,10 +121,10 @@ test(module, '2d.composite.canvas.destination-over','2d.composite.canvas.destina
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -148,10 +148,10 @@ test(module, '2d.composite.canvas.lighter','2d.composite.canvas.lighter.png', fu
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -175,10 +175,10 @@ test(module, '2d.composite.canvas.source-atop','2d.composite.canvas.source-atop.
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -202,10 +202,10 @@ test(module, '2d.composite.canvas.source-in','2d.composite.canvas.source-in.png'
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -229,10 +229,10 @@ test(module, '2d.composite.canvas.source-out','2d.composite.canvas.source-out.pn
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -256,10 +256,10 @@ test(module, '2d.composite.canvas.source-over','2d.composite.canvas.source-over.
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -283,10 +283,10 @@ test(module, '2d.composite.canvas.xor','2d.composite.canvas.xor.png', function(t
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
-    var canvas2 = helpers.createCanvas(document);
+    var canvas2 = helpers.createCanvas(t, document);
     canvas2.width = canvas.width;
     canvas2.height = canvas.height;
     var ctx2 = canvas2.getContext('2d');
@@ -306,7 +306,7 @@ test(module, '2d.composite.clip.copy','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -327,7 +327,7 @@ test(module, '2d.composite.clip.destination-atop','green-100x50.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -348,7 +348,7 @@ test(module, '2d.composite.clip.destination-in','green-100x50.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -369,7 +369,7 @@ test(module, '2d.composite.clip.destination-out','green-100x50.png', function(t)
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -390,7 +390,7 @@ test(module, '2d.composite.clip.destination-over','green-100x50.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -411,7 +411,7 @@ test(module, '2d.composite.clip.lighter','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -432,7 +432,7 @@ test(module, '2d.composite.clip.source-atop','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -453,7 +453,7 @@ test(module, '2d.composite.clip.source-in','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -474,7 +474,7 @@ test(module, '2d.composite.clip.source-out','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -495,7 +495,7 @@ test(module, '2d.composite.clip.source-over','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -516,7 +516,7 @@ test(module, '2d.composite.clip.xor','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -537,16 +537,16 @@ test(module, '2d.composite.globalAlpha.canvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalAlpha = 0.01; // avoid any potential alpha=0 optimisations
@@ -561,16 +561,16 @@ test(module, '2d.composite.globalAlpha.canvaspattern','green-100x50.png', functi
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#f00';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
   ctx.fillStyle = ctx.createPattern(canvas2, 'no-repeat');
@@ -586,7 +586,7 @@ test(module, '2d.composite.globalAlpha.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.globalAlpha, 1.0, "ctx.globalAlpha", "1.0");
@@ -599,7 +599,7 @@ test(module, '2d.composite.globalAlpha.fill','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -621,7 +621,7 @@ test(module, '2d.composite.globalAlpha.image','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -643,7 +643,7 @@ test(module, '2d.composite.globalAlpha.imagepattern','green-100x50.png', functio
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -662,7 +662,7 @@ test(module, '2d.composite.globalAlpha.invalid',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0.5;
@@ -682,7 +682,7 @@ test(module, '2d.composite.globalAlpha.range',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalAlpha = 0.5;
@@ -708,7 +708,7 @@ test(module, '2d.composite.image.copy','2d.composite.image.copy.png', function(t
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -730,7 +730,7 @@ test(module, '2d.composite.image.destination-atop','2d.composite.image.destinati
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -752,7 +752,7 @@ test(module, '2d.composite.image.destination-in','2d.composite.image.destination
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -774,7 +774,7 @@ test(module, '2d.composite.image.destination-out','2d.composite.image.destinatio
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -796,7 +796,7 @@ test(module, '2d.composite.image.destination-over','2d.composite.image.destinati
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -818,7 +818,7 @@ test(module, '2d.composite.image.lighter','2d.composite.image.lighter.png', func
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -840,7 +840,7 @@ test(module, '2d.composite.image.source-atop','2d.composite.image.source-atop.pn
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -862,7 +862,7 @@ test(module, '2d.composite.image.source-in','2d.composite.image.source-in.png', 
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -884,7 +884,7 @@ test(module, '2d.composite.image.source-out','2d.composite.image.source-out.png'
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -906,7 +906,7 @@ test(module, '2d.composite.image.source-over','2d.composite.image.source-over.pn
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -928,7 +928,7 @@ test(module, '2d.composite.image.xor','2d.composite.image.xor.png', function(t) 
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -946,7 +946,7 @@ test(module, '2d.composite.operation.casesensitive',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -961,7 +961,7 @@ test(module, '2d.composite.operation.clear',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -976,7 +976,7 @@ test(module, '2d.composite.operation.darker',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -991,7 +991,7 @@ test(module, '2d.composite.operation.default',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   helpers.assertEqual(t, ctx.globalCompositeOperation, 'source-over', "ctx.globalCompositeOperation", "'source-over'");
@@ -1004,7 +1004,7 @@ test(module, '2d.composite.operation.get',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   var modes = ['source-atop', 'source-in', 'source-out', 'source-over',
@@ -1024,7 +1024,7 @@ test(module, '2d.composite.operation.highlight',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -1039,7 +1039,7 @@ test(module, '2d.composite.operation.nullsuffix',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -1054,7 +1054,7 @@ test(module, '2d.composite.operation.over',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -1069,7 +1069,7 @@ test(module, '2d.composite.operation.unrecognised',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.globalCompositeOperation = 'xor';
@@ -1084,7 +1084,7 @@ test(module, '2d.composite.solid.copy','2d.composite.solid.copy.png', function(t
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1102,7 +1102,7 @@ test(module, '2d.composite.solid.destination-atop','2d.composite.solid.destinati
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1120,7 +1120,7 @@ test(module, '2d.composite.solid.destination-in','2d.composite.solid.destination
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1138,7 +1138,7 @@ test(module, '2d.composite.solid.destination-out','2d.composite.solid.destinatio
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1156,7 +1156,7 @@ test(module, '2d.composite.solid.destination-over','2d.composite.solid.destinati
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1174,7 +1174,7 @@ test(module, '2d.composite.solid.lighter','2d.composite.solid.lighter.png', func
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1192,7 +1192,7 @@ test(module, '2d.composite.solid.source-atop','2d.composite.solid.source-atop.pn
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1210,7 +1210,7 @@ test(module, '2d.composite.solid.source-in','2d.composite.solid.source-in.png', 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1228,7 +1228,7 @@ test(module, '2d.composite.solid.source-out','2d.composite.solid.source-out.png'
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1246,7 +1246,7 @@ test(module, '2d.composite.solid.source-over','2d.composite.solid.source-over.pn
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1264,7 +1264,7 @@ test(module, '2d.composite.solid.xor','2d.composite.solid.xor.png', function(t) 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 1.0)';
@@ -1282,7 +1282,7 @@ test(module, '2d.composite.transparent.copy','2d.composite.transparent.copy.png'
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1300,7 +1300,7 @@ test(module, '2d.composite.transparent.destination-atop','2d.composite.transpare
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1318,7 +1318,7 @@ test(module, '2d.composite.transparent.destination-in','2d.composite.transparent
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1336,7 +1336,7 @@ test(module, '2d.composite.transparent.destination-out','2d.composite.transparen
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1354,7 +1354,7 @@ test(module, '2d.composite.transparent.destination-over','2d.composite.transpare
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1372,7 +1372,7 @@ test(module, '2d.composite.transparent.lighter','2d.composite.transparent.lighte
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1390,7 +1390,7 @@ test(module, '2d.composite.transparent.source-atop','2d.composite.transparent.so
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1408,7 +1408,7 @@ test(module, '2d.composite.transparent.source-in','2d.composite.transparent.sour
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1426,7 +1426,7 @@ test(module, '2d.composite.transparent.source-out','2d.composite.transparent.sou
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1444,7 +1444,7 @@ test(module, '2d.composite.transparent.source-over','2d.composite.transparent.so
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1462,7 +1462,7 @@ test(module, '2d.composite.transparent.xor','2d.composite.transparent.xor.png', 
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1480,7 +1480,7 @@ test(module, '2d.composite.uncovered.fill.copy','2d.composite.uncovered.fill.cop
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1499,7 +1499,7 @@ test(module, '2d.composite.uncovered.fill.destination-atop','2d.composite.uncove
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1518,7 +1518,7 @@ test(module, '2d.composite.uncovered.fill.destination-in','2d.composite.uncovere
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1537,7 +1537,7 @@ test(module, '2d.composite.uncovered.fill.source-in','2d.composite.uncovered.fil
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1556,7 +1556,7 @@ test(module, '2d.composite.uncovered.fill.source-out','2d.composite.uncovered.fi
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
@@ -1579,7 +1579,7 @@ test(module, '2d.composite.uncovered.image.copy','2d.composite.uncovered.image.c
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1602,7 +1602,7 @@ test(module, '2d.composite.uncovered.image.destination-atop','2d.composite.uncov
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1625,7 +1625,7 @@ test(module, '2d.composite.uncovered.image.destination-in','2d.composite.uncover
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1648,7 +1648,7 @@ test(module, '2d.composite.uncovered.image.source-in','2d.composite.uncovered.im
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1671,7 +1671,7 @@ test(module, '2d.composite.uncovered.image.source-out','2d.composite.uncovered.i
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1690,13 +1690,13 @@ test(module, '2d.composite.uncovered.nocontext.copy','2d.composite.uncovered.noc
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'copy';
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1708,13 +1708,13 @@ test(module, '2d.composite.uncovered.nocontext.destination-atop','2d.composite.u
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'destination-atop';
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1726,13 +1726,13 @@ test(module, '2d.composite.uncovered.nocontext.destination-in','2d.composite.unc
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'destination-in';
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1744,13 +1744,13 @@ test(module, '2d.composite.uncovered.nocontext.source-in','2d.composite.uncovere
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'source-in';
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1762,13 +1762,13 @@ test(module, '2d.composite.uncovered.nocontext.source-out','2d.composite.uncover
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
   ctx.fillRect(0, 0, 100, 50);
   ctx.globalCompositeOperation = 'source-out';
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   ctx.drawImage(canvas2, 0, 0);
   helpers.assertPixelApprox(t, canvas, 50,25, 0,0,0,0, "50,25", "0,0,0,0", 5);
 
@@ -1784,7 +1784,7 @@ test(module, '2d.composite.uncovered.pattern.copy','2d.composite.uncovered.patte
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1807,7 +1807,7 @@ test(module, '2d.composite.uncovered.pattern.destination-atop','2d.composite.unc
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1830,7 +1830,7 @@ test(module, '2d.composite.uncovered.pattern.destination-in','2d.composite.uncov
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1853,7 +1853,7 @@ test(module, '2d.composite.uncovered.pattern.source-in','2d.composite.uncovered.
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
@@ -1876,7 +1876,7 @@ test(module, '2d.composite.uncovered.pattern.source-out','2d.composite.uncovered
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';

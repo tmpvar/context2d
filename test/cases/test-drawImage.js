@@ -14,7 +14,7 @@ test(module, '2d.drawImage.3arg','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.drawImage(images['green.png'], 0, 0);
@@ -22,7 +22,7 @@ test(module, '2d.drawImage.3arg','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 100, 0);
     ctx.drawImage(images['red.png'], 0, -50);
     ctx.drawImage(images['red.png'], 0, 50);
-    
+
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -42,7 +42,7 @@ test(module, '2d.drawImage.5arg','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -51,7 +51,7 @@ test(module, '2d.drawImage.5arg','green-100x50.png', function(t) {
     ctx.drawImage(images['red.png'], 0, 0, 50, 50);
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 50, 50);
-    
+
     helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
     helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -70,7 +70,7 @@ test(module, '2d.drawImage.9arg.basic','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -95,7 +95,7 @@ test(module, '2d.drawImage.9arg.destpos','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -124,7 +124,7 @@ test(module, '2d.drawImage.9arg.destsize','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -152,7 +152,7 @@ test(module, '2d.drawImage.9arg.sourcepos','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -176,7 +176,7 @@ test(module, '2d.drawImage.9arg.sourcesize','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -207,7 +207,7 @@ test(module, '2d.drawImage.alpha','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -229,7 +229,7 @@ test(module, '2d.drawImage.animated.apng','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     setTimeout(wrapFunction(t, function () {
@@ -249,7 +249,7 @@ test(module, '2d.drawImage.animated.gif','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     setTimeout(wrapFunction(t, function () {
@@ -269,7 +269,7 @@ test(module, '2d.drawImage.animated.poster','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.drawImage(images['anim-poster-gr.png'], 0, 0);
@@ -288,7 +288,7 @@ test(module, '2d.drawImage.broken','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -306,19 +306,19 @@ test(module, '2d.drawImage.canvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
-  var canvas2 = helpers.createCanvas(document);
+  var canvas2 = helpers.createCanvas(t, document);
   canvas2.width = 100;
   canvas2.height = 50;
   var ctx2 = canvas2.getContext('2d');
   ctx2.fillStyle = '#0f0';
   ctx2.fillRect(0, 0, 100, 50);
-  
+
   ctx.fillStyle = '#f00';
   ctx.drawImage(canvas2, 0, 0);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -336,7 +336,7 @@ test(module, '2d.drawImage.clip','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -359,7 +359,7 @@ test(module, '2d.drawImage.composite','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -381,7 +381,7 @@ test(module, '2d.drawImage.floatsource','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.drawImage(images['green.png'], 10.1, 10.1, 0.1, 0.1, 0, 0, 100, 50);
@@ -396,7 +396,7 @@ test(module, '2d.drawImage.incomplete','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -417,7 +417,7 @@ test(module, '2d.drawImage.negativedest','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -448,7 +448,7 @@ test(module, '2d.drawImage.negativedir','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -479,7 +479,7 @@ test(module, '2d.drawImage.negativesource','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#f00';
@@ -510,7 +510,7 @@ test(module, '2d.drawImage.nonfinite','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -832,7 +832,7 @@ test(module, '2d.drawImage.nowrap','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -851,7 +851,7 @@ test(module, '2d.drawImage.null',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -871,7 +871,7 @@ test(module, '2d.drawImage.outsidesource','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.drawImage(images['green.png'], 10.5, 10.5, 89.5, 39.5, 0, 0, 100, 50);
@@ -916,7 +916,7 @@ test(module, '2d.drawImage.path','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -934,7 +934,7 @@ test(module, '2d.drawImage.self.1','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -942,7 +942,7 @@ test(module, '2d.drawImage.self.1','green-100x50.png', function(t) {
   ctx.fillStyle = '#f00';
   ctx.fillRect(50, 0, 50, 50);
   ctx.drawImage(canvas, 50, 0);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -956,7 +956,7 @@ test(module, '2d.drawImage.self.2','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
@@ -966,7 +966,7 @@ test(module, '2d.drawImage.self.2','green-100x50.png', function(t) {
   ctx.drawImage(canvas, 0, 1);
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 2);
-  
+
   helpers.assertPixelApprox(t, canvas, 0,0, 0,255,0,255, "0,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 99,0, 0,255,0,255, "99,0", "0,255,0,255", 2);
   helpers.assertPixelApprox(t, canvas, 0,49, 0,255,0,255, "0,49", "0,255,0,255", 2);
@@ -984,7 +984,7 @@ test(module, '2d.drawImage.transform','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
@@ -1002,7 +1002,7 @@ test(module, '2d.drawImage.wrongtype',null, function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   try { var _thrown = false;
@@ -1026,31 +1026,31 @@ test(module, '2d.drawImage.zerocanvas','green-100x50.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 100, 50);
+  var canvas = helpers.createCanvas(t, document, 100, 50);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 50);
-  
-  var canvas2 = helpers.createCanvas(document);
+
+  var canvas2 = helpers.createCanvas(t, document);
   canvas2.width = 0;
   canvas2.height = 10;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
   } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+
   canvas2.width = 10;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
   } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+
   canvas2.width = 0;
   canvas2.height = 0;
   try { var _thrown = false;
     ctx.drawImage(canvas2, 0, 0);
   } catch (e) { if (e.code != DOMException.INVALID_STATE_ERR) t.fail("Failed assertion: expected exception of type INVALID_STATE_ERR, got: "+e.message); _thrown = true; } finally { helpers.ok(t, _thrown, "should throw exception of type INVALID_STATE_ERR: ctx.drawImage(canvas2, 0, 0)"); }
-  
+
   helpers.assertPixelApprox(t, canvas, 50,25, 0,255,0,255, "50,25", "0,255,0,255", 2);
 
   t.done()
@@ -1065,7 +1065,7 @@ test(module, '2d.drawImage.zerosource','green-100x50.png', function(t) {
     var window = helpers.createWindow();
     var document = window.document;
 
-    var canvas = helpers.createCanvas(document, 100, 50);
+    var canvas = helpers.createCanvas(t, document, 100, 50);
     var ctx = canvas.getContext('2d')
 
     ctx.fillStyle = '#0f0';
