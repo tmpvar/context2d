@@ -9,7 +9,7 @@ test(module, '2d.scaled','2d.scaled.png', function(t) {
   var window = helpers.createWindow();
   var document = window.document;
 
-  var canvas = helpers.createCanvas(document, 50, 25);
+  var canvas = helpers.createCanvas(t, document, 50, 25);
   var ctx = canvas.getContext('2d')
 
   ctx.fillStyle = '#00f';
