@@ -148,7 +148,6 @@ var run = function(complete) {
         argv.v && log('  √ ' + test.name);
       } else {
         if (argv.f) {
-          console.log(e);
           test.ctx && test.ctx.debug();
         }
 
