@@ -746,7 +746,7 @@ test(module, '2d.gradient.radial.cone.shape2','green-100x50.png', function(t) {
   ctx.lineTo(110, -20-tol);
   ctx.lineTo(110, 100+tol);
   ctx.fill();
-  ctx.debug();
+
   helpers.assertPixel(t, canvas, 1,1, 0,255,0,255, "1,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 50,1, 0,255,0,255, "50,1", "0,255,0,255");
   helpers.assertPixel(t, canvas, 98,1, 0,255,0,255, "98,1", "0,255,0,255");
