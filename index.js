@@ -1,4 +1,8 @@
-var Context2D = require('bindings')('context2d').Context2D;
+var Context2D;
+try {
+  Context2D = require('bindings')('context2d').Context2D;
+} catch (e) {}
+
 var csscolor = require('./lib/color');
 var cssfont = require('cssfontparser');
 var util = require('util');
@@ -240,7 +244,13 @@ ContextState.prototype = {
   }
 };
 
-module.exports.createContext = function(canvas, w, h) {
+module.exports.createContext = function(canvas, w, h, ContextCtor) {
+
+  ContextCtor = ContextCtor || Context2D;
+
+  if (!ContextCtor) {
+    throw new Error('could not create context, binding not loaded');
+  }
 
   var state = new ContextState();
   var stateStack = [];
@@ -252,7 +262,7 @@ module.exports.createContext = function(canvas, w, h) {
 
   canvas.dir = canvas.dir || 'ltr';
 
-  var ret = new Context2D(canvas.width, canvas.height);
+  var ret = new ContextCtor(canvas.width, canvas.height);
 
   var override = function(orig, fn) {
     ret[orig] = fn.bind(ret, ret[orig].bind(ret))
