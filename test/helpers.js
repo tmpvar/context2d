@@ -3,7 +3,7 @@ var domino = require('domino');
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
 var fs = require('fs');
-var CanvasFontBuffer = fs.readFileSync(__dirname + '/philip/orig/fonts/CanvasTest.ttf');
+var CanvasFontBuffer = fs.readFileSync(__dirname + '/fonts/CanvasTest.ttf');
 
 
 // In the tests, this is specified in a css style. I really
