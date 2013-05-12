@@ -24,6 +24,8 @@
   },
   "devDependencies": {
     "optimist": "~0.4.0",
-    "hound": "~1.0.4"
+    "hound": "~1.0.4",
+    "glob": "~3.2.1",
+    "domino": "~1.0.11"
   }
 }
