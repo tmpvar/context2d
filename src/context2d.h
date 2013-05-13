@@ -28,6 +28,8 @@ class Context2D : public ObjectWrap {
 
   public:
     static void Init(v8::Handle<v8::Object> exports);
+    void resizeCanvas(int width, int height);
+    void *getTextureData();
     SkCanvas *canvas;
     SkPath path, subpath;
     SkPaint paint, shadowPaint, strokePaint;

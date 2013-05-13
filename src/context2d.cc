@@ -205,6 +205,29 @@ bool Context2D::setupShadow(SkPaint *paint) {
   return false;
 }
 
+void Context2D::resizeCanvas(int width, int height) {
+   SkDevice *device = this->canvas->createCompatibleDevice(
+    SkBitmap::kARGB_8888_Config,
+    width,
+    height,
+    false
+  );
+
+  // TODO: check for memory leakage.
+  SkSafeUnref(this->canvas);
+  this->canvas = new SkCanvas(device);
+}
+
+void *Context2D::getTextureData() {
+  if (this->canvas) {
+    SkBitmap bitmap = this->canvas->getDevice()->accessBitmap(false);
+    bitmap.lockPixels();
+    void *data = bitmap.getPixels();
+    bitmap.unlockPixels();
+    return data;
+  }
+  return NULL;
+}
 
 METHOD(New) {
   HandleScope scope;
@@ -225,16 +248,7 @@ METHOD(Resize) {
   int width = args[0]->Uint32Value() & 0xff;
   int height = args[1]->Uint32Value() & 0xff;
 
-  SkDevice *device = ctx->canvas->createCompatibleDevice(
-    SkBitmap::kARGB_8888_Config,
-    width,
-    height,
-    false
-  );
-
-  // TODO: check for memory leakage.
-  SkSafeUnref(ctx->canvas);
-  ctx->canvas = new SkCanvas(device);
+  ctx->resizeCanvas(width, height);
 
   return scope.Close(Undefined());
 }
