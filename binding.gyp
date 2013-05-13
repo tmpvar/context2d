@@ -12,6 +12,11 @@
     'include_dirs' : [
       '<@(shared_include_dirs)'
     ],
+    'conditions' : [
+      ['OS == "linux"', {
+        'libraries' : ['-lfreetype']
+      }]
+    ]
   },
   {
     'target_name' : 'context2d-static',
@@ -379,7 +384,7 @@
       'deps/skia/src/image/SkSurface_Gpu.cpp',
       'deps/skia/src/image/SkSurface_Picture.cpp',
       'deps/skia/src/image/SkSurface_Raster.cpp',
-      'deps/skia/src/images/bmpdecoderhelper.cpp',
+#      'deps/skia/src/images/bmpdecoderhelper.cpp',
       'deps/skia/src/images/SkBitmapRegionDecoder.cpp',
       'deps/skia/src/images/SkImageDecoder.cpp',
 #      'deps/skia/src/images/SkImageDecoder_FactoryDefault.cpp',
@@ -502,10 +507,8 @@
       'deps/skia/src/utils/SkRTConf.cpp',
       'deps/skia/src/utils/SkSHA1.cpp',
       'deps/skia/src/utils/SkThreadPool.cpp',
-#      'deps/skia/src/utils/SkThreadUtils_pthread.cpp',
 #      'deps/skia/src/utils/SkThreadUtils_pthread_mach.cpp',
 
-#      'deps/skia/src/utils/SkThreadUtils_pthread_linux.cpp',
 #      'deps/skia/src/utils/SkThreadUtils_pthread_other.cpp',
 #      'deps/skia/src/utils/SkThreadUtils_win.cpp',
       'deps/skia/src/utils/SkUnitMappers.cpp',
@@ -582,24 +585,27 @@
       ['OS == "linux"', {
         'cflags': [
           '-mssse3',
-          '<!@(freetype-config --cflags)'
+          '<!@(freetype-config --cflags)',
         ],
         'defines' : [
           'SK_USE_POSIX_THREADS'
+          'DEBUG',
+          '_DEBUG',
+          'SK_SUPPORT_GPU=1',
         ],
         'sources' : [
+          'deps/skia/src/utils/SkThreadUtils_pthread_linux.cpp',
+          'deps/skia/src/utils/SkThreadUtils_pthread.cpp',
           'deps/skia/src/ports/SkThread_pthread.cpp',
+          'deps/skia/src/ports/SkDebug_stdio.cpp',
           'deps/skia/src/ports/SkTime_Unix.cpp',
           'deps/skia/src/ports/SkFontHost_linux.cpp',
           'deps/skia/src/ports/SkFontHost_FreeType.cpp',
           'deps/skia/src/ports/SkFontHost_FreeType_common.cpp',
           'deps/skia/src/images/SkImageRef_ashmem.cpp',
-          'deps/skia/src/views/unix/skia_unix.cpp',
-          'deps/skia/src/views/unix/SkOSWindow_Unix.cpp',
-
+#          'deps/skia/src/views/unix/skia_unix.cpp',
+#          'deps/skia/src/views/unix/SkOSWindow_Unix.cpp',
         ],
-        'include_dirs' : [
-        ]
       }],
       ['OS == "win"', {
         'cflags': [
