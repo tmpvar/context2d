@@ -42,7 +42,7 @@ using namespace v8;
        FunctionTemplate::New(name)->GetFunction()); \
 
 #define METHOD(name) Handle<Value> Context2D::name(const Arguments& args)
-#define DEGREES(rads) (rads) * (180/M_PI)
+#define DEGREES(rads) ((rads) * (180/M_PI))
 
 void Context2D::Init(v8::Handle<v8::Object> exports) {
   SkAutoGraphics ag;
