@@ -279,12 +279,15 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     });
   }
 
+  ret.dirty = false;
+
   Object.defineProperty(ret, 'width', {
     get : function() { return canvas.width },
     set : function(w) {
       if (canvas.width !== w) {
         canvas.width = w;
         ret.resize(canvas.width, canvas.height);
+        ret.dirty = true;
       }
     }
   });
@@ -295,6 +298,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
       if (canvas.h !== h) {
         canvas.height = h;
         ret.resize(canvas.width, canvas.height);
+        ret.dirty = true;
       }
     }
   });
@@ -310,6 +314,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
       if (!isNaN(v) && isFinite(v) && v >= 0 && v <= 1) {
         state.globalAlpha = v;
         ret.setGlobalAlpha(v);
+        ret.dirty = true;
       }
     }
   });
@@ -336,6 +341,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
       if (mapping[str]) {
         state.globalCompositeOperation = str;
         ret.setGlobalCompositeOperation(mapping[str]);
+        ret.dirty = true;
       }
     }
   });
@@ -599,6 +605,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
+    ret.dirty = true;
   };
 
 
@@ -937,6 +944,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     fillRect(x, y, w, h);
+    ret.dirty = true;
   });
 
   override('clearRect', function(clearRect, x, y, w, h) {
@@ -951,6 +959,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     clearRect(x, y, w, h);
+    ret.dirty = true;
   });
 
   override('strokeRect', function(strokeRect, x, y, w, h) {
@@ -966,6 +975,17 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     strokeRect(x, y, w, h);
+    ret.dirty = true;
+  });
+
+  override('stroke', function(stroke) {
+    stroke();
+    ret.dirty = true;
+  });
+
+  override('fill', function(fill) {
+    fill();
+    ret.dirty = true;
   });
 
   override('scale', function(scale, x, y) {
@@ -1117,6 +1137,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     putImageData(new Buffer(id.data), dx, dy, dirtyX, dirtyY, width, height, id.width);
+    ret.dirty = true;
   })
 
   ret.createImageData = function(obj, h) {
@@ -1206,12 +1227,14 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     fillText(str, x, y, maxWidth);
+    ret.dirty = true;
   });
 
   override('strokeText', function(strokeText, str, x, y) {
     requireArgs(arguments, 4);
 
     strokeText(str, x, y);
+    ret.dirty = true;
   });
 
 
