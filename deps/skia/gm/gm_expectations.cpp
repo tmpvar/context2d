@@ -11,16 +11,21 @@
 
 #define DEBUGFAIL_SEE_STDERR SkDEBUGFAIL("see stderr for message")
 
+// These constants must be kept in sync with the JSONKEY_ constants in
+// display_json_results.py !
 const static char kJsonKey_ActualResults[]   = "actual-results";
 const static char kJsonKey_ActualResults_Failed[]        = "failed";
 const static char kJsonKey_ActualResults_FailureIgnored[]= "failure-ignored";
 const static char kJsonKey_ActualResults_NoComparison[]  = "no-comparison";
 const static char kJsonKey_ActualResults_Succeeded[]     = "succeeded";
-const static char kJsonKey_ActualResults_AnyStatus_BitmapHash[]  = "bitmap-64bitMD5";
 
 const static char kJsonKey_ExpectedResults[] = "expected-results";
-const static char kJsonKey_ExpectedResults_AllowedBitmapHashes[] = "allowed-bitmap-64bitMD5s";
-const static char kJsonKey_ExpectedResults_IgnoreFailure[]           = "ignore-failure";
+const static char kJsonKey_ExpectedResults_AllowedDigests[] = "allowed-digests";
+const static char kJsonKey_ExpectedResults_IgnoreFailure[]  = "ignore-failure";
+
+// Types of result hashes we support in the JSON file.
+const static char kJsonKey_Hashtype_Bitmap_64bitMD5[]  = "bitmap-64bitMD5";
+
 
 namespace skiagm {
 
@@ -32,26 +37,13 @@ namespace skiagm {
         va_end(args);
     }
 
-    SkString make_filename(const char path[],
-                           const char renderModeDescriptor[],
-                           const char *name,
-                           const char suffix[]) {
-        SkString filename(path);
-        if (filename.endsWith(SkPATH_SEPARATOR)) {
-            filename.remove(filename.size() - 1, 1);
+    SkString SkPathJoin(const char *rootPath, const char *relativePath) {
+        SkString result(rootPath);
+        if (!result.endsWith(SkPATH_SEPARATOR)) {
+            result.appendUnichar(SkPATH_SEPARATOR);
         }
-        filename.appendf("%c%s%s.%s", SkPATH_SEPARATOR,
-                         name, renderModeDescriptor, suffix);
-        return filename;
-    }
-
-    // TODO(epoger): This currently assumes that the result SkHashDigest was
-    // generated as an SkHashDigest of an SkBitmap.  We'll need to allow for other
-    // hash types to cover non-bitmaps.
-    Json::Value ActualResultAsJsonValue(const SkHashDigest& result) {
-        Json::Value jsonValue;
-        jsonValue[kJsonKey_ActualResults_AnyStatus_BitmapHash] = asJsonValue(result);
-        return jsonValue;
+        result.append(relativePath);
+        return result;
     }
 
     Json::Value CreateJsonTree(Json::Value expectedResults,
@@ -71,6 +63,62 @@ namespace skiagm {
     }
 
 
+    // GmResultDigest class...
+
+    GmResultDigest::GmResultDigest(const SkBitmap &bitmap) {
+        fIsValid = SkBitmapHasher::ComputeDigest(bitmap, &fHashDigest);
+    }
+
+    GmResultDigest::GmResultDigest(const Json::Value &jsonTypeValuePair) {
+        fIsValid = false;
+        if (!jsonTypeValuePair.isArray()) {
+            gm_fprintf(stderr, "found non-array json value when parsing GmResultDigest: %s\n",
+                       jsonTypeValuePair.toStyledString().c_str());
+            DEBUGFAIL_SEE_STDERR;
+        } else if (2 != jsonTypeValuePair.size()) {
+            gm_fprintf(stderr, "found json array with wrong size when parsing GmResultDigest: %s\n",
+                       jsonTypeValuePair.toStyledString().c_str());
+            DEBUGFAIL_SEE_STDERR;
+        } else {
+            // TODO(epoger): The current implementation assumes that the
+            // result digest is always of type kJsonKey_Hashtype_Bitmap_64bitMD5
+            Json::Value jsonHashValue = jsonTypeValuePair[1];
+            if (!jsonHashValue.isIntegral()) {
+                gm_fprintf(stderr,
+                           "found non-integer jsonHashValue when parsing GmResultDigest: %s\n",
+                           jsonTypeValuePair.toStyledString().c_str());
+                DEBUGFAIL_SEE_STDERR;
+            } else {
+                fHashDigest = jsonHashValue.asUInt64();
+                fIsValid = true;
+            }
+        }
+    }
+
+    bool GmResultDigest::isValid() const {
+        return fIsValid;
+    }
+
+    bool GmResultDigest::equals(const GmResultDigest &other) const {
+        // TODO(epoger): The current implementation assumes that this
+        // and other are always of type kJsonKey_Hashtype_Bitmap_64bitMD5
+        return (this->fIsValid && other.fIsValid && (this->fHashDigest == other.fHashDigest));
+    }
+
+    Json::Value GmResultDigest::asJsonTypeValuePair() const {
+        // TODO(epoger): The current implementation assumes that the
+        // result digest is always of type kJsonKey_Hashtype_Bitmap_64bitMD5
+        Json::Value jsonTypeValuePair;
+        if (fIsValid) {
+            jsonTypeValuePair.append(Json::Value(kJsonKey_Hashtype_Bitmap_64bitMD5));
+            jsonTypeValuePair.append(Json::UInt64(fHashDigest));
+        } else {
+            jsonTypeValuePair.append(Json::Value("INVALID"));
+        }
+        return jsonTypeValuePair;
+    }
+
+
     // Expectations class...
 
     Expectations::Expectations(bool ignoreFailure) {
@@ -80,13 +128,7 @@ namespace skiagm {
     Expectations::Expectations(const SkBitmap& bitmap, bool ignoreFailure) {
         fBitmap = bitmap;
         fIgnoreFailure = ignoreFailure;
-        SkHashDigest digest;
-        // TODO(epoger): Better handling for error returned by ComputeDigest()?
-        // For now, we just report a digest of 0 in error cases, like before.
-        if (!SkBitmapHasher::ComputeDigest(bitmap, &digest)) {
-            digest = 0;
-        }
-        fAllowedBitmapChecksums.push_back() = digest;
+        fAllowedResultDigests.push_back(GmResultDigest(bitmap));
     }
 
     Expectations::Expectations(Json::Value jsonElement) {
@@ -107,36 +149,27 @@ namespace skiagm {
                 fIgnoreFailure = ignoreFailure.asBool();
             }
 
-            Json::Value allowedChecksums =
-                jsonElement[kJsonKey_ExpectedResults_AllowedBitmapHashes];
-            if (allowedChecksums.isNull()) {
-                // ok, we'll just assume there aren't any expected checksums to compare against
-            } else if (!allowedChecksums.isArray()) {
+            Json::Value allowedDigests = jsonElement[kJsonKey_ExpectedResults_AllowedDigests];
+            if (allowedDigests.isNull()) {
+                // ok, we'll just assume there aren't any AllowedDigests to compare against
+            } else if (!allowedDigests.isArray()) {
                 gm_fprintf(stderr, "found non-array json value"
                            " for key '%s' in element '%s'\n",
-                           kJsonKey_ExpectedResults_AllowedBitmapHashes,
+                           kJsonKey_ExpectedResults_AllowedDigests,
                            jsonElement.toStyledString().c_str());
                 DEBUGFAIL_SEE_STDERR;
             } else {
-                for (Json::ArrayIndex i=0; i<allowedChecksums.size(); i++) {
-                    Json::Value checksumElement = allowedChecksums[i];
-                    if (!checksumElement.isIntegral()) {
-                        gm_fprintf(stderr, "found non-integer checksum"
-                                   " in json element '%s'\n",
-                                   jsonElement.toStyledString().c_str());
-                        DEBUGFAIL_SEE_STDERR;
-                    } else {
-                        fAllowedBitmapChecksums.push_back() = asChecksum(checksumElement);
-                    }
+                for (Json::ArrayIndex i=0; i<allowedDigests.size(); i++) {
+                    fAllowedResultDigests.push_back(GmResultDigest(allowedDigests[i]));
                 }
             }
         }
     }
 
-    bool Expectations::match(Checksum actualChecksum) const {
-        for (int i=0; i < this->fAllowedBitmapChecksums.count(); i++) {
-            Checksum allowedChecksum = this->fAllowedBitmapChecksums[i];
-            if (allowedChecksum == actualChecksum) {
+    bool Expectations::match(GmResultDigest actualGmResultDigest) const {
+        for (int i=0; i < this->fAllowedResultDigests.count(); i++) {
+            GmResultDigest allowedResultDigest = this->fAllowedResultDigests[i];
+            if (allowedResultDigest.equals(actualGmResultDigest)) {
                 return true;
             }
         }
@@ -144,26 +177,24 @@ namespace skiagm {
     }
 
     Json::Value Expectations::asJsonValue() const {
-        Json::Value allowedChecksumArray;
-        if (!this->fAllowedBitmapChecksums.empty()) {
-            for (int i=0; i < this->fAllowedBitmapChecksums.count(); i++) {
-                Checksum allowedChecksum = this->fAllowedBitmapChecksums[i];
-                allowedChecksumArray.append(Json::UInt64(allowedChecksum));
+        Json::Value allowedDigestArray;
+        if (!this->fAllowedResultDigests.empty()) {
+            for (int i=0; i < this->fAllowedResultDigests.count(); i++) {
+                allowedDigestArray.append(this->fAllowedResultDigests[i].asJsonTypeValuePair());
             }
         }
 
-        Json::Value jsonValue;
-        jsonValue[kJsonKey_ExpectedResults_AllowedBitmapHashes] = allowedChecksumArray;
-        jsonValue[kJsonKey_ExpectedResults_IgnoreFailure] = this->ignoreFailure();
-        return jsonValue;
+        Json::Value jsonExpectations;
+        jsonExpectations[kJsonKey_ExpectedResults_AllowedDigests] = allowedDigestArray;
+        jsonExpectations[kJsonKey_ExpectedResults_IgnoreFailure]  = this->ignoreFailure();
+        return jsonExpectations;
     }
 
 
     // IndividualImageExpectationsSource class...
 
     Expectations IndividualImageExpectationsSource::get(const char *testName) {
-        SkString path = make_filename(fRootDir.c_str(), "", testName,
-                                      "png");
+        SkString path = SkPathJoin(fRootDir.c_str(), testName);
         SkBitmap referenceBitmap;
         bool decodedReferenceBitmap =
             SkImageDecoder::DecodeFile(path.c_str(), &referenceBitmap,

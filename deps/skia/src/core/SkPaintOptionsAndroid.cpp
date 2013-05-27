@@ -6,13 +6,13 @@
  * found in the LICENSE file.
  */
 
-#ifdef SK_BUILD_FOR_ANDROID
-
 #include "SkPaintOptionsAndroid.h"
 #include "SkFlattenableBuffers.h"
 #include "SkTDict.h"
 #include "SkThread.h"
 #include <cstring>
+
+#ifdef SK_BUILD_FOR_ANDROID
 
 SkLanguage SkLanguage::getParent() const {
     SkASSERT(!fTag.isEmpty());
@@ -30,13 +30,15 @@ SkLanguage SkLanguage::getParent() const {
 void SkPaintOptionsAndroid::flatten(SkFlattenableWriteBuffer& buffer) const {
     buffer.writeUInt(fFontVariant);
     buffer.writeString(fLanguage.getTag().c_str());
+    buffer.writeBool(fUseFontFallbacks);
 }
 
 void SkPaintOptionsAndroid::unflatten(SkFlattenableReadBuffer& buffer) {
     fFontVariant = (FontVariant)buffer.readUInt();
-    char* tag = buffer.readString();
+    SkString tag;
+    buffer.readString(&tag);
     fLanguage = SkLanguage(tag);
-    sk_free(tag);
+    fUseFontFallbacks = buffer.readBool();
 }
 
 #endif

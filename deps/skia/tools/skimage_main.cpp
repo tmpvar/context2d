@@ -7,7 +7,6 @@
 
 #include "gm_expectations.h"
 #include "SkBitmap.h"
-#include "SkBitmapHasher.h"
 #include "SkColorPriv.h"
 #include "SkCommandLineFlags.h"
 #include "SkData.h"
@@ -70,16 +69,27 @@ static SkImageDecoder::Format guess_format_from_suffix(const char suffix[]) {
     return SkImageDecoder::kUnknown_Format;
 }
 
+/**
+ *  Return the name of the file, ignoring the directory structure.
+ *  Does not create a new string.
+ *  @param fullPath Full path to the file.
+ *  @return string The basename of the file - anything beyond the final slash, or the full name
+ *      if there is no slash.
+ *  TODO: Might this be useful as a utility function in SkOSFile? Would it be more appropriate to
+ *  create a new string?
+ */
+static const char* SkBasename(const char* fullPath) {
+    const char* filename = strrchr(fullPath, SkPATH_SEPARATOR);
+    if (NULL == filename || *++filename == '\0') {
+        filename = fullPath;
+    }
+    return filename;
+}
+
 static void make_outname(SkString* dst, const char outDir[], const char src[],
                          const char suffix[]) {
-    dst->set(outDir);
-    const char* start = strrchr(src, '/');
-    if (start) {
-        start += 1; // skip the actual last '/'
-    } else {
-        start = src;
-    }
-    dst->append(start);
+    const char* basename = SkBasename(src);
+    dst->set(skiagm::SkPathJoin(outDir, basename));
     if (!dst->endsWith(suffix)) {
         const char* cstyleDst = dst->c_str();
         const char* dot = strrchr(cstyleDst, '.');
@@ -169,7 +179,7 @@ static SkIRect generate_random_rect(SkRandom* rand, int32_t maxX, int32_t maxY) 
 static Json::Value gExpectationsToWrite;
 
 /**
- *  If expectations are to be recorded, record the expected checksum of bitmap into global
+ *  If expectations are to be recorded, record the bitmap expectations into global
  *  expectations array.
  */
 static void write_expectations(const SkBitmap& bitmap, const char* filename) {
@@ -182,29 +192,16 @@ static void write_expectations(const SkBitmap& bitmap, const char* filename) {
 }
 
 /**
- *  Return the name of the file, ignoring the directory structure.
- *  Does not create a new string.
- *  @param fullPath Full path to the file.
- *  @return string The basename of the file - anything beyond the final slash, or the full name
- *      if there is no slash.
- *  TODO: Might this be useful as a utility function in SkOSFile? Would it be more appropriate to
- *  create a new string?
- */
-static const char* SkBasename(const char* fullPath) {
-    const char* filename = strrchr(fullPath, SkPATH_SEPARATOR);
-    if (NULL == filename || ++filename == '\0') {
-        filename = fullPath;
-    }
-    return filename;
-}
-
-/**
  *  Compare against an expectation for this filename, if there is one.
  *  @param bitmap SkBitmap to compare to the expected value.
  *  @param filename String used to find the expected value.
- *  @return bool True if the bitmap matched the expectation, or if there was no expectation. False
- *      if there was an expecation that the bitmap did not match, or if an expectation could not be
- *      computed from an expectation.
+ *  @return bool True in any of these cases:
+ *                  - the bitmap matches the expectation.
+ *                  - there is no expectations file.
+ *               False in any of these cases:
+ *                  - there is an expectations file, but no expectation for this bitmap.
+ *                  - there is an expectation for this bitmap, but it did not match.
+ *                  - expectation could not be computed from the bitmap.
  */
 static bool compare_to_expectations_if_necessary(const SkBitmap& bitmap, const char* filename,
                                                  SkTArray<SkString, false>* failureArray) {
@@ -214,19 +211,23 @@ static bool compare_to_expectations_if_necessary(const SkBitmap& bitmap, const c
 
     skiagm::Expectations jsExpectation = gJsonExpectations->get(filename);
     if (jsExpectation.empty()) {
-        return true;
-    }
-
-    SkHashDigest checksum;
-    if (!SkBitmapHasher::ComputeDigest(bitmap, &checksum)) {
         if (failureArray != NULL) {
-            failureArray->push_back().printf("decoded %s, but could not create a checksum.",
+            failureArray->push_back().printf("decoded %s, but could not find expectation.",
                                              filename);
         }
         return false;
     }
 
-    if (jsExpectation.match(checksum)) {
+    skiagm::GmResultDigest resultDigest(bitmap);
+    if (!resultDigest.isValid()) {
+        if (failureArray != NULL) {
+            failureArray->push_back().printf("decoded %s, but could not create a GmResultDigest.",
+                                             filename);
+        }
+        return false;
+    }
+
+    if (jsExpectation.match(resultDigest)) {
         return true;
     }
 
@@ -236,6 +237,78 @@ static bool compare_to_expectations_if_necessary(const SkBitmap& bitmap, const c
                                          filename);
     }
     return false;
+}
+
+/**
+ *  Helper function to write a bitmap subset to a file. Only called if subsets were created
+ *  and a writePath was provided. Creates a subdirectory called 'subsets' and writes a PNG to
+ *  that directory. Also creates a subdirectory called 'extracted' and writes a bitmap created
+ *  using extractSubset to a PNG in that directory. Both files will represent the same
+ *  subrectangle and have the same name for comparison.
+ *  @param writePath Parent directory to hold the folders for the PNG files to write. Must
+ *      not be NULL.
+ *  @param filename Basename of the original file. Used to name the new files. Must not be
+ *      NULL.
+ *  @param subsetDim String representing the dimensions of the subset. Used to name the new
+ *      files. Must not be NULL.
+ *  @param bitmapFromDecodeSubset Pointer to SkBitmap created by SkImageDecoder::DecodeSubset,
+ *      using rect as the area to decode.
+ *  @param rect Rectangle of the area decoded into bitmapFromDecodeSubset. Used to call
+ *      extractSubset on originalBitmap to create a bitmap with the same dimensions/pixels as
+ *      bitmapFromDecodeSubset (assuming decodeSubset worked properly).
+ *  @param originalBitmap SkBitmap decoded from the same stream as bitmapFromDecodeSubset,
+ *      using SkImageDecoder::decode to get the entire image. Used to create a PNG file for
+ *      comparison to the PNG created by bitmapFromDecodeSubset.
+ *  @return bool Whether the function succeeded at drawing the decoded subset and the extracted
+ *      subset to files.
+ */
+static bool write_subset(const char* writePath, const char* filename, const char* subsetDim,
+                          SkBitmap* bitmapFromDecodeSubset, SkIRect rect,
+                          const SkBitmap& originalBitmap) {
+    // All parameters must be valid.
+    SkASSERT(writePath != NULL);
+    SkASSERT(filename != NULL);
+    SkASSERT(subsetDim != NULL);
+    SkASSERT(bitmapFromDecodeSubset != NULL);
+
+    // Create a subdirectory to hold the results of decodeSubset.
+    // TODO: Move SkPathJoin into SkOSFile.h
+    SkString dir = skiagm::SkPathJoin(writePath, "subsets");
+    if (!sk_mkdir(dir.c_str())) {
+        gFailedSubsetDecodes.push_back().printf("Successfully decoded %s from %s, but failed to "
+                                                "create a directory to write to.", subsetDim,
+                                                 filename);
+        return false;
+    }
+
+    // Write the subset to a file whose name includes the dimensions.
+    SkString suffix = SkStringPrintf("_%s.png", subsetDim);
+    SkString outPath;
+    make_outname(&outPath, dir.c_str(), filename, suffix.c_str());
+    SkAssertResult(write_bitmap(outPath.c_str(), bitmapFromDecodeSubset));
+    gSuccessfulSubsetDecodes.push_back().printf("\twrote %s", outPath.c_str());
+
+    // Also use extractSubset from the original for visual comparison.
+    // Write the result to a file in a separate subdirectory.
+    SkBitmap extractedSubset;
+    if (!originalBitmap.extractSubset(&extractedSubset, rect)) {
+        gFailedSubsetDecodes.push_back().printf("Successfully decoded %s from %s, but failed to "
+                                                "extract a similar subset for comparison.",
+                                                subsetDim, filename);
+        return false;
+    }
+
+    SkString dirExtracted = skiagm::SkPathJoin(writePath, "extracted");
+    if (!sk_mkdir(dirExtracted.c_str())) {
+        gFailedSubsetDecodes.push_back().printf("Successfully decoded %s from %s, but failed to "
+                                                "create a directory for extractSubset comparison.",
+                                                subsetDim, filename);
+        return false;
+    }
+
+    make_outname(&outPath, dirExtracted.c_str(), filename, suffix.c_str());
+    SkAssertResult(write_bitmap(outPath.c_str(), &extractedSubset));
+    return true;
 }
 
 static void decodeFileAndWrite(const char srcPath[], const SkString* writePath) {
@@ -297,32 +370,18 @@ static void decodeFileAndWrite(const char srcPath[], const SkString* writePath) 
                     }
 
                     write_expectations(bitmapFromDecodeSubset, subsetName.c_str());
-
                     if (writePath != NULL) {
-                        // Write the region to a file whose name includes the dimensions.
-                        SkString suffix = SkStringPrintf("_%s.png", subsetDim.c_str());
-                        SkString outPath;
-                        make_outname(&outPath, writePath->c_str(), srcPath, suffix.c_str());
-                        SkDEBUGCODE(bool success =)
-                        write_bitmap(outPath.c_str(), &bitmapFromDecodeSubset);
-                        SkASSERT(success);
-                        gSuccessfulSubsetDecodes.push_back().printf("\twrote %s", outPath.c_str());
-                        // Also use extractSubset from the original for visual comparison.
-                        SkBitmap extractedSubset;
-                        if (bitmap.extractSubset(&extractedSubset, rect)) {
-                            suffix.printf("_%s_extracted.png", subsetDim.c_str());
-                            make_outname(&outPath, writePath->c_str(), srcPath, suffix.c_str());
-                            SkDEBUGCODE(success =) write_bitmap(outPath.c_str(), &extractedSubset);
-                            SkASSERT(success);
-                        }
+                        write_subset(writePath->c_str(), filename, subsetDim.c_str(),
+                                     &bitmapFromDecodeSubset, rect, bitmap);
                     }
                 } else {
-                    gFailedSubsetDecodes.push_back().printf("Failed to decode region %s from %s\n",
+                    gFailedSubsetDecodes.push_back().printf("Failed to decode region %s from %s",
                                                             subsetDim.c_str(), srcPath);
                 }
             }
         }
     }
+
     if (FLAGS_reencode) {
         // Encode to the format the file was originally in, or PNG if the encoder for the same
         // format is unavailable.

@@ -266,21 +266,28 @@ void GrGpuGL::fillInConfigRenderableTable() {
 }
 
 namespace {
-GrPixelConfig preferred_pixel_ops_config(GrPixelConfig config) {
-    if (GR_GL_RGBA_8888_PIXEL_OPS_SLOW && kRGBA_8888_GrPixelConfig == config) {
+GrPixelConfig preferred_pixel_ops_config(GrPixelConfig cpuConfig, GrPixelConfig surfaceConfig) {
+    if (GR_GL_RGBA_8888_PIXEL_OPS_SLOW && kRGBA_8888_GrPixelConfig == cpuConfig) {
         return kBGRA_8888_GrPixelConfig;
+    } else if (GrBytesPerPixel(cpuConfig) == 4 &&
+                GrPixelConfigSwapRAndB(cpuConfig) == surfaceConfig) {
+        // Mesa 3D takes a slow path on when reading back  BGRA from an RGBA surface and vice-versa.
+        // Perhaps this should be guarded by some compiletime or runtime check.
+        return surfaceConfig;
     } else {
-        return config;
+        return cpuConfig;
     }
 }
 }
 
-GrPixelConfig GrGpuGL::preferredReadPixelsConfig(GrPixelConfig config) const {
-    return preferred_pixel_ops_config(config);
+GrPixelConfig GrGpuGL::preferredReadPixelsConfig(GrPixelConfig readConfig,
+                                                 GrPixelConfig surfaceConfig) const {
+    return preferred_pixel_ops_config(readConfig, surfaceConfig);
 }
 
-GrPixelConfig GrGpuGL::preferredWritePixelsConfig(GrPixelConfig config) const {
-    return preferred_pixel_ops_config(config);
+GrPixelConfig GrGpuGL::preferredWritePixelsConfig(GrPixelConfig writeConfig,
+                                                  GrPixelConfig surfaceConfig) const {
+    return preferred_pixel_ops_config(writeConfig, surfaceConfig);
 }
 
 bool GrGpuGL::canWriteTexturePixels(const GrTexture* texture, GrPixelConfig srcConfig) const {
@@ -478,10 +485,6 @@ GrRenderTarget* GrGpuGL::onWrapBackendRenderTarget(const GrBackendRenderTargetDe
     glDesc.fTexFBOID = GrGLRenderTarget::kUnresolvableFBOID;
     glDesc.fSampleCnt = desc.fSampleCnt;
     glDesc.fIsWrapped = true;
-    glDesc.fOrigin = desc.fOrigin;
-    if (glDesc.fRTFBOID == 0) {
-        GrAssert(desc.fOrigin == kBottomLeft_GrSurfaceOrigin);
-    }
 
     glDesc.fOrigin = resolve_origin(desc.fOrigin, true);
     GrGLIRect viewport;

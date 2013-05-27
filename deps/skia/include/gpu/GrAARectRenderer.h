@@ -42,6 +42,7 @@ public:
                     GrDrawTarget* target,
                     const GrRect& rect,
                     const SkMatrix& combinedMatrix,
+                    const GrRect& devRect,
                     bool useVertexCoverage) {
 #ifdef SHADER_AA_FILL_RECT
         if (combinedMatrix.rectStaysRect()) {
@@ -54,7 +55,7 @@ public:
 #else
         this->geometryFillAARect(gpu, target,
                                  rect, combinedMatrix,
-                                 useVertexCoverage);
+                                 devRect, useVertexCoverage);
 #endif
     }
 
@@ -62,8 +63,16 @@ public:
                       GrDrawTarget* target,
                       const GrRect& rect,
                       const SkMatrix& combinedMatrix,
-                      const GrVec& devStrokeSize,
+                      const GrRect& devRect,
+                      SkScalar width,
                       bool useVertexCoverage);
+
+    // First rect is outer; second rect is inner
+    void fillAANestedRects(GrGpu* gpu,
+                           GrDrawTarget* target,
+                           const SkRect rects[2],
+                           const SkMatrix& combinedMatrix,
+                           bool useVertexCoverage);
 
 private:
     GrIndexBuffer*              fAAFillRectIndexBuffer;
@@ -80,6 +89,7 @@ private:
                             GrDrawTarget* target,
                             const GrRect& rect,
                             const SkMatrix& combinedMatrix,
+                            const GrRect& devRect,
                             bool useVertexCoverage);
 
     void shaderFillAARect(GrGpu* gpu,
@@ -91,6 +101,12 @@ private:
                                  GrDrawTarget* target,
                                  const GrRect& rect,
                                  const SkMatrix& combinedMatrix);
+
+    void geometryStrokeAARect(GrGpu* gpu,
+                              GrDrawTarget* target,
+                              const SkRect& devOutside,
+                              const SkRect& devInside,
+                              bool useVertexCoverage);
 
     typedef GrRefCnt INHERITED;
 };

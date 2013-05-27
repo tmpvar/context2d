@@ -163,6 +163,16 @@ bool GrDrawState::validateVertexAttribs() const {
     return true;
 }
 
+bool GrDrawState::willEffectReadDstColor() const {
+    int startStage = this->isColorWriteDisabled() ? this->getFirstCoverageStage() : 0;
+    for (int s = startStage; s < kNumStages; ++s) {
+        if (this->isStageEnabled(s) && (*this->getStage(s).getEffect())->willReadDstColor()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool GrDrawState::srcAlphaWillBeOne() const {
@@ -360,6 +370,13 @@ GrDrawState::BlendOptFlags GrDrawState::getBlendOpts(bool forceCoverage,
             *dstCoeff = kOne_GrBlendCoeff;
             return  kCoverageAsAlpha_BlendOptFlag;
         }
+    }
+    if (kOne_GrBlendCoeff == *srcCoeff &&
+        kZero_GrBlendCoeff == *dstCoeff &&
+        this->willEffectReadDstColor()) {
+        // In this case the shader will fully resolve the color, coverage, and dst and we don't
+        // need blending.
+        return kDisableBlend_BlendOptFlag;
     }
     return kNone_BlendOpt;
 }

@@ -364,6 +364,7 @@ void GrAARectRenderer::geometryFillAARect(GrGpu* gpu,
                                           GrDrawTarget* target,
                                           const GrRect& rect,
                                           const SkMatrix& combinedMatrix,
+                                          const GrRect& devRect,
                                           bool useVertexCoverage) {
     GrDrawState* drawState = target->drawState();
 
@@ -389,8 +390,13 @@ void GrAARectRenderer::geometryFillAARect(GrGpu* gpu,
     GrPoint* fan1Pos = reinterpret_cast<GrPoint*>(verts + 4 * vsize);
 
     if (combinedMatrix.rectStaysRect()) {
+        // Temporarily #if'ed out. We don't want to pass in the devRect but
+        // right now it is computed in GrContext::apply_aa_to_rect and we don't
+        // want to throw away the work
+#if 0
         SkRect devRect;
         combinedMatrix.mapRect(&devRect, rect);
+#endif
 
         set_inset_fan(fan0Pos, vsize, devRect, -SK_ScalarHalf, -SK_ScalarHalf);
         set_inset_fan(fan1Pos, vsize, devRect,  SK_ScalarHalf,  SK_ScalarHalf);
@@ -628,17 +634,30 @@ void GrAARectRenderer::strokeAARect(GrGpu* gpu,
                                     GrDrawTarget* target,
                                     const GrRect& rect,
                                     const SkMatrix& combinedMatrix,
-                                    const GrVec& devStrokeSize,
+                                    const GrRect& devRect,
+                                    SkScalar width,
                                     bool useVertexCoverage) {
-    GrDrawState* drawState = target->drawState();
+    GrVec devStrokeSize;
+    if (width > 0) {
+        devStrokeSize.set(width, width);
+        combinedMatrix.mapVectors(&devStrokeSize, 1);
+        devStrokeSize.setAbs(devStrokeSize);
+    } else {
+        devStrokeSize.set(SK_Scalar1, SK_Scalar1);
+    }
 
     const SkScalar dx = devStrokeSize.fX;
     const SkScalar dy = devStrokeSize.fY;
     const SkScalar rx = SkScalarMul(dx, SK_ScalarHalf);
     const SkScalar ry = SkScalarMul(dy, SK_ScalarHalf);
 
+    // Temporarily #if'ed out. We don't want to pass in the devRect but
+    // right now it is computed in GrContext::apply_aa_to_rect and we don't
+    // want to throw away the work
+#if 0
     SkRect devRect;
     combinedMatrix.mapRect(&devRect, rect);
+#endif
 
     SkScalar spare;
     {
@@ -647,11 +666,27 @@ void GrAARectRenderer::strokeAARect(GrGpu* gpu,
         spare = GrMin(w, h);
     }
 
+    GrRect devOutside(devRect);
+    devOutside.outset(rx, ry);
+
     if (spare <= 0) {
-        devRect.inset(-rx, -ry);
-        this->fillAARect(gpu, target, devRect, SkMatrix::I(), useVertexCoverage);
+        this->fillAARect(gpu, target, devOutside, SkMatrix::I(),
+                         devOutside, useVertexCoverage);
         return;
     }
+
+    SkRect devInside(devRect);
+    devInside.inset(rx, ry);
+
+    this->geometryStrokeAARect(gpu, target, devOutside, devInside, useVertexCoverage);
+}
+
+void GrAARectRenderer::geometryStrokeAARect(GrGpu* gpu,
+                                            GrDrawTarget* target,
+                                            const SkRect& devOutside,
+                                            const SkRect& devInside,
+                                            bool useVertexCoverage) {
+    GrDrawState* drawState = target->drawState();
 
     set_aa_rect_vertex_attributes(drawState, useVertexCoverage);
 
@@ -678,14 +713,12 @@ void GrAARectRenderer::strokeAARect(GrGpu* gpu,
     GrPoint* fan2Pos = reinterpret_cast<GrPoint*>(verts + 8 * vsize);
     GrPoint* fan3Pos = reinterpret_cast<GrPoint*>(verts + 12 * vsize);
 
-    set_inset_fan(fan0Pos, vsize, devRect,
-                  -rx - SK_ScalarHalf, -ry - SK_ScalarHalf);
-    set_inset_fan(fan1Pos, vsize, devRect,
-                  -rx + SK_ScalarHalf, -ry + SK_ScalarHalf);
-    set_inset_fan(fan2Pos, vsize, devRect,
-                  rx - SK_ScalarHalf,  ry - SK_ScalarHalf);
-    set_inset_fan(fan3Pos, vsize, devRect,
-                  rx + SK_ScalarHalf,  ry + SK_ScalarHalf);
+    // outermost
+    set_inset_fan(fan0Pos, vsize, devOutside, -SK_ScalarHalf, -SK_ScalarHalf);
+    set_inset_fan(fan1Pos, vsize, devOutside,  SK_ScalarHalf,  SK_ScalarHalf);
+    set_inset_fan(fan2Pos, vsize, devInside,  -SK_ScalarHalf, -SK_ScalarHalf);
+    // innermost
+    set_inset_fan(fan3Pos, vsize, devInside,   SK_ScalarHalf,  SK_ScalarHalf);
 
     // The outermost rect has 0 coverage
     verts += sizeof(GrPoint);
@@ -705,7 +738,7 @@ void GrAARectRenderer::strokeAARect(GrGpu* gpu,
         *reinterpret_cast<GrColor*>(verts + i * vsize) = innerColor;
     }
 
-    // The innermost rect has full coverage
+    // The innermost rect has 0 coverage
     verts += 8 * vsize;
     for (int i = 0; i < 4; ++i) {
         *reinterpret_cast<GrColor*>(verts + i * vsize) = 0;
@@ -714,4 +747,25 @@ void GrAARectRenderer::strokeAARect(GrGpu* gpu,
     target->setIndexSourceToBuffer(indexBuffer);
     target->drawIndexed(kTriangles_GrPrimitiveType,
                         0, 0, 16, aaStrokeRectIndexCount());
+}
+
+void GrAARectRenderer::fillAANestedRects(GrGpu* gpu,
+                                         GrDrawTarget* target,
+                                         const SkRect rects[2],
+                                         const SkMatrix& combinedMatrix,
+                                         bool useVertexCoverage) {
+    SkASSERT(combinedMatrix.rectStaysRect());
+    SkASSERT(!rects[1].isEmpty());
+
+    SkRect devOutside, devInside;
+    combinedMatrix.mapRect(&devOutside, rects[0]);
+    // can't call mapRect for devInside since it calls sort
+    combinedMatrix.mapPoints((SkPoint*)&devInside, (const SkPoint*)&rects[1], 2);
+
+    if (devInside.isEmpty()) {
+        this->fillAARect(gpu, target, devOutside, SkMatrix::I(), devOutside, useVertexCoverage);
+        return;
+    }
+
+    this->geometryStrokeAARect(gpu, target, devOutside, devInside, useVertexCoverage);
 }

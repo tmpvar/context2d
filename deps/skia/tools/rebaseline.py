@@ -36,6 +36,8 @@ pairs = [
     'Test-Android-NexusS-SGX540-Arm7-Release'],
    ['base-android-xoom',
     'Test-Android-Xoom-Tegra2-Arm7-Release'],
+   ['base-android-nexus-10',
+    'Test-Android-Nexus10-MaliT604-Arm7-Release'],
 ]
 
 if len(sys.argv) < 2:
@@ -49,9 +51,9 @@ is_git_checkout = os.path.exists('.git') or os.path.exists(os.path.join('..', '.
 for testname in sys.argv[1:]:
     for pair in pairs:
         if (pair[0] == 'base-shuttle-win7-intel-angle'):
-            testtypes = [ 'angle' ]
+            testtypes = [ 'angle', 'anglemsaa16' ]
         else:
-            testtypes = [ '565', '8888', 'gpu', 'pdf', 'mesa' ]
+            testtypes = [ '565', '8888', 'gpu', 'pdf', 'mesa', 'msaa16', 'msaa4' ]
         print pair[0] + ':'
         for testtype in testtypes:
             infilename = testname + '_' + testtype + '.png'
