@@ -109,6 +109,7 @@
       'deps/skia/src/core/SkBitmap_scroll.cpp',
       'deps/skia/src/core/SkBitmapHeap.cpp',
       'deps/skia/src/core/SkBitmapProcShader.cpp',
+      'deps/skia/src/core/SkBitmapProcBicubic.cpp',
       'deps/skia/src/core/SkBitmapProcState.cpp',
       'deps/skia/src/core/SkBitmapProcState_matrixProcs.cpp',
       'deps/skia/src/core/SkBitmapSampler.cpp',
@@ -142,6 +143,7 @@
       'deps/skia/src/core/SkDeviceProfile.cpp',
       'deps/skia/src/core/SkDither.cpp',
       'deps/skia/src/core/SkDraw.cpp',
+      'deps/skia/src/core/SkDrawLooper.cpp',
       'deps/skia/src/core/SkEdge.cpp',
       'deps/skia/src/core/SkEdgeBuilder.cpp',
       'deps/skia/src/core/SkEdgeClipper.cpp',
@@ -573,7 +575,7 @@
           'deps/skia/src/utils/SkThreadUtils_pthread.cpp',
           'deps/skia/src/utils/SkThreadUtils_pthread_mach.cpp',
           'deps/skia/src/ports/SkTime_Unix.cpp',
-          
+
           'deps/skia/src/ports/SkFontConfigInterface_direct.cpp',
         ],
         'xcode_settings': {
