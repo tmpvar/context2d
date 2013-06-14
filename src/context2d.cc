@@ -304,7 +304,7 @@ METHOD(ToPngBuffer) {
   SkMemoryWStream stream(data, size);
   SkImageEncoder::EncodeStream(&stream, bitmap, SkImageEncoder::kPNG_Type, 100);
 
-  Buffer *buffer = Buffer::New((const char *)data, size);
+  Buffer *buffer = Buffer::New((char *)data, size);
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
