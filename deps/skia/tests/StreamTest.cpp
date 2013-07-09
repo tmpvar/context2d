@@ -7,6 +7,7 @@
  */
 #include "Test.h"
 #include "SkRandom.h"
+#include "SkOSFile.h"
 #include "SkStream.h"
 #include "SkData.h"
 
@@ -16,67 +17,6 @@
 #endif
 
 #define MAX_SIZE    (256 * 1024)
-
-static void random_fill(SkMWCRandom& rand, void* buffer, size_t size) {
-    char* p = (char*)buffer;
-    char* stop = p + size;
-    while (p < stop) {
-        *p++ = (char)(rand.nextU() >> 8);
-    }
-}
-
-static void test_buffer(skiatest::Reporter* reporter) {
-    SkMWCRandom rand;
-    SkAutoMalloc am(MAX_SIZE * 2);
-    char* storage = (char*)am.get();
-    char* storage2 = storage + MAX_SIZE;
-
-    random_fill(rand, storage, MAX_SIZE);
-
-    for (int sizeTimes = 0; sizeTimes < 100; sizeTimes++) {
-        int size = rand.nextU() % MAX_SIZE;
-        if (size == 0) {
-            size = MAX_SIZE;
-        }
-        for (int times = 0; times < 100; times++) {
-            int bufferSize = 1 + (rand.nextU() & 0xFFFF);
-            SkMemoryStream mstream(storage, size);
-            SkBufferStream bstream(&mstream, bufferSize);
-
-            int bytesRead = 0;
-            while (bytesRead < size) {
-                int s = 17 + (rand.nextU() & 0xFFFF);
-                int ss = bstream.read(storage2, s);
-                REPORTER_ASSERT(reporter, ss > 0 && ss <= s);
-                REPORTER_ASSERT(reporter, bytesRead + ss <= size);
-                REPORTER_ASSERT(reporter,
-                                memcmp(storage + bytesRead, storage2, ss) == 0);
-                bytesRead += ss;
-            }
-            REPORTER_ASSERT(reporter, bytesRead == size);
-        }
-    }
-}
-
-static void TestRStream(skiatest::Reporter* reporter) {
-    static const char s[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    char            copy[sizeof(s)];
-    SkMWCRandom        rand;
-
-    for (int i = 0; i < 65; i++) {
-        char*           copyPtr = copy;
-        SkMemoryStream  mem(s, sizeof(s));
-        SkBufferStream  buff(&mem, i);
-
-        do {
-            copyPtr += buff.read(copyPtr, rand.nextU() & 15);
-        } while (copyPtr < copy + sizeof(s));
-        REPORTER_ASSERT(reporter, copyPtr == copy + sizeof(s));
-        REPORTER_ASSERT(reporter, memcmp(s, copy, sizeof(s)) == 0);
-    }
-    test_buffer(reporter);
-}
 
 static void test_loop_stream(skiatest::Reporter* reporter, SkStream* stream,
                              const void* src, size_t len, int repeat) {
@@ -95,8 +35,7 @@ static void test_loop_stream(skiatest::Reporter* reporter, SkStream* stream,
 }
 
 static void test_filestreams(skiatest::Reporter* reporter, const char* tmpDir) {
-    SkString path;
-    path.printf("%s%s", tmpDir, "wstream_test");
+    SkString path = SkOSPath::SkPathJoin(tmpDir, "wstream_test");
 
     const char s[] = "abcdefghijklmnopqrstuvwxyz";
 
@@ -105,7 +44,7 @@ static void test_filestreams(skiatest::Reporter* reporter, const char* tmpDir) {
         if (!writer.isValid()) {
             SkString msg;
             msg.printf("Failed to create tmp file %s\n", path.c_str());
-            reporter->reportFailed(msg.c_str());
+            reporter->reportFailed(msg);
             return;
         }
 
@@ -118,16 +57,20 @@ static void test_filestreams(skiatest::Reporter* reporter, const char* tmpDir) {
         SkFILEStream stream(path.c_str());
         REPORTER_ASSERT(reporter, stream.isValid());
         test_loop_stream(reporter, &stream, s, 26, 100);
+
+        SkAutoTUnref<SkStreamAsset> stream2(stream.duplicate());
+        test_loop_stream(reporter, stream2.get(), s, 26, 100);
     }
 
-#ifndef SK_BUILD_FOR_WIN
     {
-        int fd = ::open(path.c_str(), O_RDONLY);
-        SkFDStream stream(fd, true);
+        FILE* file = ::fopen(path.c_str(), "rb");
+        SkFILEStream stream(file, SkFILEStream::kCallerPasses_Ownership);
         REPORTER_ASSERT(reporter, stream.isValid());
         test_loop_stream(reporter, &stream, s, 26, 100);
+
+        SkAutoTUnref<SkStreamAsset> stream2(stream.duplicate());
+        test_loop_stream(reporter, stream2.get(), s, 26, 100);
     }
-#endif
 }
 
 static void TestWStream(skiatest::Reporter* reporter) {
@@ -142,7 +85,6 @@ static void TestWStream(skiatest::Reporter* reporter) {
     dst[100*26] = '*';
     ds.copyTo(dst);
     REPORTER_ASSERT(reporter, dst[100*26] == '*');
-//     char* p = dst;
     for (i = 0; i < 100; i++) {
         REPORTER_ASSERT(reporter, memcmp(&dst[i * 26], s, 26) == 0);
     }
@@ -155,8 +97,9 @@ static void TestWStream(skiatest::Reporter* reporter) {
     }
     delete[] dst;
 
-    if (!skiatest::Test::GetTmpDir().isEmpty()) {
-        test_filestreams(reporter, skiatest::Test::GetTmpDir().c_str());
+    SkString tmpDir = skiatest::Test::GetTmpDir();
+    if (!tmpDir.isEmpty()) {
+        test_filestreams(reporter, tmpDir.c_str());
     }
 }
 
@@ -210,7 +153,6 @@ static void TestNullData() {
 }
 
 static void TestStreams(skiatest::Reporter* reporter) {
-    TestRStream(reporter);
     TestWStream(reporter);
     TestPackedUInt(reporter);
     TestNullData();

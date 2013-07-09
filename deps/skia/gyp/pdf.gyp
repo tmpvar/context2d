@@ -6,7 +6,7 @@
       'type': 'static_library',
       'standalone_static_library': 1,
       'dependencies': [
-        'skia_base_libs.gyp:skia_base_libs',
+        'skia_lib.gyp:skia_lib',
         'zlib.gyp:zlib',
       ],
       'include_dirs': [
@@ -47,6 +47,8 @@
         '../src/pdf/SkPDFUtils.cpp',
         '../src/pdf/SkPDFUtils.h',
         '../src/pdf/SkTSet.h',
+
+        '../src/doc/SkDocument_PDF.cpp',
       ],
       # This section makes all targets that depend on this target
       # #define SK_SUPPORT_PDF and have access to the pdf header files.

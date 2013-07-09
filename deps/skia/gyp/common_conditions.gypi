@@ -38,6 +38,21 @@
             'AdditionalDependencies': [
               'OpenGL32.lib',
               'usp10.lib',
+
+              # Prior to gyp r1584, the following were included automatically.
+              'kernel32.lib',
+              'gdi32.lib',
+              'winspool.lib',
+              'comdlg32.lib',
+              'advapi32.lib',
+              'shell32.lib',
+              'ole32.lib',
+              'oleaut32.lib',
+              'user32.lib',
+              'uuid.lib',
+              'odbc32.lib',
+              'odbccp32.lib',
+              'DelayImp.lib',
             ],
           },
         },
@@ -61,7 +76,7 @@
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'DebugInformationFormat': '3',      # programDatabase (/Zi)
-                'Optimization': '3',                # full (/Ox)
+                'Optimization': '<(skia_release_optimization_level)',
                 'WholeProgramOptimization': 'true', #/GL
                # Changing the floating point model requires rebaseling gm images
                #'FloatingPointModel': '2',          # fast (/fp:fast)
@@ -98,11 +113,20 @@
               },
             },
           }],
+          [ 'skia_win_exceptions', {
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '/EHsc',
+                ],
+              },
+            },
+          }],
         ],
       },
     ],
 
-    [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris", "nacl"]',
+    [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris", "nacl", "chromeos"]',
       {
         'defines': [
           'SK_SAMPLES_FOR_X',
@@ -113,7 +137,10 @@
             'cflags': ['-g']
           },
           'Release': {
-            'cflags': ['-O3 -g'],
+            'cflags': [
+              '-O<(skia_release_optimization_level)',
+              '-g',
+            ],
             'defines': [ 'NDEBUG' ],
           },
         },
@@ -125,25 +152,20 @@
           '-Wno-c++11-extensions'
         ],
         'conditions' : [
+          [ 'skia_shared_lib', {
+            'cflags': [
+              '-fPIC',
+            ],
+            'defines': [
+              'GR_DLL=1',
+              'GR_IMPLEMENTATION=1',
+              'SKIA_DLL',
+              'SKIA_IMPLEMENTATION=1',
+            ],
+          }],
           [ 'skia_warnings_as_errors', {
             'cflags': [
               '-Werror',
-            ],
-          }],
-          [ 'skia_arch_width == 64', {
-            'cflags': [
-              '-m64',
-            ],
-            'ldflags': [
-              '-m64',
-            ],
-          }],
-          [ 'skia_arch_width == 32', {
-            'cflags': [
-              '-m32',
-            ],
-            'ldflags': [
-              '-m32',
             ],
           }],
           [ 'skia_os == "nacl"', {
@@ -161,6 +183,40 @@
           }, { # skia_os != "nacl"
             'include_dirs' : [
               '/usr/include/freetype2',
+            ],
+          }],
+          [ 'skia_os == "chromeos"', {
+            'ldflags': [
+              '-lstdc++',
+              '-lm',
+            ],
+          }, {
+            'conditions': [
+              [ 'skia_arch_width == 64', {
+                'cflags': [
+                  '-m64',
+                ],
+                'ldflags': [
+                  '-m64',
+                ],
+              }],
+              [ 'skia_arch_width == 32', {
+                'cflags': [
+                  '-m32',
+                ],
+                'ldflags': [
+                  '-m32',
+                ],
+              }],
+            ],
+          }],
+          [ 'skia_asan_build', {
+            'cflags': [
+              '-fsanitize=address',
+              '-fno-omit-frame-pointer',
+            ],
+            'ldflags': [
+              '-fsanitize=address',
             ],
           }],
         ],
@@ -202,7 +258,7 @@
           },
           'Release': {
             'xcode_settings': {
-              'GCC_OPTIMIZATION_LEVEL': '3',
+              'GCC_OPTIMIZATION_LEVEL': '<(skia_release_optimization_level)',
             },
             'defines': [ 'NDEBUG' ],
           },
@@ -268,7 +324,7 @@
           },
           'Release': {
             'xcode_settings': {
-              'GCC_OPTIMIZATION_LEVEL': '3',
+              'GCC_OPTIMIZATION_LEVEL': '<(skia_release_optimization_level)',
             },
             'defines': [ 'NDEBUG' ],
           },
@@ -325,6 +381,17 @@
           }],
           [ 'skia_profile_enabled == 1', {
             'cflags': ['-g', '-fno-omit-frame-pointer', '-marm', '-mapcs'],
+          }],
+          [ 'skia_shared_lib', {
+            'cflags': [
+              '-fPIC',
+            ],
+            'defines': [
+              'GR_DLL=1',
+              'GR_IMPLEMENTATION=1',
+              'SKIA_DLL',
+              'SKIA_IMPLEMENTATION=1',
+            ],
           }],
           [ 'skia_arch_type == "arm" and arm_thumb == 1', {
             'cflags': [

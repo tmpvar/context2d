@@ -55,18 +55,15 @@ private:
     const TestRegistry* fReg;
 };
 
-static const char* result2string(Reporter::Result result) {
-    return result == Reporter::kPassed ? "passed" : "FAILED";
-}
-
 class DebugfReporter : public Reporter {
 public:
-    DebugfReporter(bool allowExtendedTest, bool allowThreaded)
+    DebugfReporter(bool allowExtendedTest, bool allowThreaded, bool verbose)
         : fNextIndex(0)
         , fPending(0)
         , fTotal(0)
         , fAllowExtendedTest(allowExtendedTest)
-        , fAllowThreaded(allowThreaded) {
+        , fAllowThreaded(allowThreaded)
+        , fVerbose(verbose) {
     }
 
     void setTotal(int total) {
@@ -81,14 +78,18 @@ public:
         return fAllowThreaded;
     }
 
+    virtual bool verbose() const SK_OVERRIDE {
+        return fVerbose;
+    }
+
 protected:
     virtual void onStart(Test* test) {
         const int index = sk_atomic_inc(&fNextIndex);
         sk_atomic_inc(&fPending);
         SkDebugf("[%3d/%3d] (%d) %s\n", index+1, fTotal, fPending, test->getName());
     }
-    virtual void onReport(const char desc[], Reporter::Result result) {
-        SkDebugf("\t%s: %s\n", result2string(result), desc);
+    virtual void onReportFailed(const SkString& desc) {
+        SkDebugf("\tFAILED: %s\n", desc.c_str());
     }
 
     virtual void onEnd(Test* test) {
@@ -110,35 +111,8 @@ private:
     int fTotal;
     bool fAllowExtendedTest;
     bool fAllowThreaded;
+    bool fVerbose;
 };
-
-static const char* make_canonical_dir_path(const char* path, SkString* storage) {
-    if (path) {
-        // clean it up so it always has a trailing searator
-        size_t len = strlen(path);
-        if (0 == len) {
-            path = NULL;
-        } else if (SkPATH_SEPARATOR != path[len - 1]) {
-            // resize to len + 1, to make room for searator
-            storage->set(path, len + 1);
-            storage->writable_str()[len] = SkPATH_SEPARATOR;
-            path = storage->c_str();
-        }
-    }
-    return path;
-}
-
-static SkString gTmpDir;
-
-const SkString& Test::GetTmpDir() {
-    return gTmpDir;
-}
-
-static SkString gResourcePath;
-
-const SkString& Test::GetResourcePath() {
-    return gResourcePath;
-}
 
 DEFINE_string2(match, m, NULL, "[~][^]substring[$] [...] of test name to run.\n" \
                                "Multiple matches may be separated by spaces.\n" \
@@ -155,6 +129,16 @@ DEFINE_bool2(threaded, z, false, "allow tests to use multiple threads internally
 DEFINE_bool2(verbose, v, false, "enable verbose output.");
 DEFINE_int32(threads, SkThreadPool::kThreadPerCore,
              "Run threadsafe tests on a threadpool with this many threads.");
+
+SkString Test::GetTmpDir() {
+    const char* tmpDir = FLAGS_tmpDir.isEmpty() ? NULL : FLAGS_tmpDir[0];
+    return SkString(tmpDir);
+}
+
+SkString Test::GetResourcePath() {
+    const char* resourcePath = FLAGS_resourcePath.isEmpty() ? NULL : FLAGS_resourcePath[0];
+    return SkString(resourcePath);
+}
 
 // Deletes self when run.
 class SkTestRunnable : public SkRunnable {
@@ -218,13 +202,6 @@ int tool_main(int argc, char** argv) {
     SkCommandLineFlags::SetUsage("");
     SkCommandLineFlags::Parse(argc, argv);
 
-    if (!FLAGS_tmpDir.isEmpty()) {
-        make_canonical_dir_path(FLAGS_tmpDir[0], &gTmpDir);
-    }
-    if (!FLAGS_resourcePath.isEmpty()) {
-        make_canonical_dir_path(FLAGS_resourcePath[0], &gResourcePath);
-    }
-
 #if SK_ENABLE_INST_COUNT
     gPrintInstCount = true;
 #endif
@@ -239,11 +216,13 @@ int tool_main(int argc, char** argv) {
                 header.appendf(" %s", FLAGS_match[index]);
             }
         }
-        if (!gTmpDir.isEmpty()) {
-            header.appendf(" --tmpDir %s", gTmpDir.c_str());
+        SkString tmpDir = Test::GetTmpDir();
+        if (!tmpDir.isEmpty()) {
+            header.appendf(" --tmpDir %s", tmpDir.c_str());
         }
-        if (!gResourcePath.isEmpty()) {
-            header.appendf(" --resourcePath %s", gResourcePath.c_str());
+        SkString resourcePath = Test::GetResourcePath();
+        if (!resourcePath.isEmpty()) {
+            header.appendf(" --resourcePath %s", resourcePath.c_str());
         }
 #ifdef SK_DEBUG
         header.append(" SK_DEBUG");
@@ -258,7 +237,7 @@ int tool_main(int argc, char** argv) {
         SkDebugf("%s\n", header.c_str());
     }
 
-    DebugfReporter reporter(FLAGS_extendedTest, FLAGS_threaded);
+    DebugfReporter reporter(FLAGS_extendedTest, FLAGS_threaded, FLAGS_verbose);
     Iter iter(&reporter);
 
     // Count tests first.

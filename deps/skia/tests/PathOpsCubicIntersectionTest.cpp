@@ -163,6 +163,12 @@ static const SkDCubic testSet[] = {
 const size_t testSetCount = SK_ARRAY_COUNT(testSet);
 
 static const SkDCubic newTestSet[] = {
+{{{134,11414}, {131.990234375,11414}, {130.32666015625,11415.482421875}, {130.04275512695312,11417.4130859375}}},
+{{{132,11419}, {130.89543151855469,11419}, {130,11418.1044921875}, {130,11417}}},
+
+{{{132,11419}, {130.89543151855469,11419}, {130,11418.1044921875}, {130,11417}}},
+{{{130.04275512695312,11417.4130859375}, {130.23312377929687,11418.3193359375}, {131.03707885742187,11419}, {132,11419}}},
+
 {{{0, 1}, {2, 3}, {5, 1}, {4, 3}}},
 {{{1, 5}, {3, 4}, {1, 0}, {3, 2}}},
 
@@ -231,30 +237,30 @@ const size_t newTestSetCount = SK_ARRAY_COUNT(newTestSet);
 static void oneOff(skiatest::Reporter* reporter, const SkDCubic& cubic1, const SkDCubic& cubic2) {
 #if ONE_OFF_DEBUG
     SkDebugf("computed quadratics given\n");
-    SkDebugf("  {{{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}}},\n",
+    SkDebugf("  {{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}},\n",
         cubic1[0].fX, cubic1[0].fY, cubic1[1].fX, cubic1[1].fY,
         cubic1[2].fX, cubic1[2].fY, cubic1[3].fX, cubic1[3].fY);
-    SkDebugf("  {{{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}}},\n",
+    SkDebugf("  {{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}},\n",
         cubic2[0].fX, cubic2[0].fY, cubic2[1].fX, cubic2[1].fY,
         cubic2[2].fX, cubic2[2].fY, cubic2[3].fX, cubic2[3].fY);
 #endif
-    SkTDArray<SkDQuad> quads1;
+    SkTArray<SkDQuad, true> quads1;
     CubicToQuads(cubic1, cubic1.calcPrecision(), quads1);
 #if ONE_OFF_DEBUG
     SkDebugf("computed quadratics set 1\n");
     for (int index = 0; index < quads1.count(); ++index) {
         const SkDQuad& q = quads1[index];
-        SkDebugf("  {{{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}}},\n", q[0].fX, q[0].fY,
+        SkDebugf("  {{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}},\n", q[0].fX, q[0].fY,
                  q[1].fX, q[1].fY,  q[2].fX, q[2].fY);
     }
 #endif
-    SkTDArray<SkDQuad> quads2;
+    SkTArray<SkDQuad, true> quads2;
     CubicToQuads(cubic2, cubic2.calcPrecision(), quads2);
 #if ONE_OFF_DEBUG
     SkDebugf("computed quadratics set 2\n");
     for (int index = 0; index < quads2.count(); ++index) {
         const SkDQuad& q = quads2[index];
-        SkDebugf("  {{{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}}},\n", q[0].fX, q[0].fY,
+        SkDebugf("  {{%1.9g,%1.9g}, {%1.9g,%1.9g}, {%1.9g,%1.9g}},\n", q[0].fX, q[0].fY,
                  q[1].fX, q[1].fY,  q[2].fX, q[2].fY);
     }
 #endif
@@ -267,12 +273,15 @@ static void oneOff(skiatest::Reporter* reporter, const SkDCubic& cubic1, const S
         xy1 = cubic1.xyAtT(tt1);
         tt2 = intersections[1][pt3];
         xy2 = cubic2.xyAtT(tt2);
+        const SkDPoint& iPt = intersections.pt(pt3);
 #if ONE_OFF_DEBUG
         SkDebugf("%s t1=%1.9g (%1.9g, %1.9g) (%1.9g, %1.9g) (%1.9g, %1.9g) t2=%1.9g\n",
-                __FUNCTION__, tt1, xy1.fX, xy1.fY, intersections.pt(pt3).fX,
-                intersections.pt(pt3).fY, xy2.fX, xy2.fY, tt2);
+                __FUNCTION__, tt1, xy1.fX, xy1.fY, iPt.fX,
+                iPt.fY, xy2.fX, xy2.fY, tt2);
 #endif
-        REPORTER_ASSERT(reporter, xy1.approximatelyEqual(xy2));
+       REPORTER_ASSERT(reporter, xy1.approximatelyEqual(iPt));
+       REPORTER_ASSERT(reporter, xy2.approximatelyEqual(iPt));
+       REPORTER_ASSERT(reporter, xy1.approximatelyEqual(xy2));
     }
 }
 
@@ -481,8 +490,8 @@ static void cubicIntersectionSelfTest(skiatest::Reporter* reporter) {
             SkDebugf("%s max[%d]=%1.9g (%1.9g, %1.9g)\n", __FUNCTION__, idx2,
                     max[idx2], cubic.xyAtT(max[idx2]).fX, cubic.xyAtT(max[idx2]).fY);
         }
-        SkTDArray<double> ts1;
-        SkTDArray<SkDQuad> quads1;
+        SkTArray<double, true> ts1;
+        SkTArray<SkDQuad, true> quads1;
         cubic.toQuadraticTs(cubic.calcPrecision(), &ts1);
         for (idx2 = 0; idx2 < ts1.count(); ++idx2) {
             SkDebugf("%s t[%d]=%1.9g\n", __FUNCTION__, idx2, ts1[idx2]);

@@ -30,12 +30,12 @@ static const int INDEX_POOL_IB_COUNT = 4;
 GrGpu::GrGpu(GrContext* context)
     : GrDrawTarget(context)
     , fResetTimestamp(kExpiredTimestamp+1)
+    , fResetBits(kAll_GrBackendState)
     , fVertexPool(NULL)
     , fIndexPool(NULL)
     , fVertexPoolUseCnt(0)
     , fIndexPoolUseCnt(0)
-    , fQuadIndexBuffer(NULL)
-    , fContextIsDirty(true) {
+    , fQuadIndexBuffer(NULL) {
 
     fClipMaskManager.setGpu(this);
 
@@ -292,9 +292,9 @@ const GrIndexBuffer* GrGpu::getQuadIndexBuffer() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GrGpu::setupClipAndFlushState(DrawType type, const GrDeviceCoordTexture* dstCopy) {
-
-    if (!fClipMaskManager.setupClipping(this->getClip())) {
+bool GrGpu::setupClipAndFlushState(DrawType type, const GrDeviceCoordTexture* dstCopy,
+                                   GrDrawState::AutoRestoreEffects* are) {
+    if (!fClipMaskManager.setupClipping(this->getClip(), are)) {
         return false;
     }
 
@@ -336,8 +336,10 @@ void GrGpu::geometrySourceWillPop(const GeometrySrcState& restoredState) {
 
 void GrGpu::onDraw(const DrawInfo& info) {
     this->handleDirtyContext();
+    GrDrawState::AutoRestoreEffects are;
     if (!this->setupClipAndFlushState(PrimTypeToDrawType(info.primitiveType()),
-                                      info.getDstCopy())) {
+                                      info.getDstCopy(),
+                                      &are)) {
         return;
     }
     this->onGpuDraw(info);
@@ -350,7 +352,8 @@ void GrGpu::onStencilPath(const GrPath* path, const SkStrokeRec&, SkPath::FillTy
     GrAutoTRestore<GrStencilSettings> asr(this->drawState()->stencil());
 
     this->setStencilPathSettings(*path, fill, this->drawState()->stencil());
-    if (!this->setupClipAndFlushState(kStencilPath_DrawType, NULL)) {
+    GrDrawState::AutoRestoreEffects are;
+    if (!this->setupClipAndFlushState(kStencilPath_DrawType, NULL, &are)) {
         return;
     }
 

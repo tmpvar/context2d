@@ -29,7 +29,7 @@
       ],
       'msvs_disabled_warnings': [4244, 4267,4345, 4390, 4554, 4800],
       'conditions': [
-        [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris"]', {
+        [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris", "chromeos"]', {
           'link_settings': {
             'libraries': [
               '-lpthread',
@@ -76,6 +76,11 @@
             'config/win',
           ],
         }],
+        [ 'skia_os == "android"', {
+          'sources': [
+            '../src/core/SkPaintOptionsAndroid.cpp',
+          ],
+        }],
         [ 'skia_os == "android" and skia_arch_type == "arm" and armv7 == 1', {
           # The code in SkUtilsArm.cpp can be used on an ARM-based Linux system, not only Android.
           'sources': [
@@ -120,9 +125,6 @@
           }],
         ],
       },
-      'dependencies': [
-        'opts.gyp:opts'
-      ],
     },
   ],
 }

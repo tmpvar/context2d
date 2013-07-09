@@ -9,6 +9,7 @@
 #include "SkBitmap.h"
 #include "SkDevice.h"
 #include "SkCommandLineFlags.h"
+#include "SkForceLinking.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
 #include "SkImageEncoder.h"
@@ -20,6 +21,9 @@
 #include "PictureRenderer.h"
 #include "PictureRenderingFlags.h"
 #include "picture_utils.h"
+
+// Required to ensure that image decoders get linked correctly.
+__SK_FORCE_IMAGE_DECODER_LINKING;
 
 // Flags used by this file, alphabetically:
 DEFINE_int32(clone, 0, "Clone the picture n times before rendering.");
@@ -145,19 +149,22 @@ static bool render_picture(const SkString& inputPath, const SkString* outputDir,
         return false;
     }
 
-    bool success = false;
-    SkPicture* picture;
+    SkPicture::InstallPixelRefProc proc;
     if (FLAGS_deferImageDecoding) {
-        picture = SkNEW_ARGS(SkPicture, (&inputStream, &success, &lazy_decode_bitmap));
+        proc = &lazy_decode_bitmap;
     } else if (FLAGS_writeEncodedImages) {
         SkASSERT(!FLAGS_writePath.isEmpty());
         reset_image_file_base_name(inputFilename);
-        picture = SkNEW_ARGS(SkPicture, (&inputStream, &success, &write_image_to_file));
+        proc = &write_image_to_file;
     } else {
-        picture = SkNEW_ARGS(SkPicture, (&inputStream, &success, &SkImageDecoder::DecodeMemory));
+        proc = &SkImageDecoder::DecodeMemory;
     }
 
-    if (!success) {
+    SkDebugf("deserializing... %s\n", inputPath.c_str());
+
+    SkPicture* picture = SkPicture::CreateFromStream(&inputStream, proc);
+
+    if (NULL == picture) {
         SkDebugf("Could not read an SkPicture from %s\n", inputPath.c_str());
         return false;
     }
@@ -180,7 +187,7 @@ static bool render_picture(const SkString& inputPath, const SkString* outputDir,
         make_output_filepath(outputPath, *outputDir, inputFilename);
     }
 
-    success = renderer.render(outputPath, out);
+    bool success = renderer.render(outputPath, out);
     if (outputPath) {
         if (!success) {
             SkDebugf("Could not write to file %s\n", outputPath->c_str());

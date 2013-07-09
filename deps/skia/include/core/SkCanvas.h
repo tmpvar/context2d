@@ -852,7 +852,24 @@ public:
         subclasses like SkPicture's recording canvas, that can store the data
         and then play it back later (via another call to drawData).
      */
-    virtual void drawData(const void* data, size_t length);
+    virtual void drawData(const void* data, size_t length) {
+        // do nothing. Subclasses may do something with the data
+    }
+
+    /** Add comments. beginCommentGroup/endCommentGroup open/close a new group.
+        Each comment added via addComment is notionally attached to its
+        enclosing group. Top-level comments simply belong to no group.
+     */
+    virtual void beginCommentGroup(const char* description) {
+        // do nothing. Subclasses may do something
+    }
+    virtual void addComment(const char* kywd, const char* value) {
+        // do nothing. Subclasses may do something
+    }
+    virtual void endCommentGroup() {
+        // do nothing. Subclasses may do something
+    }
+
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -993,6 +1010,11 @@ protected:
     // returns false if the entire rectangle is entirely clipped out
     bool clipRectBounds(const SkRect* bounds, SaveFlags flags,
                         SkIRect* intersection);
+
+    // Called by child classes that override clipPath and clipRRect to only
+    // track fast conservative clip bounds, rather than exact clips.
+    bool updateClipConservativelyUsingBounds(const SkRect&, SkRegion::Op,
+                                             bool inverseFilled);
 
     // notify our surface (if we have one) that we are about to draw, so it
     // can perform copy-on-write or invalidate any cached images
@@ -1136,6 +1158,27 @@ public:
 private:
     SkCanvas*   fCanvas;
     int         fSaveCount;
+};
+
+/** Stack helper class to automatically open and close a comment block
+ */
+class SkAutoCommentBlock : SkNoncopyable {
+public:
+    SkAutoCommentBlock(SkCanvas* canvas, const char* description) {
+        fCanvas = canvas;
+        if (NULL != fCanvas) {
+            fCanvas->beginCommentGroup(description);
+        }
+    }
+
+    ~SkAutoCommentBlock() {
+        if (NULL != fCanvas) {
+            fCanvas->endCommentGroup();
+        }
+    }
+
+private:
+    SkCanvas* fCanvas;
 };
 
 #endif

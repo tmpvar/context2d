@@ -158,8 +158,8 @@ void GrInOrderDrawBuffer::onDrawRect(const GrRect& rect,
     // When the caller has provided an explicit source rect for a stage then we don't want to
     // modify that stage's matrix. Otherwise if the effect is generating its source rect from
     // the vertex positions then we have to account for the view matrix change.
-    GrDrawState::AutoDeviceCoordDraw adcd(drawState);
-    if (!adcd.succeeded()) {
+    GrDrawState::AutoViewMatrixRestore avmr;
+    if (!avmr.setIdentity(drawState)) {
         return;
     }
 
@@ -445,15 +445,18 @@ void GrInOrderDrawBuffer::reset() {
     fClipSet = true;
 }
 
-bool GrInOrderDrawBuffer::flush() {
+void GrInOrderDrawBuffer::flush() {
+    if (fFlushing) {
+        return;
+    }
+
     GrAssert(kReserved_GeometrySrcType != this->getGeomSrc().fVertexSrc);
     GrAssert(kReserved_GeometrySrcType != this->getGeomSrc().fIndexSrc);
 
     int numCmds = fCmds.count();
     if (0 == numCmds) {
-        return false;
+        return;
     }
-    GrAssert(!fFlushing);
 
     GrAutoTRestore<bool> flushRestore(&fFlushing);
     fFlushing = true;
@@ -533,7 +536,6 @@ bool GrInOrderDrawBuffer::flush() {
     fDstGpu->setDrawState(prevDrawState);
     prevDrawState->unref();
     this->reset();
-    return true;
 }
 
 bool GrInOrderDrawBuffer::onCopySurface(GrSurface* dst,

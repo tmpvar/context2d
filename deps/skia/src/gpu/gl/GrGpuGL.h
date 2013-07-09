@@ -102,7 +102,7 @@ protected:
 
 private:
     // GrGpu overrides
-    virtual void onResetContext() SK_OVERRIDE;
+    virtual void onResetContext(uint32_t resetBits) SK_OVERRIDE;
 
     virtual GrTexture* onCreateTexture(const GrTextureDesc& desc,
                                        const void* srcData,
@@ -178,7 +178,9 @@ private:
         ~ProgramCache();
 
         void abandon();
-        GrGLProgram* getProgram(const GrGLProgramDesc& desc, const GrEffectStage* stages[]);
+        GrGLProgram* getProgram(const GrGLProgramDesc& desc,
+                                const GrEffectStage* colorStages[],
+                                const GrEffectStage* coverageStages[]);
 
     private:
         enum {
@@ -227,7 +229,9 @@ private:
     // determines valid stencil formats
     void initStencilFormats();
 
-    void setSpareTextureUnit();
+    // sets a texture unit to use for texture operations other than binding a texture to a program.
+    // ensures that such operations don't negatively interact with tracking bound textures.
+    void setScratchTextureUnit();
 
     // bound is region that may be modified and therefore has to be resolved.
     // NULL means whole target. Can be an empty rect.
@@ -425,7 +429,7 @@ private:
     TriState                    fHWWriteToColor;
     TriState                    fHWDitherEnabled;
     GrRenderTarget*             fHWBoundRenderTarget;
-    GrTexture*                  fHWBoundTextures[GrDrawState::kNumStages];
+    SkTArray<GrTexture*, true>  fHWBoundTextures;
     ///@}
 
     // we record what stencil format worked last time to hopefully exit early

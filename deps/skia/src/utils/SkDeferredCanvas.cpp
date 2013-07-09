@@ -163,7 +163,7 @@ public:
     virtual uint32_t getDeviceCapabilities() SK_OVERRIDE;
     virtual int width() const SK_OVERRIDE;
     virtual int height() const SK_OVERRIDE;
-    virtual SkGpuRenderTarget* accessRenderTarget() SK_OVERRIDE;
+    virtual GrRenderTarget* accessRenderTarget() SK_OVERRIDE;
 
     virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config config,
                                                int width, int height,
@@ -435,7 +435,7 @@ int DeferredDevice::height() const {
     return immediateDevice()->height();
 }
 
-SkGpuRenderTarget* DeferredDevice::accessRenderTarget() {
+GrRenderTarget* DeferredDevice::accessRenderTarget() {
     this->flushPendingCommands(kNormal_PlaybackMode);
     return immediateDevice()->accessRenderTarget();
 }
@@ -527,6 +527,7 @@ private:
     SkDeferredCanvas* fCanvas;
 };
 
+#if !SK_DEFERRED_CANVAS_USES_FACTORIES
 SkDeferredCanvas::SkDeferredCanvas() {
     this->init();
 }
@@ -539,6 +540,23 @@ SkDeferredCanvas::SkDeferredCanvas(SkDevice* device) {
 SkDeferredCanvas::SkDeferredCanvas(SkSurface* surface) {
     this->init();
     this->INHERITED::setDevice(SkNEW_ARGS(DeferredDevice, (surface)))->unref();
+}
+#endif
+
+SkDeferredCanvas* SkDeferredCanvas::Create(SkSurface* surface) {
+    SkAutoTUnref<DeferredDevice> deferredDevice(SkNEW_ARGS(DeferredDevice, (surface)));
+    return SkNEW_ARGS(SkDeferredCanvas, (deferredDevice));
+}
+
+#ifdef SK_DEVELOPER
+SkDeferredCanvas* SkDeferredCanvas::Create(SkDevice* device) {
+    SkAutoTUnref<DeferredDevice> deferredDevice(SkNEW_ARGS(DeferredDevice, (device)));
+    return SkNEW_ARGS(SkDeferredCanvas, (deferredDevice));
+}
+#endif
+
+SkDeferredCanvas::SkDeferredCanvas(DeferredDevice* device) : SkCanvas (device) {
+    this->init();
 }
 
 void SkDeferredCanvas::init() {
@@ -622,20 +640,21 @@ SkDeferredCanvas::~SkDeferredCanvas() {
 }
 
 SkDevice* SkDeferredCanvas::setDevice(SkDevice* device) {
+#if SK_DEFERRED_CANVAS_USES_FACTORIES
+    SkASSERT(0); // setDevice is deprecated
+#else
     this->INHERITED::setDevice(SkNEW_ARGS(DeferredDevice, (device)))->unref();
+#endif
     return device;
 }
 
 SkSurface* SkDeferredCanvas::setSurface(SkSurface* surface) {
     DeferredDevice* deferredDevice = this->getDeferredDevice();
-    if (NULL != deferredDevice) {
-        // By swapping the surface into the existing device, we preserve
-        // all pending commands, which can help to seamlessly recover from
-        // a lost accelerated graphics context.
-        deferredDevice->setSurface(surface);
-    } else {
-        this->INHERITED::setDevice(SkNEW_ARGS(DeferredDevice, (surface)))->unref();
-    }
+    SkASSERT(NULL != deferredDevice);
+    // By swapping the surface into the existing device, we preserve
+    // all pending commands, which can help to seamlessly recover from
+    // a lost accelerated graphics context.
+    deferredDevice->setSurface(surface);
     return surface;
 }
 

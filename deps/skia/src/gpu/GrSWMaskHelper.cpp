@@ -187,10 +187,11 @@ void GrSWMaskHelper::DrawToTargetWithPathMask(GrTexture* texture,
                                               const GrIRect& rect) {
     GrDrawState* drawState = target->drawState();
 
-    GrDrawState::AutoDeviceCoordDraw adcd(drawState);
-    if (!adcd.succeeded()) {
+    GrDrawState::AutoViewMatrixRestore avmr;
+    if (!avmr.setIdentity(drawState)) {
         return;
     }
+    GrDrawState::AutoRestoreEffects are(drawState);
     enum {
         // the SW path renderer shares this stage with glyph
         // rendering (kGlyphMaskStage in GrTextContext)
@@ -213,13 +214,11 @@ void GrSWMaskHelper::DrawToTargetWithPathMask(GrTexture* texture,
     maskMatrix.preTranslate(SkIntToScalar(-rect.fLeft), SkIntToScalar(-rect.fTop));
     maskMatrix.preConcat(drawState->getViewMatrix());
 
-    GrAssert(!drawState->isStageEnabled(kPathMaskStage));
-    drawState->setEffect(kPathMaskStage,
+    drawState->addCoverageEffect(
                          GrSimpleTextureEffect::Create(texture,
                                                        maskMatrix,
                                                        false,
                                                        GrEffect::kPosition_CoordsType))->unref();
 
     target->drawSimpleRect(dstRect);
-    drawState->disableStage(kPathMaskStage);
 }

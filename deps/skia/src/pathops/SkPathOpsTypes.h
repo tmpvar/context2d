@@ -11,6 +11,7 @@
 #include <math.h>   // for fabs, sqrt
 
 #include "SkFloatingPoint.h"
+#include "SkPath.h"
 #include "SkPathOps.h"
 #include "SkPathOpsDebug.h"
 #include "SkScalar.h"
@@ -22,19 +23,26 @@ enum SkPathOpsMask {
 };
 
 // Use Almost Equal when comparing coordinates. Use epsilon to compare T values.
-extern bool AlmostEqualUlps(float A, float B);
+bool AlmostEqualUlps(float A, float B);
 inline bool AlmostEqualUlps(double A, double B) {
     return AlmostEqualUlps(SkDoubleToScalar(A), SkDoubleToScalar(B));
+}
+
+bool RoughlyEqualUlps(float A, float B);
+inline bool RoughlyEqualUlps(double A, double B) {
+    return RoughlyEqualUlps(SkDoubleToScalar(A), SkDoubleToScalar(B));
 }
 
 // FLT_EPSILON == 1.19209290E-07 == 1 / (2 ^ 23)
 // DBL_EPSILON == 2.22045e-16
 const double FLT_EPSILON_CUBED = FLT_EPSILON * FLT_EPSILON * FLT_EPSILON;
 const double FLT_EPSILON_HALF = FLT_EPSILON / 2;
+const double FLT_EPSILON_DOUBLE = FLT_EPSILON * 2;
 const double FLT_EPSILON_SQUARED = FLT_EPSILON * FLT_EPSILON;
 const double FLT_EPSILON_SQRT = sqrt(FLT_EPSILON);
 const double FLT_EPSILON_INVERSE = 1 / FLT_EPSILON;
 const double DBL_EPSILON_ERR = DBL_EPSILON * 4;  // FIXME: tune -- allow a few bits of error
+const double DBL_EPSILON_SUBDIVIDE_ERR = DBL_EPSILON * 16;
 const double ROUGH_EPSILON = FLT_EPSILON * 64;
 const double MORE_ROUGH_EPSILON = FLT_EPSILON * 256;
 
@@ -44,6 +52,10 @@ inline bool approximately_zero(double x) {
 
 inline bool precisely_zero(double x) {
     return fabs(x) < DBL_EPSILON_ERR;
+}
+
+inline bool precisely_subdivide_zero(double x) {
+    return fabs(x) < DBL_EPSILON_SUBDIVIDE_ERR;
 }
 
 inline bool approximately_zero(float x) {
@@ -58,12 +70,20 @@ inline bool approximately_zero_half(double x) {
     return fabs(x) < FLT_EPSILON_HALF;
 }
 
+inline bool approximately_zero_double(double x) {
+    return fabs(x) < FLT_EPSILON_DOUBLE;
+}
+
 inline bool approximately_zero_squared(double x) {
     return fabs(x) < FLT_EPSILON_SQUARED;
 }
 
 inline bool approximately_zero_sqrt(double x) {
     return fabs(x) < FLT_EPSILON_SQRT;
+}
+
+inline bool roughly_zero(double x) {
+    return fabs(x) < ROUGH_EPSILON;
 }
 
 inline bool approximately_zero_inverse(double x) {
@@ -85,8 +105,16 @@ inline bool precisely_equal(double x, double y) {
     return precisely_zero(x - y);
 }
 
+inline bool precisely_subdivide_equal(double x, double y) {
+    return precisely_subdivide_zero(x - y);
+}
+
 inline bool approximately_equal_half(double x, double y) {
     return approximately_zero_half(x - y);
+}
+
+inline bool approximately_equal_double(double x, double y) {
+    return approximately_zero_double(x - y);
 }
 
 inline bool approximately_equal_squared(double x, double y) {
@@ -107,14 +135,6 @@ inline bool approximately_lesser(double x, double y) {
 
 inline bool approximately_lesser_or_equal(double x, double y) {
     return x - FLT_EPSILON < y;
-}
-
-inline double approximately_pin(double x) {
-    return approximately_zero(x) ? 0 : x;
-}
-
-inline float approximately_pin(float x) {
-    return approximately_zero(x) ? 0 : x;
 }
 
 inline bool approximately_greater_than_one(double x) {
@@ -188,6 +208,33 @@ struct SkDQuad;
 struct SkDTriangle;
 struct SkDCubic;
 struct SkDRect;
+
+inline SkPath::Verb SkPathOpsPointsToVerb(int points) {
+    int verb = (1 << points) >> 1;
+#ifdef SK_DEBUG
+    switch (points) {
+        case 0: SkASSERT(SkPath::kMove_Verb == verb); break;
+        case 1: SkASSERT(SkPath::kLine_Verb == verb); break;
+        case 2: SkASSERT(SkPath::kQuad_Verb == verb); break;
+        case 3: SkASSERT(SkPath::kCubic_Verb == verb); break;
+        default: SkASSERT(!"should not be here");
+    }
+#endif
+    return (SkPath::Verb)verb;
+}
+
+inline int SkPathOpsVerbToPoints(SkPath::Verb verb) {
+    int points = (int) verb - ((int) verb >> 2);
+#ifdef SK_DEBUG
+    switch (verb) {
+        case SkPath::kLine_Verb: SkASSERT(1 == points); break;
+        case SkPath::kQuad_Verb: SkASSERT(2 == points); break;
+        case SkPath::kCubic_Verb: SkASSERT(3 == points); break;
+        default: SkASSERT(!"should not get here");
+    }
+#endif
+    return points;
+}
 
 inline double SkDInterp(double A, double B, double t) {
     return A + (B - A) * t;

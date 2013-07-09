@@ -255,6 +255,9 @@ bool GrDefaultPathRenderer::createGeom(const SkPath& path,
     for (;;) {
         SkPath::Verb verb = iter.next(pts);
         switch (verb) {
+            case SkPath::kConic_Verb:
+                SkASSERT(0);
+                break;
             case SkPath::kMove_Verb:
                 if (!first) {
                     uint16_t currIdx = (uint16_t) (vert - base);
@@ -459,7 +462,7 @@ bool GrDefaultPathRenderer::internalDrawPath(const SkPath& path,
                 drawState->disableState(GrDrawState::kNoColorWrites_StateBit);
             }
             GrRect bounds;
-            GrDrawState::AutoDeviceCoordDraw adcd;
+            GrDrawState::AutoViewMatrixRestore avmr;
             if (reverse) {
                 GrAssert(NULL != drawState->getRenderTarget());
                 // draw over the dev bounds (which will be the whole dst surface for inv fill).
@@ -470,7 +473,7 @@ bool GrDefaultPathRenderer::internalDrawPath(const SkPath& path,
                     drawState->getViewInverse(&vmi)) {
                     vmi.mapRect(&bounds);
                 } else {
-                    adcd.set(drawState);
+                    avmr.setIdentity(drawState);
                 }
             } else {
                 bounds = path.getBounds();

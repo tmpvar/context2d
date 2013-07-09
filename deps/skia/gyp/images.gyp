@@ -25,8 +25,7 @@
         '../src/image/',
       ],
       'sources': [
-        '../include/images/SkImageDecoder.h',
-        '../include/images/SkImageEncoder.h',
+        '../include/images/SkForceLinking.h',
         '../include/images/SkImageRef.h',
         '../include/images/SkImageRef_GlobalPool.h',
         '../src/images/SkJpegUtility.h',
@@ -38,11 +37,12 @@
 
         '../src/images/SkBitmapRegionDecoder.cpp',
 
+        '../src/images/SkForceLinking.cpp',
         '../src/images/SkImageDecoder.cpp',
         '../src/images/SkImageDecoder_FactoryDefault.cpp',
         '../src/images/SkImageDecoder_FactoryRegistrar.cpp',
         # If decoders are added/removed to/from (all/individual)
-        # platform(s), be sure to update SkImageDecoder.cpp:force_linking
+        # platform(s), be sure to update SkForceLinking.cpp
         # so the right decoders will be forced to link.
         '../src/images/SkImageDecoder_libbmp.cpp',
         '../src/images/SkImageDecoder_libgif.cpp',
@@ -106,9 +106,6 @@
           # our code that calls it.
           # See http://code.google.com/p/gyp/wiki/InputFormatReference#Dependent_Settings
           'link_settings': {
-            'sources': [
-              '../src/images/SkImageDecoder_libpng.cpp',
-            ],
             'libraries': [
               '-lgif',
               '-lpng',
@@ -126,9 +123,6 @@
             '../src/images/SkMovie_gif.cpp',
           ],
           'link_settings': {
-            'sources': [
-              '../src/images/SkImageDecoder_libpng.cpp',
-            ],
             'libraries': [
               '-lpng',
               '-lz',
@@ -148,6 +142,16 @@
             '../src/images/SkImageRef_ashmem.h',
             '../src/images/SkImageRef_ashmem.cpp',
           ],
+        }],
+        [ 'skia_os == "chromeos"', {
+          'dependencies': [
+             'chromeos_deps.gyp:gif',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lpng',
+            ],
+          },
         }],
         [ 'skia_os == "ios"', {
            'include_dirs': [

@@ -1,3 +1,4 @@
+# Gyp file for effects
 {
   'targets': [
     {
@@ -9,7 +10,11 @@
         'effects.gypi',
       ],
       'include_dirs': [
+        '../include/config',
+        '../include/core',
         '../include/effects',
+        '../include/lazy',
+        '../include/utils',
         '../src/core',
       ],
       'direct_dependent_settings': {
@@ -17,15 +22,13 @@
           '../include/effects',
         ],
       },
-      'dependencies': [
-        'skia_base_libs.gyp:skia_base_libs',
-      ],
       'sources': [
         'effects.gypi', # Makes the gypi appear in IDEs (but does not modify the build).
       ],
       'conditions': [
         ['skia_gpu == 1', {
           'include_dirs': [
+            '../include/gpu',
             '../src/gpu',
           ],
         }],

@@ -64,6 +64,13 @@ template <typename D, typename S> static D* SkTAddOffset(S* ptr, size_t byteOffs
     );
 }
 
+/** Returns true if the source value 's' will fit in the destination type 'D'. */
+template <typename D, typename S> inline bool SkTFitsIn(S s) {
+    // the cast to <S> is just to restore the signedness of S, to avoid
+    // sign-unsigned comparison warnings.
+    return static_cast<S>(static_cast<D>(s)) == s;
+}
+
 /** \class SkAutoTCallVProc
 
     Call a function when this goes out of scope. The template uses two
@@ -101,7 +108,7 @@ private:
 template <typename T> class SkAutoTDelete : SkNoncopyable {
 public:
     SkAutoTDelete(T* obj = NULL) : fObj(obj) {}
-    ~SkAutoTDelete() { delete fObj; }
+    ~SkAutoTDelete() { SkDELETE(fObj); }
 
     T* get() const { return fObj; }
     T& operator*() const { SkASSERT(fObj); return *fObj; }
@@ -109,7 +116,7 @@ public:
 
     void reset(T* obj) {
         if (fObj != obj) {
-            delete fObj;
+            SkDELETE(fObj);
             fObj = obj;
         }
     }
@@ -118,7 +125,7 @@ public:
      *  Delete the owned object, setting the internal pointer to NULL.
      */
     void free() {
-        delete fObj;
+        SkDELETE(fObj);
         fObj = NULL;
     }
 
@@ -182,7 +189,7 @@ public:
         SkASSERT(count >= 0);
         fArray = NULL;
         if (count) {
-            fArray = new T[count];
+            fArray = SkNEW_ARRAY(T, count);
         }
         SkDEBUGCODE(fCount = count;)
     }
@@ -190,17 +197,17 @@ public:
     /** Reallocates given a new count. Reallocation occurs even if new count equals old count.
      */
     void reset(int count) {
-        delete[] fArray;
+        SkDELETE_ARRAY(fArray);
         SkASSERT(count >= 0);
         fArray = NULL;
         if (count) {
-            fArray = new T[count];
+            fArray = SkNEW_ARRAY(T, count);
         }
         SkDEBUGCODE(fCount = count;)
     }
 
     ~SkAutoTArray() {
-        delete[] fArray;
+        SkDELETE_ARRAY(fArray);
     }
 
     /** Return the array of T elements. Will be NULL if count == 0
@@ -223,28 +230,53 @@ private:
  */
 template <size_t N, typename T> class SkAutoSTArray : SkNoncopyable {
 public:
+    /** Initialize with no objects */
+    SkAutoSTArray() {
+        fArray = NULL;
+        fCount = 0;
+    }
+
     /** Allocate count number of T elements
      */
     SkAutoSTArray(size_t count) {
-        if (count > N) {
-            fArray = new T[count];
-        } else if (count) {
-            fArray = new (fStorage) T[count];
-        } else {
-            fArray = NULL;
-        }
-        fCount = count;
+        fArray = NULL;
+        fCount = 0;
+        this->reset(count);
     }
 
     ~SkAutoSTArray() {
-        if (fCount > N) {
-            delete[] fArray;
-        } else {
-            T* start = fArray;
-            T* iter = start + fCount;
-            while (iter > start) {
-                (--iter)->~T();
+        this->reset(0);
+    }
+
+    /** Destroys previous objects in the array and default constructs count number of objects */
+    void reset(size_t count) {
+        T* start = fArray;
+        T* iter = start + fCount;
+        while (iter > start) {
+            (--iter)->~T();
+        }
+
+        if (fCount != count) {
+            if (count > N) {
+                sk_free(fArray);
             }
+
+            if (count > N) {
+                fArray = (T*) sk_malloc_throw(count * sizeof(T));
+            } else if (count > 0) {
+                fArray = (T*) fStorage;
+            } else {
+                fArray = NULL;
+                return;
+            }
+
+            fCount = count;
+        }
+
+        iter = fArray;
+        T* stop = fArray + count;
+        while (iter < stop) {
+            SkNEW_PLACEMENT(iter++, T);
         }
     }
 
@@ -356,7 +388,7 @@ public:
     }
 
     // doesn't preserve contents
-    void reset(size_t count) {
+    T* reset(size_t count) {
         if (fPtr != fTStorage) {
             sk_free(fPtr);
         }
@@ -367,6 +399,7 @@ public:
         } else {
             fPtr = NULL;
         }
+        return fPtr;
     }
 
     T* get() const { return fPtr; }
