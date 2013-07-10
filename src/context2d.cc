@@ -787,41 +787,31 @@ METHOD(FillRect) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  double x = args[0]->NumberValue();
-  double y = args[1]->NumberValue();
-  double w = args[2]->NumberValue();
-  double h = args[3]->NumberValue();
-
-  double bx = (x < 0) ? x : 0;
-  double by = (y < 0) ? y : 0;
+  SkRect rect = SkRect::MakeXYWH(
+    args[0]->NumberValue(),
+    args[1]->NumberValue(),
+    args[2]->NumberValue(),
+    args[3]->NumberValue()
+  );
 
   double dw = ctx->canvas->getDevice()->width();
   double dh = ctx->canvas->getDevice()->height();
 
-  double bw = w+x > dw ? w+x : dw;
-  double bh = h+y > dh ? h+y : dh;
-
-  SkRect bounds = {
-    bx, by, bw, bh
-  };
-
-  SkPaint p;
-  SkPaint spaint(ctx->paint);
-  p.setXfermodeMode(ctx->globalCompositeOperation);
+  SkPaint p, spaint(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
   int count;
 
   if (ctx->setupShadow(&spaint)) {
-    count = ctx->canvas->saveLayer(&bounds, &p);
-    ctx->canvas->drawRectCoords(x, y, x+w, y+h, spaint);
-    ctx->canvas->drawRectCoords(x, y, x+w, y+h, ctx->shadowPaint);
+    count = ctx->canvas->saveLayer(NULL, &p);
+    ctx->canvas->drawRect(rect, spaint);
+    ctx->canvas->drawRect(rect, ctx->shadowPaint);
     ctx->canvas->restoreToCount(count);
   }
 
-  count = ctx->canvas->saveLayer(&bounds, &p);
-  ctx->canvas->drawRectCoords(x, y, x+w, y+h, ctx->paint);
+  count = ctx->canvas->saveLayer(NULL, &p);
+  ctx->canvas->drawRect(rect, ctx->paint);
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
@@ -902,9 +892,6 @@ METHOD(BeginPath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   ctx->path.rewind();
 
-  // SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  // ctx->path.transform(currentTransform);
-
   return scope.Close(Undefined());
 }
 
@@ -928,41 +915,34 @@ METHOD(Stroke) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   SkPaint stroke(ctx->strokePaint);
-
-  SkMatrix m = ctx->canvas->getTotalMatrix();
-  SkScalar sx = m.getScaleX();
-  SkScalar sy = m.getScaleY();
-  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
-  SkScalar newLineWidth;
-
-  if (sx != 1 && sy != 1) {
-    newLineWidth = m.mapRadius(lineWidth);
-  } else if (sx != 1) {
-    newLineWidth = sx * lineWidth;
-  } else {
-    newLineWidth = sy * lineWidth;
-  }
-  stroke.setStrokeWidth(fabs(newLineWidth));
-
-  SkRect bounds = {
-    0, 0,
-    ctx->canvas->getDevice()->width(),
-    ctx->canvas->getDevice()->height()
-  };
+  SkMatrix im, m = ctx->canvas->getTotalMatrix();
+  m.invert(&im);
 
   SkPaint layerPaint;
   layerPaint.setXfermodeMode(ctx->globalCompositeOperation);
   layerPaint.setAlpha(ctx->globalAlpha);
 
-  int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
+  SkPath fillPath;
+  stroke.setAntiAlias(false);
+  bool fill = false;
 
-  // TODO: in order to do this properly, it needs to be done like
-  //       fillRect
-  ctx->setupShadow(&stroke);
-  ctx->canvas->save();
-  ctx->canvas->resetMatrix();
-  ctx->canvas->drawPath(ctx->path, stroke);
-  ctx->canvas->restore();
+  if (!ctx->path.isLine(NULL) && (m.getScaleX() > 1 || m.getScaleY() > 1)) {
+    fill = stroke.getFillPath(ctx->path, &fillPath);
+  }
+
+  int count = ctx->canvas->saveLayer(NULL, &layerPaint);
+
+    // TODO: in order to do this properly, it needs to be done like
+    //       fillRect
+    ctx->setupShadow(&stroke);
+    if (fill) {
+      fillPath.transform(im);
+      ctx->canvas->drawPath(fillPath, stroke);
+    } else {
+      ctx->path.transform(im);
+
+      ctx->canvas->drawPath(ctx->path, stroke);
+    }
   ctx->canvas->restoreToCount(count);
 
   return scope.Close(Undefined());
@@ -1167,12 +1147,12 @@ METHOD(Rect) {
   SkScalar w = SkDoubleToScalar(args[2]->NumberValue());
   SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
 
+  SkMatrix m = ctx->canvas->getTotalMatrix();
+  SkRect dst;
+  m.mapRect(&dst, SkRect::MakeXYWH(x, y, w, h));
   SkPath subpath;
-  subpath.addRect(SkRect::MakeXYWH(x, y, w, h));
-  SkMatrix44 currentTransform(ctx->canvas->getTotalMatrix());
-  subpath.transform(currentTransform);
+  subpath.addRect(dst);
   ctx->path.addPath(subpath);
-
   return scope.Close(Undefined());
 }
 
@@ -1508,7 +1488,7 @@ METHOD(GetImageData) {
 //       tried it before, but had issues with it pulling
 //       the full row of pixels instead of a subset.
 //  Also tried with SkPixelRef directly with the same result.
-//  Perhaps using a the GPU device will help with this?
+//  Perhaps using the GPU device will help with this?
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
