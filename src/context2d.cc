@@ -1148,10 +1148,9 @@ METHOD(Rect) {
   SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
 
   SkMatrix m = ctx->canvas->getTotalMatrix();
-  SkRect dst;
-  m.mapRect(&dst, SkRect::MakeXYWH(x, y, w, h));
   SkPath subpath;
-  subpath.addRect(dst);
+  subpath.addRect(SkRect::MakeXYWH(x, y, w, h));
+  subpath.transform(m);
   ctx->path.addPath(subpath);
   return scope.Close(Undefined());
 }
