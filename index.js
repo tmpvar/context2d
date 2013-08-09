@@ -1189,7 +1189,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
 
   var nonspaceRemoval = /[\x00-\x1f]+[\x00-\x1f ]+[\x00-\x1f]+/g;
   var collapseText = function(str) {
-    str = str.replace(/  /g, ' ');
+    str = (str + '').replace(/  /g, ' ');
     return str.replace(nonspaceRemoval, '').trim();
   };
 

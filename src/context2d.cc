@@ -940,7 +940,6 @@ METHOD(Stroke) {
       ctx->canvas->drawPath(fillPath, stroke);
     } else {
       ctx->path.transform(im);
-
       ctx->canvas->drawPath(ctx->path, stroke);
     }
   ctx->canvas->restoreToCount(count);
