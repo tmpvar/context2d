@@ -491,7 +491,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
         var prod = (component * alpha) + 128;
         return (prod + (prod >> 8)) >> 8;
       }
-
+      var win32 = process.platform === 'win32';
       var length = id.data.length;
       for (var i = 0; i<length; i+=4) {
 
@@ -500,11 +500,17 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
             g = pre(id.data[i+1], a),
             b = pre(id.data[i+2], a);
 
-        id.data[i+2] = r;
-        id.data[i+1] = g;
-        id.data[i] = b;
-        id.data[i+3] = a;
-
+        if (win32) {
+          id.data[i+2] = r;
+          id.data[i+1] = g;
+          id.data[i] = b;
+          id.data[i+3] = a;
+        } else {
+          id.data[i] = r;
+          id.data[i+1] = g;
+          id.data[i+2] = b;
+          id.data[i+3] = a;
+        }
       }
       i.swizzled = true;
     }
