@@ -487,7 +487,6 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     if (needsSwizzle && !i.swizzled) {
-      console.log('swizzle')
       var pre = function(component, alpha) {
         var prod = (component * alpha) + 128;
         return (prod + (prod >> 8)) >> 8;
@@ -501,10 +500,10 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
             g = pre(id.data[i+1], a),
             b = pre(id.data[i+2], a);
 
-        id.data[i+3] = a;
-        id.data[i] = r;
+        id.data[i+2] = r;
         id.data[i+1] = g;
-        id.data[i+2] = b;
+        id.data[i] = b;
+        id.data[i+3] = a;
 
       }
       i.swizzled = true;

@@ -1,4 +1,4 @@
-var context = require('../');
+var context = require('../context2d');
 var domino = require('domino');
 var argv = require('optimist').argv;
 var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
@@ -25,7 +25,7 @@ module.exports.test = function(module, name, image, fn) {
 
 
   if (skip[name]) {
-    console.log('SKIPPED:', name, '(see: ' + skip[name], ')');
+    console.warn('SKIPPED:', name, '(see: ' + skip[name], ')');
     return function(t) { t.done() } ;
   }
 
