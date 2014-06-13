@@ -610,6 +610,7 @@
           'deps/skia/src/ports/SkFontHost_FreeType.cpp',
           'deps/skia/src/ports/SkFontHost_FreeType_common.cpp',
           'deps/skia/src/images/SkImageRef_ashmem.cpp',
+          'deps/skia/src/ports/SkOSFile_posix.cpp',
 #          'deps/skia/src/views/unix/skia_unix.cpp',
 #          'deps/skia/src/views/unix/SkOSWindow_Unix.cpp',
         ],
