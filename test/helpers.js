@@ -216,7 +216,7 @@ module.exports.assertPixel = function(t, canvas, x,y, r,g,b,a, pos, color) {
   var c = canvas.ctx.getPixel(x, y);
 
   var message = 'Failed assertion: got pixel [' +
-                JSON.stringify(c) +
+                [c.r, c.g, c.b, c.a].join(',') +
                 '] at ('+x+','+y+'), expected ['+r+','+g+','+b+','+a+']';
   var ok = c && c.r === r && c.g === g && c.b === b && c.a === a;
 
@@ -237,7 +237,7 @@ module.exports.assertPixelApprox = function(t, canvas, x,y, r,g,b,a, pos, color,
   // which was off by 4 on the blue channel with tolerance of 3
   if (diff > (tolerance + 1)) {
     t.done('Failed assertion: got pixel [' +
-            JSON.stringify(c) + '] at ('+x+','+y+'), expected ['+
+            [c.r, c.g, c.b, c.a].join(',') + '] at ('+x+','+y+'), expected ['+
             r+','+g+','+b+','+a+'] +/- '+tolerance);
   }
 };
