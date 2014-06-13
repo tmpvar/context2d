@@ -2,7 +2,7 @@
   "name": "context2d",
   "version": "0.0.0",
   "description": "the 2d context part of Canvas",
-  "main": "index.js",
+  "main": "context2d.js",
   "scripts": {
     "test": "node test/test.js",
     "install": "node-gyp configure build"
