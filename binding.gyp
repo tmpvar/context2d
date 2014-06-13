@@ -388,6 +388,7 @@
 #      'deps/skia/src/images/bmpdecoderhelper.cpp',
       'deps/skia/src/images/SkBitmapRegionDecoder.cpp',
       'src/SkImageDecoder_context2d.cpp',
+      'src/SkGlobalInitialization_context2d.cpp',
 #      'deps/skia/src/images/SkImageDecoder.cpp',
 #      'deps/skia/src/images/SkImageDecoder_FactoryDefault.cpp',
       'deps/skia/src/images/SkImageDecoder_FactoryRegistrar.cpp',
@@ -471,7 +472,8 @@
       'deps/skia/src/pdf/SkPDFUtils.cpp',
       'deps/skia/src/pipe/SkGPipeRead.cpp',
       'deps/skia/src/pipe/SkGPipeWrite.cpp',
-      'deps/skia/src/ports/SkGlobalInitialization_default.cpp',
+# use SkGlobalInitialization_context2d.cpp instead
+#      'deps/skia/src/ports/SkGlobalInitialization_default.cpp',
 #      'deps/skia/src/ports/SkHarfBuzzFont.cpp',
       'deps/skia/src/sfnt/SkOTTable_name.cpp',
       'deps/skia/src/sfnt/SkOTUtils.cpp',
@@ -543,6 +545,9 @@
 #      'deps/skia/src/xml/SkXMLParser.cpp',
 #      'deps/skia/src/xml/SkXMLPullParser.cpp',
 #      'deps/skia/src/xml/SkXMLWriter.cpp',
+
+      'deps/skia/src/effects/SkXfermodeImageFilter.cpp',
+      'deps/skia/src/effects/SkLerpXfermode.cpp',
 
     ],
     'conditions' : [
@@ -631,9 +636,6 @@
           'deps/skia/src/ports/SkThread_win.cpp',
           'deps/skia/src/ports/SkTime_win.cpp',
 
-
-          'deps\skia\src\effects\SkXfermodeImageFilter.cpp',
-          'deps\skia\src\effects\SkLerpXfermode.cpp',
           'deps\skia\src\ports\SkOSFile_win.cpp',
           'deps/skia/src/views/win/skia_win.cpp',
           'deps/skia/src/views/win/SkOSWindow_win.cpp',
