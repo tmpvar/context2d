@@ -125,12 +125,12 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 }
 
 Context2D::Context2D(int w, int h) {
-  SkBitmap bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  bitmap.allocPixels();
+  this->bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  this->bitmap.allocPixels();
 
-  this->canvas = new SkCanvas(bitmap);
+  this->device = new SkDevice(bitmap);
+  this->canvas = new SkCanvas(device);
   this->canvas->clear(SkColorSetARGBInline(0, 0, 0, 0));
 
   this->globalAlpha = 255;
@@ -206,16 +206,14 @@ bool Context2D::setupShadow(SkPaint *paint) {
 }
 
 void Context2D::resizeCanvas(int width, int height) {
-   SkDevice *device = this->canvas->createCompatibleDevice(
-    SkBitmap::kARGB_8888_Config,
-    width,
-    height,
-    false
-  );
-
-  // TODO: check for memory leakage.
+  this->bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  this->bitmap.allocPixels();
+  
   SkSafeUnref(this->canvas);
-  this->canvas = new SkCanvas(device);
+  SkSafeUnref(this->device);
+
+  this->device = new SkDevice(this->bitmap);
+  this->canvas = new SkCanvas(this->device);
 }
 
 void *Context2D::getTextureData() {

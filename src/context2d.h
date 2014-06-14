@@ -30,7 +30,9 @@ class Context2D : public ObjectWrap {
     static void Init(v8::Handle<v8::Object> exports);
     void resizeCanvas(int width, int height);
     void *getTextureData();
+    SkBitmap bitmap;
     SkCanvas *canvas;
+    SkDevice *device;
     SkPath path, subpath;
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
