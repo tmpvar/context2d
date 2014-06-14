@@ -595,6 +595,7 @@
           '<!@(freetype-config --cflags)',
         ],
         'defines' : [
+          'SK_BUILD_FOR_UNIX',
           'SK_USE_POSIX_THREADS'
           'DEBUG',
           '_DEBUG',
