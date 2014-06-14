@@ -1,7 +1,7 @@
 var context = require('../context2d');
 var domino = require('domino');
 var argv = require('optimist').argv;
-var Image = module.exports.Image = require('htmlimage').HTMLImageElement;
+var Image = module.exports.Image = require('htmlimage');
 var fs = require('fs');
 var CanvasFontBuffer = fs.readFileSync(__dirname + '/fonts/CanvasTest.ttf');
 
