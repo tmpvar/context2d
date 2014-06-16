@@ -20,8 +20,7 @@
     "bindings": "~1.1.0",
     "csscolorparser": "~1.0.1",
     "cssfontparser": "~1.0.2",
-    "htmlimage": "^1.1.0",
-    "node-gyp": "^0.13.1"
+    "htmlimage": "^1.1.0"
   },
   "devDependencies": {
     "optimist": "~0.4.0",
