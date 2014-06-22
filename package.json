@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tmpvar/context2d.git"
+    "url": "https://github.com/tmpvar/context2d.git"
   },
   "author": "",
   "license": "BSD",
@@ -20,7 +20,8 @@
     "bindings": "~1.1.0",
     "csscolorparser": "~1.0.1",
     "cssfontparser": "~1.0.2",
-    "htmlimage": "^1.1.0"
+    "htmlimage": "^1.1.0",
+    "windows-angle" : "tmpvar/windows-angle"
   },
   "devDependencies": {
     "optimist": "~0.4.0",

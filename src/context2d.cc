@@ -124,7 +124,7 @@ void Context2D::Init(v8::Handle<v8::Object> exports) {
 
 }
 
-Context2D::Context2D(int w, int h) {
+Context2D::Context2D(uint32_t w, uint32_t h) {
 
   this->bitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
   this->bitmap.allocPixels();
@@ -205,10 +205,10 @@ bool Context2D::setupShadow(SkPaint *paint) {
   return false;
 }
 
-void Context2D::resizeCanvas(int width, int height) {
+void Context2D::resizeCanvas(uint32_t width, uint32_t height) {
   this->bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   this->bitmap.allocPixels();
-  
+
   SkSafeUnref(this->canvas);
   SkSafeUnref(this->device);
 
@@ -230,10 +230,11 @@ void *Context2D::getTextureData() {
 METHOD(New) {
   HandleScope scope;
 
-  int w = args[0]->NumberValue();
-  int h = args[1]->NumberValue();
+  Context2D* context = new Context2D(
+    args[0]->Uint32Value(),
+    args[1]->Uint32Value()
+  );
 
-  Context2D* context = new Context2D(w, h);
   context->Wrap(args.This());
 
   return args.This();
@@ -276,8 +277,8 @@ METHOD(GetPixel) {
 
   // TODO: validity and bounds
   SkColor color = bitmap.getColor(
-    SkDoubleToScalar(args[0]->NumberValue()),
-    SkDoubleToScalar(args[1]->NumberValue())
+    args[0]->Int32Value(),
+    args[1]->Int32Value()
   );
 
   obj->Set(String::NewSymbol("r"), Number::New(SkColorGetR(color)));
@@ -306,7 +307,7 @@ METHOD(ToPngBuffer) {
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
-  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Int32::New((int32_t)Buffer::Length(buffer)), v8::Integer::New(0) };
   Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
   free(data);
@@ -332,7 +333,7 @@ METHOD(ToBuffer) {
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
-  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Uint32::New((uint32_t)Buffer::Length(buffer)), v8::Integer::New(0) };
   Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
   return scope.Close(actualBuffer);
@@ -377,8 +378,8 @@ METHOD(Rotate) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   if (!args[0]->IsUndefined()) {
-    SkScalar rads = SkDoubleToScalar(args[0]->NumberValue());
-    ctx->canvas->rotate(DEGREES(rads));
+	SkScalar rads = SkDoubleToScalar(DEGREES(args[0]->NumberValue()));
+    ctx->canvas->rotate(rads);
   }
 
   return scope.Close(Undefined());
@@ -447,8 +448,9 @@ METHOD(ResetMatrix) {
 METHOD(SetGlobalAlpha) {
   HandleScope scope;
 
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->globalAlpha = args[0]->NumberValue()*255;
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());\
+
+  ctx->globalAlpha = (uint8_t)(args[0]->NumberValue()*255);
 
   if (ctx->globalAlpha > 255) {
     ctx->globalAlpha = 255;
@@ -496,10 +498,10 @@ METHOD(SetStrokeStyle) {
   // Clear off the old shader
   ctx->strokePaint.setShader(NULL);
 
-  U8CPU a = args[3]->NumberValue();
-  U8CPU r = args[0]->NumberValue();
-  U8CPU g = args[1]->NumberValue();
-  U8CPU b = args[2]->NumberValue();
+  U8CPU a = (U8CPU)args[3]->Uint32Value();
+  U8CPU r = (U8CPU)args[0]->Uint32Value();
+  U8CPU g = (U8CPU)args[1]->Uint32Value();
+  U8CPU b = (U8CPU)args[2]->Uint32Value();
 
   ctx->strokePaint.setColor(SkColorSetARGBInline(a,r,g,b));
 
@@ -519,8 +521,9 @@ METHOD(SetFillStylePattern) {
   Local<Object> buffer_obj = args[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
 
-  double w = args[1]->NumberValue();
-  double h = args[2]->NumberValue();
+  int32_t w = args[1]->Int32Value();
+  int32_t h = args[2]->Int32Value();
+
   SkShader::TileMode repeatX = args[3]->BooleanValue() ?
                                SkShader::kRepeat_TileMode :
                                SkShader::kClamp_TileMode;
@@ -549,10 +552,10 @@ METHOD(SetFillStyle) {
   // Clear off the old shader
   ctx->paint.setShader(NULL);
 
-  U8CPU a = args[3]->NumberValue();
-  U8CPU r = args[0]->NumberValue();
-  U8CPU g = args[1]->NumberValue();
-  U8CPU b = args[2]->NumberValue();
+  U8CPU a = args[3]->Uint32Value();
+  U8CPU r = args[0]->Uint32Value();
+  U8CPU g = args[1]->Uint32Value();
+  U8CPU b = args[2]->Uint32Value();
 
   ctx->paint.setColor(SkColorSetARGBInline(a,r,g,b));
 
@@ -709,7 +712,7 @@ METHOD(SetShadowOffsetX) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->shadowX = args[0]->NumberValue();
+  ctx->shadowX = SkDoubleToScalar(args[0]->NumberValue());
 
   return scope.Close(Undefined());
 }
@@ -718,7 +721,7 @@ METHOD(SetShadowOffsetY) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->shadowY = args[0]->NumberValue();
+  ctx->shadowY = SkDoubleToScalar(args[0]->NumberValue());
 
   return scope.Close(Undefined());
 }
@@ -727,7 +730,7 @@ METHOD(SetShadowBlur) {
   HandleScope scope;
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
-  ctx->shadowBlur = args[0]->NumberValue();
+  ctx->shadowBlur = SkDoubleToScalar(args[0]->NumberValue());
 
   return scope.Close(Undefined());
 }
@@ -740,10 +743,10 @@ METHOD(SetShadowColor) {
   // Clear off the old shader
   ctx->shadowPaint.setShader(NULL);
 
-  U8CPU a = args[3]->NumberValue();
-  U8CPU r = args[0]->NumberValue();
-  U8CPU g = args[1]->NumberValue();
-  U8CPU b = args[2]->NumberValue();
+  U8CPU a = args[3]->Uint32Value();
+  U8CPU r = args[0]->Uint32Value();
+  U8CPU g = args[1]->Uint32Value();
+  U8CPU b = args[2]->Uint32Value();
 
   ctx->shadowPaint.setColor(SkColorSetARGBInline(a,r,g,b));
 
@@ -757,10 +760,10 @@ METHOD(ClearRect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
   SkCanvas *canvas = ctx->canvas;
 
-  double x = args[0]->NumberValue();
-  double y = args[1]->NumberValue();
-  double w = args[2]->NumberValue();
-  double h = args[3]->NumberValue();
+  SkScalar x = SkDoubleToScalar(args[0]->NumberValue());
+  SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar w = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar h = SkDoubleToScalar(args[3]->NumberValue());
 
   canvas->save();
   SkPaint clearPaint;
@@ -786,10 +789,10 @@ METHOD(FillRect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   SkRect rect = SkRect::MakeXYWH(
-    args[0]->NumberValue(),
-    args[1]->NumberValue(),
-    args[2]->NumberValue(),
-    args[3]->NumberValue()
+    SkDoubleToScalar(args[0]->NumberValue()),
+	SkDoubleToScalar(args[1]->NumberValue()),
+	SkDoubleToScalar(args[2]->NumberValue()),
+	SkDoubleToScalar(args[3]->NumberValue())
   );
 
   double dw = ctx->canvas->getDevice()->width();
@@ -829,15 +832,15 @@ METHOD(StrokeRect) {
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
-  double bx = (x < 0) ? x : 0;
-  double by = (y < 0) ? y : 0;
+  SkScalar bx = (x < 0) ? x : 0;
+  SkScalar by = (y < 0) ? y : 0;
 
-  double dw = ctx->canvas->getDevice()->width();
-  double dh = ctx->canvas->getDevice()->height();
+  int dw = ctx->canvas->getDevice()->width();
+  int dh = ctx->canvas->getDevice()->height();
 
-  double bw = w+x > dw ? w+x : dw;
-  double bh = h+y > dh ? h+y : dh;
-  double lineWidth = ctx->strokePaint.getStrokeWidth();
+  SkScalar bw = w + x > dw ? w + x : dw;
+  SkScalar bh = h + y > dh ? h + y : dh;
+  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
 
   // TODO: apply transform to strokeWidth
 
@@ -964,7 +967,7 @@ METHOD(IsPointInPath) {
   SkScalar y = SkDoubleToScalar(args[1]->NumberValue());
 
   SkRect bounds = ctx->path.getBounds();
-  double d = 0.00001;
+  SkScalar d = 0.00001f;
   if (bounds.left() >= x) {
     x+=d;
   } else if (bounds.right() <= x) {
@@ -1178,23 +1181,23 @@ METHOD(Arc) {
 
   if (!ccw) {
     if (sa > ea+TAU) {
-      ea = fmodf(ea, TAU);
-      sa = fmodf(sa, TAU);
+      ea = fmod(ea, (SkScalar)TAU);
+	  sa = fmod(sa, (SkScalar)TAU);
     }
   } else {
     if (ea > sa+TAU) {
-      ea = fmodf(ea, TAU);
-      sa = fmodf(sa, TAU);
+	  ea = fmod(ea, (SkScalar)TAU);
+	  sa = fmod(sa, (SkScalar)TAU);
     }
   }
 
   SkScalar diff = ea-sa;
   if (diff > TAU) {
-    diff = fmodf(diff, TAU);
+	diff = fmod(diff, (SkScalar)TAU);
   }
 
-  SkScalar startDegrees = fmodf(DEGREES(sa), 360.0);
-  SkScalar sweepDegrees = DEGREES(diff);
+  SkScalar startDegrees = fmod((SkScalar)DEGREES(sa), 360.0f);
+  SkScalar sweepDegrees = (SkScalar)DEGREES(diff);
 
   if (sweepDegrees == 0 || sweepDegrees >= 360 || sweepDegrees <= -360 || ea > sa+TAU) {
     ctx->path.arcTo(rect, startDegrees, 0, false);
@@ -1299,8 +1302,8 @@ METHOD(SetFont) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
 
-  bool isBold = args[1]->IntegerValue();
-  bool isItalic = args[2]->IntegerValue();
+  bool isBold = args[1]->BooleanValue();
+  bool isItalic = args[2]->BooleanValue();
 
   SkScalar fontSize = SkDoubleToScalar(args[3]->NumberValue());
   ctx->paint.setTextSize(fontSize);
@@ -1392,16 +1395,16 @@ METHOD(DrawImageBuffer) {
   Local<Object> buffer_obj = args[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
 
-  double sx = args[1]->NumberValue();
-  double sy = args[2]->NumberValue();
-  double sw = args[3]->NumberValue();
-  double sh = args[4]->NumberValue();
-  double dx = args[5]->NumberValue();
-  double dy = args[6]->NumberValue();
-  double dw = args[7]->NumberValue();
-  double dh = args[8]->NumberValue();
-  double w = args[9]->NumberValue();
-  double h = args[10]->NumberValue();
+  SkScalar sx = SkDoubleToScalar(args[1]->NumberValue());
+  SkScalar sy = SkDoubleToScalar(args[2]->NumberValue());
+  SkScalar sw = SkDoubleToScalar(args[3]->NumberValue());
+  SkScalar sh = SkDoubleToScalar(args[4]->NumberValue());
+  SkScalar dx = SkDoubleToScalar(args[5]->NumberValue());
+  SkScalar dy = SkDoubleToScalar(args[6]->NumberValue());
+  SkScalar dw = SkDoubleToScalar(args[7]->NumberValue());
+  SkScalar dh = SkDoubleToScalar(args[8]->NumberValue());
+  int32_t w  = args[9]->Int32Value();
+  int32_t h  = args[10]->Int32Value();
 
   SkBitmap src;
 
@@ -1413,8 +1416,8 @@ METHOD(DrawImageBuffer) {
 
   SkRect bounds = {
     0, 0,
-    ctx->canvas->getDevice()->width(),
-    ctx->canvas->getDevice()->height()
+    SkIntToScalar(ctx->canvas->getDevice()->width()),
+	SkIntToScalar(ctx->canvas->getDevice()->height())
   };
 
   SkPaint layerPaint, spaint;
@@ -1437,8 +1440,6 @@ METHOD(CreateImageData) {
 
   // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-
-
   return scope.Close(Undefined());
 }
 
@@ -1447,10 +1448,10 @@ METHOD(GetImageData) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  int32_t sx = args[0]->IntegerValue();
-  int32_t sy = args[1]->IntegerValue();
-  int32_t sw = args[2]->IntegerValue();
-  int32_t sh = args[3]->IntegerValue();
+  int32_t sx = args[0]->Int32Value();
+  int32_t sy = args[1]->Int32Value();
+  int32_t sw = args[2]->Int32Value();
+  int32_t sh = args[3]->Int32Value();
 
   SkIRect srcRect = SkIRect::MakeXYWH(sx, sy, sw, sh);
 
@@ -1488,7 +1489,7 @@ METHOD(GetImageData) {
 
   Local<v8::Object> globalObj = v8::Context::GetCurrent()->Global();
   Local<Function> bufferConstructor = v8::Local<v8::Function>::Cast(globalObj->Get(v8::String::New("Buffer")));
-  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Integer::New(Buffer::Length(buffer)), v8::Integer::New(0) };
+  Handle<Value> constructorArgs[3] = { buffer->handle_, v8::Uint32::New((uint32_t)Buffer::Length(buffer)), v8::Integer::New(0) };
   Local<Object> actualBuffer = bufferConstructor->NewInstance(3, constructorArgs);
 
   Handle<Object> obj = Object::New();
@@ -1508,14 +1509,13 @@ METHOD(PutImageData) {
   SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer_obj);
   size_t buffer_length = Buffer::Length(buffer_obj);
 
-  int sx = args[1]->IntegerValue();
-  int sy = args[2]->IntegerValue();
-  int dx = args[3]->IntegerValue();
-  int dy = args[4]->IntegerValue();
-  int dw  = args[5]->IntegerValue();
-  int dh  = args[6]->IntegerValue();
-
-  int w  = args[7]->IntegerValue();
+  int32_t sx = args[1]->Int32Value();
+  int32_t sy = args[2]->Int32Value();
+  int32_t dx = args[3]->Int32Value();
+  int32_t dy = args[4]->Int32Value();
+  int32_t dw = args[5]->Int32Value();
+  int32_t dh = args[6]->Int32Value();
+  int32_t w  = args[7]->Int32Value();
 
   ctx->canvas->flush();
 
@@ -1567,7 +1567,7 @@ METHOD(SetLineCap) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  int c = args[0]->IntegerValue();
+  uint32_t c = args[0]->Uint32Value();
   ctx->strokePaint.setStrokeCap((SkPaint::Cap)c);
 
   return scope.Close(Undefined());
@@ -1578,7 +1578,7 @@ METHOD(SetLineJoin) {
 
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
-  int j = args[0]->IntegerValue();
+  uint32_t j = args[0]->Uint32Value();
   ctx->strokePaint.setStrokeJoin((SkPaint::Join)j);
 
   return scope.Close(Undefined());

@@ -285,8 +285,6 @@
       'deps/skia/src/gpu/effects/GrTextureStripAtlas.cpp',
 #      'deps/skia/src/gpu/gl/android/GrGLCreateNativeInterface_android.cpp',
 #      'deps/skia/src/gpu/gl/android/SkNativeGLContext_android.cpp',
-#      'deps/skia/src/gpu/gl/angle/GrGLCreateANGLEInterface.cpp',
-#      'deps/skia/src/gpu/gl/angle/SkANGLEGLContext.cpp',
       'deps/skia/src/gpu/gl/debug/GrBufferObj.cpp',
       'deps/skia/src/gpu/gl/debug/GrDebugGL.cpp',
       'deps/skia/src/gpu/gl/debug/GrFrameBufferObj.cpp',
@@ -623,13 +621,15 @@
         'defines' : [
           '_USE_MATH_DEFINES',
           'SK_SUPPORT_GPU=1',
-          'SK_ZLIB_INCLUDE=<zlib.h>'
+          'SK_ZLIB_INCLUDE=<zlib.h>',
+          'SK_ANGLE=1'
         ],
 
         # TODO: we'll need angle on windows
-        #'dependencies' : [
-        #  'deps/skia/third_party/externals/angle/src/build_angle.gyp'
-        #],
+        'dependencies' : [
+          'node_modules/windows-angle/gyp/angle.gyp:libGLESv2',
+          'node_modules/windows-angle/gyp/angle.gyp:libEGL'
+        ],
         'sources' : [
           'deps/skia/src/ports/SkDebug_win.cpp',
           'deps/skia/src/ports/SkFontHost_win.cpp',
@@ -637,6 +637,9 @@
           'deps/skia/src/ports/SkImageDecoder_WIC.cpp',
           'deps/skia/src/ports/SkThread_win.cpp',
           'deps/skia/src/ports/SkTime_win.cpp',
+
+          'deps/skia/src/gpu/gl/angle/GrGLCreateANGLEInterface.cpp',
+          'deps/skia/src/gpu/gl/angle/SkANGLEGLContext.cpp',
 
           'deps\skia\src\ports\SkOSFile_win.cpp',
           'deps/skia/src/views/win/skia_win.cpp',
@@ -660,7 +663,9 @@
         'include_dirs' : [
           '<@(shared_include_dirs)',
           'deps/skia/src/utils/win',
-          'deps/skia/include/utils/win'
+          'deps/skia/include/utils/win',
+          'libGLESv2',
+          'libEGL'
         ]
       }]
     ]

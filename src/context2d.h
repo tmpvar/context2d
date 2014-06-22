@@ -28,7 +28,7 @@ class Context2D : public ObjectWrap {
 
   public:
     static void Init(v8::Handle<v8::Object> exports);
-    void resizeCanvas(int width, int height);
+    void resizeCanvas(uint32_t width, uint32_t height);
     void *getTextureData();
     SkBitmap bitmap;
     SkCanvas *canvas;
@@ -36,10 +36,11 @@ class Context2D : public ObjectWrap {
     SkPath path, subpath;
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
-    double globalAlpha, shadowX, shadowY, shadowBlur;
+    SkScalar shadowX, shadowY, shadowBlur;
+	uint8_t globalAlpha;
     bool defaultLineWidth;
   private:
-    Context2D(int w, int h);
+    Context2D(uint32_t w, uint32_t h);
     ~Context2D();
     bool setupShadow(SkPaint *paint);
 

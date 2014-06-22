@@ -31,6 +31,8 @@
       'src',
       'deps/libpng',
       'deps/zlib',
+      'node_modules/windows-angle/deps/angle/include',
+      'node_modules/windows-angle/src/shim',
     ]
   },
 
