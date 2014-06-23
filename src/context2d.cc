@@ -795,9 +795,6 @@ METHOD(FillRect) {
 	SkDoubleToScalar(args[3]->NumberValue())
   );
 
-  double dw = ctx->canvas->getDevice()->width();
-  double dh = ctx->canvas->getDevice()->height();
-
   SkPaint p, spaint(ctx->paint);
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
@@ -840,7 +837,6 @@ METHOD(StrokeRect) {
 
   SkScalar bw = w + x > dw ? w + x : dw;
   SkScalar bh = h + y > dh ? h + y : dh;
-  SkScalar lineWidth = ctx->strokePaint.getStrokeWidth();
 
   // TODO: apply transform to strokeWidth
 
