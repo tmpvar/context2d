@@ -913,6 +913,7 @@ METHOD(Stroke) {
 
   SkPaint stroke(ctx->strokePaint);
   SkMatrix im, m = ctx->canvas->getTotalMatrix();
+
   m.invert(&im);
 
   SkPaint layerPaint;
@@ -923,7 +924,7 @@ METHOD(Stroke) {
   stroke.setAntiAlias(false);
   bool fill = false;
 
-  if (!ctx->path.isLine(NULL) && (m.getScaleX() > 1 || m.getScaleY() > 1)) {
+  if (!ctx->path.isLine(NULL) && (im.getScaleX() > 1 || im.getScaleY() > 1)) {
     fill = stroke.getFillPath(ctx->path, &fillPath);
   }
 
