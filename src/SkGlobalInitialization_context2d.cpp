@@ -108,7 +108,7 @@ void SkFlattenable::InitializeFlattenables() {
     SkBlurMaskFilter::InitializeFlattenables();
     SkColorFilter::InitializeFlattenables();
     SkGradientShader::InitializeFlattenables();
-    // SkImages::InitializeFlattenables();
+    SkImages::InitializeFlattenables();
     SkLightingImageFilter::InitializeFlattenables();
     SkTableColorFilter::InitializeFlattenables();
     SkXfermode::InitializeFlattenables();
