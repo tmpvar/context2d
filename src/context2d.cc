@@ -378,7 +378,7 @@ METHOD(Rotate) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(args.This());
 
   if (!args[0]->IsUndefined()) {
-	SkScalar rads = SkDoubleToScalar(DEGREES(args[0]->NumberValue()));
+    SkScalar rads = SkDoubleToScalar(DEGREES(args[0]->NumberValue()));
     ctx->canvas->rotate(rads);
   }
 
@@ -921,7 +921,6 @@ METHOD(Stroke) {
   layerPaint.setAlpha(ctx->globalAlpha);
 
   SkPath fillPath;
-  stroke.setAntiAlias(false);
   bool fill = false;
 
   if (!ctx->path.isLine(NULL) && (im.getScaleX() > 1 || im.getScaleY() > 1)) {
