@@ -6,6 +6,7 @@
 #define DUMP_IMAGEREF_LIFECYCLE
 
 #include <node.h>
+#include <nan.h>
 #include <SkFontMgr.h>
 #include <SkCanvas.h>
 #include <SkPaint.h>
@@ -21,10 +22,8 @@ using namespace node;
 using namespace v8;
 
 
-#define OBJECT_METHOD(name) static Handle<Value> name(const Arguments& args);
 
-
-class Context2D : public ObjectWrap {
+class Context2D : public Nan::ObjectWrap {
 
   public:
     static void Init(v8::Handle<v8::Object> exports);
@@ -37,7 +36,7 @@ class Context2D : public ObjectWrap {
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
     SkScalar shadowX, shadowY, shadowBlur;
-	uint8_t globalAlpha;
+    uint8_t globalAlpha;
     bool defaultLineWidth;
   private:
     Context2D(uint32_t w, uint32_t h);
@@ -45,99 +44,99 @@ class Context2D : public ObjectWrap {
     bool setupShadow(SkPaint *paint);
 
     static Persistent<Function> constructor;
-    OBJECT_METHOD(New);
-    OBJECT_METHOD(ToPngBuffer);
-    OBJECT_METHOD(ToBuffer);
-    OBJECT_METHOD(GetPixel);
-    OBJECT_METHOD(Resize);
-    OBJECT_METHOD(DumpState);
-    OBJECT_METHOD(AddFont);
+    static NAN_METHOD(New);
+    static NAN_METHOD(ToPngBuffer);
+    static NAN_METHOD(ToBuffer);
+    static NAN_METHOD(GetPixel);
+    static NAN_METHOD(Resize);
+    static NAN_METHOD(DumpState);
+    static NAN_METHOD(AddFont);
 
     // state
-    OBJECT_METHOD(Save); // push state on state stack
-    OBJECT_METHOD(Restore); // pop state stack and restore state
+    static NAN_METHOD(Save); // push state on state stack
+    static NAN_METHOD(Restore); // pop state stack and restore state
 
     // transformations (default transform is the identity matrix)
-    OBJECT_METHOD(Scale);
-    OBJECT_METHOD(Rotate);
-    OBJECT_METHOD(Translate);
-    OBJECT_METHOD(Transform);
-    OBJECT_METHOD(ResetMatrix);
+    static NAN_METHOD(Scale);
+    static NAN_METHOD(Rotate);
+    static NAN_METHOD(Translate);
+    static NAN_METHOD(Transform);
+    static NAN_METHOD(ResetMatrix);
 
     // compositing
-    OBJECT_METHOD(SetGlobalAlpha);
-    OBJECT_METHOD(SetGlobalCompositeOperation);
+    static NAN_METHOD(SetGlobalAlpha);
+    static NAN_METHOD(SetGlobalCompositeOperation);
 
     // gradients
-    OBJECT_METHOD(SetLinearGradientShader);
-    OBJECT_METHOD(SetRadialGradientShader);
+    static NAN_METHOD(SetLinearGradientShader);
+    static NAN_METHOD(SetRadialGradientShader);
 
     // image smoothing
-    OBJECT_METHOD(SetImageSmoothingEnabled);
-    OBJECT_METHOD(GetImageSmoothingEnabled);
+    static NAN_METHOD(SetImageSmoothingEnabled);
+    static NAN_METHOD(GetImageSmoothingEnabled);
 
     // colors and styles (see also the CanvasDrawingStyles interface)
-    OBJECT_METHOD(SetStrokeStyle);
-    OBJECT_METHOD(SetFillStylePattern);
-    OBJECT_METHOD(SetFillStyle);
-    OBJECT_METHOD(CreatePattern);
+    static NAN_METHOD(SetStrokeStyle);
+    static NAN_METHOD(SetFillStylePattern);
+    static NAN_METHOD(SetFillStyle);
+    static NAN_METHOD(CreatePattern);
 
     // shadows
-    OBJECT_METHOD(SetShadowOffsetX);
-    OBJECT_METHOD(SetShadowOffsetY);
-    OBJECT_METHOD(SetShadowBlur);
-    OBJECT_METHOD(SetShadowColor);
+    static NAN_METHOD(SetShadowOffsetX);
+    static NAN_METHOD(SetShadowOffsetY);
+    static NAN_METHOD(SetShadowBlur);
+    static NAN_METHOD(SetShadowColor);
 
     // rects
-    OBJECT_METHOD(ClearRect);
-    OBJECT_METHOD(FillRect);
-    OBJECT_METHOD(StrokeRect);
+    static NAN_METHOD(ClearRect);
+    static NAN_METHOD(FillRect);
+    static NAN_METHOD(StrokeRect);
 
     // paths
-    OBJECT_METHOD(BeginPath);
-    OBJECT_METHOD(Fill);
-    OBJECT_METHOD(Stroke);
-    OBJECT_METHOD(Clip);
-    OBJECT_METHOD(IsPointInPath);
-    OBJECT_METHOD(ClosePath);
-    OBJECT_METHOD(MoveTo);
-    OBJECT_METHOD(LineTo);
-    OBJECT_METHOD(QuadraticCurveTo);
-    OBJECT_METHOD(BezierCurveTo);
-    OBJECT_METHOD(ArcTo);
-    OBJECT_METHOD(Rect);
-    OBJECT_METHOD(Arc);
-    OBJECT_METHOD(Ellipse);
+    static NAN_METHOD(BeginPath);
+    static NAN_METHOD(Fill);
+    static NAN_METHOD(Stroke);
+    static NAN_METHOD(Clip);
+    static NAN_METHOD(IsPointInPath);
+    static NAN_METHOD(ClosePath);
+    static NAN_METHOD(MoveTo);
+    static NAN_METHOD(LineTo);
+    static NAN_METHOD(QuadraticCurveTo);
+    static NAN_METHOD(BezierCurveTo);
+    static NAN_METHOD(ArcTo);
+    static NAN_METHOD(Rect);
+    static NAN_METHOD(Arc);
+    static NAN_METHOD(Ellipse);
 
     // text
-    OBJECT_METHOD(FillText);
-    OBJECT_METHOD(StrokeText);
-    OBJECT_METHOD(MeasureText);
-    OBJECT_METHOD(SetFont);
-    OBJECT_METHOD(SetTextAlign);
-    OBJECT_METHOD(GetTextBaseline);
-    OBJECT_METHOD(SetTextBaseline);
+    static NAN_METHOD(FillText);
+    static NAN_METHOD(StrokeText);
+    static NAN_METHOD(MeasureText);
+    static NAN_METHOD(SetFont);
+    static NAN_METHOD(SetTextAlign);
+    static NAN_METHOD(GetTextBaseline);
+    static NAN_METHOD(SetTextBaseline);
 
     // drawing images
-    OBJECT_METHOD(DrawImageBuffer);
+    static NAN_METHOD(DrawImageBuffer);
 
     // pixel manipulation
-    OBJECT_METHOD(CreateImageData);
-    OBJECT_METHOD(GetImageData);
-    OBJECT_METHOD(PutImageData);
+    static NAN_METHOD(CreateImageData);
+    static NAN_METHOD(GetImageData);
+    static NAN_METHOD(PutImageData);
 
     // line caps/joins
-    OBJECT_METHOD(SetLineWidth);
-    OBJECT_METHOD(SetLineCap);
-    OBJECT_METHOD(SetLineJoin);
-    OBJECT_METHOD(GetMiterLimit);
-    OBJECT_METHOD(SetMiterLimit);
+    static NAN_METHOD(SetLineWidth);
+    static NAN_METHOD(SetLineCap);
+    static NAN_METHOD(SetLineJoin);
+    static NAN_METHOD(GetMiterLimit);
+    static NAN_METHOD(SetMiterLimit);
 
     // dashed lines
-    OBJECT_METHOD(SetLineDash);
-    OBJECT_METHOD(GetLineDash);
-    OBJECT_METHOD(SetLineDashOffset);
-    OBJECT_METHOD(GetLineDashOffset);
+    static NAN_METHOD(SetLineDash);
+    static NAN_METHOD(GetLineDash);
+    static NAN_METHOD(SetLineDashOffset);
+    static NAN_METHOD(GetLineDashOffset);
 
 // interface CanvasPattern {
 //   // opaque object

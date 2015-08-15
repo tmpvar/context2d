@@ -5,7 +5,7 @@
 using namespace v8;
 using namespace node;
 
-void InitializeBinding(Handle<Object> exports) {
+void InitializeBinding(Local<Object> exports) {
   Context2D::Init(exports);
 }
 

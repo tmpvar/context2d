@@ -585,7 +585,12 @@
         },
         'include_dirs' : [
           'deps/skia/include/utils/mac'
-        ]
+        ],
+        'link_settings': {
+          'libraries': [
+            '-framework', 'CoreText'
+          ]
+        }
       }],
       ['OS == "linux"', {
         'cflags': [

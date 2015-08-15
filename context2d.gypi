@@ -33,6 +33,7 @@
       'deps/zlib',
       'node_modules/windows-angle/deps/angle/include',
       'node_modules/windows-angle/src/shim',
+      "<!(node -e \"require('nan')\")"
     ]
   },
 

@@ -1,8 +1,9 @@
 var Context2D;
 try {
   Context2D = require('bindings')('context2d').Context2D;
-} catch (e) {}
-
+} catch (e) {
+  console.error(e.stack)
+}
 var csscolor = require('./lib/color');
 var cssfont = require('cssfontparser');
 var util = require('util');
