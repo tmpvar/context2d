@@ -4,29 +4,77 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
-#include "SkRefCnt.h"
-#include "SkThread.h"
-#include "SkWeakRefCnt.h"
 #include <memory>
+#include "Benchmark.h"
+#include "SkAtomics.h"
+#include "SkRefCnt.h"
+#include "SkWeakRefCnt.h"
 
 enum {
-    N = SkBENCHLOOP(100000),
-    M = SkBENCHLOOP(2)
+    M = 2
 };
 
-class RefCntBench_Stack : public SkBenchmark {
+class AtomicInc32 : public Benchmark {
 public:
-    RefCntBench_Stack(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    AtomicInc32() : fX(0) {}
+
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
+        return "atomic_inc_32";
+    }
+
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
+            sk_atomic_inc(&fX);
+        }
+    }
+
+private:
+    int32_t fX;
+    typedef Benchmark INHERITED;
+};
+
+class AtomicInc64 : public Benchmark {
+public:
+    AtomicInc64() : fX(0) {}
+
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
+    }
+
+protected:
+    const char* onGetName() override {
+        return "atomic_inc_64";
+    }
+
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
+            sk_atomic_inc(&fX);
+        }
+    }
+
+private:
+    int64_t fX;
+    typedef Benchmark INHERITED;
+};
+
+class RefCntBench_Stack : public Benchmark {
+public:
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
+    }
+
+protected:
+    const char* onGetName() override {
         return "ref_cnt_stack";
     }
 
-    virtual void onDraw(SkCanvas*) {
-        for (int i = 0; i < N; ++i) {
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
             SkRefCnt ref;
             for (int j = 0; j < M; ++j) {
                 ref.ref();
@@ -36,13 +84,11 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 class PlacedRefCnt : public SkRefCnt {
 public:
-    SK_DECLARE_INST_COUNT(PlacedRefCnt)
-
     PlacedRefCnt() : SkRefCnt() { }
     void operator delete(void*) { }
 
@@ -50,21 +96,20 @@ private:
     typedef SkRefCnt INHERITED;
 };
 
-SK_DEFINE_INST_COUNT(PlacedRefCnt)
-
-class RefCntBench_Heap : public SkBenchmark {
+class RefCntBench_Heap : public Benchmark {
 public:
-    RefCntBench_Heap(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
         return "ref_cnt_heap";
     }
 
-    virtual void onDraw(SkCanvas*) {
+    void onDraw(const int loops, SkCanvas*) override {
         char memory[sizeof(PlacedRefCnt)];
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < loops; ++i) {
             PlacedRefCnt* ref = new (memory) PlacedRefCnt();
             for (int j = 0; j < M; ++j) {
                 ref->ref();
@@ -75,21 +120,22 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
-class RefCntBench_New : public SkBenchmark {
+class RefCntBench_New : public Benchmark {
 public:
-    RefCntBench_New(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
         return "ref_cnt_new";
     }
 
-    virtual void onDraw(SkCanvas*) {
-        for (int i = 0; i < N; ++i) {
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
             SkRefCnt* ref = new SkRefCnt();
             for (int j = 0; j < M; ++j) {
                 ref->ref();
@@ -100,23 +146,24 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class WeakRefCntBench_Stack : public SkBenchmark {
+class WeakRefCntBench_Stack : public Benchmark {
 public:
-    WeakRefCntBench_Stack(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
         return "ref_cnt_stack_weak";
     }
 
-    virtual void onDraw(SkCanvas*) {
-        for (int i = 0; i < N; ++i) {
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
             SkWeakRefCnt ref;
             for (int j = 0; j < M; ++j) {
                 ref.ref();
@@ -126,7 +173,7 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 class PlacedWeakRefCnt : public SkWeakRefCnt {
@@ -135,19 +182,20 @@ public:
     void operator delete(void*) { }
 };
 
-class WeakRefCntBench_Heap : public SkBenchmark {
+class WeakRefCntBench_Heap : public Benchmark {
 public:
-    WeakRefCntBench_Heap(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
         return "ref_cnt_heap_weak";
     }
 
-    virtual void onDraw(SkCanvas*) {
+    void onDraw(const int loops, SkCanvas*) override {
         char memory[sizeof(PlacedWeakRefCnt)];
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < loops; ++i) {
             PlacedWeakRefCnt* ref = new (memory) PlacedWeakRefCnt();
             for (int j = 0; j < M; ++j) {
                 ref->ref();
@@ -158,21 +206,22 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
-class WeakRefCntBench_New : public SkBenchmark {
+class WeakRefCntBench_New : public Benchmark {
 public:
-    WeakRefCntBench_New(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
+
 protected:
-    virtual const char* onGetName() {
+    const char* onGetName() override {
         return "ref_cnt_new_weak";
     }
 
-    virtual void onDraw(SkCanvas*) {
-        for (int i = 0; i < N; ++i) {
+    void onDraw(const int loops, SkCanvas*) override {
+        for (int i = 0; i < loops; ++i) {
             SkWeakRefCnt* ref = new SkWeakRefCnt();
             for (int j = 0; j < M; ++j) {
                 ref->ref();
@@ -183,23 +232,18 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* Fact00(void* p) { return new RefCntBench_Stack(p); }
-static SkBenchmark* Fact01(void* p) { return new RefCntBench_Heap(p); }
-static SkBenchmark* Fact02(void* p) { return new RefCntBench_New(p); }
+DEF_BENCH( return new AtomicInc32(); )
+DEF_BENCH( return new AtomicInc64(); )
 
-static SkBenchmark* Fact10(void* p) { return new WeakRefCntBench_Stack(p); }
-static SkBenchmark* Fact11(void* p) { return new WeakRefCntBench_Heap(p); }
-static SkBenchmark* Fact12(void* p) { return new WeakRefCntBench_New(p); }
+DEF_BENCH( return new RefCntBench_Stack(); )
+DEF_BENCH( return new RefCntBench_Heap(); )
+DEF_BENCH( return new RefCntBench_New(); )
 
-static BenchRegistry gReg00(Fact00);
-static BenchRegistry gReg01(Fact01);
-static BenchRegistry gReg02(Fact02);
-
-static BenchRegistry gReg10(Fact10);
-static BenchRegistry gReg11(Fact11);
-static BenchRegistry gReg12(Fact12);
+DEF_BENCH( return new WeakRefCntBench_Stack(); )
+DEF_BENCH( return new WeakRefCntBench_Heap(); )
+DEF_BENCH( return new WeakRefCntBench_New(); )

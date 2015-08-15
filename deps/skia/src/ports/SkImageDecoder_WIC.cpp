@@ -6,9 +6,27 @@
  * found in the LICENSE file.
  */
 
+#include "SkTypes.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+// Workaround for:
+// http://connect.microsoft.com/VisualStudio/feedback/details/621653/
+// http://crbug.com/225822
+// In VS2010 both intsafe.h and stdint.h define the following without guards.
+// SkTypes brought in windows.h and stdint.h and the following defines are
+// not used by this file. However, they may be re-introduced by wincodec.h.
+#undef INT8_MIN
+#undef INT16_MIN
+#undef INT32_MIN
+#undef INT64_MIN
+#undef INT8_MAX
+#undef UINT8_MAX
+#undef INT16_MAX
+#undef UINT16_MAX
+#undef INT32_MAX
+#undef UINT32_MAX
+#undef INT64_MAX
+#undef UINT64_MAX
+
 #include <wincodec.h>
 #include "SkAutoCoInitialize.h"
 #include "SkImageDecoder.h"
@@ -49,7 +67,7 @@ public:
     bool decodeStream(SkStream* stream, SkBitmap* bm, WICModes wicMode, Format* format) const;
 
 protected:
-    virtual bool onDecode(SkStream* stream, SkBitmap* bm, Mode mode) SK_OVERRIDE;
+    Result onDecode(SkStream* stream, SkBitmap* bm, Mode mode) override;
 };
 
 struct FormatConversion {
@@ -74,7 +92,7 @@ static SkImageDecoder::Format GuidContainerFormat_to_Format(REFGUID guid) {
     return SkImageDecoder::kUnknown_Format;
 }
 
-bool SkImageDecoder_WIC::onDecode(SkStream* stream, SkBitmap* bm, Mode mode) {
+SkImageDecoder::Result SkImageDecoder_WIC::onDecode(SkStream* stream, SkBitmap* bm, Mode mode) {
     WICModes wicMode;
     switch (mode) {
         case SkImageDecoder::kDecodeBounds_Mode:
@@ -84,7 +102,7 @@ bool SkImageDecoder_WIC::onDecode(SkStream* stream, SkBitmap* bm, Mode mode) {
             wicMode = kDecodePixels_WICMode;
             break;
     }
-    return this->decodeStream(stream, bm, wicMode, NULL);
+    return this->decodeStream(stream, bm, wicMode, NULL) ? kSuccess : kFailure;
 }
 
 bool SkImageDecoder_WIC::decodeStream(SkStream* stream, SkBitmap* bm, WICModes wicMode,
@@ -168,7 +186,7 @@ bool SkImageDecoder_WIC::decodeStream(SkStream* stream, SkBitmap* bm, WICModes w
 
     //Exit early if we're only looking for the bitmap bounds.
     if (SUCCEEDED(hr)) {
-        bm->setConfig(SkBitmap::kARGB_8888_Config, width, height);
+        bm->setInfo(SkImageInfo::MakeN32Premul(width, height));
         if (kDecodeBounds_WICMode == wicMode) {
             return true;
         }
@@ -213,7 +231,7 @@ bool SkImageDecoder_WIC::decodeStream(SkStream* stream, SkBitmap* bm, WICModes w
     if (SUCCEEDED(hr)) {
         SkAutoLockPixels alp(*bm);
         bm->eraseColor(SK_ColorTRANSPARENT);
-        const int stride = bm->rowBytes();
+        const UINT stride = (UINT) bm->rowBytes();
         hr = piBitmapSourceConverted->CopyPixels(
             NULL,                             //Get all the pixels
             stride,
@@ -222,7 +240,9 @@ bool SkImageDecoder_WIC::decodeStream(SkStream* stream, SkBitmap* bm, WICModes w
         );
 
         // Note: we don't need to premultiply here since we specified PBGRA
-        bm->computeAndSetOpaquePredicate();
+        if (SkBitmap::ComputeIsOpaque(*bm)) {
+            bm->setAlphaType(kOpaque_SkAlphaType);
+        }
     }
 
     return SUCCEEDED(hr);
@@ -230,9 +250,9 @@ bool SkImageDecoder_WIC::decodeStream(SkStream* stream, SkBitmap* bm, WICModes w
 
 /////////////////////////////////////////////////////////////////////////
 
-extern SkImageDecoder* image_decoder_from_stream(SkStream*);
+extern SkImageDecoder* image_decoder_from_stream(SkStreamRewindable*);
 
-SkImageDecoder* SkImageDecoder::Factory(SkStream* stream) {
+SkImageDecoder* SkImageDecoder::Factory(SkStreamRewindable* stream) {
     SkImageDecoder* decoder = image_decoder_from_stream(stream);
     if (NULL == decoder) {
         // If no image decoder specific to the stream exists, use SkImageDecoder_WIC.
@@ -244,7 +264,7 @@ SkImageDecoder* SkImageDecoder::Factory(SkStream* stream) {
 
 /////////////////////////////////////////////////////////////////////////
 
-SkMovie* SkMovie::DecodeStream(SkStream* stream) {
+SkMovie* SkMovie::DecodeStream(SkStreamRewindable* stream) {
     return NULL;
 }
 
@@ -286,10 +306,10 @@ bool SkImageEncoder_WIC::onEncode(SkWStream* stream
     //Convert to 8888 if needed.
     const SkBitmap* bitmap;
     SkBitmap bitmapCopy;
-    if (SkBitmap::kARGB_8888_Config == bitmapOrig.config() && bitmapOrig.isOpaque()) {
+    if (kN32_SkColorType == bitmapOrig.colorType() && bitmapOrig.isOpaque()) {
         bitmap = &bitmapOrig;
     } else {
-        if (!bitmapOrig.copyTo(&bitmapCopy, SkBitmap::kARGB_8888_Config)) {
+        if (!bitmapOrig.copyTo(&bitmapCopy, kN32_SkColorType)) {
             return false;
         }
         bitmap = &bitmapCopy;
@@ -396,10 +416,11 @@ bool SkImageEncoder_WIC::onEncode(SkWStream* stream
     //Write the pixels into the frame.
     if (SUCCEEDED(hr)) {
         SkAutoLockPixels alp(*bitmap);
+        const UINT stride = (UINT) bitmap->rowBytes();
         hr = piBitmapFrameEncode->WritePixels(
             height
-            , bitmap->rowBytes()
-            , bitmap->rowBytes()*height
+            , stride
+            , stride * height
             , reinterpret_cast<BYTE*>(bitmap->getPixels()));
     }
 
@@ -416,8 +437,6 @@ bool SkImageEncoder_WIC::onEncode(SkWStream* stream
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkTRegistry.h"
-
 static SkImageEncoder* sk_imageencoder_wic_factory(SkImageEncoder::Type t) {
     switch (t) {
         case SkImageEncoder::kBMP_Type:
@@ -431,9 +450,9 @@ static SkImageEncoder* sk_imageencoder_wic_factory(SkImageEncoder::Type t) {
     return SkNEW_ARGS(SkImageEncoder_WIC, (t));
 }
 
-static SkTRegistry<SkImageEncoder*, SkImageEncoder::Type> gEReg(sk_imageencoder_wic_factory);
+static SkImageEncoder_EncodeReg gEReg(sk_imageencoder_wic_factory);
 
-static SkImageDecoder::Format get_format_wic(SkStream* stream) {
+static SkImageDecoder::Format get_format_wic(SkStreamRewindable* stream) {
     SkImageDecoder::Format format;
     SkImageDecoder_WIC codec;
     if (!codec.decodeStream(stream, NULL, SkImageDecoder_WIC::kDecodeFormat_WICMode, &format)) {
@@ -442,4 +461,4 @@ static SkImageDecoder::Format get_format_wic(SkStream* stream) {
     return format;
 }
 
-static SkTRegistry<SkImageDecoder::Format, SkStream*> gFormatReg(get_format_wic);
+static SkImageDecoder_FormatReg gFormatReg(get_format_wic);

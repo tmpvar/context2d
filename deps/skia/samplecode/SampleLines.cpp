@@ -1,19 +1,17 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
 #include "SkView.h"
 #include "SkCanvas.h"
-#include "Sk64.h"
 #include "SkCornerPathEffect.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
-#include "SkKernel33MaskFilter.h"
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkRegion.h"
@@ -36,7 +34,7 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Lines");
             return true;
@@ -64,7 +62,7 @@ protected:
         canvas->drawRect(r, paint);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         SkBitmap bm;
         SkImageDecoder::DecodeFile("/kill.gif", &bm);
         canvas->drawBitmap(bm, 0, 0, NULL);
@@ -98,8 +96,8 @@ protected:
         canvas->drawLine(x, y, x + SkIntToScalar(90), y + SkIntToScalar(90), paint);
     }
 
-    virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) SK_OVERRIDE {
-        fAlpha = SkScalarRound(y);
+    SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) override {
+        fAlpha = SkScalarRoundToInt(y);
         this->inval(NULL);
         return NULL;
     }

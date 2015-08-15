@@ -16,14 +16,13 @@ public:
     virtual ~SkGScalerContext();
 
 protected:
-    virtual unsigned generateGlyphCount() SK_OVERRIDE;
-    virtual uint16_t generateCharToGlyph(SkUnichar) SK_OVERRIDE;
-    virtual void generateAdvance(SkGlyph*) SK_OVERRIDE;
-    virtual void generateMetrics(SkGlyph*) SK_OVERRIDE;
-    virtual void generateImage(const SkGlyph&) SK_OVERRIDE;
-    virtual void generatePath(const SkGlyph&, SkPath*) SK_OVERRIDE;
-    virtual void generateFontMetrics(SkPaint::FontMetrics* mX,
-                                     SkPaint::FontMetrics* mY) SK_OVERRIDE;
+    unsigned generateGlyphCount() override;
+    uint16_t generateCharToGlyph(SkUnichar) override;
+    void generateAdvance(SkGlyph*) override;
+    void generateMetrics(SkGlyph*) override;
+    void generateImage(const SkGlyph&) override;
+    void generatePath(const SkGlyph&, SkPath*) override;
+    void generateFontMetrics(SkPaint::FontMetrics*) override;
 
 private:
     SkGTypeface*     fFace;
@@ -119,9 +118,8 @@ void SkGScalerContext::generateImage(const SkGlyph& glyph) {
         fProxy->getPath(glyph, &path);
 
         SkBitmap bm;
-        bm.setConfig(SkBitmap::kARGB_8888_Config, glyph.fWidth, glyph.fHeight,
-                     glyph.rowBytes());
-        bm.setPixels(glyph.fImage);
+        bm.installPixels(SkImageInfo::MakeN32Premul(glyph.fWidth, glyph.fHeight),
+                         glyph.fImage, glyph.rowBytes());
         bm.eraseColor(0);
 
         SkCanvas canvas(bm);
@@ -139,8 +137,7 @@ void SkGScalerContext::generatePath(const SkGlyph& glyph, SkPath* path) {
     path->transform(fMatrix);
 }
 
-void SkGScalerContext::generateFontMetrics(SkPaint::FontMetrics*,
-                                           SkPaint::FontMetrics* metrics) {
+void SkGScalerContext::generateFontMetrics(SkPaint::FontMetrics* metrics) {
     fProxy->getFontMetrics(metrics);
     if (metrics) {
         SkScalar scale = fMatrix.getScaleY();
@@ -161,7 +158,7 @@ void SkGScalerContext::generateFontMetrics(SkPaint::FontMetrics*,
 #include "SkTypefaceCache.h"
 
 SkGTypeface::SkGTypeface(SkTypeface* proxy, const SkPaint& paint)
-    : SkTypeface(proxy->style(), SkTypefaceCache::NewFontID(), false)
+    : SkTypeface(proxy->fontStyle(), SkTypefaceCache::NewFontID(), false)
     , fProxy(SkRef(proxy))
     , fPaint(paint) {}
 
@@ -176,16 +173,18 @@ SkScalerContext* SkGTypeface::onCreateScalerContext(
 
 void SkGTypeface::onFilterRec(SkScalerContextRec* rec) const {
     fProxy->filterRec(rec);
+    rec->setHinting(SkPaint::kNo_Hinting);
+    rec->fMaskFormat = SkMask::kARGB32_Format;
 }
 
 SkAdvancedTypefaceMetrics* SkGTypeface::onGetAdvancedTypefaceMetrics(
-                                SkAdvancedTypefaceMetrics::PerGlyphInfo info,
+                                PerGlyphInfo info,
                                 const uint32_t* glyphIDs,
                                 uint32_t glyphIDsCount) const {
     return fProxy->getAdvancedTypefaceMetrics(info, glyphIDs, glyphIDsCount);
 }
 
-SkStream* SkGTypeface::onOpenStream(int* ttcIndex) const {
+SkStreamAsset* SkGTypeface::onOpenStream(int* ttcIndex) const {
     return fProxy->openStream(ttcIndex);
 }
 
@@ -194,8 +193,25 @@ void SkGTypeface::onGetFontDescriptor(SkFontDescriptor* desc,
     fProxy->getFontDescriptor(desc, isLocal);
 }
 
+int SkGTypeface::onCharsToGlyphs(const void* chars, Encoding encoding,
+                                 uint16_t glyphs[], int glyphCount) const {
+    return fProxy->charsToGlyphs(chars, encoding, glyphs, glyphCount);
+}
+
+int SkGTypeface::onCountGlyphs() const {
+    return fProxy->countGlyphs();
+}
+
 int SkGTypeface::onGetUPEM() const {
     return fProxy->getUnitsPerEm();
+}
+
+void SkGTypeface::onGetFamilyName(SkString* familyName) const {
+    fProxy->getFamilyName(familyName);
+}
+
+SkTypeface::LocalizedStrings* SkGTypeface::onCreateFamilyNameIterator() const {
+    return fProxy->createFamilyNameIterator();
 }
 
 int SkGTypeface::onGetTableTags(SkFontTableTag tags[]) const {

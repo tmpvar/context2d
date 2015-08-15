@@ -15,7 +15,7 @@
 #include "SkStream.h"
 #include "SkTemplates.h"
 
-class SkPDFCatalog;
+class SkPDFObjNumMap;
 
 /** \class SkPDFStream
 
@@ -23,25 +23,26 @@ class SkPDFCatalog;
     SkObjRef).
 */
 class SkPDFStream : public SkPDFDict {
+    
 public:
     /** Create a PDF stream. A Length entry is automatically added to the
-     *  stream dictionary. The stream may be retained (stream->ref() may be
-     *  called) so its contents must not be changed after calling this.
-     *  @param data  The data part of the stream.
+     *  stream dictionary.
+     *  @param data   The data part of the stream.  Will be ref()ed.
      */
     explicit SkPDFStream(SkData* data);
-    /** Deprecated constructor. */
-    explicit SkPDFStream(SkStream* stream);
-    /** Create a PDF stream with the same content and dictionary entries
-     *  as the passed one.
+
+    /** Create a PDF stream. A Length entry is automatically added to the
+     *  stream dictionary.
+     *  @param stream The data part of the stream.  Will be duplicate()d.
      */
-    explicit SkPDFStream(const SkPDFStream& pdfStream);
+    explicit SkPDFStream(SkStream* stream);
+
     virtual ~SkPDFStream();
 
     // The SkPDFObject interface.
-    virtual void emitObject(SkWStream* stream, SkPDFCatalog* catalog,
-                            bool indirect);
-    virtual size_t getOutputSize(SkPDFCatalog* catalog, bool indirect);
+    void emitObject(SkWStream* stream,
+                    const SkPDFObjNumMap& objNumMap,
+                    const SkPDFSubstituteMap& substitutes) override;
 
 protected:
     enum State {
@@ -56,39 +57,20 @@ protected:
      */
     SkPDFStream();
 
-    // Populate the stream dictionary.  This method returns false if
-    // fSubstitute should be used.
-    virtual bool populate(SkPDFCatalog* catalog);
-
-    void setSubstitute(SkPDFStream* stream) {
-        fSubstitute.reset(stream);
-    }
-
-    SkPDFStream* getSubstitute() {
-        return fSubstitute.get();
-    }
-
+    void setData(SkData* data);
     void setData(SkStream* stream);
 
-    SkStream* getData() {
-        return fData.get();
-    }
+    size_t dataSize() const;
 
     void setState(State state) {
         fState = state;
-    }
-
-    State getState() {
-        return fState;
     }
 
 private:
     // Indicates what form (or if) the stream has been requested.
     State fState;
 
-    // TODO(vandebo): Use SkData (after removing deprecated constructor).
-    SkAutoTUnref<SkStream> fData;
-    SkAutoTUnref<SkPDFStream> fSubstitute;
+    SkAutoTDelete<SkStreamRewindable> fDataStream;
 
     typedef SkPDFDict INHERITED;
 };

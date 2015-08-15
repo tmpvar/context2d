@@ -1,15 +1,17 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
 #include "SkView.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
+#include "SkPath.h"
 #include "SkRandom.h"
+#include "SkString.h"
 
 class EmptyPathView : public SampleView {
 public:
@@ -103,14 +105,14 @@ protected:
                 rectPaint.setAntiAlias(true);
                 canvas->drawRect(rect, rectPaint);
 
-                char label[1024];
-                sprintf(label, "%s, %s", gStyles[style].fName,
-                                         gFills[fill].fName);
+                SkString label;
+                label.appendf("%s, %s", gStyles[style].fName, gFills[fill].fName);
+
                 SkPaint labelPaint;
                 labelPaint.setColor(color);
                 labelPaint.setAntiAlias(true);
                 labelPaint.setLCDRenderText(true);
-                canvas->drawText(label, strlen(label),
+                canvas->drawText(label.c_str(), label.size(),
                                  0, rect.height() + 15 * SK_Scalar1,
                                  labelPaint);
             }

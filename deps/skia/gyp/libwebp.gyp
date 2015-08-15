@@ -4,7 +4,14 @@
 
 {
   'variables': {
-    'use_system_libwebp%': 0,
+    'skia_warnings_as_errors': 0,
+    'conditions':[
+      ['skia_android_framework == 1', {
+        'use_system_libwebp': 1,
+      }, {
+        'use_system_libwebp%': 0,
+      }],
+    ],
   },
   'conditions': [
     ['use_system_libwebp==0', {
@@ -12,6 +19,9 @@
         {
           'target_name': 'libwebp_dec',
           'type': 'static_library',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'include_dirs': [
               '../third_party/externals/libwebp',
           ],
@@ -21,41 +31,57 @@
             '../third_party/externals/libwebp/src/dec/frame.c',
             '../third_party/externals/libwebp/src/dec/idec.c',
             '../third_party/externals/libwebp/src/dec/io.c',
-            '../third_party/externals/libwebp/src/dec/layer.c',
             '../third_party/externals/libwebp/src/dec/quant.c',
             '../third_party/externals/libwebp/src/dec/tree.c',
             '../third_party/externals/libwebp/src/dec/vp8.c',
             '../third_party/externals/libwebp/src/dec/vp8l.c',
             '../third_party/externals/libwebp/src/dec/webp.c',
           ],
+          'cflags': [ '-w' ],
+          'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
         },
         {
           'target_name': 'libwebp_demux',
           'type': 'static_library',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'include_dirs': [
               '../third_party/externals/libwebp',
           ],
           'sources': [
             '../third_party/externals/libwebp/src/demux/demux.c',
           ],
+          'cflags': [ '-w' ],
+          'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
         },
         {
           'target_name': 'libwebp_dsp',
           'type': 'static_library',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'include_dirs': [
               '../third_party/externals/libwebp',
           ],
           'sources': [
+            '../third_party/externals/libwebp/src/dsp/alpha_processing.c',
+            '../third_party/externals/libwebp/src/dsp/alpha_processing_sse2.c',
             '../third_party/externals/libwebp/src/dsp/cpu.c',
             '../third_party/externals/libwebp/src/dsp/dec.c',
+            '../third_party/externals/libwebp/src/dsp/dec_clip_tables.c',
             '../third_party/externals/libwebp/src/dsp/dec_sse2.c',
             '../third_party/externals/libwebp/src/dsp/enc.c',
             '../third_party/externals/libwebp/src/dsp/enc_sse2.c',
             '../third_party/externals/libwebp/src/dsp/lossless.c',
+            '../third_party/externals/libwebp/src/dsp/lossless_sse2.c',
             '../third_party/externals/libwebp/src/dsp/upsampling.c',
             '../third_party/externals/libwebp/src/dsp/upsampling_sse2.c',
             '../third_party/externals/libwebp/src/dsp/yuv.c',
+            '../third_party/externals/libwebp/src/dsp/yuv_sse2.c',
           ],
+          'cflags': [ '-w' ],
+          'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
           'conditions': [
             ['skia_os == "android"', {
               'dependencies' : [
@@ -66,8 +92,14 @@
         },
         {
           'target_name': 'libwebp_dsp_neon',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'conditions': [
-            ['armv7 == 1', {
+            ['arm_version == 7', {
+              'cflags': [ '-mfpu=neon' ],
+            }],
+            ['arm_version >= 7', {
               'type': 'static_library',
               'include_dirs': [
                   '../third_party/externals/libwebp',
@@ -75,14 +107,15 @@
               'sources': [
                 '../third_party/externals/libwebp/src/dsp/dec_neon.c',
                 '../third_party/externals/libwebp/src/dsp/enc_neon.c',
+                '../third_party/externals/libwebp/src/dsp/lossless_neon.c',
                 '../third_party/externals/libwebp/src/dsp/upsampling_neon.c',
               ],
               # behavior similar dsp_neon.c.neon in an Android.mk
               'cflags!': [
                 '-mfpu=vfpv3-d16',
               ],
-              'cflags': [ '-mfpu=neon' ],
-            },{  # "armv7 != 1"
+              'cflags': [ '-w' ],
+            },{  # !(arm_version >= 7)
               'type': 'none',
             }],
           ],
@@ -90,6 +123,9 @@
         {
           'target_name': 'libwebp_enc',
           'type': 'static_library',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'include_dirs': [
               '../third_party/externals/libwebp',
           ],
@@ -103,8 +139,8 @@
             '../third_party/externals/libwebp/src/enc/frame.c',
             '../third_party/externals/libwebp/src/enc/histogram.c',
             '../third_party/externals/libwebp/src/enc/iterator.c',
-            '../third_party/externals/libwebp/src/enc/layer.c',
             '../third_party/externals/libwebp/src/enc/picture.c',
+            '../third_party/externals/libwebp/src/enc/picture_csp.c',
             '../third_party/externals/libwebp/src/enc/quant.c',
             '../third_party/externals/libwebp/src/enc/syntax.c',
             '../third_party/externals/libwebp/src/enc/token.c',
@@ -112,10 +148,15 @@
             '../third_party/externals/libwebp/src/enc/vp8l.c',
             '../third_party/externals/libwebp/src/enc/webpenc.c',
           ],
+          'cflags': [ '-w' ],
+          'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
         },
         {
           'target_name': 'libwebp_utils',
           'type': 'static_library',
+          'includes': [
+            'libwebp_skia.gypi',
+          ],
           'include_dirs': [
               '../third_party/externals/libwebp',
           ],
@@ -128,10 +169,13 @@
             '../third_party/externals/libwebp/src/utils/huffman_encode.c',
             '../third_party/externals/libwebp/src/utils/quant_levels.c',
             '../third_party/externals/libwebp/src/utils/quant_levels_dec.c',
+            '../third_party/externals/libwebp/src/utils/random.c',
             '../third_party/externals/libwebp/src/utils/rescaler.c',
             '../third_party/externals/libwebp/src/utils/thread.c',
             '../third_party/externals/libwebp/src/utils/utils.c',
           ],
+          'cflags': [ '-w' ],
+          'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
         },
         {
           'target_name': 'libwebp',
@@ -148,6 +192,8 @@
             'include_dirs': [
               '../third_party/externals/libwebp/src',
             ],
+            'cflags': [ '-w' ],
+            'xcode_settings': { 'WARNING_CFLAGS': [ '-w' ] },
           },
           'conditions': [
             ['OS!="win"', {'product_name': 'webp'}],
@@ -155,20 +201,36 @@
         },
       ],
     }, {
+      # use_system_libwebp == 1
       'targets': [
         {
           'target_name': 'libwebp',
           'type': 'none',
-          'direct_dependent_settings': {
-            'defines': [
-              'ENABLE_WEBP',
+          'conditions': [
+            [ 'skia_android_framework', {
+              'direct_dependent_settings': {
+                'libraries': [
+                  'libwebp-decode.a',
+                  'libwebp-encode.a',
+                ],
+              'include_dirs': [
+                'external/webp/include',
+              ],
+              },
+            }, { # skia_android_framework == 0
+              'direct_dependent_settings': {
+                'defines': [
+                  'ENABLE_WEBP',
+                ],
+                },
+                'link_settings': {
+                  'libraries': [
+                    '-lwebp',
+                  ],
+                },
+              },
             ],
-          },
-          'link_settings': {
-            'libraries': [
-              '-lwebp',
-            ],
-          },
+          ],
         }
       ],
     }],

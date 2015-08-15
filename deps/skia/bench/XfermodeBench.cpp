@@ -6,114 +6,135 @@
  * found in the LICENSE file.
  */
 
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "SkRandom.h"
 #include "SkString.h"
 #include "SkXfermode.h"
 
-// Benchmark that draws non-AA rects with an SkXfermode::Mode
-class XfermodeBench : public SkBenchmark {
+// Benchmark that draws non-AA rects or AA text with an SkXfermode::Mode.
+class XfermodeBench : public Benchmark {
 public:
-    XfermodeBench(void* param, SkXfermode::Mode mode) : SkBenchmark(param) {
+    XfermodeBench(SkXfermode::Mode mode, bool aa) {
         fXfermode.reset(SkXfermode::Create(mode));
-        SkASSERT(NULL != fXfermode.get() || SkXfermode::kSrcOver_Mode == mode);
-        fName.printf("Xfermode_%s", SkXfermode::ModeName(mode));
+        fAA = aa;
+        SkASSERT(fXfermode.get() || SkXfermode::kSrcOver_Mode == mode);
+        fName.printf("Xfermode_%s%s", SkXfermode::ModeName(mode), aa ? "_aa" : "");
+    }
+
+    XfermodeBench(SkXfermode* xferMode, const char* name, bool aa) {
+        SkASSERT(xferMode);
+        fXfermode.reset(xferMode);
+        fAA = aa;
+        fName.printf("Xfermode_%s%s", name, aa ? "_aa" : "");
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE { return fName.c_str(); }
+    const char* onGetName() override { return fName.c_str(); }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas* canvas) override {
+        const char* text = "Hamburgefons";
+        size_t len = strlen(text);
         SkISize size = canvas->getDeviceSize();
-        SkMWCRandom random;
-        for (int i = 0; i < kNumRects; ++i) {
+        SkRandom random;
+        for (int i = 0; i < loops; ++i) {
             SkPaint paint;
             paint.setXfermode(fXfermode.get());
             paint.setColor(random.nextU());
-            SkScalar w = random.nextRangeScalar(SkIntToScalar(kMinSize), SkIntToScalar(kMaxSize));
-            SkScalar h = random.nextRangeScalar(SkIntToScalar(kMinSize), SkIntToScalar(kMaxSize));
-            SkRect rect = SkRect::MakeXYWH(
-                random.nextUScalar1() * (size.fWidth - w),
-                random.nextUScalar1() * (size.fHeight - h),
-                w,
-                h
-            );
-            canvas->drawRect(rect, paint);
+            if (fAA) {
+                // Draw text to exercise AA code paths.
+                paint.setAntiAlias(true);
+                paint.setTextSize(random.nextRangeScalar(12, 96));
+                SkScalar x = random.nextRangeScalar(0, (SkScalar)size.fWidth),
+                         y = random.nextRangeScalar(0, (SkScalar)size.fHeight);
+                for (int j = 0; j < 1000; ++j) {
+                    canvas->drawText(text, len, x, y, paint);
+                }
+            } else {
+                // Draw rects to exercise non-AA code paths.
+                SkScalar w = random.nextRangeScalar(50, 100);
+                SkScalar h = random.nextRangeScalar(50, 100);
+                SkRect rect = SkRect::MakeXYWH(
+                    random.nextUScalar1() * (size.fWidth - w),
+                    random.nextUScalar1() * (size.fHeight - h),
+                    w,
+                    h
+                );
+                for (int j = 0; j < 1000; ++j) {
+                    canvas->drawRect(rect, paint);
+                }
+            }
         }
     }
 
 private:
-    enum {
-        kNumRects = SkBENCHLOOP(75),
-        kMinSize = 50,
-        kMaxSize = 100,
-    };
     SkAutoTUnref<SkXfermode> fXfermode;
     SkString fName;
+    bool fAA;
 
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
+};
+
+class XferCreateBench : public Benchmark {
+public:
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
+    }
+
+protected:
+    const char* onGetName() override { return "xfermode_create"; }
+
+    void onDraw(const int loops, SkCanvas* canvas) override {
+        for (int outer = 0; outer < loops * 10; ++outer) {
+            for (int i = 0; i <= SkXfermode::kLastMode; ++i) {
+                SkXfermode* xfer = SkXfermode::Create(SkXfermode::Mode(i));
+                SkSafeUnref(xfer);
+            }
+        }
+    }
+
+private:
+    typedef Benchmark INHERITED;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* Fact00(void* p) { return new XfermodeBench(p, SkXfermode::kClear_Mode); }
-static SkBenchmark* Fact01(void* p) { return new XfermodeBench(p, SkXfermode::kSrc_Mode); }
-static SkBenchmark* Fact02(void* p) { return new XfermodeBench(p, SkXfermode::kDst_Mode); }
-static SkBenchmark* Fact03(void* p) { return new XfermodeBench(p, SkXfermode::kSrcOver_Mode); }
-static SkBenchmark* Fact04(void* p) { return new XfermodeBench(p, SkXfermode::kDstOver_Mode); }
-static SkBenchmark* Fact05(void* p) { return new XfermodeBench(p, SkXfermode::kSrcIn_Mode); }
-static SkBenchmark* Fact06(void* p) { return new XfermodeBench(p, SkXfermode::kDstIn_Mode); }
-static SkBenchmark* Fact07(void* p) { return new XfermodeBench(p, SkXfermode::kSrcOut_Mode); }
-static SkBenchmark* Fact08(void* p) { return new XfermodeBench(p, SkXfermode::kDstOut_Mode); }
-static SkBenchmark* Fact09(void* p) { return new XfermodeBench(p, SkXfermode::kSrcATop_Mode); }
-static SkBenchmark* Fact10(void* p) { return new XfermodeBench(p, SkXfermode::kDstATop_Mode); }
-static SkBenchmark* Fact11(void* p) { return new XfermodeBench(p, SkXfermode::kXor_Mode); }
-static SkBenchmark* Fact12(void* p) { return new XfermodeBench(p, SkXfermode::kPlus_Mode); }
-static SkBenchmark* Fact13(void* p) { return new XfermodeBench(p, SkXfermode::kModulate_Mode); }
-static SkBenchmark* Fact14(void* p) { return new XfermodeBench(p, SkXfermode::kScreen_Mode); }
-static SkBenchmark* Fact15(void* p) { return new XfermodeBench(p, SkXfermode::kOverlay_Mode); }
-static SkBenchmark* Fact16(void* p) { return new XfermodeBench(p, SkXfermode::kDarken_Mode); }
-static SkBenchmark* Fact17(void* p) { return new XfermodeBench(p, SkXfermode::kLighten_Mode); }
-static SkBenchmark* Fact18(void* p) { return new XfermodeBench(p, SkXfermode::kColorDodge_Mode); }
-static SkBenchmark* Fact19(void* p) { return new XfermodeBench(p, SkXfermode::kColorBurn_Mode); }
-static SkBenchmark* Fact20(void* p) { return new XfermodeBench(p, SkXfermode::kHardLight_Mode); }
-static SkBenchmark* Fact21(void* p) { return new XfermodeBench(p, SkXfermode::kSoftLight_Mode); }
-static SkBenchmark* Fact22(void* p) { return new XfermodeBench(p, SkXfermode::kDifference_Mode); }
-static SkBenchmark* Fact23(void* p) { return new XfermodeBench(p, SkXfermode::kExclusion_Mode); }
-static SkBenchmark* Fact24(void* p) { return new XfermodeBench(p, SkXfermode::kMultiply_Mode); }
-static SkBenchmark* Fact25(void* p) { return new XfermodeBench(p, SkXfermode::kHue_Mode); }
-static SkBenchmark* Fact26(void* p) { return new XfermodeBench(p, SkXfermode::kSaturation_Mode); }
-static SkBenchmark* Fact27(void* p) { return new XfermodeBench(p, SkXfermode::kColor_Mode); }
-static SkBenchmark* Fact28(void* p) { return new XfermodeBench(p, SkXfermode::kLuminosity_Mode); }
+#define BENCH(...)                                             \
+    DEF_BENCH( return new XfermodeBench(__VA_ARGS__, true); )  \
+    DEF_BENCH( return new XfermodeBench(__VA_ARGS__, false); )
 
-static BenchRegistry gReg00(Fact00);
-static BenchRegistry gReg01(Fact01);
-static BenchRegistry gReg02(Fact02);
-static BenchRegistry gReg03(Fact03);
-static BenchRegistry gReg04(Fact04);
-static BenchRegistry gReg05(Fact05);
-static BenchRegistry gReg06(Fact06);
-static BenchRegistry gReg07(Fact07);
-static BenchRegistry gReg08(Fact08);
-static BenchRegistry gReg09(Fact09);
-static BenchRegistry gReg10(Fact10);
-static BenchRegistry gReg11(Fact11);
-static BenchRegistry gReg12(Fact12);
-static BenchRegistry gReg13(Fact13);
-static BenchRegistry gReg14(Fact14);
-static BenchRegistry gReg15(Fact15);
-static BenchRegistry gReg16(Fact16);
-static BenchRegistry gReg17(Fact17);
-static BenchRegistry gReg18(Fact18);
-static BenchRegistry gReg19(Fact19);
-static BenchRegistry gReg20(Fact20);
-static BenchRegistry gReg21(Fact21);
-static BenchRegistry gReg22(Fact22);
-static BenchRegistry gReg23(Fact23);
-static BenchRegistry gReg24(Fact24);
-static BenchRegistry gReg25(Fact25);
-static BenchRegistry gReg26(Fact26);
-static BenchRegistry gReg27(Fact27);
-static BenchRegistry gReg28(Fact28);
+BENCH(SkXfermode::kClear_Mode)
+BENCH(SkXfermode::kSrc_Mode)
+BENCH(SkXfermode::kDst_Mode)
+BENCH(SkXfermode::kSrcOver_Mode)
+BENCH(SkXfermode::kDstOver_Mode)
+BENCH(SkXfermode::kSrcIn_Mode)
+BENCH(SkXfermode::kDstIn_Mode)
+BENCH(SkXfermode::kSrcOut_Mode)
+BENCH(SkXfermode::kDstOut_Mode)
+BENCH(SkXfermode::kSrcATop_Mode)
+BENCH(SkXfermode::kDstATop_Mode)
+BENCH(SkXfermode::kXor_Mode)
+
+BENCH(SkXfermode::kPlus_Mode)
+BENCH(SkXfermode::kModulate_Mode)
+BENCH(SkXfermode::kScreen_Mode)
+
+BENCH(SkXfermode::kOverlay_Mode)
+BENCH(SkXfermode::kDarken_Mode)
+BENCH(SkXfermode::kLighten_Mode)
+BENCH(SkXfermode::kColorDodge_Mode)
+BENCH(SkXfermode::kColorBurn_Mode)
+BENCH(SkXfermode::kHardLight_Mode)
+BENCH(SkXfermode::kSoftLight_Mode)
+BENCH(SkXfermode::kDifference_Mode)
+BENCH(SkXfermode::kExclusion_Mode)
+BENCH(SkXfermode::kMultiply_Mode)
+
+BENCH(SkXfermode::kHue_Mode)
+BENCH(SkXfermode::kSaturation_Mode)
+BENCH(SkXfermode::kColor_Mode)
+BENCH(SkXfermode::kLuminosity_Mode)
+
+DEF_BENCH(return new XferCreateBench;)

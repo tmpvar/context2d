@@ -4,8 +4,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "gm.h"
+
+#include "sk_tool_utils.h"
+#include "Resources.h"
 #include "SampleCode.h"
+#include "SkBlurMask.h"
 #include "SkBlurDrawLooper.h"
 #include "SkCanvas.h"
 #include "SkColorPriv.h"
@@ -20,9 +25,6 @@
 #include "SkView.h"
 
 __SK_FORCE_IMAGE_DECODER_LINKING;
-
-// Defined in SampleColorFilter.cpp
-extern SkShader* createChecker();
 
 /**
  *  Interprets c as an unpremultiplied color, and returns the
@@ -47,7 +49,7 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) SK_OVERRIDE {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "unpremul");
             return true;
@@ -73,19 +75,18 @@ protected:
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawBackground(SkCanvas* canvas) SK_OVERRIDE {
-        SkPaint paint;
-        SkAutoTUnref<SkShader> shader(createChecker());
-        paint.setShader(shader.get());
-        canvas->drawPaint(paint);
+    void onDrawBackground(SkCanvas* canvas) override {
+        sk_tool_utils::draw_checkerboard(canvas, 0xFFCCCCCC, 0xFFFFFFFF, 12);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) SK_OVERRIDE {
+    void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setTextSize(SkIntToScalar(24));
-        SkAutoTUnref<SkBlurDrawLooper> looper(SkNEW_ARGS(SkBlurDrawLooper,
-                                              (SkIntToScalar(2), 0, 0, SK_ColorBLUE)));
+        SkAutoTUnref<SkBlurDrawLooper> looper(
+            SkBlurDrawLooper::Create(SK_ColorBLUE,
+                                     SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(2)),
+                                     0, 0));
         paint.setLooper(looper);
         SkScalar height = paint.getFontMetrics(NULL);
         if (!fDecodeSucceeded) {
@@ -100,7 +101,7 @@ protected:
         }
 
         // Name, size of the file, and whether or not it is premultiplied.
-        SkString header(SkOSPath::SkBasename(fCurrFile.c_str()));
+        SkString header(SkOSPath::Basename(fCurrFile.c_str()));
         header.appendf("     [%dx%d]     %s", fBitmap.width(), fBitmap.height(),
                        (fPremul ? "premultiplied" : "unpremultiplied"));
         canvas->drawText(header.c_str(), header.size(), 0, height, paint);
@@ -122,14 +123,7 @@ protected:
             // Copy it to a bitmap which can be drawn, converting
             // to premultiplied:
             SkBitmap bm;
-            bm.setConfig(SkBitmap::kARGB_8888_Config, fBitmap.width(),
-                         fBitmap.height());
-            SkASSERT(fBitmap.config() == SkBitmap::kARGB_8888_Config);
-            if (!bm.allocPixels()) {
-                SkString errMsg("allocPixels failed");
-                canvas->drawText(errMsg.c_str(), errMsg.size(), 0, height, paint);
-                return;
-            }
+            bm.allocN32Pixels(fBitmap.width(), fBitmap.height());
             for (int i = 0; i < fBitmap.width(); ++i) {
                 for (int j = 0; j < fBitmap.height(); ++j) {
                     *bm.getAddr32(i, j) = premultiply_unpmcolor(*fBitmap.getAddr32(i, j));
@@ -164,7 +158,7 @@ private:
                 return;
             }
         }
-        fCurrFile = SkOSPath::SkPathJoin(fResPath.c_str(), basename.c_str());
+        fCurrFile = SkOSPath::Join(fResPath.c_str(), basename.c_str());
         this->decodeCurrFile();
     }
 
@@ -182,9 +176,8 @@ private:
         if (!fPremul) {
             decoder->setRequireUnpremultipliedColors(true);
         }
-        fDecodeSucceeded = decoder->decode(&stream, &fBitmap,
-                                           SkBitmap::kARGB_8888_Config,
-                                           SkImageDecoder::kDecodePixels_Mode);
+        fDecodeSucceeded = decoder->decode(&stream, &fBitmap, kN32_SkColorType,
+                SkImageDecoder::kDecodePixels_Mode) != SkImageDecoder::kFailure;
         this->inval(NULL);
     }
 
@@ -199,6 +192,6 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 static SkView* MyFactory() {
-    return new UnpremulView(skiagm::GM::GetResourcePath());
+    return new UnpremulView(GetResourcePath());
 }
 static SkViewRegister reg(MyFactory);

@@ -4,6 +4,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "PathOpsTestCommon.h"
 #include "SkPathOpsPoint.h"
 #include "Test.h"
 
@@ -19,14 +20,14 @@ static const SkDPoint tests[] = {
 
 static const size_t tests_count = SK_ARRAY_COUNT(tests);
 
-static void PathOpsDVectorTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsDVector, reporter) {
     for (size_t index = 0; index < tests_count - 1; ++index) {
         SkDVector v1 = tests[index + 1] - tests[index];
+        SkASSERT(ValidVector(v1));
         SkDVector v2 = tests[index] - tests[index + 1];
+        SkASSERT(ValidVector(v2));
         v1 += v2;
         REPORTER_ASSERT(reporter, v1.fX == 0 && v1.fY == 0);
-        SkDPoint p = tests[index + 1] + v2;
-        REPORTER_ASSERT(reporter, p == tests[index]);
         v2 -= v2;
         REPORTER_ASSERT(reporter, v2.fX == 0 && v2.fY == 0);
         v1 = tests[index + 1] - tests[index];
@@ -45,6 +46,3 @@ static void PathOpsDVectorTest(skiatest::Reporter* reporter) {
         REPORTER_ASSERT(reporter, v1Cross == 0);
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsDVectorTest)

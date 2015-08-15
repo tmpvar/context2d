@@ -1,16 +1,17 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
+#include "SkCanvas.h"
 #include "SkColorPriv.h"
 #include "SkGradientShader.h"
-#include "SkView.h"
-#include "SkCanvas.h"
+#include "SkPath.h"
 #include "SkUtils.h"
+#include "SkView.h"
 
 static void draw_rect(SkCanvas* canvas, const SkRect& r, const SkPaint& p) {
     canvas->drawRect(r, p);
@@ -37,7 +38,7 @@ static void draw_gradient(SkCanvas* canvas) {
     draw_rect(canvas, r, p);
 }
 
-static void test_pathregion() {
+static bool test_pathregion() {
     SkPath path;
     SkRegion region;
     path.moveTo(25071800.f, -141823808.f);
@@ -49,21 +50,19 @@ static void test_pathregion() {
     SkIRect bounds;
     path.getBounds().round(&bounds);
     SkRegion clip(bounds);
-    bool result = region.setPath(path, clip); // <-- !! DOWN !!
-    SkDebugf("----- result %d\n", result);
+    return region.setPath(path, clip); // <-- !! DOWN !!
 }
 
 static SkBitmap make_bitmap() {
-    SkBitmap bm;
-    SkColorTable* ctable = new SkColorTable(256);
-
-    SkPMColor* c = ctable->lockColors();
+    SkPMColor c[256];
     for (int i = 0; i < 256; i++) {
         c[i] = SkPackARGB32(0xFF, i, 0, 0);
     }
-    ctable->unlockColors(true);
-    bm.setConfig(SkBitmap::kIndex8_Config, 256, 32);
-    bm.allocPixels(ctable);
+    SkColorTable* ctable = new SkColorTable(c, 256);
+
+    SkBitmap bm;
+    bm.allocPixels(SkImageInfo::Make(256, 32, kIndex_8_SkColorType, kPremul_SkAlphaType),
+                   NULL, ctable);
     ctable->unref();
 
     bm.lockPixels();
@@ -80,11 +79,12 @@ static SkBitmap make_bitmap() {
 class DitherBitmapView : public SampleView {
     SkBitmap    fBM8;
     SkBitmap    fBM32;
+    bool        fResult;
 public:
     DitherBitmapView() {
-        test_pathregion();
+        fResult = test_pathregion();
         fBM8 = make_bitmap();
-        fBM8.copyTo(&fBM32, SkBitmap::kARGB_8888_Config);
+        fBM8.copyTo(&fBM32, kN32_SkColorType);
 
         this->setBGColor(0xFFDDDDDD);
     }
@@ -101,11 +101,7 @@ protected:
 
     static void setBitmapOpaque(SkBitmap* bm, bool isOpaque) {
         SkAutoLockPixels alp(*bm);  // needed for ctable
-        bm->setIsOpaque(isOpaque);
-        SkColorTable* ctable = bm->getColorTable();
-        if (ctable) {
-            ctable->setIsOpaque(isOpaque);
-        }
+        bm->setAlphaType(isOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
     }
 
     static void draw2(SkCanvas* canvas, const SkBitmap& bm) {
@@ -135,6 +131,14 @@ protected:
 
         canvas->translate(0, SkIntToScalar(fBM8.height() *3));
         draw_gradient(canvas);
+
+        char resultTrue[] = "SkRegion::setPath returned true";
+        char resultFalse[] = "SkRegion::setPath returned false";
+        SkPaint p;
+        if (fResult)
+            canvas->drawText(resultTrue, sizeof(resultTrue) - 1, 0, 50, p);
+        else
+            canvas->drawText(resultFalse, sizeof(resultFalse) - 1, 0, 50, p);
     }
 
 private:

@@ -12,159 +12,66 @@
 #include <math.h>
 
 // TODO(chudy): See if the layout can't be attached to the frame post construction.
-SkSettingsWidget::SkSettingsWidget() : QWidget()
-    , mainFrameLayout(this)
-    , fVerticalLayout(&mainFrame)
-    , fVisibleFrameLayout(&fVisibleFrame)
-    , fVisibleOn(&fVisibleFrame)
-    , fVisibleOff(&fVisibleFrame)
-    , fCommandLayout(&fCommandFrame)
-    , fCurrentCommandBox(&fCommandFrame)
-    , fCommandHitBox(&fCommandFrame)
-    , fCanvasLayout(&fCanvasFrame)
-    , fZoomLayout(&fZoomFrame)
-    , fZoomBox(&fZoomFrame)
+SkSettingsWidget::SkSettingsWidget() : QFrame()
 {
-    // Sets up the container and it's alignment around the settings widget.
-    mainFrame.setFrameShape(QFrame::StyledPanel);
-    mainFrame.setFrameShadow(QFrame::Raised);
-    mainFrameLayout.setSpacing(6);
-    mainFrameLayout.setContentsMargins(0,0,0,0);
-    mainFrameLayout.addWidget(&mainFrame);
-
+    this->setLayout(&fVerticalLayout);
+    this->setFrameStyle(QFrame::Panel);
     // Vertical Layout is the alignment inside of the main frame.
-    fVerticalLayout.setContentsMargins(11,11,11,11);
     fVerticalLayout.setAlignment(Qt::AlignTop);
 
-    // Visible Toggle
-    fVisibileText.setText("Visibility Filter");
-    fVisibleFrame.setFrameShape(QFrame::StyledPanel);
-    fVisibleFrame.setFrameShadow(QFrame::Raised);
-    fVisibleOn.setText("On");
-    fVisibleOff.setText("Off");
-    fVisibleOff.setChecked(true);
-    fVisibleFrameLayout.setSpacing(6);
-    fVisibleFrameLayout.setContentsMargins(11,11,11,11);
-    fVisibleFrameLayout.addWidget(&fVisibleOn);
-    fVisibleFrameLayout.addWidget(&fVisibleOff);
+    // Visualizations toggles.
+    fVisualizationsGroup.setTitle("Visualizations");
+    fVisibilityFilterCheckBox.setText("Visibility Filter");
+    fVisualizationsLayout.addWidget(&fVisibilityFilterCheckBox);
+    fMegaVizCheckBox.setText("Mega Viz");
+    fVisualizationsLayout.addWidget(&fMegaVizCheckBox);
+    fPathOpsCheckBox.setText("PathOps ");
+    fVisualizationsLayout.addWidget(&fPathOpsCheckBox);
+    fVisualizationsGroup.setLayout(&fVisualizationsLayout);
+    connect(&fVisibilityFilterCheckBox, SIGNAL(toggled(bool)), this,
+            SIGNAL(visualizationsChanged()));
+    connect(&fMegaVizCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(visualizationsChanged()));
+    connect(&fPathOpsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(visualizationsChanged()));
 
-    // Canvas
-    fCanvasToggle.setText("Render Targets");
-    fCanvasFrame.setFrameShape(QFrame::StyledPanel);
-    fCanvasFrame.setFrameShadow(QFrame::Raised);
+    fVerticalLayout.addRow(&fVisualizationsGroup);
 
-    fRasterLabel.setText("Raster: ");
-    fRasterLabel.setMinimumWidth(178);
-    fRasterLabel.setMaximumWidth(178);
+    // Raster toggles.
+    fRasterGroup.setTitle("Raster");
+    fRasterGroup.setCheckable(true);
+    fOverdrawVizCheckBox.setText("Overdraw Viz");
+    fRasterLayout.addWidget(&fOverdrawVizCheckBox);
+    fRasterGroup.setLayout(&fRasterLayout);
+    fVerticalLayout.addRow(&fRasterGroup);
 
-    fRasterCheckBox.setChecked(true);
-
-    fOverdrawVizLabel.setText("     Overdraw Viz: ");
-    fOverdrawVizLabel.setMinimumWidth(178);
-    fOverdrawVizLabel.setMaximumWidth(178);
-
-#if SK_SUPPORT_GPU
-    fGLLabel.setText("OpenGL: ");
-    fGLLabel.setMinimumWidth(178);
-    fGLLabel.setMaximumWidth(178);
-#endif
-
-    fRasterLayout.addWidget(&fRasterLabel);
-    fRasterLayout.addWidget(&fRasterCheckBox);
-
-    fOverdrawVizLayout.addWidget(&fOverdrawVizLabel);
-    fOverdrawVizLayout.addWidget(&fOverdrawVizCheckBox);
+    connect(&fRasterGroup, SIGNAL(toggled(bool)), this, SIGNAL(rasterSettingsChanged()));
+    connect(&fOverdrawVizCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(rasterSettingsChanged()));
 
 #if SK_SUPPORT_GPU
-    fGLLayout.addWidget(&fGLLabel);
-    fGLLayout.addWidget(&fGLCheckBox);
+    fGLGroup.setTitle("OpenGL");
+    fGLGroup.setCheckable(true);
+    fGLGroup.setChecked(false);
+    fGLMSAACombo.addItem("Off", QVariant(0));
+    fGLMSAACombo.addItem("4", QVariant(4));
+    fGLMSAACombo.addItem("16", QVariant(16));
+    fGLLayout.addRow("MSAA",  &fGLMSAACombo);
+    fGLGroup.setLayout(&fGLLayout);
+
+    connect(&fGLGroup, SIGNAL(toggled(bool)), this,
+            SIGNAL(glSettingsChanged()));
+    connect(&fGLMSAACombo, SIGNAL(activated(int)), this,
+            SIGNAL(glSettingsChanged()));
+
+    fVerticalLayout.addRow(&fGLGroup);
 #endif
 
-    fCanvasLayout.setSpacing(6);
-    fCanvasLayout.setContentsMargins(11,11,11,11);
-    fCanvasLayout.addLayout(&fRasterLayout);
-    fCanvasLayout.addLayout(&fOverdrawVizLayout);
-#if SK_SUPPORT_GPU
-    fCanvasLayout.addLayout(&fGLLayout);
-#endif
+    fFilterCombo.addItem("As encoded", QVariant(kNone_SkFilterQuality));
+    fFilterCombo.addItem("None", QVariant(kNone_SkFilterQuality));
+    fFilterCombo.addItem("Low", QVariant(kLow_SkFilterQuality));
+    fFilterCombo.addItem("Medium", QVariant(kMedium_SkFilterQuality));
+    fFilterCombo.addItem("High", QVariant(kHigh_SkFilterQuality));
+    connect(&fFilterCombo, SIGNAL(activated(int)), this, SIGNAL(texFilterSettingsChanged()));
 
-    // Command Toggle
-    fCommandToggle.setText("Command Scrolling Preferences");
-    fCommandFrame.setFrameShape(QFrame::StyledPanel);
-    fCommandFrame.setFrameShadow(QFrame::Raised);
-
-    fCurrentCommandLabel.setText("Current Command: ");
-    fCurrentCommandLabel.setMinimumWidth(178);
-    fCurrentCommandLabel.setMaximumWidth(178);
-    fCurrentCommandBox.setText("0");
-    fCurrentCommandBox.setMinimumSize(QSize(50,25));
-    fCurrentCommandBox.setMaximumSize(QSize(50,25));
-    fCurrentCommandBox.setAlignment(Qt::AlignRight);
-
-    fCurrentCommandLayout.setSpacing(0);
-    fCurrentCommandLayout.setContentsMargins(0,0,0,0);
-    fCurrentCommandLayout.setAlignment(Qt::AlignLeft);
-    fCurrentCommandLayout.addWidget(&fCurrentCommandLabel);
-    fCurrentCommandLayout.addWidget(&fCurrentCommandBox);
-
-    fCommandHitLabel.setText("Command HitBox: ");
-    fCommandHitLabel.setMinimumWidth(178);
-    fCommandHitLabel.setMaximumWidth(178);
-    fCommandHitBox.setText("0");
-    fCommandHitBox.setMinimumSize(QSize(50,25));
-    fCommandHitBox.setMaximumSize(QSize(50,25));
-    fCommandHitBox.setAlignment(Qt::AlignRight);
-    fCommandHitLayout.setSpacing(0);
-    fCommandHitLayout.setContentsMargins(0,0,0,0);
-    fCommandHitLayout.setAlignment(Qt::AlignLeft);
-    fCommandHitLayout.addWidget(&fCommandHitLabel);
-    fCommandHitLayout.addWidget(&fCommandHitBox);
-
-    fCommandLayout.setSpacing(6);
-    fCommandLayout.setContentsMargins(11,11,11,11);
-    fCommandLayout.addLayout(&fCurrentCommandLayout);
-    fCommandLayout.addLayout(&fCommandHitLayout);
-
-    // Zoom Info
-    fZoomSetting.setText("Zoom Level: ");
-    fZoomSetting.setMinimumWidth(178);
-    fZoomSetting.setMaximumWidth(178);
-    fZoomFrame.setFrameShape(QFrame::StyledPanel);
-    fZoomFrame.setFrameShadow(QFrame::Raised);
-    fZoomBox.setText("100%");
-    fZoomBox.setMinimumSize(QSize(50,25));
-    fZoomBox.setMaximumSize(QSize(50,25));
-    fZoomBox.setAlignment(Qt::AlignRight);
-    fZoomLayout.setSpacing(6);
-    fZoomLayout.setContentsMargins(11,11,11,11);
-    fZoomLayout.addWidget(&fZoomSetting);
-    fZoomLayout.addWidget(&fZoomBox);
-
-    // Adds all widgets to settings container
-    fVerticalLayout.addWidget(&fVisibileText);
-    fVerticalLayout.addWidget(&fVisibleFrame);
-    fVerticalLayout.addWidget(&fCommandToggle);
-    fVerticalLayout.addWidget(&fCommandFrame);
-    fVerticalLayout.addWidget(&fCanvasToggle);
-    fVerticalLayout.addWidget(&fCanvasFrame);
-    fVerticalLayout.addWidget(&fZoomFrame);
-
+    fVerticalLayout.addRow("Filtering", &fFilterCombo);
     this->setDisabled(true);
 }
 
-
-void SkSettingsWidget::updateCommand(int newCommand) {
-    fCurrentCommandBox.setText(QString::number(newCommand));
-}
-
-void SkSettingsWidget::updateHit(int newHit) {
-    fCommandHitBox.setText(QString::number(newHit));
-}
-
-QRadioButton* SkSettingsWidget::getVisibilityButton() {
-    return &fVisibleOn;
-}
-
-void SkSettingsWidget::setZoomText(float scale) {
-    fZoomBox.setText(QString::number(scale*100, 'f', 0).append("%"));
-}

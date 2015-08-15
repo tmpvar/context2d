@@ -7,6 +7,7 @@
 
 #include "gm.h"
 #include "SkBlurImageFilter.h"
+#include "SkRandom.h"
 
 #define WIDTH 500
 #define HEIGHT 500
@@ -15,32 +16,37 @@ namespace skiagm {
 
 class ImageBlurGM : public GM {
 public:
-    ImageBlurGM() {
+    ImageBlurGM(SkScalar sigmaX, SkScalar sigmaY, const char* suffix)
+        : fSigmaX(sigmaX), fSigmaY(sigmaY) {
         this->setBGColor(0xFF000000);
+        fName.printf("imageblur%s", suffix);
     }
 
 protected:
-    virtual SkString onShortName() {
-        return SkString("imageblur");
+
+    SkString onShortName() override {
+        return fName;
     }
 
-    virtual SkISize onISize() {
-        return make_isize(WIDTH, HEIGHT);
+    SkISize onISize() override {
+        return SkISize::Make(WIDTH, HEIGHT);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
-        paint.setImageFilter(new SkBlurImageFilter(24.0f, 0.0f))->unref();
+        paint.setImageFilter(SkBlurImageFilter::Create(fSigmaX, fSigmaY))->unref();
         canvas->saveLayer(NULL, &paint);
         const char* str = "The quick brown fox jumped over the lazy dog.";
-        srand(1234);
+
+        SkRandom rand;
         SkPaint textPaint;
         textPaint.setAntiAlias(true);
+        sk_tool_utils::set_portable_typeface(&textPaint);
         for (int i = 0; i < 25; ++i) {
-            int x = rand() % WIDTH;
-            int y = rand() % HEIGHT;
-            textPaint.setColor(rand() % 0x1000000 | 0xFF000000);
-            textPaint.setTextSize(SkIntToScalar(rand() % 300));
+            int x = rand.nextULessThan(WIDTH);
+            int y = rand.nextULessThan(HEIGHT);
+            textPaint.setColor(sk_tool_utils::color_to_565(rand.nextBits(24) | 0xFF000000));
+            textPaint.setTextSize(rand.nextRangeScalar(0, 300));
             canvas->drawText(str, strlen(str), SkIntToScalar(x),
                              SkIntToScalar(y), textPaint);
         }
@@ -48,12 +54,19 @@ protected:
     }
 
 private:
+    SkScalar fSigmaX;
+    SkScalar fSigmaY;
+    SkString fName;
+
     typedef GM INHERITED;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new ImageBlurGM; }
-static GMRegistry reg(MyFactory);
+static GM* MyFactory1(void*) { return new ImageBlurGM(24.0f, 0.0f, ""); }
+static GMRegistry reg1(MyFactory1);
+
+static GM* MyFactory2(void*) { return new ImageBlurGM(80.0f, 80.0f, "_large"); }
+static GMRegistry reg2(MyFactory2);
 
 }

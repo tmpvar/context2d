@@ -13,35 +13,18 @@
 
 class GrAAHairLinePathRenderer : public GrPathRenderer {
 public:
-    virtual ~GrAAHairLinePathRenderer();
+    static GrPathRenderer* Create()  { return SkNEW(GrAAHairLinePathRenderer); }
 
-    static GrPathRenderer* Create(GrContext* context);
-
-    virtual bool canDrawPath(const SkPath& path,
-                             const SkStrokeRec& stroke,
-                             const GrDrawTarget* target,
-                             bool antiAlias) const SK_OVERRIDE;
-
-protected:
-    virtual bool onDrawPath(const SkPath& path,
-                            const SkStrokeRec& stroke,
-                            GrDrawTarget* target,
-                            bool antiAlias) SK_OVERRIDE;
+    typedef SkTArray<SkPoint, true> PtArray;
+    typedef SkTArray<int, true> IntArray;
+    typedef SkTArray<float, true> FloatArray;
 
 private:
-    GrAAHairLinePathRenderer(const GrContext* context,
-                             const GrIndexBuffer* fLinesIndexBuffer,
-                             const GrIndexBuffer* fQuadsIndexBuffer);
+    bool onCanDrawPath(const CanDrawPathArgs&) const override;
 
-    bool createGeom(const SkPath& path,
-                    GrDrawTarget* target,
-                    int* lineCnt,
-                    int* quadCnt,
-                    GrDrawTarget::AutoReleaseGeometry* arg,
-                    SkRect* devBounds   );
+    bool onDrawPath(const DrawPathArgs&) override;
 
-    const GrIndexBuffer*        fLinesIndexBuffer;
-    const GrIndexBuffer*        fQuadsIndexBuffer;
+    GrAAHairLinePathRenderer() {}
 
     typedef GrPathRenderer INHERITED;
 };

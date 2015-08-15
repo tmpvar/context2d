@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2013 Google Inc.
  *
@@ -6,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
 #include "SkRandom.h"
 #include "SkTSort.h"
+#include "Test.h"
 
 static bool anderson_darling_test(double p[32]) {
     // Min and max Anderson-Darling values allowable for k=32
@@ -61,7 +60,7 @@ static void test_random_byte(skiatest::Reporter* reporter, int shift) {
     int bins[256];
     memset(bins, 0, sizeof(int)*256);
 
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 256*10000; ++i) {
         bins[(rand.nextU() >> shift) & 0xff]++;
     }
@@ -73,7 +72,7 @@ static void test_random_float(skiatest::Reporter* reporter) {
     int bins[256];
     memset(bins, 0, sizeof(int)*256);
 
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 256*10000; ++i) {
         float f = rand.nextF();
         REPORTER_ASSERT(reporter, 0.0f <= f && f < 1.0f);
@@ -108,7 +107,7 @@ static double test_single_gorilla(skiatest::Reporter* reporter, int shift) {
     const int kNumEntries = kN >> 5;  // dividing by 32
     unsigned int entries[kNumEntries];
 
-    SkMWCRandom rand;
+    SkRandom rand;
     memset(entries, 0, sizeof(unsigned int)*kNumEntries);
     // pre-seed our string value
     int value = 0;
@@ -161,7 +160,7 @@ static void test_gorilla(skiatest::Reporter* reporter) {
 }
 
 static void test_range(skiatest::Reporter* reporter) {
-    SkMWCRandom rand;
+    SkRandom rand;
 
     // just to make sure we don't crash in this case
     (void) rand.nextRangeU(0, 0xffffffff);
@@ -178,7 +177,7 @@ static void test_range(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, chi_square_test(bins, 10000));
 }
 
-static void TestRandom(skiatest::Reporter* reporter) {
+DEF_TEST(Random, reporter) {
     // check uniform distributions of each byte in 32-bit word
     test_random_byte(reporter, 0);
     test_random_byte(reporter, 8);
@@ -191,6 +190,3 @@ static void TestRandom(skiatest::Reporter* reporter) {
 
     test_range(reporter);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("Random", RandomTestClass, TestRandom)

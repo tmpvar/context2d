@@ -1,11 +1,12 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "gm.h"
+#include "SkPath.h"
 
 typedef SkScalar (*MakePathProc)(SkPath*);
 
@@ -117,23 +118,23 @@ static const MakePathProc gProcs[] = {
 class PathFillGM : public skiagm::GM {
     SkPath  fPath[N];
     SkScalar fDY[N];
-public:
-    PathFillGM() {
+protected:
+    void onOnceBeforeDraw() override {
         for (size_t i = 0; i < N; i++) {
             fDY[i] = gProcs[i](&fPath[i]);
         }
     }
 
-protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("pathfill");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(640, 480);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setAntiAlias(true);
 
@@ -151,19 +152,18 @@ private:
 class PathInverseFillGM : public skiagm::GM {
     SkPath  fPath[N];
     SkScalar fDY[N];
-public:
-    PathInverseFillGM() {
+protected:
+    void onOnceBeforeDraw() override {
         for (size_t i = 0; i < N; i++) {
             fDY[i] = gProcs[i](&fPath[i]);
         }
     }
 
-protected:
-    virtual SkString onShortName() {
+    SkString onShortName() override {
         return SkString("pathinvfill");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(450, 220);
     }
 
@@ -180,7 +180,7 @@ protected:
         canvas->restore();
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPath path;
 
         path.addCircle(SkIntToScalar(50), SkIntToScalar(50), SkIntToScalar(40));

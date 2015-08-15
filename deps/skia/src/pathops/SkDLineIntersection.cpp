@@ -7,49 +7,44 @@
 #include "SkIntersections.h"
 #include "SkPathOpsLine.h"
 
-/* Determine the intersection point of two lines. This assumes the lines are not parallel,
-   and that that the lines are infinite.
-   From http://en.wikipedia.org/wiki/Line-line_intersection
- */
-SkDPoint SkIntersections::Line(const SkDLine& a, const SkDLine& b) {
-    double axLen = a[1].fX - a[0].fX;
-    double ayLen = a[1].fY - a[0].fY;
-    double bxLen = b[1].fX - b[0].fX;
-    double byLen = b[1].fY - b[0].fY;
-    double denom = byLen * axLen - ayLen * bxLen;
-    SkASSERT(denom);
-    double term1 = a[1].fX * a[0].fY - a[1].fY * a[0].fX;
-    double term2 = b[1].fX * b[0].fY - b[1].fY * b[0].fX;
-    SkDPoint p;
-    p.fX = (term1 * bxLen - axLen * term2) / denom;
-    p.fY = (term1 * byLen - ayLen * term2) / denom;
-    return p;
+void SkIntersections::cleanUpParallelLines(bool parallel) {
+    while (fUsed > 2) {
+        removeOne(1);
+    }
+    if (fUsed == 2 && !parallel) {
+        bool startMatch = fT[0][0] == 0 || fT[1][0] == 0 || fT[1][0] == 1;
+        bool endMatch = fT[0][1] == 1 || fT[1][1] == 0 || fT[1][1] == 1;
+        if ((!startMatch && !endMatch) || approximately_equal(fT[0][0], fT[0][1])) {
+            SkASSERT(startMatch || endMatch);
+            removeOne(endMatch);
+        }
+    }
+    if (fUsed == 2) {
+        fIsCoincident[0] = fIsCoincident[1] = 0x03;
+    }
 }
 
-int SkIntersections::computePoints(const SkDLine& line, int used) {
-    fPt[0] = line.xyAtT(fT[0][0]);
+void SkIntersections::computePoints(const SkDLine& line, int used) {
+    fPt[0] = line.ptAtT(fT[0][0]);
     if ((fUsed = used) == 2) {
-        fPt[1] = line.xyAtT(fT[0][1]);
+        fPt[1] = line.ptAtT(fT[0][1]);
     }
-    return fUsed;
 }
 
 int SkIntersections::intersectRay(const SkDLine& a, const SkDLine& b) {
-    double axLen = a[1].fX - a[0].fX;
-    double ayLen = a[1].fY - a[0].fY;
-    double bxLen = b[1].fX - b[0].fX;
-    double byLen = b[1].fY - b[0].fY;
+    fMax = 2;
+    SkDVector aLen = a[1] - a[0];
+    SkDVector bLen = b[1] - b[0];
     /* Slopes match when denom goes to zero:
                       axLen / ayLen ==                   bxLen / byLen
     (ayLen * byLen) * axLen / ayLen == (ayLen * byLen) * bxLen / byLen
              byLen  * axLen         ==  ayLen          * bxLen
              byLen  * axLen         -   ayLen          * bxLen == 0 ( == denom )
      */
-    double denom = byLen * axLen - ayLen * bxLen;
-    double ab0y = a[0].fY - b[0].fY;
-    double ab0x = a[0].fX - b[0].fX;
-    double numerA = ab0y * bxLen - byLen * ab0x;
-    double numerB = ab0y * axLen - ayLen * ab0x;
+    double denom = bLen.fY * aLen.fX - aLen.fY * bLen.fX;
+    SkDVector ab0 = a[0] - b[0];
+    double numerA = ab0.fY * bLen.fX - bLen.fY * ab0.fX;
+    double numerB = ab0.fY * aLen.fX - aLen.fY * ab0.fX;
     numerA /= denom;
     numerB /= denom;
     int used;
@@ -63,8 +58,8 @@ int SkIntersections::intersectRay(const SkDLine& a, const SkDLine& b) {
          axLen * (ay - ax * ayLen / axLen) == axLen * (by - bx * ayLen / axLen)
          axLen *  ay - ax * ayLen          == axLen *  by - bx * ayLen
         */
-        if (!AlmostEqualUlps(axLen * a[0].fY - ayLen * a[0].fX,
-                axLen * b[0].fY - ayLen * b[0].fX)) {
+        if (!AlmostEqualUlps(aLen.fX * a[0].fY - aLen.fY * a[0].fX,
+                aLen.fX * b[0].fY - aLen.fY * b[0].fX)) {
             return fUsed = 0;
         }
         // there's no great answer for intersection points for coincident rays, but return something
@@ -72,50 +67,24 @@ int SkIntersections::intersectRay(const SkDLine& a, const SkDLine& b) {
         fT[1][0] = fT[1][1] = 1;
         used = 2;
     }
-    return computePoints(a, used);
-}
-
-static bool checkEndPoint(double x, double y, const SkDLine& l, double* tPtr, int useX) {
-    if (!between(l[0].fX, x, l[1].fX) || !between(l[0].fY, y, l[1].fY)) {
-        return false;
-    }
-    double xLen = l[1].fX - l[0].fX;
-    double yLen = l[1].fY - l[0].fY;
-    if (useX < 0) {
-        useX = SkTAbs(xLen) > SkTAbs(yLen);
-    }
-    // OPTIMIZATION: do between test before divide
-    double t = useX ? (x - l[0].fX) / xLen : (y - l[0].fY) / yLen;
-    if (!between(0, t, 1)) {
-        return false;
-    }
-    double opp = useX ? (1 - t) * l[0].fY + t * l[1].fY : (1 - t) * l[0].fX + t * l[1].fX;
-    if (!AlmostEqualUlps(opp, useX ? y : x)) {
-        return false;
-    }
-    *tPtr = t;
-    return true;
+    computePoints(a, used);
+    return fUsed;
 }
 
 // note that this only works if both lines are neither horizontal nor vertical
 int SkIntersections::intersect(const SkDLine& a, const SkDLine& b) {
+    fMax = 3;  // note that we clean up so that there is no more than two in the end
     // see if end points intersect the opposite line
     double t;
     for (int iA = 0; iA < 2; ++iA) {
-        if (!checkEndPoint(a[iA].fX, a[iA].fY, b, &t, -1)) {
-            continue;
+        if ((t = b.exactPoint(a[iA])) >= 0) {
+            insert(iA, t, a[iA]);
         }
-        insert(iA, t, a[iA]);
     }
     for (int iB = 0; iB < 2; ++iB) {
-        if (!checkEndPoint(b[iB].fX, b[iB].fY, a, &t, -1)) {
-            continue;
+        if ((t = a.exactPoint(b[iB])) >= 0) {
+            insert(t, iB, b[iB]);
         }
-        insert(t, iB, b[iB]);
-    }
-    if (used() > 0) {
-        SkASSERT(fUsed <= 2);
-        return used(); // coincident lines are returned here
     }
     /* Determine the intersection point of two line segments
        Return FALSE if the lines don't intersect
@@ -130,177 +99,230 @@ int SkIntersections::intersect(const SkDLine& a, const SkDLine& b) {
              byLen  * axLen         ==  ayLen          * bxLen
              byLen  * axLen         -   ayLen          * bxLen == 0 ( == denom )
      */
-    double denom = byLen * axLen - ayLen * bxLen;
-    double ab0y = a[0].fY - b[0].fY;
-    double ab0x = a[0].fX - b[0].fX;
-    double numerA = ab0y * bxLen - byLen * ab0x;
-    double numerB = ab0y * axLen - ayLen * ab0x;
-    bool mayNotOverlap = (numerA < 0 && denom > numerA) || (numerA > 0 && denom < numerA)
-            || (numerB < 0 && denom > numerB) || (numerB > 0 && denom < numerB);
-    numerA /= denom;
-    numerB /= denom;
-    if ((!approximately_zero(denom) || (!approximately_zero_inverse(numerA)
-            && !approximately_zero_inverse(numerB))) && !sk_double_isnan(numerA)
-            && !sk_double_isnan(numerB)) {
-        if (mayNotOverlap) {
-            return 0;
+    double axByLen = axLen * byLen;
+    double ayBxLen = ayLen * bxLen;
+    // detect parallel lines the same way here and in SkOpAngle operator <
+    // so that non-parallel means they are also sortable
+    bool unparallel = fAllowNear ? NotAlmostEqualUlps(axByLen, ayBxLen)
+            : NotAlmostDequalUlps(axByLen, ayBxLen);
+    if (unparallel && fUsed == 0) {
+        double ab0y = a[0].fY - b[0].fY;
+        double ab0x = a[0].fX - b[0].fX;
+        double numerA = ab0y * bxLen - byLen * ab0x;
+        double numerB = ab0y * axLen - ayLen * ab0x;
+        double denom = axByLen - ayBxLen;
+        if (between(0, numerA, denom) && between(0, numerB, denom)) {
+            fT[0][0] = numerA / denom;
+            fT[1][0] = numerB / denom;
+            computePoints(a, 1);
         }
-        fT[0][0] = numerA;
-        fT[1][0] = numerB;
-        fPt[0] = a.xyAtT(numerA);
-        return computePoints(a, 1);
     }
-    return 0;
+/* Allow tracking that both sets of end points are near each other -- the lines are entirely 
+   coincident -- even when the end points are not exactly the same.
+   Mark this as a 'wild card' for the end points, so that either point is considered totally
+   coincident. Then, avoid folding the lines over each other, but allow either end to mate 
+   to the next set of lines.
+ */
+    if (fAllowNear || !unparallel) {
+        double aNearB[2];
+        double bNearA[2];
+        bool aNotB[2] = {false, false};
+        bool bNotA[2] = {false, false};
+        int nearCount = 0;
+        for (int index = 0; index < 2; ++index) {
+            aNearB[index] = t = b.nearPoint(a[index], &aNotB[index]);
+            nearCount += t >= 0;
+            bNearA[index] = t = a.nearPoint(b[index], &bNotA[index]);
+            nearCount += t >= 0;
+        }
+        if (nearCount > 0) {
+            // Skip if each segment contributes to one end point.
+            if (nearCount != 2 || aNotB[0] == aNotB[1]) {
+                for (int iA = 0; iA < 2; ++iA) {
+                    if (!aNotB[iA]) {
+                        continue;
+                    }
+                    int nearer = aNearB[iA] > 0.5;
+                    if (!bNotA[nearer]) {
+                        continue;
+                    }
+                    SkASSERT(a[iA] != b[nearer]);
+                    SkASSERT(iA == (bNearA[nearer] > 0.5));
+                    insertNear(iA, nearer, a[iA], b[nearer]);
+                    aNearB[iA] = -1;
+                    bNearA[nearer] = -1;
+                    nearCount -= 2;
+                }
+            }
+            if (nearCount > 0) {
+                for (int iA = 0; iA < 2; ++iA) {
+                    if (aNearB[iA] >= 0) {
+                        insert(iA, aNearB[iA], a[iA]);
+                    }
+                }
+                for (int iB = 0; iB < 2; ++iB) {
+                    if (bNearA[iB] >= 0) {
+                        insert(bNearA[iB], iB, b[iB]);
+                    }
+                }
+            }
+        }
+    }
+    cleanUpParallelLines(!unparallel);
+    SkASSERT(fUsed <= 2);
+    return fUsed;
 }
 
-int SkIntersections::horizontal(const SkDLine& line, double y) {
+static int horizontal_coincident(const SkDLine& line, double y) {
     double min = line[0].fY;
     double max = line[1].fY;
     if (min > max) {
         SkTSwap(min, max);
     }
     if (min > y || max < y) {
-        return fUsed = 0;
+        return 0;
     }
     if (AlmostEqualUlps(min, max) && max - min < fabs(line[0].fX - line[1].fX)) {
-        fT[0][0] = 0;
-        fT[0][1] = 1;
-        return fUsed = 2;
+        return 2;
     }
-    fT[0][0] = (y - line[0].fY) / (line[1].fY - line[0].fY);
-    return fUsed = 1;
+    return 1;
 }
 
-static bool checkEndPointH(const SkDPoint& end, double left, double right,
-                           double y, bool flipped, double* tPtr) {
-    if (!between(left, end.fX, right) || !AlmostEqualUlps(y, end.fY)) {
-        return false;
-    }
-    double t = (end.fX - left) / (right - left);
-    SkASSERT(between(0, t, 1));
-    *tPtr = flipped ? 1 - t : t;
-    return true;
+double SkIntersections::HorizontalIntercept(const SkDLine& line, double y) {
+     return SkPinT((y - line[0].fY) / (line[1].fY - line[0].fY));
 }
 
 int SkIntersections::horizontal(const SkDLine& line, double left, double right,
                                 double y, bool flipped) {
+    fMax = 3;  // clean up parallel at the end will limit the result to 2 at the most
     // see if end points intersect the opposite line
     double t;
-    if (checkEndPoint(left, y, line, &t, true)) {
-        insert(t, flipped, left, y);
+    const SkDPoint leftPt = { left, y };
+    if ((t = line.exactPoint(leftPt)) >= 0) {
+        insert(t, (double) flipped, leftPt);
     }
     if (left != right) {
-        if (checkEndPoint(right, y, line, &t, true)) {
-            insert(t, !flipped, right, y);
+        const SkDPoint rightPt = { right, y };
+        if ((t = line.exactPoint(rightPt)) >= 0) {
+            insert(t, (double) !flipped, rightPt);
         }
         for (int index = 0; index < 2; ++index) {
-            if (!checkEndPointH(line[index], left, right, y, flipped, &t)) {
-                continue;
+            if ((t = SkDLine::ExactPointH(line[index], left, right, y)) >= 0) {
+                insert((double) index, flipped ? 1 - t : t, line[index]);
             }
-            insert(index, t, line[index]);
         }
     }
-    if (used() > 0) {
-        SkASSERT(fUsed <= 2);
-        return used(); // coincident lines are returned here
-    }
-    int result = horizontal(line, y);
-    if (!result) {
-        return 0;
-    }
-    SkASSERT(result == 1);
-    double xIntercept = line[0].fX + fT[0][0] * (line[1].fX - line[0].fX);
-    if (!precisely_between(left, xIntercept, right)) {
-        return fUsed = 0;
-    }
-    fT[1][0] = (xIntercept - left) / (right - left);
-    if (flipped) {
-        // OPTIMIZATION: ? instead of swapping, pass original line, use [1].fX - [0].fX
-        for (int index = 0; index < result; ++index) {
-            fT[1][index] = 1 - fT[1][index];
+    int result = horizontal_coincident(line, y);
+    if (result == 1 && fUsed == 0) {
+        fT[0][0] = HorizontalIntercept(line, y);
+        double xIntercept = line[0].fX + fT[0][0] * (line[1].fX - line[0].fX);
+        if (between(left, xIntercept, right)) {
+            fT[1][0] = (xIntercept - left) / (right - left);
+            if (flipped) {
+                // OPTIMIZATION: ? instead of swapping, pass original line, use [1].fX - [0].fX
+                for (int index = 0; index < result; ++index) {
+                    fT[1][index] = 1 - fT[1][index];
+                }
+            }
+            fPt[0].fX = xIntercept;
+            fPt[0].fY = y;
+            fUsed = 1;
         }
     }
-    return computePoints(line, result);
+    if (fAllowNear || result == 2) {
+        if ((t = line.nearPoint(leftPt, NULL)) >= 0) {
+            insert(t, (double) flipped, leftPt);
+        }
+        if (left != right) {
+            const SkDPoint rightPt = { right, y };
+            if ((t = line.nearPoint(rightPt, NULL)) >= 0) {
+                insert(t, (double) !flipped, rightPt);
+            }
+            for (int index = 0; index < 2; ++index) {
+                if ((t = SkDLine::NearPointH(line[index], left, right, y)) >= 0) {
+                    insert((double) index, flipped ? 1 - t : t, line[index]);
+                }
+            }
+        }
+    }
+    cleanUpParallelLines(result == 2);
+    return fUsed;
 }
 
-int SkIntersections::vertical(const SkDLine& line, double x) {
+static int vertical_coincident(const SkDLine& line, double x) {
     double min = line[0].fX;
     double max = line[1].fX;
     if (min > max) {
         SkTSwap(min, max);
     }
     if (!precisely_between(min, x, max)) {
-        return fUsed = 0;
+        return 0;
     }
     if (AlmostEqualUlps(min, max)) {
-        fT[0][0] = 0;
-        fT[0][1] = 1;
-        return fUsed = 2;
+        return 2;
     }
-    fT[0][0] = (x - line[0].fX) / (line[1].fX - line[0].fX);
-    return fUsed = 1;
+    return 1;
 }
 
-static bool checkEndPointV(const SkDPoint& end, double top, double bottom,
-                           double x, bool flipped, double* tPtr) {
-    if (!between(top, end.fY, bottom) || !AlmostEqualUlps(x, end.fX)) {
-        return false;
-    }
-    double t = (end.fY - top) / (bottom - top);
-    SkASSERT(between(0, t, 1));
-    *tPtr = flipped ? 1 - t : t;
-    return true;
+double SkIntersections::VerticalIntercept(const SkDLine& line, double x) {
+    return SkPinT((x - line[0].fX) / (line[1].fX - line[0].fX));
 }
 
 int SkIntersections::vertical(const SkDLine& line, double top, double bottom,
-                                double x, bool flipped) {
+                              double x, bool flipped) {
+    fMax = 3;  // cleanup parallel lines will bring this back line
     // see if end points intersect the opposite line
     double t;
-    if (checkEndPoint(x, top, line, &t, false)) {
-        insert(t, flipped, x, top);
+    SkDPoint topPt = { x, top };
+    if ((t = line.exactPoint(topPt)) >= 0) {
+        insert(t, (double) flipped, topPt);
     }
     if (top != bottom) {
-        if (checkEndPoint(x, bottom,line, &t, false)) {
-            insert(t, !flipped, x, bottom);
+        SkDPoint bottomPt = { x, bottom };
+        if ((t = line.exactPoint(bottomPt)) >= 0) {
+            insert(t, (double) !flipped, bottomPt);
         }
         for (int index = 0; index < 2; ++index) {
-            if (!checkEndPointV(line[index], top, bottom, x, flipped, &t)) {
-                continue;
+            if ((t = SkDLine::ExactPointV(line[index], top, bottom, x)) >= 0) {
+                insert((double) index, flipped ? 1 - t : t, line[index]);
             }
-            insert( index, t, line[index]);
         }
     }
-    if (used() > 0) {
-        SkASSERT(fUsed <= 2);
-        return used(); // coincident lines are returned here
-    }
-    int result = vertical(line, x);
-    if (!result) {
-        return 0;
-    }
-    SkASSERT(result == 1);
-    double yIntercept = line[0].fY + fT[0][0] * (line[1].fY - line[0].fY);
-    if (!precisely_between(top, yIntercept, bottom)) {
-        return fUsed = 0;
-    }
-    fT[1][0] = (yIntercept - top) / (bottom - top);
-    if (flipped) {
-        // OPTIMIZATION: instead of swapping, pass original line, use [1].fY - [0].fY
-        for (int index = 0; index < result; ++index) {
-            fT[1][index] = 1 - fT[1][index];
+    int result = vertical_coincident(line, x);
+    if (result == 1 && fUsed == 0) {
+        fT[0][0] = VerticalIntercept(line, x);
+        double yIntercept = line[0].fY + fT[0][0] * (line[1].fY - line[0].fY);
+        if (between(top, yIntercept, bottom)) {
+            fT[1][0] = (yIntercept - top) / (bottom - top);
+            if (flipped) {
+                // OPTIMIZATION: instead of swapping, pass original line, use [1].fY - [0].fY
+                for (int index = 0; index < result; ++index) {
+                    fT[1][index] = 1 - fT[1][index];
+                }
+            }
+            fPt[0].fX = x;
+            fPt[0].fY = yIntercept;
+            fUsed = 1;
         }
     }
-    return computePoints(line, result);
+    if (fAllowNear || result == 2) {
+        if ((t = line.nearPoint(topPt, NULL)) >= 0) {
+            insert(t, (double) flipped, topPt);
+        }
+        if (top != bottom) {
+            SkDPoint bottomPt = { x, bottom };
+            if ((t = line.nearPoint(bottomPt, NULL)) >= 0) {
+                insert(t, (double) !flipped, bottomPt);
+            }
+            for (int index = 0; index < 2; ++index) {
+                if ((t = SkDLine::NearPointV(line[index], top, bottom, x)) >= 0) {
+                    insert((double) index, flipped ? 1 - t : t, line[index]);
+                }
+            }
+        }
+    }
+    cleanUpParallelLines(result == 2);
+    SkASSERT(fUsed <= 2);
+    return fUsed;
 }
 
-// from http://www.bryceboe.com/wordpress/wp-content/uploads/2006/10/intersect.py
-// 4 subs, 2 muls, 1 cmp
-static bool ccw(const SkDPoint& A, const SkDPoint& B, const SkDPoint& C) {
-    return (C.fY - A.fY) * (B.fX - A.fX) > (B.fY - A.fY) * (C.fX - A.fX);
-}
-
-// 16 subs, 8 muls, 6 cmps
-bool SkIntersections::Test(const SkDLine& a, const SkDLine& b) {
-    return ccw(a[0], b[0], b[1]) != ccw(a[1], b[0], b[1])
-            && ccw(a[0], a[1], b[0]) != ccw(a[0], a[1], b[1]);
-}

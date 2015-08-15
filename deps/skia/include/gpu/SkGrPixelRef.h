@@ -1,12 +1,9 @@
-
 /*
  * Copyright 2010 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-
 
 #ifndef SkGrPixelRef_DEFINED
 #define SkGrPixelRef_DEFINED
@@ -23,14 +20,13 @@
  */
 class SK_API SkROLockPixelsPixelRef : public SkPixelRef {
 public:
-    SkROLockPixelsPixelRef();
+    SkROLockPixelsPixelRef(const SkImageInfo&);
     virtual ~SkROLockPixelsPixelRef();
 
 protected:
-    // override from SkPixelRef
-    virtual void* onLockPixels(SkColorTable** ptr);
-    virtual void onUnlockPixels();
-    virtual bool onLockPixelsAreWritable() const;   // return false;
+    bool onNewLockPixels(LockRec*) override;
+    void onUnlockPixels() override;
+    bool onLockPixelsAreWritable() const override;   // return false;
 
 private:
     SkBitmap    fBitmap;
@@ -43,27 +39,23 @@ private:
 class SK_API SkGrPixelRef : public SkROLockPixelsPixelRef {
 public:
     /**
-     * Constructs a pixel ref around a GrSurface. If the caller has locked the GrSurface in the
-     * cache and would like the pixel ref to unlock it in its destructor then transferCacheLock
-     * should be set to true.
+     * Constructs a pixel ref around a GrSurface.
      */
-    SkGrPixelRef(GrSurface* surface, bool transferCacheLock = false);
+    SkGrPixelRef(const SkImageInfo&, GrSurface*);
     virtual ~SkGrPixelRef();
 
     // override from SkPixelRef
-    virtual GrTexture* getTexture() SK_OVERRIDE;
-
-    SK_DECLARE_UNFLATTENABLE_OBJECT()
+    GrTexture* getTexture() override;
 
 protected:
     // overrides from SkPixelRef
-    virtual bool onReadPixels(SkBitmap* dst, const SkIRect* subset) SK_OVERRIDE;
-    virtual SkPixelRef* deepCopy(SkBitmap::Config dstConfig, const SkIRect* subset) SK_OVERRIDE;
+    bool onReadPixels(SkBitmap* dst, const SkIRect* subset) override;
+    SkPixelRef* deepCopy(SkColorType, SkColorProfileType,
+                         const SkIRect* subset) override;
+    void onNotifyPixelsChanged() override;
 
 private:
     GrSurface*  fSurface;
-    bool        fUnlock;   // if true the pixel ref owns a texture cache lock on fSurface
-
     typedef SkROLockPixelsPixelRef INHERITED;
 };
 

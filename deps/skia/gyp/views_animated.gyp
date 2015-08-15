@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #Animated widgets are views which use animator.
 
 {
@@ -5,18 +9,15 @@
     {
       'target_name': 'views_animated',
       'type': 'static_library',
+      'dependencies': [
+        'skia_lib.gyp:skia_lib',
+        'animator.gyp:*',
+        'views.gyp:*',
+        'xml.gyp:*',
+      ],
       'include_dirs': [
-        '../include/animator',
-        '../include/config',
-        '../include/core',
-        '../include/effects',
-        '../include/images',
-        '../include/lazy',
-        '../include/utils',
-        '../include/views',
         '../include/views/animated',
         '../include/views/unix',
-        '../include/xml',
       ],
       'sources': [
         '../include/views/animated/SkBorderView.h',
@@ -65,9 +66,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

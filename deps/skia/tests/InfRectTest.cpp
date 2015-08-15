@@ -1,19 +1,17 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Test.h"
+
 #include "SkRandom.h"
 #include "SkRect.h"
+#include "Test.h"
 
-#ifdef SK_SCALAR_IS_FLOAT
 static float make_zero() {
     return sk_float_sin(0);
 }
-#endif
 
 struct RectCenter {
     SkIRect  fRect;
@@ -35,7 +33,7 @@ static void test_center(skiatest::Reporter* reporter) {
                         gData[index].fRect.centerY() == gData[index].fCenter.y());
     }
 
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 10000; ++i) {
         SkIRect r;
 
@@ -57,15 +55,10 @@ static void check_invalid(skiatest::Reporter* reporter,
 
 // Tests that isFinite() will reject any rect with +/-inf values
 // as one of its coordinates.
-static void TestInfRect(skiatest::Reporter* reporter) {
-#ifdef SK_SCALAR_IS_FLOAT
+DEF_TEST(InfRect, reporter) {
     float inf = 1 / make_zero();    // infinity
     float nan = inf * 0;
     SkASSERT(!(nan == nan));
-#else
-    SkFixed inf = SK_FixedNaN;
-    SkFixed nan = SK_FixedNaN;
-#endif
     SkScalar small = SkIntToScalar(10);
     SkScalar big = SkIntToScalar(100);
 
@@ -86,6 +79,3 @@ static void TestInfRect(skiatest::Reporter* reporter) {
 }
 
 // need tests for SkStrSearch
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("InfRect", InfRectTestClass, TestInfRect)

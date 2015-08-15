@@ -14,27 +14,40 @@
 class SkSweepGradient : public SkGradientShaderBase {
 public:
     SkSweepGradient(SkScalar cx, SkScalar cy, const Descriptor&);
-    virtual void shadeSpan(int x, int y, SkPMColor dstC[], int count) SK_OVERRIDE;
-    virtual void shadeSpan16(int x, int y, uint16_t dstC[], int count) SK_OVERRIDE;
 
-    virtual BitmapType asABitmap(SkBitmap* bitmap,
-                                 SkMatrix* matrix,
-                                 TileMode* xy) const SK_OVERRIDE;
+    size_t contextSize() const override;
 
-    virtual GradientType asAGradient(GradientInfo* info) const SK_OVERRIDE;
+    class SweepGradientContext : public SkGradientShaderBase::GradientShaderBaseContext {
+    public:
+        SweepGradientContext(const SkSweepGradient& shader, const ContextRec&);
 
-    virtual GrEffectRef* asNewEffect(GrContext* context, const SkPaint&) const SK_OVERRIDE;
+        void shadeSpan(int x, int y, SkPMColor dstC[], int count) override;
+        void shadeSpan16(int x, int y, uint16_t dstC[], int count) override;
 
-    SK_DEVELOPER_TO_STRING()
+    private:
+        typedef SkGradientShaderBase::GradientShaderBaseContext INHERITED;
+    };
+
+    BitmapType asABitmap(SkBitmap* bitmap, SkMatrix* matrix, TileMode* xy) const override;
+
+    GradientType asAGradient(GradientInfo* info) const override;
+
+    bool asFragmentProcessor(GrContext*, const SkPaint&, const SkMatrix& viewM,
+                             const SkMatrix*, GrColor*, GrProcessorDataManager*,
+                             GrFragmentProcessor**) const override;
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkSweepGradient)
 
 protected:
-    SkSweepGradient(SkFlattenableReadBuffer& buffer);
-    virtual void flatten(SkFlattenableWriteBuffer& buffer) const SK_OVERRIDE;
+    void flatten(SkWriteBuffer& buffer) const override;
+    Context* onCreateContext(const ContextRec&, void* storage) const override;
 
 private:
-    typedef SkGradientShaderBase INHERITED;
     const SkPoint fCenter;
+
+    friend class SkGradientShader;
+    typedef SkGradientShaderBase INHERITED;
 };
 
 #endif

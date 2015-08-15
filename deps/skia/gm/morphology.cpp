@@ -8,8 +8,8 @@
 #include "gm.h"
 #include "SkMorphologyImageFilter.h"
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 700
+#define HEIGHT 560
 
 namespace skiagm {
 
@@ -26,13 +26,12 @@ protected:
     }
 
     void make_bitmap() {
-        fBitmap.setConfig(SkBitmap::kARGB_8888_Config, 135, 135);
-        fBitmap.allocPixels();
-        SkDevice device(fBitmap);
-        SkCanvas canvas(&device);
+        fBitmap.allocN32Pixels(135, 135);
+        SkCanvas canvas(fBitmap);
         canvas.clear(0x0);
         SkPaint paint;
         paint.setAntiAlias(true);
+        sk_tool_utils::set_portable_typeface(&paint);
         const char* str1 = "ABC";
         const char* str2 = "XYZ";
         paint.setColor(0xFFFFFFFF);
@@ -42,8 +41,18 @@ protected:
     }
 
     virtual SkISize onISize() {
-        return make_isize(WIDTH, HEIGHT);
+        return SkISize::Make(WIDTH, HEIGHT);
     }
+
+    void drawClippedBitmap(SkCanvas* canvas, const SkPaint& paint, int x, int y) {
+        canvas->save();
+        canvas->translate(SkIntToScalar(x), SkIntToScalar(y));
+        canvas->clipRect(SkRect::MakeWH(
+          SkIntToScalar(fBitmap.width()), SkIntToScalar(fBitmap.height())));
+        canvas->drawBitmap(fBitmap, 0, 0, &paint);
+        canvas->restore();
+    }
+
     virtual void onDraw(SkCanvas* canvas) {
         if (!fOnce) {
             make_bitmap();
@@ -60,26 +69,25 @@ protected:
             {  24,  24,  25,  25 },
         };
         SkPaint paint;
-        for (unsigned j = 0; j < 2; ++j) {
+        SkImageFilter::CropRect cropRect(SkRect::MakeXYWH(25, 20, 100, 80));
+
+        for (unsigned j = 0; j < 4; ++j) {
             for (unsigned i = 0; i < SK_ARRAY_COUNT(samples); ++i) {
-                SkScalar x = SkIntToScalar(i * 140), y = SkIntToScalar(j * 140);
-                if (j) {
-                    paint.setImageFilter(new SkErodeImageFilter(
+                const SkImageFilter::CropRect* cr = j & 0x02 ? &cropRect : NULL;
+                if (j & 0x01) {
+                    paint.setImageFilter(SkErodeImageFilter::Create(
                         samples[i].fRadiusX,
-                        samples[i].fRadiusY))->unref();
+                        samples[i].fRadiusY,
+                        NULL,
+                        cr))->unref();
                 } else {
-                    paint.setImageFilter(new SkDilateImageFilter(
+                    paint.setImageFilter(SkDilateImageFilter::Create(
                         samples[i].fRadiusX,
-                        samples[i].fRadiusY))->unref();
+                        samples[i].fRadiusY,
+                        NULL,
+                        cr))->unref();
                 }
-                SkRect bounds = SkRect::MakeXYWH(
-                    x,
-                    y,
-                    SkIntToScalar(samples[i].fWidth),
-                    SkIntToScalar(samples[i].fHeight));
-                canvas->saveLayer(&bounds, &paint);
-                canvas->drawBitmap(fBitmap, x, y);
-                canvas->restore();
+                drawClippedBitmap(canvas, paint, i * 140, j * 140);
             }
         }
     }

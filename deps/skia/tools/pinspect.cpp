@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "LazyDecodeBitmap.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkGraphics.h"
@@ -14,12 +15,6 @@
 #include "SkStream.h"
 #include "SkString.h"
 #include "SkDumpCanvas.h"
-#include "SkForceLinking.h"
-
-__SK_FORCE_IMAGE_DECODER_LINKING;
-
-// Defined in PictureRenderingFlags.cpp
-extern bool lazy_decode_bitmap(const void* buffer, size_t size, SkBitmap* bitmap);
 
 static SkPicture* inspect(const char path[]) {
     SkFILEStream stream(path);
@@ -40,12 +35,14 @@ static SkPicture* inspect(const char path[]) {
     }
 
     stream.rewind();
-    SkPicture* pic = SkPicture::CreateFromStream(&stream, &lazy_decode_bitmap);
+    SkPicture* pic = SkPicture::CreateFromStream(&stream, &sk_tools::LazyDecodeBitmap);
     if (NULL == pic) {
         SkDebugf("Could not create SkPicture: %s\n", path);
         return NULL;
     }
-    printf("picture size:[%d %d]\n", pic->width(), pic->height());
+    printf("picture cullRect: [%f %f %f %f]\n", 
+           pic->cullRect().fLeft, pic->cullRect().fTop,
+           pic->cullRect().fRight, pic->cullRect().fBottom);
     return pic;
 }
 
@@ -53,7 +50,7 @@ static void dumpOps(SkPicture* pic) {
 #ifdef SK_DEVELOPER
     SkDebugfDumper dumper;
     SkDumpCanvas canvas(&dumper);
-    canvas.drawPicture(*pic);
+    canvas.drawPicture(pic);
 #else
     printf("SK_DEVELOPER mode not enabled\n");
 #endif

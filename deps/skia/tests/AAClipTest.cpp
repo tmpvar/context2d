@@ -5,12 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
 #include "SkAAClip.h"
 #include "SkCanvas.h"
 #include "SkMask.h"
 #include "SkPath.h"
 #include "SkRandom.h"
+#include "SkRRect.h"
+#include "Test.h"
 
 static bool operator==(const SkMask& a, const SkMask& b) {
     if (a.fFormat != b.fFormat || a.fBounds != b.fBounds) {
@@ -34,12 +35,11 @@ static bool operator==(const SkMask& a, const SkMask& b) {
         case SkMask::kLCD16_Format:
             wbytes <<= 1;
             break;
-        case SkMask::kLCD32_Format:
         case SkMask::kARGB32_Format:
             wbytes <<= 2;
             break;
         default:
-            SkASSERT(!"unknown mask format");
+            SkDEBUGFAIL("unknown mask format");
             return false;
     }
 
@@ -71,10 +71,12 @@ static void copyToMask(const SkRegion& rgn, SkMask* mask) {
     mask->fImage = SkMask::AllocImage(mask->computeImageSize());
     sk_bzero(mask->fImage, mask->computeImageSize());
 
+    SkImageInfo info = SkImageInfo::Make(mask->fBounds.width(),
+                                         mask->fBounds.height(),
+                                         kAlpha_8_SkColorType,
+                                         kPremul_SkAlphaType);
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kA8_Config, mask->fBounds.width(),
-                     mask->fBounds.height(), mask->fRowBytes);
-    bitmap.setPixels(mask->fImage);
+    bitmap.installPixels(info, mask->fImage, mask->fRowBytes);
 
     // canvas expects its coordinate system to always be 0,0 in the top/left
     // so we translate the rgn to match that before drawing into the mask.
@@ -87,7 +89,7 @@ static void copyToMask(const SkRegion& rgn, SkMask* mask) {
     canvas.drawColor(SK_ColorBLACK);
 }
 
-static SkIRect rand_rect(SkMWCRandom& rand, int n) {
+static SkIRect rand_rect(SkRandom& rand, int n) {
     int x = rand.nextS() % n;
     int y = rand.nextS() % n;
     int w = rand.nextU() % n;
@@ -95,7 +97,7 @@ static SkIRect rand_rect(SkMWCRandom& rand, int n) {
     return SkIRect::MakeXYWH(x, y, w, h);
 }
 
-static void make_rand_rgn(SkRegion* rgn, SkMWCRandom& rand) {
+static void make_rand_rgn(SkRegion* rgn, SkRandom& rand) {
     int count = rand.nextU() % 20;
     for (int i = 0; i < count; ++i) {
         rgn->op(rand_rect(rand, 100), SkRegion::kXOR_Op);
@@ -128,7 +130,7 @@ static void setRgnToPath(SkRegion* rgn, const SkPath& path) {
 
 // aaclip.setRegion should create idential masks to the region
 static void test_rgn(skiatest::Reporter* reporter) {
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 1000; i++) {
         SkRegion rgn;
         make_rand_rgn(&rgn, rand);
@@ -232,7 +234,7 @@ static void test_empty(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, mask.fBounds.isEmpty());
 }
 
-static void rand_irect(SkIRect* r, int N, SkMWCRandom& rand) {
+static void rand_irect(SkIRect* r, int N, SkRandom& rand) {
     r->setXYWH(0, 0, rand.nextU() % N, rand.nextU() % N);
     int dx = rand.nextU() % (2*N);
     int dy = rand.nextU() % (2*N);
@@ -241,7 +243,7 @@ static void rand_irect(SkIRect* r, int N, SkMWCRandom& rand) {
 }
 
 static void test_irect(skiatest::Reporter* reporter) {
-    SkMWCRandom rand;
+    SkRandom rand;
 
     for (int i = 0; i < 10000; i++) {
         SkAAClip clip0, clip1;
@@ -316,6 +318,30 @@ static void test_path_with_hole(skiatest::Reporter* reporter) {
     }
 }
 
+static void test_really_a_rect(skiatest::Reporter* reporter) {
+    SkRRect rrect;
+    rrect.setRectXY(SkRect::MakeWH(100, 100), 5, 5);
+
+    SkPath path;
+    path.addRRect(rrect);
+
+    SkAAClip clip;
+    clip.setPath(path);
+
+    REPORTER_ASSERT(reporter, clip.getBounds() == SkIRect::MakeWH(100, 100));
+    REPORTER_ASSERT(reporter, !clip.isRect());
+
+    // This rect should intersect the clip, but slice-out all of the "soft" parts,
+    // leaving just a rect.
+    const SkIRect ir = SkIRect::MakeLTRB(10, -10, 50, 90);
+    
+    clip.op(ir, SkRegion::kIntersect_Op);
+
+    REPORTER_ASSERT(reporter, clip.getBounds() == SkIRect::MakeLTRB(10, 0, 50, 90));
+    // the clip recognized that that it is just a rect!
+    REPORTER_ASSERT(reporter, clip.isRect());
+}
+
 #include "SkRasterClip.h"
 
 static void copyToMask(const SkRasterClip& rc, SkMask* mask) {
@@ -345,6 +371,7 @@ static bool operator==(const SkRasterClip& a, const SkRasterClip& b) {
 
 static void did_dx_affect(skiatest::Reporter* reporter, const SkScalar dx[],
                           size_t count, bool changed) {
+    const SkISize baseSize = SkISize::Make(10, 10);
     SkIRect ir = { 0, 0, 10, 10 };
 
     for (size_t i = 0; i < count; ++i) {
@@ -355,11 +382,11 @@ static void did_dx_affect(skiatest::Reporter* reporter, const SkScalar dx[],
         SkRasterClip rc1(ir);
         SkRasterClip rc2(ir);
 
-        rc0.op(r, SkRegion::kIntersect_Op, false);
+        rc0.op(r, baseSize, SkRegion::kIntersect_Op, false);
         r.offset(dx[i], 0);
-        rc1.op(r, SkRegion::kIntersect_Op, true);
+        rc1.op(r, baseSize, SkRegion::kIntersect_Op, true);
         r.offset(-2*dx[i], 0);
-        rc2.op(r, SkRegion::kIntersect_Op, true);
+        rc2.op(r, baseSize, SkRegion::kIntersect_Op, true);
 
         REPORTER_ASSERT(reporter, changed != (rc0 == rc1));
         REPORTER_ASSERT(reporter, changed != (rc0 == rc2));
@@ -386,15 +413,29 @@ static void test_regressions() {
     {
         SkAAClip clip;
         SkRect r;
-        r.fLeft = SkFloatToScalar(129.892181f);
-        r.fTop = SkFloatToScalar(10.3999996f);
-        r.fRight = SkFloatToScalar(130.892181f);
-        r.fBottom = SkFloatToScalar(20.3999996f);
+        r.fLeft = 129.892181f;
+        r.fTop = 10.3999996f;
+        r.fRight = 130.892181f;
+        r.fBottom = 20.3999996f;
         clip.setRect(r, true);
     }
 }
 
-static void TestAAClip(skiatest::Reporter* reporter) {
+// Building aaclip meant aa-scan-convert a path into a huge clip.
+// the old algorithm sized the supersampler to the size of the clip, which overflowed
+// its internal 16bit coordinates. The fix was to intersect the clip+path_bounds before
+// sizing the supersampler.
+//
+// Before the fix, the following code would assert in debug builds.
+//
+static void test_crbug_422693(skiatest::Reporter* reporter) {
+    SkRasterClip rc(SkIRect::MakeLTRB(-25000, -25000, 25000, 25000));
+    SkPath path;
+    path.addCircle(50, 50, 50);
+    rc.op(path, rc.getBounds().size(), SkRegion::kIntersect_Op, true);
+}
+
+DEF_TEST(AAClip, reporter) {
     test_empty(reporter);
     test_path_bounds(reporter);
     test_irect(reporter);
@@ -402,7 +443,6 @@ static void TestAAClip(skiatest::Reporter* reporter) {
     test_path_with_hole(reporter);
     test_regressions();
     test_nearly_integral(reporter);
+    test_really_a_rect(reporter);
+    test_crbug_422693(reporter);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("AAClip", AAClipTestClass, TestAAClip)

@@ -6,9 +6,9 @@
  */
 #include "PathOpsExtendedTest.h"
 
-static void PathOpsInverseTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsInverse, reporter) {
     SkPath one, two;
-    for (int op = kDifference_PathOp; op <= kReverseDifference_PathOp; ++op) {
+    for (int op = kDifference_SkPathOp; op <= kReverseDifference_SkPathOp; ++op) {
         for (int oneFill = SkPath::kWinding_FillType; oneFill <= SkPath::kInverseEvenOdd_FillType;
                     ++oneFill) {
             for (int oneDir = SkPath::kCW_Direction; oneDir != SkPath::kCCW_Direction; ++oneDir) {
@@ -22,13 +22,10 @@ static void PathOpsInverseTest(skiatest::Reporter* reporter) {
                         two.reset();
                         two.setFillType((SkPath::FillType) twoFill);
                         two.addRect(3, 3, 9, 9, (SkPath::Direction) twoDir);
-                        testPathOp(reporter, one, two, (SkPathOp) op);
+                        testPathOp(reporter, one, two, (SkPathOp) op, "inverseTest");
                     }
                 }
             }
         }
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsInverseTest)

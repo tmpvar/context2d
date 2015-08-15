@@ -6,6 +6,7 @@
  * found in the LICENSE file.
  */
 #include "SampleCode.h"
+#include "SkBlurMask.h"
 #include "SkBlurDrawLooper.h"
 #include "SkCanvas.h"
 #include "SkPath.h"
@@ -21,29 +22,29 @@ static void textStrokePath(SkCanvas* canvas) {
     canvas->save();
     canvas->scale(SkIntToScalar(250),SkIntToScalar(250));
 
-    rect.set(SkFloatToScalar(0.0f),  SkFloatToScalar(0.21f),
-             SkFloatToScalar(0.78f), SkFloatToScalar(0.99f));
+    rect.set(0.0f,  0.21f,
+             0.78f, 0.99f);
 
     path.addArc(rect, SkIntToScalar(280), SkIntToScalar(350));
 
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(0xFFFF0000);
-    paint.setTextSize(SkFloatToScalar(0.085f));
-    paint.setStrokeWidth(SkFloatToScalar(.005f));
+    paint.setTextSize(0.085f);
+    paint.setStrokeWidth(.005f);
 
     canvas->drawPath(path, paint);
 
-    paint.setLooper(new SkBlurDrawLooper(SkFloatToScalar(0.002f),
-                                          SkFloatToScalar(0.0f),
-                                          SkFloatToScalar(0.0f),
-                                          (SkColor)0xFF000000))->unref();
+    paint.setLooper(SkBlurDrawLooper::Create(SK_ColorBLACK,
+                                             SkBlurMask::ConvertRadiusToSigma(0.002f),
+                                             0.0f,
+                                             0.0f))->unref();
 
     const char* text = "DRAWING STROKED TEXT WITH A BLUR ON A PATH";
     size_t      len = strlen(text);
 
     canvas->drawTextOnPathHV(text, len, path, 0,
-                             SkFloatToScalar(-0.025f), paint);
+                             -0.025f, paint);
     canvas->restore();
 }
 
@@ -92,7 +93,8 @@ public:
     SkPath      fPath;
     SkScalar    fHOffset;
 
-    TextOnPathView() {
+protected:
+    void onOnceBeforeDraw() override {
         SkRect r;
         r.set(SkIntToScalar(100), SkIntToScalar(100),
               SkIntToScalar(300), SkIntToScalar(300));
@@ -102,9 +104,8 @@ public:
         fHOffset = SkIntToScalar(50);
     }
 
-protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Text On Path");
             return true;
@@ -112,7 +113,7 @@ protected:
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setTextSize(SkIntToScalar(48));
@@ -150,13 +151,13 @@ protected:
             this->inval(NULL);
     }
 
-    virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) SK_OVERRIDE {
+    SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
         fHints += 1;
         this->inval(NULL);
         return this->INHERITED::onFindClickHandler(x, y, modi);
     }
 
-    virtual bool onClick(Click* click) {
+    bool onClick(Click* click) override {
         return this->INHERITED::onClick(click);
     }
 

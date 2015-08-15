@@ -5,245 +5,278 @@
  * found in the LICENSE file.
  */
 
-
-
 #include "GrTextContext.h"
-#include "GrAtlas.h"
+#include "GrBlurUtils.h"
 #include "GrContext.h"
-#include "GrDrawTarget.h"
+#include "GrDrawContext.h"
 #include "GrFontScaler.h"
-#include "GrIndexBuffer.h"
-#include "GrTextStrike.h"
-#include "GrTextStrike_impl.h"
-#include "SkPath.h"
-#include "SkStrokeRec.h"
 
-static const int kGlyphCoordsAttributeIndex = 1;
+#include "SkAutoKern.h"
+#include "SkDrawFilter.h"
+#include "SkDrawProcs.h"
+#include "SkGlyphCache.h"
+#include "SkGpuDevice.h"
+#include "SkTextBlob.h"
+#include "SkTextMapStateProc.h"
+#include "SkTextToPathIter.h"
 
-void GrTextContext::flushGlyphs() {
-    if (NULL == fDrawTarget) {
-        return;
-    }
-
-    GrDrawState* drawState = fDrawTarget->drawState();
-    GrDrawState::AutoRestoreEffects are(drawState);
-    drawState->setFromPaint(fPaint, SkMatrix::I(), fContext->getRenderTarget());
-
-    if (fCurrVertex > 0) {
-        // setup our sampler state for our text texture/atlas
-        GrAssert(GrIsALIGN4(fCurrVertex));
-        GrAssert(fCurrTexture);
-        GrTextureParams params(SkShader::kRepeat_TileMode, false);
-
-        // This effect could be stored with one of the cache objects (atlas?)
-        drawState->addCoverageEffect(
-                                GrSimpleTextureEffect::CreateWithCustomCoords(fCurrTexture, params),
-                                kGlyphCoordsAttributeIndex)->unref();
-
-        if (!GrPixelConfigIsAlphaOnly(fCurrTexture->config())) {
-            if (kOne_GrBlendCoeff != fPaint.getSrcBlendCoeff() ||
-                kISA_GrBlendCoeff != fPaint.getDstBlendCoeff() ||
-                fPaint.hasColorStage()) {
-                GrPrintf("LCD Text will not draw correctly.\n");
-            }
-            // setup blend so that we get mask * paintColor + (1-mask)*dstColor
-            drawState->setBlendConstant(fPaint.getColor());
-            drawState->setBlendFunc(kConstC_GrBlendCoeff, kISC_GrBlendCoeff);
-            // don't modulate by the paint's color in the frag since we're
-            // already doing it via the blend const.
-            drawState->setColor(0xffffffff);
-        } else {
-            // set back to normal in case we took LCD path previously.
-            drawState->setBlendFunc(fPaint.getSrcBlendCoeff(), fPaint.getDstBlendCoeff());
-            drawState->setColor(fPaint.getColor());
-        }
-
-        int nGlyphs = fCurrVertex / 4;
-        fDrawTarget->setIndexSourceToBuffer(fContext->getQuadIndexBuffer());
-        fDrawTarget->drawIndexedInstances(kTriangles_GrPrimitiveType,
-                                          nGlyphs,
-                                          4, 6);
-        fDrawTarget->resetVertexSource();
-        fVertices = NULL;
-        fMaxVertices = 0;
-        fCurrVertex = 0;
-        GrSafeSetNull(fCurrTexture);
-    }
-}
-
-GrTextContext::GrTextContext(GrContext* context, const GrPaint& paint) : fPaint(paint) {
-    fContext = context;
-    fStrike = NULL;
-
-    fCurrTexture = NULL;
-    fCurrVertex = 0;
-
-    const GrClipData* clipData = context->getClip();
-
-    GrRect devConservativeBound;
-    clipData->fClipStack->getConservativeBounds(
-                                     -clipData->fOrigin.fX,
-                                     -clipData->fOrigin.fY,
-                                     context->getRenderTarget()->width(),
-                                     context->getRenderTarget()->height(),
-                                     &devConservativeBound);
-
-    devConservativeBound.roundOut(&fClipRect);
-
-    fAutoMatrix.setIdentity(fContext, &fPaint);
-
-    fDrawTarget = fContext->getTextTarget();
-
-    fVertices = NULL;
-    fMaxVertices = 0;
+GrTextContext::GrTextContext(GrContext* context, GrDrawContext* drawContext,
+                             const SkSurfaceProps& surfaceProps)
+    : fFallbackTextContext(NULL)
+    , fContext(context)
+    , fSurfaceProps(surfaceProps)
+    , fDrawContext(drawContext) {
 }
 
 GrTextContext::~GrTextContext() {
-    this->flushGlyphs();
+    SkDELETE(fFallbackTextContext);
 }
 
-void GrTextContext::flush() {
-    this->flushGlyphs();
-}
-
-namespace {
-
-// position + texture coord
-extern const GrVertexAttrib gTextVertexAttribs[] = {
-    {kVec2f_GrVertexAttribType, 0,               kPosition_GrVertexAttribBinding},
-    {kVec2f_GrVertexAttribType, sizeof(GrPoint), kEffect_GrVertexAttribBinding}
-};
-
-};
-
-void GrTextContext::drawPackedGlyph(GrGlyph::PackedID packed,
-                                    GrFixed vx, GrFixed vy,
-                                    GrFontScaler* scaler) {
-    if (NULL == fDrawTarget) {
-        return;
-    }
-    if (NULL == fStrike) {
-        fStrike = fContext->getFontCache()->getStrike(scaler);
-    }
-
-    GrGlyph* glyph = fStrike->getGlyph(packed, scaler);
-    if (NULL == glyph || glyph->fBounds.isEmpty()) {
+void GrTextContext::drawText(GrRenderTarget* rt, const GrClip& clip, const GrPaint& paint,
+                             const SkPaint& skPaint, const SkMatrix& viewMatrix,
+                             const char text[], size_t byteLength,
+                             SkScalar x, SkScalar y, const SkIRect& clipBounds) {
+    if (fContext->abandoned() || !fDrawContext) {
         return;
     }
 
-    vx += SkIntToFixed(glyph->fBounds.fLeft);
-    vy += SkIntToFixed(glyph->fBounds.fTop);
-
-    // keep them as ints until we've done the clip-test
-    GrFixed width = glyph->fBounds.width();
-    GrFixed height = glyph->fBounds.height();
-
-    // check if we clipped out
-    if (true || NULL == glyph->fAtlas) {
-        int x = vx >> 16;
-        int y = vy >> 16;
-        if (fClipRect.quickReject(x, y, x + width, y + height)) {
-//            SkCLZ(3);    // so we can set a break-point in the debugger
+    GrTextContext* textContext = this;
+    do {
+        if (textContext->canDraw(rt, clip, paint, skPaint, viewMatrix)) {
+            textContext->onDrawText(rt, clip, paint, skPaint, viewMatrix,
+                                    text, byteLength, x, y, clipBounds);
             return;
         }
-    }
+        textContext = textContext->fFallbackTextContext;
+    } while (textContext);
 
-    if (NULL == glyph->fAtlas) {
-        if (fStrike->getGlyphAtlas(glyph, scaler)) {
-            goto HAS_ATLAS;
-        }
+    // fall back to drawing as a path
+    this->drawTextAsPath(rt, clip, skPaint, viewMatrix,
+                         text, byteLength, x, y, clipBounds);
+}
 
-        // before we purge the cache, we must flush any accumulated draws
-        this->flushGlyphs();
-        fContext->flush();
-
-        // try to purge
-        fContext->getFontCache()->purgeExceptFor(fStrike);
-        if (fStrike->getGlyphAtlas(glyph, scaler)) {
-            goto HAS_ATLAS;
-        }
-
-        if (NULL == glyph->fPath) {
-            SkPath* path = SkNEW(SkPath);
-            if (!scaler->getGlyphPath(glyph->glyphID(), path)) {
-                // flag the glyph as being dead?
-                delete path;
-                return;
-            }
-            glyph->fPath = path;
-        }
-
-        GrContext::AutoMatrix am;
-        SkMatrix translate;
-        translate.setTranslate(SkFixedToScalar(vx - SkIntToFixed(glyph->fBounds.fLeft)),
-                               SkFixedToScalar(vy - SkIntToFixed(glyph->fBounds.fTop)));
-        GrPaint tmpPaint(fPaint);
-        am.setPreConcat(fContext, translate, &tmpPaint);
-        SkStrokeRec stroke(SkStrokeRec::kFill_InitStyle);
-        fContext->drawPath(tmpPaint, *glyph->fPath, stroke);
+void GrTextContext::drawPosText(GrRenderTarget* rt, const GrClip& clip, const GrPaint& paint,
+                                const SkPaint& skPaint, const SkMatrix& viewMatrix,
+                                const char text[], size_t byteLength,
+                                const SkScalar pos[], int scalarsPerPosition,
+                                const SkPoint& offset, const SkIRect& clipBounds) {
+    if (fContext->abandoned() || !fDrawContext) {
         return;
     }
 
-HAS_ATLAS:
-    GrAssert(glyph->fAtlas);
+    GrTextContext* textContext = this;
+    do {
+        if (textContext->canDraw(rt, clip, paint, skPaint, viewMatrix)) {
+            textContext->onDrawPosText(rt, clip, paint, skPaint, viewMatrix,
+                                       text, byteLength, pos,
+                                       scalarsPerPosition, offset, clipBounds);
+            return;
+        }
+        textContext = textContext->fFallbackTextContext;
+    } while (textContext);
 
-    // now promote them to fixed (TODO: Rethink using fixed pt).
-    width = SkIntToFixed(width);
-    height = SkIntToFixed(height);
+    // fall back to drawing as a path
+    this->drawPosTextAsPath(rt, clip, skPaint, viewMatrix, text, byteLength, pos,
+                            scalarsPerPosition, offset, clipBounds);
+}
 
-    GrTexture* texture = glyph->fAtlas->texture();
-    GrAssert(texture);
+bool GrTextContext::ShouldDisableLCD(const SkPaint& paint) {
+    if (paint.getShader() ||
+        !SkXfermode::IsMode(paint.getXfermode(), SkXfermode::kSrcOver_Mode) ||
+        paint.getMaskFilter() ||
+        paint.getRasterizer() ||
+        paint.getColorFilter() ||
+        paint.getPathEffect() ||
+        paint.isFakeBoldText() ||
+        paint.getStyle() != SkPaint::kFill_Style)
+    {
+        return true;
+    }
+    return false;
+}
 
-    if (fCurrTexture != texture || fCurrVertex + 4 > fMaxVertices) {
-        this->flushGlyphs();
-        fCurrTexture = texture;
-        fCurrTexture->ref();
+uint32_t GrTextContext::FilterTextFlags(const SkSurfaceProps& surfaceProps, const SkPaint& paint) {
+    uint32_t flags = paint.getFlags();
+
+    if (!paint.isLCDRenderText() || !paint.isAntiAlias()) {
+        return flags;
     }
 
-    if (NULL == fVertices) {
-       // If we need to reserve vertices allow the draw target to suggest
-        // a number of verts to reserve and whether to perform a flush.
-        fMaxVertices = kMinRequestedVerts;
-        fDrawTarget->drawState()->setVertexAttribs<gTextVertexAttribs>(
-            SK_ARRAY_COUNT(gTextVertexAttribs));
-        bool flush = fDrawTarget->geometryHints(&fMaxVertices, NULL);
-        if (flush) {
-            this->flushGlyphs();
-            fContext->flush();
-            fDrawTarget->drawState()->setVertexAttribs<gTextVertexAttribs>(
-                SK_ARRAY_COUNT(gTextVertexAttribs));
-        }
-        fMaxVertices = kDefaultRequestedVerts;
-        // ignore return, no point in flushing again.
-        fDrawTarget->geometryHints(&fMaxVertices, NULL);
-
-        int maxQuadVertices = 4 * fContext->getQuadIndexBuffer()->maxQuads();
-        if (fMaxVertices < kMinRequestedVerts) {
-            fMaxVertices = kDefaultRequestedVerts;
-        } else if (fMaxVertices > maxQuadVertices) {
-            // don't exceed the limit of the index buffer
-            fMaxVertices = maxQuadVertices;
-        }
-        bool success = fDrawTarget->reserveVertexAndIndexSpace(fMaxVertices,
-                                                               0,
-                                                               GrTCast<void**>(&fVertices),
-                                                               NULL);
-        GrAlwaysAssert(success);
-        GrAssert(2*sizeof(GrPoint) == fDrawTarget->getDrawState().getVertexSize());
+    if (kUnknown_SkPixelGeometry == surfaceProps.pixelGeometry() || ShouldDisableLCD(paint)) {
+        flags &= ~SkPaint::kLCDRenderText_Flag;
+        flags |= SkPaint::kGenA8FromLCD_Flag;
     }
 
-    GrFixed tx = SkIntToFixed(glyph->fAtlasLocation.fX);
-    GrFixed ty = SkIntToFixed(glyph->fAtlasLocation.fY);
+    return flags;
+}
 
-    fVertices[2*fCurrVertex].setRectFan(SkFixedToFloat(vx),
-                                        SkFixedToFloat(vy),
-                                        SkFixedToFloat(vx + width),
-                                        SkFixedToFloat(vy + height),
-                                        2 * sizeof(SkPoint));
-    fVertices[2*fCurrVertex+1].setRectFan(SkFixedToFloat(texture->normalizeFixedX(tx)),
-                                          SkFixedToFloat(texture->normalizeFixedY(ty)),
-                                          SkFixedToFloat(texture->normalizeFixedX(tx + width)),
-                                          SkFixedToFloat(texture->normalizeFixedY(ty + height)),
-                                          2 * sizeof(SkPoint));
-    fCurrVertex += 4;
+void GrTextContext::drawTextBlob(GrRenderTarget* rt,
+                                 const GrClip& clip, const SkPaint& skPaint,
+                                 const SkMatrix& viewMatrix, const SkTextBlob* blob,
+                                 SkScalar x, SkScalar y,
+                                 SkDrawFilter* drawFilter, const SkIRect& clipBounds) {
+    SkPaint runPaint = skPaint;
+
+    SkTextBlob::RunIterator it(blob);
+    for (;!it.done(); it.next()) {
+        size_t textLen = it.glyphCount() * sizeof(uint16_t);
+        const SkPoint& offset = it.offset();
+        // applyFontToPaint() always overwrites the exact same attributes,
+        // so it is safe to not re-seed the paint for this reason.
+        it.applyFontToPaint(&runPaint);
+
+        if (drawFilter && !drawFilter->filter(&runPaint, SkDrawFilter::kText_Type)) {
+            // A false return from filter() means we should abort the current draw.
+            runPaint = skPaint;
+            continue;
+        }
+
+        runPaint.setFlags(FilterTextFlags(fSurfaceProps, runPaint));
+
+        GrPaint grPaint;
+        if (!SkPaint2GrPaint(fContext, rt, runPaint, viewMatrix, true, &grPaint)) {
+            return;
+        }
+
+        switch (it.positioning()) {
+        case SkTextBlob::kDefault_Positioning:
+            this->drawText(rt, clip, grPaint, runPaint, viewMatrix, (const char *)it.glyphs(),
+                           textLen, x + offset.x(), y + offset.y(), clipBounds);
+            break;
+        case SkTextBlob::kHorizontal_Positioning:
+            this->drawPosText(rt, clip, grPaint, runPaint, viewMatrix, (const char*)it.glyphs(),
+                              textLen, it.pos(), 1, SkPoint::Make(x, y + offset.y()), clipBounds);
+            break;
+        case SkTextBlob::kFull_Positioning:
+            this->drawPosText(rt, clip, grPaint, runPaint, viewMatrix, (const char*)it.glyphs(),
+                              textLen, it.pos(), 2, SkPoint::Make(x, y), clipBounds);
+            break;
+        default:
+            SkFAIL("unhandled positioning mode");
+        }
+
+        if (drawFilter) {
+            // A draw filter may change the paint arbitrarily, so we must re-seed in this case.
+            runPaint = skPaint;
+        }
+    }
+}
+
+void GrTextContext::drawTextAsPath(GrRenderTarget* rt,
+                                   const GrClip& clip,
+                                   const SkPaint& skPaint, const SkMatrix& viewMatrix,
+                                   const char text[], size_t byteLength, SkScalar x, SkScalar y,
+                                   const SkIRect& clipBounds) {
+    SkTextToPathIter iter(text, byteLength, skPaint, true);
+
+    SkMatrix    matrix;
+    matrix.setScale(iter.getPathScale(), iter.getPathScale());
+    matrix.postTranslate(x, y);
+
+    const SkPath* iterPath;
+    SkScalar xpos, prevXPos = 0;
+
+    while (iter.next(&iterPath, &xpos)) {
+        matrix.postTranslate(xpos - prevXPos, 0);
+        if (iterPath) {
+            const SkPaint& pnt = iter.getPaint();
+            GrBlurUtils::drawPathWithMaskFilter(fContext, fDrawContext, rt, clip, *iterPath,
+                                                pnt, viewMatrix, &matrix, clipBounds, false);
+        }
+        prevXPos = xpos;
+    }
+}
+
+void GrTextContext::drawPosTextAsPath(GrRenderTarget* rt,
+                                      const GrClip& clip,
+                                      const SkPaint& origPaint, const SkMatrix& viewMatrix,
+                                      const char text[], size_t byteLength,
+                                      const SkScalar pos[], int scalarsPerPosition,
+                                      const SkPoint& offset, const SkIRect& clipBounds) {
+    // setup our std paint, in hopes of getting hits in the cache
+    SkPaint paint(origPaint);
+    SkScalar matrixScale = paint.setupForAsPaths();
+
+    SkMatrix matrix;
+    matrix.setScale(matrixScale, matrixScale);
+
+    // Temporarily jam in kFill, so we only ever ask for the raw outline from the cache.
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setPathEffect(NULL);
+
+    SkDrawCacheProc     glyphCacheProc = paint.getDrawCacheProc();
+    SkAutoGlyphCache    autoCache(paint, &fSurfaceProps, NULL);
+    SkGlyphCache*       cache = autoCache.getCache();
+
+    const char*        stop = text + byteLength;
+    SkTextAlignProc    alignProc(paint.getTextAlign());
+    SkTextMapStateProc tmsProc(SkMatrix::I(), offset, scalarsPerPosition);
+
+    // Now restore the original settings, so we "draw" with whatever style/stroking.
+    paint.setStyle(origPaint.getStyle());
+    paint.setPathEffect(origPaint.getPathEffect());
+
+    while (text < stop) {
+        const SkGlyph& glyph = glyphCacheProc(cache, &text, 0, 0);
+        if (glyph.fWidth) {
+            const SkPath* path = cache->findPath(glyph);
+            if (path) {
+                SkPoint tmsLoc;
+                tmsProc(pos, &tmsLoc);
+                SkPoint loc;
+                alignProc(tmsLoc, glyph, &loc);
+
+                matrix[SkMatrix::kMTransX] = loc.fX;
+                matrix[SkMatrix::kMTransY] = loc.fY;
+                GrBlurUtils::drawPathWithMaskFilter(fContext, fDrawContext, rt, clip, *path, paint,
+                                                    viewMatrix, &matrix, clipBounds, false);
+            }
+        }
+        pos += scalarsPerPosition;
+    }
+}
+
+//*** change to output positions?
+int GrTextContext::MeasureText(SkGlyphCache* cache, SkDrawCacheProc glyphCacheProc,
+                                const char text[], size_t byteLength, SkVector* stopVector) {
+    SkFixed     x = 0, y = 0;
+    const char* stop = text + byteLength;
+
+    SkAutoKern  autokern;
+
+    int numGlyphs = 0;
+    while (text < stop) {
+        // don't need x, y here, since all subpixel variants will have the
+        // same advance
+        const SkGlyph& glyph = glyphCacheProc(cache, &text, 0, 0);
+
+        x += autokern.adjust(glyph) + glyph.fAdvanceX;
+        y += glyph.fAdvanceY;
+        ++numGlyphs;
+    }
+    stopVector->set(SkFixedToScalar(x), SkFixedToScalar(y));
+
+    SkASSERT(text == stop);
+    
+    return numGlyphs;
+}
+
+static void GlyphCacheAuxProc(void* data) {
+    GrFontScaler* scaler = (GrFontScaler*)data;
+    SkSafeUnref(scaler);
+}
+
+GrFontScaler* GrTextContext::GetGrFontScaler(SkGlyphCache* cache) {
+    void* auxData;
+    GrFontScaler* scaler = NULL;
+
+    if (cache->getAuxProcData(GlyphCacheAuxProc, &auxData)) {
+        scaler = (GrFontScaler*)auxData;
+    }
+    if (NULL == scaler) {
+        scaler = SkNEW_ARGS(GrFontScaler, (cache));
+        cache->setAuxProc(GlyphCacheAuxProc, scaler);
+    }
+
+    return scaler;
 }

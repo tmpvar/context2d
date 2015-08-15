@@ -19,15 +19,14 @@
 enum PaintFlats {
     kColorFilter_PaintFlat,
     kDrawLooper_PaintFlat,
+    kImageFilter_PaintFlat,
     kMaskFilter_PaintFlat,
     kPathEffect_PaintFlat,
     kRasterizer_PaintFlat,
     kShader_PaintFlat,
-    kImageFilter_PaintFlat,
     kXfermode_PaintFlat,
-    kAnnotation_PaintFlat,
 
-    kLast_PaintFlat = kAnnotation_PaintFlat
+    kLast_PaintFlat = kXfermode_PaintFlat
 };
 #define kCount_PaintFlats   (kLast_PaintFlat + 1)
 
@@ -40,14 +39,17 @@ enum DrawOps {
     kClipRect_DrawOp,
     kClipRRect_DrawOp,
     kConcat_DrawOp,
+    kDrawAtlas_DrawOp,
     kDrawBitmap_DrawOp,
-    kDrawBitmapMatrix_DrawOp,
     kDrawBitmapNine_DrawOp,
-    kDrawBitmapRectToRect_DrawOp,
-    kDrawClear_DrawOp,
-    kDrawData_DrawOp,
+    kDrawBitmapRect_DrawOp,
+    kDrawDRRect_DrawOp,
+    kDrawImage_DrawOp,
+    kDrawImageRect_DrawOp,
+    kDrawImageNine_DrawOp,
     kDrawOval_DrawOp,
     kDrawPaint_DrawOp,
+    kDrawPatch_DrawOp,
     kDrawPath_DrawOp,
     kDrawPicture_DrawOp,
     kDrawPoints_DrawOp,
@@ -57,6 +59,7 @@ enum DrawOps {
     kDrawRRect_DrawOp,
     kDrawSprite_DrawOp,
     kDrawText_DrawOp,
+    kDrawTextBlob_DrawOp,
     kDrawTextOnPath_DrawOp,
     kDrawVertices_DrawOp,
     kRestore_DrawOp,
@@ -70,6 +73,7 @@ enum DrawOps {
 
     kPaintOp_DrawOp,
     kSetTypeface_DrawOp,
+    kSetAnnotation_DrawOp,
 
     kDef_Typeface_DrawOp,
     kDef_Flattenable_DrawOp,
@@ -79,6 +83,7 @@ enum DrawOps {
     // these are signals to playback, not drawing verbs
     kReportFlags_DrawOp,
     kShareBitmapHeap_DrawOp,
+    kShareImageHeap_DrawOp,
     kDone_DrawOp,
 };
 
@@ -133,21 +138,28 @@ enum {
     kSaveLayer_HasPaint_DrawOpFlag = 1 << 1,
 };
 enum {
-    kClear_HasColor_DrawOpFlag  = 1 << 0
-};
-enum {
     kDrawTextOnPath_HasMatrix_DrawOpFlag = 1 << 0
 };
 enum {
     kDrawVertices_HasTexs_DrawOpFlag     = 1 << 0,
     kDrawVertices_HasColors_DrawOpFlag   = 1 << 1,
     kDrawVertices_HasIndices_DrawOpFlag  = 1 << 2,
+    kDrawVertices_HasXfermode_DrawOpFlag = 1 << 3,
 };
+enum {
+    kDrawAtlas_HasPaint_DrawOpFlag      = 1 << 0,
+    kDrawAtlas_HasColors_DrawOpFlag     = 1 << 1,
+    kDrawAtlas_HasCull_DrawOpFlag       = 1 << 2,
+};
+// These are shared between drawbitmap and drawimage
 enum {
     kDrawBitmap_HasPaint_DrawOpFlag   = 1 << 0,
     // Specific to drawBitmapRect, but needs to be different from HasPaint,
     // which is used for all drawBitmap calls, so include it here.
     kDrawBitmap_HasSrcRect_DrawOpFlag = 1 << 1,
+    // SkCanvas::DrawBitmapRectFlags::kBleed_DrawBitmapRectFlag is
+    // converted into and out of this flag to save space
+    kDrawBitmap_Bleed_DrawOpFlag      = 1 << 2,
 };
 enum {
     kClip_HasAntiAlias_DrawOpFlag = 1 << 0,
@@ -212,6 +224,25 @@ static inline bool shouldFlattenBitmaps(uint32_t flags) {
             && !(flags & SkGPipeWriter::kSharedAddressSpace_Flag));
 }
 
+class SkImageHeap : public SkRefCnt {
+public:
+    SkImageHeap();
+    virtual ~SkImageHeap();
+
+    size_t bytesInCache() const { return fBytesInCache; }
+    void reset();
+    // slot must be "valid" -- 0 is never valid
+    const SkImage* get(int32_t slot) const;
+    // returns 0 if not found, else returns slot
+    int32_t find(const SkImage*) const;
+    // returns non-zero value for where the image was stored
+    int32_t insert(const SkImage*);
+
+private:
+    SkTDArray<const SkImage*> fArray;
+    size_t fBytesInCache;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 enum PaintOps {
@@ -219,11 +250,12 @@ enum PaintOps {
 
     kFlags_PaintOp,     // arg inline
     kColor_PaintOp,     // arg 32
+    kFilterLevel_PaintOp,   // arg inline
     kStyle_PaintOp,     // arg inline
     kJoin_PaintOp,      // arg inline
     kCap_PaintOp,       // arg inline
     kWidth_PaintOp,     // arg scalar
-    kMiter_PaintOp,// arg scalar
+    kMiter_PaintOp,     // arg scalar
 
     kEncoding_PaintOp,  // arg inline - text
     kHinting_PaintOp,   // arg inline - text

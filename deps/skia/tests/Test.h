@@ -8,104 +8,110 @@
 #ifndef skiatest_Test_DEFINED
 #define skiatest_Test_DEFINED
 
-#include "SkRefCnt.h"
 #include "SkString.h"
 #include "SkTRegistry.h"
-#include "SkThread.h"
 #include "SkTypes.h"
 
 class GrContextFactory;
 
 namespace skiatest {
 
-    class Test;
+SkString GetTmpDir();
 
-    class Reporter : public SkRefCnt {
-    public:
-        SK_DECLARE_INST_COUNT(Reporter)
-        Reporter();
+struct Failure {
+    Failure(const char* f, int l, const char* c, const SkString& m)
+        : fileName(f), lineNo(l), condition(c), message(m) {}
+    const char* fileName;
+    int lineNo;
+    const char* condition;
+    SkString message;
+    SkString toString() const;
+};
 
-        int countTests() const { return fTestCount; }
+class Reporter : SkNoncopyable {
+public:
+    virtual ~Reporter() {}
+    virtual void bumpTestCount();
+    virtual void reportFailed(const skiatest::Failure&) = 0;
+    virtual bool allowExtendedTest() const;
+    virtual bool verbose() const;
+};
 
-        void startTest(Test*);
-        void reportFailed(const SkString& desc);
-        void endTest(Test*);
+#define REPORT_FAILURE(reporter, cond, message) \
+    reporter->reportFailed(skiatest::Failure(__FILE__, __LINE__, cond, message))
 
-        virtual bool allowExtendedTest() const { return false; }
-        virtual bool allowThreaded() const { return false; }
-        virtual bool verbose() const { return false; }
-        virtual void bumpTestCount() { sk_atomic_inc(&fTestCount); }
+typedef void (*TestProc)(skiatest::Reporter*, GrContextFactory*);
 
-    protected:
-        virtual void onStart(Test*) {}
-        virtual void onReportFailed(const SkString& desc) {}
-        virtual void onEnd(Test*) {}
+struct Test {
+    Test(const char* n, bool g, TestProc p) : name(n), needsGpu(g), proc(p) {}
+    const char* name;
+    bool needsGpu;
+    TestProc proc;
+};
 
-    private:
-        int32_t fTestCount;
+typedef SkTRegistry<Test> TestRegistry;
 
-        typedef SkRefCnt INHERITED;
-    };
+/*
+    Use the following macros to make use of the skiatest classes, e.g.
 
-    class Test {
-    public:
-        Test();
-        virtual ~Test();
+    #include "Test.h"
 
-        Reporter* getReporter() const { return fReporter; }
-        void setReporter(Reporter*);
+    DEF_TEST(TestName, reporter) {
+        ...
+        REPORTER_ASSERT(reporter, x == 15);
+        ...
+        REPORTER_ASSERT_MESSAGE(reporter, x == 15, "x should be 15");
+        ...
+        if (x != 15) {
+            ERRORF(reporter, "x should be 15, but is %d", x);
+            return;
+        }
+        ...
+    }
+*/
+}  // namespace skiatest
 
-        const char* getName();
-        void run();
-        bool passed() const { return fPassed; }
-        SkMSec elapsedMs() const { return fElapsed; }
+#define REPORTER_ASSERT(r, cond)                  \
+    do {                                          \
+        if (!(cond)) {                            \
+            REPORT_FAILURE(r, #cond, SkString()); \
+        }                                         \
+    } while (0)
 
-        static SkString GetTmpDir();
+#define REPORTER_ASSERT_MESSAGE(r, cond, message)        \
+    do {                                                 \
+        if (!(cond)) {                                   \
+            REPORT_FAILURE(r, #cond, SkString(message)); \
+        }                                                \
+    } while (0)
 
-        static SkString GetResourcePath();
+#define ERRORF(r, ...)                                      \
+    do {                                                    \
+        REPORT_FAILURE(r, "", SkStringPrintf(__VA_ARGS__)); \
+    } while (0)
 
-        virtual bool isThreadsafe() const { return true; }
+#define DEF_TEST(name, reporter)                                     \
+    static void test_##name(skiatest::Reporter*, GrContextFactory*); \
+    skiatest::TestRegistry name##TestRegistry(                       \
+            skiatest::Test(#name, false, test_##name));              \
+    void test_##name(skiatest::Reporter* reporter, GrContextFactory*)
 
-    protected:
-        virtual void onGetName(SkString*) = 0;
-        virtual void onRun(Reporter*) = 0;
+#define DEF_GPUTEST(name, reporter, factory)                         \
+    static void test_##name(skiatest::Reporter*, GrContextFactory*); \
+    skiatest::TestRegistry name##TestRegistry(                       \
+            skiatest::Test(#name, true, test_##name));               \
+    void test_##name(skiatest::Reporter* reporter, GrContextFactory* factory)
 
-    private:
-        Reporter*   fReporter;
-        SkString    fName;
-        bool        fPassed;
-        SkMSec      fElapsed;
-    };
-
-    class GpuTest : public Test{
-    public:
-        GpuTest() : Test() {}
-        static GrContextFactory* GetGrContextFactory();
-        static void DestroyContexts();
-        virtual bool isThreadsafe() const { return false; }
-    private:
-    };
-
-    typedef SkTRegistry<Test*, void*> TestRegistry;
-}
-
-#define REPORTER_ASSERT(r, cond)                                        \
-    do {                                                                \
-        if (!(cond)) {                                                  \
-            SkString desc;                                              \
-            desc.printf("%s:%d: %s", __FILE__, __LINE__, #cond);        \
-            r->reportFailed(desc);                                      \
-        }                                                               \
-    } while(0)
-
-#define REPORTER_ASSERT_MESSAGE(r, cond, message)                            \
-    do {                                                                     \
-        if (!(cond)) {                                                       \
-            SkString desc;                                                   \
-            desc.printf("%s %s:%d: %s", message, __FILE__, __LINE__, #cond); \
-            r->reportFailed(desc);                                           \
-        }                                                                    \
-    } while(0)
-
+#define REQUIRE_PDF_DOCUMENT(TEST_NAME, REPORTER)                             \
+    do {                                                                      \
+        SkDynamicMemoryWStream testStream;                                    \
+        SkAutoTUnref<SkDocument> testDoc(SkDocument::CreatePDF(&testStream)); \
+        if (!testDoc) {                                                       \
+            if ((REPORTER) && (REPORTER)->verbose()) {                        \
+                SkDebugf("PDF disabled; %s test skipped.", #TEST_NAME);       \
+            }                                                                 \
+            return;                                                           \
+        }                                                                     \
+    } while (false)
 
 #endif

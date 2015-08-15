@@ -7,6 +7,7 @@
 #ifndef PathOpsThreadedCommon_DEFINED
 #define PathOpsThreadedCommon_DEFINED
 
+#include "SkGraphics.h"
 #include "SkRunnable.h"
 #include "SkTDArray.h"
 
@@ -25,24 +26,20 @@ struct PathOpsThreadState {
     unsigned char fD;
     char* fPathStr;
     const char* fKey;
-    char fSerialNo[64];
+    char fSerialNo[256];
     skiatest::Reporter* fReporter;
     SkBitmap* fBitmap;
 };
 
 class PathOpsThreadedTestRunner {
 public:
-    PathOpsThreadedTestRunner(skiatest::Reporter* reporter, int threadCount)
-        : fNumThreads(threadCount)
-        , fReporter(reporter) {
-    }
+    PathOpsThreadedTestRunner(skiatest::Reporter* reporter) : fReporter(reporter) {}
 
     ~PathOpsThreadedTestRunner();
 
     void render();
 
 public:
-    int fNumThreads;
     SkTDArray<PathOpsThreadedRunnable*> fRunnables;
     skiatest::Reporter* fReporter;
 };
@@ -67,11 +64,21 @@ public:
         fTestFun = testFun;
     }
 
-    virtual void run() SK_OVERRIDE {
+    PathOpsThreadedRunnable(void (*testFun)(PathOpsThreadState*), int dirNo, const char* str,
+            PathOpsThreadedTestRunner* runner) {
+        SkASSERT(strlen(str) < sizeof(fState.fSerialNo) - 1);
+        fState.fA = dirNo;
+        strcpy(fState.fSerialNo, str);
+        fState.fReporter = runner->fReporter;
+        fTestFun = testFun;
+    }
+
+    void run() override {
         SkBitmap bitmap;
         fState.fBitmap = &bitmap;
         char pathStr[PATH_STR_SIZE];
         fState.fPathStr = pathStr;
+        SkGraphics::SetTLSFontCacheLimit(1 * 1024 * 1024);
         (*fTestFun)(&fState);
     }
 

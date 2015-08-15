@@ -6,11 +6,12 @@
  */
 
 #include "gm.h"
-#include "SkTArray.h"
-#include "SkMatrix.h"
+#include "SkBlurDrawLooper.h"
+#include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
 #include "SkGradientShader.h"
-#include "SkBlurDrawLooper.h"
+#include "SkMatrix.h"
+#include "SkTArray.h"
 
 namespace skiagm {
 
@@ -24,12 +25,13 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() SK_OVERRIDE {
+
+    SkString onShortName() override {
         return SkString("rects");
     }
 
-    virtual SkISize onISize() SK_OVERRIDE {
-        return make_isize(1200, 900);
+    SkISize onISize() override {
+        return SkISize::Make(1200, 900);
     }
 
     void makePaints() {
@@ -49,12 +51,22 @@ protected:
         }
 
         {
+            // AA with translucent
+            SkPaint p;
+            p.setColor(SK_ColorWHITE);
+            p.setAntiAlias(true);
+            p.setAlpha(0x66);
+            fPaints.push_back(p);
+        }
+
+        {
             // AA with mask filter
             SkPaint p;
             p.setColor(SK_ColorWHITE);
             p.setAntiAlias(true);
-            SkMaskFilter* mf = SkBlurMaskFilter::Create(SkIntToScalar(5),
-                                   SkBlurMaskFilter::kNormal_BlurStyle,
+            SkMaskFilter* mf = SkBlurMaskFilter::Create(
+                                   kNormal_SkBlurStyle,
+                                   SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(5)),
                                    SkBlurMaskFilter::kHighQuality_BlurFlag);
             p.setMaskFilter(mf)->unref();
             fPaints.push_back(p);
@@ -84,11 +96,12 @@ protected:
             p.setColor(SK_ColorWHITE);
             p.setAntiAlias(true);
             SkBlurDrawLooper* shadowLooper =
-                new SkBlurDrawLooper (SkIntToScalar(10), SkIntToScalar(5),
-                                      SkIntToScalar(10), SK_ColorWHITE,
-                                      SkBlurDrawLooper::kIgnoreTransform_BlurFlag |
-                                      SkBlurDrawLooper::kOverrideColor_BlurFlag |
-                                      SkBlurDrawLooper::kHighQuality_BlurFlag );
+                SkBlurDrawLooper::Create(SK_ColorWHITE,
+                                         SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(10)),
+                                         SkIntToScalar(5), SkIntToScalar(10),
+                                         SkBlurDrawLooper::kIgnoreTransform_BlurFlag |
+                                         SkBlurDrawLooper::kOverrideColor_BlurFlag |
+                                         SkBlurDrawLooper::kHighQuality_BlurFlag);
             SkAutoUnref aurL0(shadowLooper);
             p.setLooper(shadowLooper);
             fPaints.push_back(p);
@@ -105,11 +118,43 @@ protected:
         }
 
         {
+            // AA with bevel-stroke style
+            SkPaint p;
+            p.setColor(SK_ColorWHITE);
+            p.setAntiAlias(true);
+            p.setStyle(SkPaint::kStroke_Style);
+            p.setStrokeJoin(SkPaint::kBevel_Join);
+            p.setStrokeWidth(SkIntToScalar(3));
+            fPaints.push_back(p);
+        }
+
+        {
+            // AA with round-stroke style
+            SkPaint p;
+            p.setColor(SK_ColorWHITE);
+            p.setAntiAlias(true);
+            p.setStyle(SkPaint::kStroke_Style);
+            p.setStrokeJoin(SkPaint::kRound_Join);
+            p.setStrokeWidth(SkIntToScalar(3));
+            fPaints.push_back(p);
+        }
+
+        {
             // AA with stroke style, width = 0
             SkPaint p;
             p.setColor(SK_ColorWHITE);
             p.setAntiAlias(true);
             p.setStyle(SkPaint::kStroke_Style);
+            fPaints.push_back(p);
+        }
+
+        {
+            // AA with stroke style, width wider than rect width and/or height
+            SkPaint p;
+            p.setColor(SK_ColorWHITE);
+            p.setAntiAlias(true);
+            p.setStyle(SkPaint::kStroke_Style);
+            p.setStrokeWidth(SkIntToScalar(40));
             fPaints.push_back(p);
         }
 
@@ -206,14 +251,10 @@ protected:
                           SK_Scalar1 * 100 * (testCount / 10) + 3 * SK_Scalar1 / 4);
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
-        SkAutoCommentBlock acb(canvas, "onDraw");
-
+    void onDraw(SkCanvas* canvas) override {
         canvas->translate(20 * SK_Scalar1, 20 * SK_Scalar1);
 
         int testCount = 0;
-
-        canvas->addComment("Test", "Various Paints");
 
         for (int i = 0; i < fPaints.count(); ++i) {
             for (int j = 0; j < fRects.count(); ++j, ++testCount) {
@@ -223,8 +264,6 @@ protected:
                 canvas->restore();
             }
         }
-
-        canvas->addComment("Test", "Matrices");
 
         SkPaint paint;
         paint.setColor(SK_ColorWHITE);

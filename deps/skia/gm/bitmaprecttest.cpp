@@ -7,10 +7,10 @@
 
 #include "gm.h"
 #include "SkCanvas.h"
+#include "SkPath.h"
 
 static void make_bm(SkBitmap* bm) {
-    bm->setConfig(SkBitmap::kARGB_8888_Config, 60, 60);
-    bm->allocPixels();
+    bm->allocN32Pixels(60, 60);
     bm->eraseColor(0);
 
     SkCanvas canvas(*bm);
@@ -43,7 +43,7 @@ static void test_bitmaprect(SkCanvas* canvas) {
     SkScalar scale = 0.472560018f;
     canvas->save();
     canvas->scale(scale, scale);
-    canvas->drawBitmapRectToRect(bm, NULL, SkRect::MakeXYWH(100, 100, 128, 128), NULL);
+    canvas->drawBitmapRect(bm, SkRect::MakeXYWH(100, 100, 128, 128), nullptr);
     canvas->restore();
 
     canvas->scale(-1, 1);
@@ -57,15 +57,15 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() {
+    SkString onShortName() override {
         return SkString("bitmaprecttest");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(320, 240);
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(SkCanvas* canvas) override {
         test_bitmaprect(canvas);
     }
 

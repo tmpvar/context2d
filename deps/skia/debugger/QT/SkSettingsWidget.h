@@ -14,17 +14,21 @@
 #include <QHBoxLayout>
 #include <QTextEdit>
 #include <QFrame>
+#include <QGroupBox>
 #include <QLabel>
-#include <QRadioButton>
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QComboBox>
+#include <QFormLayout>
+
+#include "SkPaint.h"
 
 /** \class SkSettingsWidget
 
     The SettingsWidget contains multiple checkboxes and toggles for altering
-    the visibility.
+    the visualizations.
  */
-class SkSettingsWidget : public QWidget {
+class SkSettingsWidget : public QFrame {
     Q_OBJECT
 
 public:
@@ -34,79 +38,79 @@ public:
      */
     SkSettingsWidget();
 
-    /** Sets the displayed user zoom level. A scale of 1.0 represents no zoom. */
-    void setZoomText(float scale);
-
-    QRadioButton* getVisibilityButton();
 
 #if SK_SUPPORT_GPU
-    QCheckBox* getGLCheckBox() {
-        return &fGLCheckBox;
+    // GL settings.
+    bool isGLActive() const {
+        return fGLGroup.isChecked();
     }
+
+    int getGLSampleCount() const {
+        return fGLMSAACombo.itemData(fGLMSAACombo.currentIndex()).toInt();
+    }
+
 #endif
 
-    QCheckBox* getRasterCheckBox() {
-        return &fRasterCheckBox;
+    bool getFilterOverride(SkFilterQuality* filterQuality) const {
+        int index = fFilterCombo.currentIndex();
+        *filterQuality = (SkFilterQuality)fFilterCombo.itemData(index).toUInt();
+
+        return index > 0;
     }
 
-    QCheckBox* getOverdrawVizCheckBox() {
-        return &fOverdrawVizCheckBox;
+
+    // Raster settings.
+    bool isRasterEnabled() {
+        return fRasterGroup.isChecked();
+    }
+
+    bool isOverdrawVizEnabled() {
+        return fOverdrawVizCheckBox.isChecked();
+    }
+
+    // Visualizations.
+    bool isVisibilityFilterEnabled() const {
+        return fVisibilityFilterCheckBox.isChecked();
+    }
+
+    bool isMegaVizEnabled() {
+        return fMegaVizCheckBox.isChecked();
+    }
+
+    bool isPathOpsEnabled() {
+        return fPathOpsCheckBox.isChecked();
     }
 
 private slots:
-    void updateCommand(int newCommand);
-    void updateHit(int newHit);
 
 signals:
-    void scrollingPreferences(bool isStickyActivate);
-    void showStyle(bool isSingleCommand);
-    void visibilityFilter(bool isEnabled);
+    void visualizationsChanged();
+    void texFilterSettingsChanged();
+#if SK_SUPPORT_GPU
+    void glSettingsChanged();
+#endif
+    void rasterSettingsChanged();
 
 private:
-    QVBoxLayout mainFrameLayout;
-    QFrame mainFrame;
-    QVBoxLayout fVerticalLayout;
+    QFormLayout fVerticalLayout;
 
-    QLabel fVisibileText;
-    QFrame fVisibleFrame;
-    QVBoxLayout fVisibleFrameLayout;
-    QRadioButton fVisibleOn;
-    QRadioButton fVisibleOff;
+    QGroupBox fVisualizationsGroup;
+    QVBoxLayout fVisualizationsLayout;
+    QCheckBox fVisibilityFilterCheckBox;
 
-    QLabel fCommandToggle;
-    QFrame fCommandFrame;
-    QVBoxLayout fCommandLayout;
-
-    QHBoxLayout fCurrentCommandLayout;
-    QLabel fCurrentCommandLabel;
-    QLineEdit fCurrentCommandBox;
-
-    QHBoxLayout fCommandHitLayout;
-    QLabel fCommandHitLabel;
-    QLineEdit fCommandHitBox;
-
-    QFrame fCanvasFrame;
-    QVBoxLayout fCanvasLayout;
-    QLabel fCanvasToggle;
-
-    QHBoxLayout fRasterLayout;
-    QLabel fRasterLabel;
-    QCheckBox fRasterCheckBox;
-
-    QHBoxLayout fOverdrawVizLayout;
-    QLabel fOverdrawVizLabel;
+    QGroupBox fRasterGroup;
+    QVBoxLayout fRasterLayout;
     QCheckBox fOverdrawVizCheckBox;
+    QCheckBox fMegaVizCheckBox;
+    QCheckBox fPathOpsCheckBox;
 
 #if SK_SUPPORT_GPU
-    QHBoxLayout fGLLayout;
-    QLabel fGLLabel;
-    QCheckBox fGLCheckBox;
+    QGroupBox fGLGroup;
+    QFormLayout fGLLayout;
+    QComboBox fGLMSAACombo;
 #endif
 
-    QFrame fZoomFrame;
-    QHBoxLayout fZoomLayout;
-    QLabel fZoomSetting;
-    QLineEdit fZoomBox;
+    QComboBox fFilterCombo;
 };
 
 #endif /* SKSETTINGSWIDGET_H_ */

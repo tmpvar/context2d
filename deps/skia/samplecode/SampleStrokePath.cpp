@@ -6,13 +6,14 @@
  * found in the LICENSE file.
  */
 #include "SampleCode.h"
+#include "SkBlurMask.h"
+#include "SkBlurMaskFilter.h"
 #include "SkCanvas.h"
 #include "SkParsePath.h"
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkView.h"
 
-#include "SkBlurMaskFilter.h"
 
 static void test_huge_stroke(SkCanvas* canvas) {
     SkRect srcR = { 0, 0, 72000, 54000 };
@@ -41,7 +42,6 @@ static void test_huge_stroke(SkCanvas* canvas) {
 }
 
 #if 0
-#include "SkBlurMask.h"
 static void test_blur() {
     uint8_t cell[9];
     memset(cell, 0xFF, sizeof(cell));
@@ -98,8 +98,8 @@ static const struct {
 class StrokePathView : public SampleView {
     SkScalar    fWidth;
     SkPath      fPath;
-public:
-    StrokePathView() {
+protected:
+    void onOnceBeforeDraw() override {
 //        test_blur();
         fWidth = SkIntToScalar(120);
 
@@ -122,9 +122,8 @@ public:
         this->setBGColor(0xFFDDDDDD);
     }
 
-protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "StrokePath");
             return true;
@@ -146,7 +145,7 @@ protected:
         }
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         test_huge_stroke(canvas); return;
         canvas->translate(SkIntToScalar(10), SkIntToScalar(10));
 
@@ -160,22 +159,22 @@ protected:
             paint.setColor(SK_ColorWHITE);
             canvas->translate(10, 30);
 
-            static const SkBlurMaskFilter::BlurStyle gStyle[] = {
-                SkBlurMaskFilter::kNormal_BlurStyle,
-                SkBlurMaskFilter::kInner_BlurStyle,
-                SkBlurMaskFilter::kOuter_BlurStyle,
-                SkBlurMaskFilter::kSolid_BlurStyle,
+            static const SkBlurStyle gStyle[] = {
+                kNormal_SkBlurStyle,
+                kInner_SkBlurStyle,
+                kOuter_SkBlurStyle,
+                kSolid_SkBlurStyle,
             };
             for (int x = 0; x < 5; x++) {
                 SkMaskFilter* mf;
-                SkScalar radius = 4;
+                SkScalar sigma = SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(4));
                 for (int y = 0; y < 10; y++) {
                     if (x) {
-                        mf = SkBlurMaskFilter::Create(radius, gStyle[x - 1]);
+                        mf = SkBlurMaskFilter::Create(gStyle[x - 1], sigma);
                         paint.setMaskFilter(mf)->unref();
                     }
                     canvas->drawText("Title Bar", 9, x*SkIntToScalar(100), y*SkIntToScalar(30), paint);
-                    radius *= 0.75f;
+                    sigma *= 0.75f;
                 }
 
             }
@@ -210,7 +209,7 @@ protected:
     }
 
     virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y,
-                                              unsigned modi) SK_OVERRIDE {
+                                              unsigned modi) override {
         this->inval(NULL);
         return this->INHERITED::onFindClickHandler(x, y, modi);
     }

@@ -1,27 +1,26 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
-#include "SkView.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPaint.h"
+#include "SkPath.h"
+#include "SkView.h"
 
 // ensure that we don't accidentally screw up the bounds when the oval is
 // fractional, and the impl computes the center and radii, and uses them to
 // reconstruct the edges of the circle.
 // see bug# 1504910
 static void test_circlebounds(SkCanvas*) {
-#ifdef SK_SCALAR_IS_FLOAT
     SkRect r = { 1.39999998f, 1, 21.3999996f, 21 };
     SkPath p;
     p.addOval(r);
     SkASSERT(r == p.getBounds());
-#endif
 }
 
 class CircleView : public SampleView {
@@ -71,12 +70,6 @@ protected:
             canvas->restore();
             canvas->translate(dx, 0);
         }
-    }
-
-    static void blowup(SkCanvas* canvas, const SkIRect& src, const SkRect& dst) {
-        SkDevice* device = canvas->getDevice();
-        const SkBitmap& bm = device->accessBitmap(false);
-        canvas->drawBitmapRect(bm, &src, dst, NULL);
     }
 
     static void make_poly(SkPath* path, int n) {

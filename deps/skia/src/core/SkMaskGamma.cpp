@@ -12,45 +12,45 @@
 #include "SkMaskGamma.h"
 
 class SkLinearColorSpaceLuminance : public SkColorSpaceLuminance {
-    virtual SkScalar toLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luminance) const SK_OVERRIDE {
+    SkScalar toLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luminance) const override {
         SkASSERT(SK_Scalar1 == gamma);
         return luminance;
     }
-    virtual SkScalar fromLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luma) const SK_OVERRIDE {
+    SkScalar fromLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luma) const override {
         SkASSERT(SK_Scalar1 == gamma);
         return luma;
     }
 };
 
 class SkGammaColorSpaceLuminance : public SkColorSpaceLuminance {
-    virtual SkScalar toLuma(SkScalar gamma, SkScalar luminance) const SK_OVERRIDE {
+    SkScalar toLuma(SkScalar gamma, SkScalar luminance) const override {
         return SkScalarPow(luminance, gamma);
     }
-    virtual SkScalar fromLuma(SkScalar gamma, SkScalar luma) const SK_OVERRIDE {
+    SkScalar fromLuma(SkScalar gamma, SkScalar luma) const override {
         return SkScalarPow(luma, SkScalarInvert(gamma));
     }
 };
 
 class SkSRGBColorSpaceLuminance : public SkColorSpaceLuminance {
-    virtual SkScalar toLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luminance) const SK_OVERRIDE {
+    SkScalar toLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luminance) const override {
         SkASSERT(0 == gamma);
         //The magic numbers are derived from the sRGB specification.
         //See http://www.color.org/chardata/rgb/srgb.xalter .
-        if (luminance <= SkFloatToScalar(0.04045f)) {
-            return luminance / SkFloatToScalar(12.92f);
+        if (luminance <= 0.04045f) {
+            return luminance / 12.92f;
         }
-        return SkScalarPow((luminance + SkFloatToScalar(0.055f)) / SkFloatToScalar(1.055f),
-                        SkFloatToScalar(2.4f));
+        return SkScalarPow((luminance + 0.055f) / 1.055f,
+                        2.4f);
     }
-    virtual SkScalar fromLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luma) const SK_OVERRIDE {
+    SkScalar fromLuma(SkScalar SkDEBUGCODE(gamma), SkScalar luma) const override {
         SkASSERT(0 == gamma);
         //The magic numbers are derived from the sRGB specification.
         //See http://www.color.org/chardata/rgb/srgb.xalter .
-        if (luma <= SkFloatToScalar(0.0031308f)) {
-            return luma * SkFloatToScalar(12.92f);
+        if (luma <= 0.0031308f) {
+            return luma * 12.92f;
         }
-        return SkFloatToScalar(1.055f) * SkScalarPow(luma, SkScalarInvert(SkFloatToScalar(2.4f)))
-               - SkFloatToScalar(0.055f);
+        return 1.055f * SkScalarPow(luma, SkScalarInvert(2.4f))
+               - 0.055f;
     }
 };
 

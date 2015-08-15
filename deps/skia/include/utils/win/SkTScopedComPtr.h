@@ -6,8 +6,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef SkSkTScopedPtr_DEFINED
-#define SkSkTScopedPtr_DEFINED
+#ifndef SkTScopedComPtr_DEFINED
+#define SkTScopedComPtr_DEFINED
 
 #include "SkTypes.h"
 #include "SkTemplates.h"
@@ -54,7 +54,7 @@ public:
     T **operator&() { SkASSERT(fPtr == NULL); return &fPtr; }
     T *get() const { return fPtr; }
     void reset() {
-        if (NULL != this->fPtr) {
+        if (this->fPtr) {
             this->fPtr->Release();
             this->fPtr = NULL;
         }

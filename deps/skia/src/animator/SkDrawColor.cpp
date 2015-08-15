@@ -30,14 +30,14 @@ static SkScalar RGB_to_HSV(SkColor color, HSV_Choice choice) {
     if (choice == kGetValue)
         return value/255;
     SkScalar delta = value - min;
-    SkScalar saturation = value == 0 ? 0 : SkScalarDiv(delta, value);
+    SkScalar saturation = value == 0 ? 0 : delta / value;
     if (choice == kGetSaturation)
         return saturation;
     SkScalar hue;
     if (saturation == 0)
         hue = 0;
     else {
-        SkScalar part60 = SkScalarDiv(60 * SK_Scalar1, delta);
+        SkScalar part60 = 60 / delta;
         if (red == value) {
             hue = SkScalarMul(green - blue, part60);
             if (hue < 0)
@@ -69,7 +69,7 @@ static SkColor HSV_to_RGB(SkColor color, HSV_Choice choice, SkScalar hsv) {
         red = green = blue = value;
     else {
         //SkScalar fraction = SkScalarMod(hue, 60 * SK_Scalar1);
-        int sextant = SkScalarFloor(hue / 60);
+        int sextant = SkScalarFloorToInt(hue / 60);
         SkScalar fraction = hue / 60 - SkIntToScalar(sextant);
         SkScalar p = SkScalarMul(value , SK_Scalar1 - saturation);
         SkScalar q = SkScalarMul(value, SK_Scalar1 - SkScalarMul(saturation, fraction));
@@ -85,8 +85,8 @@ static SkColor HSV_to_RGB(SkColor color, HSV_Choice choice, SkScalar hsv) {
         }
     }
     //used to say SkToU8((U8CPU) red) etc
-    return SkColorSetARGB(SkColorGetA(color), SkScalarRound(red),
-        SkScalarRound(green), SkScalarRound(blue));
+    return SkColorSetARGB(SkColorGetA(color), SkScalarRoundToInt(red),
+                          SkScalarRoundToInt(green), SkScalarRoundToInt(blue));
 }
 
 #if defined _WIN32 && _MSC_VER >= 1300
@@ -226,11 +226,7 @@ bool SkDrawColor::setProperty(int index, SkScriptValue& value) {
     switch (index) {
         case SK_PROPERTY(alpha):
             uint8_t alpha;
-        #ifdef SK_SCALAR_IS_FLOAT
             alpha = scalar == SK_Scalar1 ? 255 : SkToU8((U8CPU) (scalar * 256));
-        #else
-            alpha = SkToU8((scalar - (scalar >= SK_ScalarHalf)) >> 8);
-        #endif
             color = SkColorSetARGB(alpha, SkColorGetR(color),
                 SkColorGetG(color), SkColorGetB(color));
             break;

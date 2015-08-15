@@ -6,201 +6,224 @@
  * found in the LICENSE file.
  */
 
-
-
 #include "GrAtlas.h"
 #include "GrContext.h"
 #include "GrGpu.h"
 #include "GrRectanizer.h"
-#include "GrPlotMgr.h"
-
-#if 0
-#define GR_PLOT_WIDTH   8
-#define GR_PLOT_HEIGHT  4
-#define GR_ATLAS_WIDTH  256
-#define GR_ATLAS_HEIGHT 256
-
-#define GR_ATLAS_TEXTURE_WIDTH  (GR_PLOT_WIDTH * GR_ATLAS_WIDTH)
-#define GR_ATLAS_TEXTURE_HEIGHT (GR_PLOT_HEIGHT * GR_ATLAS_HEIGHT)
-
-#else
-
-#define GR_ATLAS_TEXTURE_WIDTH  1024
-#define GR_ATLAS_TEXTURE_HEIGHT 2048
-
-#define GR_ATLAS_WIDTH  341
-#define GR_ATLAS_HEIGHT 341
-
-#define GR_PLOT_WIDTH   (GR_ATLAS_TEXTURE_WIDTH / GR_ATLAS_WIDTH)
-#define GR_PLOT_HEIGHT  (GR_ATLAS_TEXTURE_HEIGHT / GR_ATLAS_HEIGHT)
-
-#endif
+#include "GrTracing.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define BORDER      1
-
-#if GR_DEBUG
-    static int gCounter;
+// for testing
+#define FONT_CACHE_STATS 0
+#if FONT_CACHE_STATS
+static int g_UploadCount = 0;
 #endif
 
-GrAtlas::GrAtlas(GrAtlasMgr* mgr, int plotX, int plotY, GrMaskFormat format) {
-    fAtlasMgr = mgr;    // just a pointer, not an owner
-    fNext = NULL;
-    fTexture = mgr->getTexture(format); // we're not an owner, just a pointer
-    fPlot.set(plotX, plotY);
-
-    fRects = GrRectanizer::Factory(GR_ATLAS_WIDTH - BORDER,
-                                   GR_ATLAS_HEIGHT - BORDER);
-
-    fMaskFormat = format;
-
-#if GR_DEBUG
-//    GrPrintf(" GrAtlas %p [%d %d] %d\n", this, plotX, plotY, gCounter);
-    gCounter += 1;
-#endif
+GrPlot::GrPlot() 
+    : fID(-1)
+    , fTexture(NULL)
+    , fRects(NULL)
+    , fAtlas(NULL)
+    , fBytesPerPixel(1)
+    , fDirty(false)
+    , fBatchUploads(false)
+{
+    fOffset.set(0, 0);
 }
 
-GrAtlas::~GrAtlas() {
-    fAtlasMgr->freePlot(fPlot.fX, fPlot.fY);
-
+GrPlot::~GrPlot() {
+    SkDELETE_ARRAY(fPlotData);
+    fPlotData = NULL;
     delete fRects;
-
-#if GR_DEBUG
-    --gCounter;
-//    GrPrintf("~GrAtlas %p [%d %d] %d\n", this, fPlot.fX, fPlot.fY, gCounter);
-#endif
 }
 
-static void adjustForPlot(GrIPoint16* loc, const GrIPoint16& plot) {
-    loc->fX += plot.fX * GR_ATLAS_WIDTH;
-    loc->fY += plot.fY * GR_ATLAS_HEIGHT;
+void GrPlot::init(GrAtlas* atlas, int id, int offX, int offY, int width, int height, size_t bpp,
+                  bool batchUploads) {
+    fID = id;
+    fRects = GrRectanizer::Factory(width, height);
+    fAtlas = atlas;
+    fOffset.set(offX * width, offY * height);
+    fBytesPerPixel = bpp;
+    fPlotData = NULL;
+    fDirtyRect.setEmpty();
+    fDirty = false;
+    fBatchUploads = batchUploads;
 }
 
-static uint8_t* zerofill(uint8_t* ptr, int count) {
-    while (--count >= 0) {
-        *ptr++ = 0;
-    }
-    return ptr;
+static inline void adjust_for_offset(SkIPoint16* loc, const SkIPoint16& offset) {
+    loc->fX += offset.fX;
+    loc->fY += offset.fY;
 }
 
-bool GrAtlas::addSubImage(int width, int height, const void* image,
-                          GrIPoint16* loc) {
-    if (!fRects->addRect(width + BORDER, height + BORDER, loc)) {
+bool GrPlot::addSubImage(int width, int height, const void* image, SkIPoint16* loc) {
+    float percentFull = fRects->percentFull();
+    if (!fRects->addRect(width, height, loc)) {
         return false;
     }
 
-    SkAutoSMalloc<1024> storage;
-    int dstW = width + 2*BORDER;
-    int dstH = height + 2*BORDER;
-    if (BORDER) {
-        const int bpp = GrMaskFormatBytesPerPixel(fMaskFormat);
-        const size_t dstRB = dstW * bpp;
-        uint8_t* dst = (uint8_t*)storage.reset(dstH * dstRB);
-        Gr_bzero(dst, dstRB);                // zero top row
-        dst += dstRB;
-        for (int y = 0; y < height; y++) {
-            dst = zerofill(dst, bpp);   // zero left edge
-            memcpy(dst, image, width * bpp);
-            dst += width * bpp;
-            dst = zerofill(dst, bpp);   // zero right edge
-            image = (const void*)((const char*)image + width * bpp);
-        }
-        Gr_bzero(dst, dstRB);                // zero bottom row
-        image = storage.get();
+    // if batching uploads, create backing memory on first use
+    // once the plot is nearly full we will revert to uploading each subimage individually
+    int plotWidth = fRects->width();
+    int plotHeight = fRects->height();
+    if (fBatchUploads && NULL == fPlotData && 0.0f == percentFull) {
+        fPlotData = SkNEW_ARRAY(unsigned char, fBytesPerPixel*plotWidth*plotHeight);
+        memset(fPlotData, 0, fBytesPerPixel*plotWidth*plotHeight);
     }
-    adjustForPlot(loc, fPlot);
-    GrContext* context = fTexture->getContext();
-    // We pass the flag that does not force a flush. We assume our caller is
-    // smart and hasn't referenced the part of the texture we're about to update
-    // since the last flush.
-    context->writeTexturePixels(fTexture,
-                                loc->fX, loc->fY, dstW, dstH,
-                                fTexture->config(), image, 0,
-                                GrContext::kDontFlush_PixelOpsFlag);
 
-    // now tell the caller to skip the top/left BORDER
-    loc->fX += BORDER;
-    loc->fY += BORDER;
+    // if we have backing memory, copy to the memory and set for future upload
+    if (fPlotData) {
+        const unsigned char* imagePtr = (const unsigned char*) image;
+        // point ourselves at the right starting spot
+        unsigned char* dataPtr = fPlotData;
+        dataPtr += fBytesPerPixel*plotWidth*loc->fY;
+        dataPtr += fBytesPerPixel*loc->fX;
+        // copy into the data buffer
+        for (int i = 0; i < height; ++i) {
+            memcpy(dataPtr, imagePtr, fBytesPerPixel*width);
+            dataPtr += fBytesPerPixel*plotWidth;
+            imagePtr += fBytesPerPixel*width;
+        }
+
+        fDirtyRect.join(loc->fX, loc->fY, loc->fX + width, loc->fY + height);
+        adjust_for_offset(loc, fOffset);
+        fDirty = true;
+    // otherwise, just upload the image directly
+    } else if (image) {
+        adjust_for_offset(loc, fOffset);
+        TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("skia.gpu"), "GrPlot::uploadToTexture");
+        fTexture->writePixels(loc->fX, loc->fY, width, height, fTexture->config(), image, 0,
+                              GrContext::kDontFlush_PixelOpsFlag);
+    } else {
+        adjust_for_offset(loc, fOffset);
+    }
+
+#if FONT_CACHE_STATS
+    ++g_UploadCount;
+#endif
+
     return true;
+}
+
+void GrPlot::resetRects() {
+    SkASSERT(fRects);
+    fRects->reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GrAtlasMgr::GrAtlasMgr(GrGpu* gpu) {
-    fGpu = gpu;
-    gpu->ref();
-    Gr_bzero(fTexture, sizeof(fTexture));
-    fPlotMgr = SkNEW_ARGS(GrPlotMgr, (GR_PLOT_WIDTH, GR_PLOT_HEIGHT));
+GrAtlas::GrAtlas(GrGpu* gpu, GrPixelConfig config, GrSurfaceFlags flags,
+                 const SkISize& backingTextureSize,
+                 int numPlotsX, int numPlotsY, bool batchUploads) {
+    fGpu = SkRef(gpu);
+    fPixelConfig = config;
+    fFlags = flags;
+    fBackingTextureSize = backingTextureSize;
+    fNumPlotsX = numPlotsX;
+    fNumPlotsY = numPlotsY;
+    fBatchUploads = batchUploads;
+    fTexture = NULL;
+
+    int textureWidth = fBackingTextureSize.width();
+    int textureHeight = fBackingTextureSize.height();
+
+    int plotWidth = textureWidth / fNumPlotsX;
+    int plotHeight = textureHeight / fNumPlotsY;
+
+    SkASSERT(plotWidth * fNumPlotsX == textureWidth);
+    SkASSERT(plotHeight * fNumPlotsY == textureHeight);
+
+    // We currently do not support compressed atlases...
+    SkASSERT(!GrPixelConfigIsCompressed(config));
+
+    // set up allocated plots
+    size_t bpp = GrBytesPerPixel(fPixelConfig);
+    fPlotArray = SkNEW_ARRAY(GrPlot, (fNumPlotsX*fNumPlotsY));
+
+    GrPlot* currPlot = fPlotArray;
+    for (int y = numPlotsY-1; y >= 0; --y) {
+        for (int x = numPlotsX-1; x >= 0; --x) {
+            currPlot->init(this, y*numPlotsX+x, x, y, plotWidth, plotHeight, bpp, batchUploads);
+
+            // build LRU list
+            fPlotList.addToHead(currPlot);
+            ++currPlot;
+        }
+    }
 }
 
-GrAtlasMgr::~GrAtlasMgr() {
-    for (size_t i = 0; i < GR_ARRAY_COUNT(fTexture); i++) {
-        GrSafeUnref(fTexture[i]);
-    }
-    delete fPlotMgr;
+GrAtlas::~GrAtlas() {
+    SkSafeUnref(fTexture);
+    SkDELETE_ARRAY(fPlotArray);
+
     fGpu->unref();
+#if FONT_CACHE_STATS
+      SkDebugf("Num uploads: %d\n", g_UploadCount);
+#endif
 }
 
-static GrPixelConfig maskformat2pixelconfig(GrMaskFormat format) {
-    switch (format) {
-        case kA8_GrMaskFormat:
-            return kAlpha_8_GrPixelConfig;
-        case kA565_GrMaskFormat:
-            return kRGB_565_GrPixelConfig;
-        case kA888_GrMaskFormat:
-            return kSkia8888_GrPixelConfig;
-        default:
-            GrAssert(!"unknown maskformat");
-    }
-    return kUnknown_GrPixelConfig;
-}
-
-GrAtlas* GrAtlasMgr::addToAtlas(GrAtlas* atlas,
-                                int width, int height, const void* image,
-                                GrMaskFormat format,
-                                GrIPoint16* loc) {
-    GrAssert(NULL == atlas || atlas->getMaskFormat() == format);
-
-    if (atlas && atlas->addSubImage(width, height, image, loc)) {
-        return atlas;
+void GrAtlas::makeMRU(GrPlot* plot) {
+    if (fPlotList.head() == plot) {
+        return;
     }
 
-    // If the above fails, then either we have no starting atlas, or the current
-    // one is full. Either way we need to allocate a new atlas
+    fPlotList.remove(plot);
+    fPlotList.addToHead(plot);
+};
 
-    GrIPoint16 plot;
-    if (!fPlotMgr->newPlot(&plot)) {
-        return NULL;
+GrPlot* GrAtlas::addToAtlas(ClientPlotUsage* usage,
+                            int width, int height, const void* image,
+                            SkIPoint16* loc) {
+    // iterate through entire plot list for this atlas, see if we can find a hole
+    // last one was most recently added and probably most empty
+    for (int i = usage->fPlots.count()-1; i >= 0; --i) {
+        GrPlot* plot = usage->fPlots[i];
+        // client may have plots from more than one atlas, must check for ours before adding
+        if (this == plot->fAtlas && plot->addSubImage(width, height, image, loc)) {
+            this->makeMRU(plot);
+            return plot;
+        }
     }
 
-    GrAssert(0 == kA8_GrMaskFormat);
-    GrAssert(1 == kA565_GrMaskFormat);
-    if (NULL == fTexture[format]) {
+    // before we get a new plot, make sure we have a backing texture
+    if (NULL == fTexture) {
         // TODO: Update this to use the cache rather than directly creating a texture.
-        GrTextureDesc desc;
-        desc.fFlags = kDynamicUpdate_GrTextureFlagBit;
-        desc.fWidth = GR_ATLAS_TEXTURE_WIDTH;
-        desc.fHeight = GR_ATLAS_TEXTURE_HEIGHT;
-        desc.fConfig = maskformat2pixelconfig(format);
+        GrSurfaceDesc desc;
+        desc.fFlags = fFlags;
+        desc.fWidth = fBackingTextureSize.width();
+        desc.fHeight = fBackingTextureSize.height();
+        desc.fConfig = fPixelConfig;
 
-        fTexture[format] = fGpu->createTexture(desc, NULL, 0);
-        if (NULL == fTexture[format]) {
+        fTexture = fGpu->createTexture(desc, true, NULL, 0);
+        if (NULL == fTexture) {
             return NULL;
         }
     }
 
-    GrAtlas* newAtlas = SkNEW_ARGS(GrAtlas, (this, plot.fX, plot.fY, format));
-    if (!newAtlas->addSubImage(width, height, image, loc)) {
-        delete newAtlas;
-        return NULL;
+    // now look through all allocated plots for one we can share, in MRU order
+    GrPlotList::Iter plotIter;
+    plotIter.init(fPlotList, GrPlotList::Iter::kHead_IterStart);
+    GrPlot* plot;
+    while ((plot = plotIter.get())) {
+        // make sure texture is set for quick lookup
+        plot->fTexture = fTexture;
+        if (plot->addSubImage(width, height, image, loc)) {
+            this->makeMRU(plot);
+            // new plot for atlas, put at end of array
+            SkASSERT(!usage->fPlots.contains(plot));
+            *(usage->fPlots.append()) = plot;
+            return plot;
+        }
+        plotIter.next();
     }
 
-    newAtlas->fNext = atlas;
-    return newAtlas;
+    // If the above fails, then the current plot list has no room
+    return NULL;
 }
 
-void GrAtlasMgr::freePlot(int x, int y) {
-    GrAssert(fPlotMgr->isBusy(x, y));
-    fPlotMgr->freePlot(x, y);
+void GrAtlas::RemovePlot(ClientPlotUsage* usage, const GrPlot* plot) {
+    int index = usage->fPlots.find(const_cast<GrPlot*>(plot));
+    if (index >= 0) {
+        usage->fPlots.remove(index);
+    }
 }

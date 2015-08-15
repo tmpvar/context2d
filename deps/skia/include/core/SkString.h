@@ -11,6 +11,7 @@
 #define SkString_DEFINED
 
 #include "SkScalar.h"
+#include "SkTArray.h"
 
 #include <stdarg.h>
 
@@ -38,6 +39,12 @@ static int SkStrFind(const char string[], const char substring[]) {
     return SkToS32(first - &string[0]);
 }
 
+static int SkStrFindLastOf(const char string[], const char subchar) {
+    const char* last = strrchr(string, subchar);
+    if (NULL == last) return -1;
+    return SkToS32(last - &string[0]);
+}
+
 static bool SkStrContains(const char string[], const char substring[]) {
     SkASSERT(string);
     SkASSERT(substring);
@@ -57,7 +64,23 @@ static inline char *SkStrDup(const char string[]) {
     return ret;
 }
 
-
+/*
+ *  The SkStrAppend... methods will write into the provided buffer, assuming it is large enough.
+ *  Each method has an associated const (e.g. SkStrAppendU32_MaxSize) which will be the largest
+ *  value needed for that method's buffer.
+ *
+ *  char storage[SkStrAppendU32_MaxSize];
+ *  SkStrAppendU32(storage, value);
+ *
+ *  Note : none of the SkStrAppend... methods write a terminating 0 to their buffers. Instead,
+ *  the methods return the ptr to the end of the written part of the buffer. This can be used
+ *  to compute the length, and/or know where to write a 0 if that is desired.
+ *
+ *  char storage[SkStrAppendU32_MaxSize + 1];
+ *  char* stop = SkStrAppendU32(storage, value);
+ *  size_t len = stop - storage;
+ *  *stop = 0;   // valid, since storage was 1 byte larger than the max.
+ */
 
 #define SkStrAppendU32_MaxSize  10
 char*   SkStrAppendU32(char buffer[], uint32_t);
@@ -85,11 +108,7 @@ char*   SkStrAppendS64(char buffer[], int64_t, int minDigits);
  *  Thus if the caller wants to add a 0 at the end, buffer must be at least
  *  SkStrAppendScalar_MaxSize + 1 bytes large.
  */
-#ifdef SK_SCALAR_IS_FLOAT
-    #define SkStrAppendScalar SkStrAppendFloat
-#else
-    #define SkStrAppendScalar SkStrAppendFixed
-#endif
+#define SkStrAppendScalar SkStrAppendFloat
 
 char* SkStrAppendFloat(char buffer[], float);
 char* SkStrAppendFixed(char buffer[], SkFixed);
@@ -138,6 +157,9 @@ public:
     }
     int find(const char substring[]) const {
         return SkStrFind(fRec->data(), substring);
+    }
+    int findLastOf(const char subchar) const {
+        return SkStrFindLastOf(fRec->data(), subchar);
     }
 
     friend bool operator==(const SkString& a, const SkString& b) {
@@ -196,8 +218,9 @@ public:
 
     void printf(const char format[], ...) SK_PRINTF_LIKE(2, 3);
     void appendf(const char format[], ...) SK_PRINTF_LIKE(2, 3);
-    void appendf(const char format[], va_list);
+    void appendVAList(const char format[], va_list);
     void prependf(const char format[], ...) SK_PRINTF_LIKE(2, 3);
+    void prependVAList(const char format[], va_list);
 
     void remove(size_t offset, size_t length);
 
@@ -224,7 +247,6 @@ private:
     Rec* fRec;
 
 #ifdef SK_DEBUG
-    const char* fStr;
     void validate() const;
 #else
     void validate() const {}
@@ -235,24 +257,6 @@ private:
     static Rec* RefRec(Rec*);
 };
 
-class SkAutoUCS2 {
-public:
-    SkAutoUCS2(const char utf8[]);
-    ~SkAutoUCS2();
-
-    /** This returns the number of ucs2 characters
-    */
-    int count() const { return fCount; }
-
-    /** This returns a null terminated ucs2 string
-    */
-    const uint16_t* getUCS2() const { return fUCS2; }
-
-private:
-    int         fCount;
-    uint16_t*   fUCS2;
-};
-
 /// Creates a new string and writes into it using a printf()-style format.
 SkString SkStringPrintf(const char* format, ...);
 
@@ -261,5 +265,8 @@ SkString SkStringPrintf(const char* format, ...);
 template <> inline void SkTSwap(SkString& a, SkString& b) {
     a.swap(b);
 }
+
+// Split str on any characters in delimiters into out.  (Think, strtok with a sane API.)
+void SkStrSplit(const char* str, const char* delimiters, SkTArray<SkString>* out);
 
 #endif

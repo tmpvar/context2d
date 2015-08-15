@@ -7,7 +7,7 @@
 
 #include "PathOpsExtendedTest.h"
 #include "PathOpsThreadedCommon.h"
-#include "SkThreadPool.h"
+#include "SkTaskGroup.h"
 
 PathOpsThreadedTestRunner::~PathOpsThreadedTestRunner() {
     for (int index = 0; index < fRunnables.count(); index++) {
@@ -16,12 +16,7 @@ PathOpsThreadedTestRunner::~PathOpsThreadedTestRunner() {
 }
 
 void PathOpsThreadedTestRunner::render() {
-    SkThreadPool pool(fNumThreads);
-    for (int index = 0; index < fRunnables.count(); ++ index) {
-        pool.add(fRunnables[index]);
-    }
-#ifdef SK_DEBUG
-    gDebugMaxWindSum = SK_MaxS32;
-    gDebugMaxWindValue = SK_MaxS32;
-#endif
+    sk_parallel_for(fRunnables.count(), [&](int i) {
+        fRunnables[i]->run();
+    });
 }

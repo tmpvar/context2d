@@ -1,3 +1,8 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # This GYP file stores the dependencies necessary to build Skia on the Android
 # platform. The OS doesn't provide many stable libraries as part of the
 # distribution so we have to build a few of them ourselves.
@@ -14,7 +19,56 @@
 # This is due to the fact that we cannot use variables in an includes as the
 # variable expansion step for gyp happens after the includes are processed.
 {
-  'includes': [
-    '../platform_tools/android/gyp/dependencies.gypi',
+  'conditions': [
+    [ 'skia_android_framework == 0',
+      {
+        'includes': [
+          '../platform_tools/android/gyp/dependencies.gypi',
+        ],
+      }, { # else skia_android_framework
+        'cflags': [
+          '-Wno-error'
+        ],
+        'targets': [
+          {
+            'target_name': 'expat',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'libraries' : [
+                '-lexpat',
+              ],
+            },
+          },
+          {
+            'target_name': 'png',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'libraries' : [
+                '-lpng',
+              ],
+              'include_dirs': [
+                'external/libpng',
+              ],
+            },
+          },
+          {
+            'target_name': 'jpeg',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'libraries' : [
+                '-ljpeg',
+              ],
+              'include_dirs': [
+                'external/jpeg',
+              ],
+            },
+          },
+          {
+            'target_name': 'cpu_features',
+            'type': 'none',
+          },
+        ],
+      }
+    ],
   ],
 }

@@ -11,6 +11,8 @@ found in the LICENSE file.
 Gathers diffs between 2 JSON expectations files, or between actual and
 expected results within a single JSON actual-results file,
 and generates an old-vs-new diff dictionary.
+
+TODO(epoger): Fix indentation in this file (2-space indents, not 4-space).
 '''
 
 # System-level imports
@@ -46,14 +48,17 @@ class GMDiffer(object):
 
     def _GetFileContentsAsString(self, filepath):
         """Returns the full contents of a file, as a single string.
-        If the filename looks like a URL, download its contents..."""
-        if filepath.startswith('http:') or filepath.startswith('https:'):
+        If the filename looks like a URL, download its contents.
+        If the filename is None, return None."""
+        if filepath is None:
+            return None
+        elif filepath.startswith('http:') or filepath.startswith('https:'):
             return urllib2.urlopen(filepath).read()
         else:
             return open(filepath, 'r').read()
 
-    def _GetExpectedResults(self, filepath):
-        """Returns the dictionary of expected results from a JSON file,
+    def _GetExpectedResults(self, contents):
+        """Returns the dictionary of expected results from a JSON string,
         in this form:
 
         {
@@ -73,9 +78,13 @@ class GMDiffer(object):
         returned dictionary.
         """
         result_dict = {}
-        contents = self._GetFileContentsAsString(filepath)
         json_dict = gm_json.LoadFromString(contents)
         all_expectations = json_dict[gm_json.JSONKEY_EXPECTEDRESULTS]
+
+        # Prevent https://code.google.com/p/skia/issues/detail?id=1588
+        if not all_expectations:
+            return result_dict
+
         for test_name in all_expectations.keys():
             test_expectations = all_expectations[test_name]
             allowed_digests = test_expectations[
@@ -84,18 +93,18 @@ class GMDiffer(object):
                 num_allowed_digests = len(allowed_digests)
                 if num_allowed_digests > 1:
                     raise ValueError(
-                        'test %s in file %s has %d allowed digests' % (
-                            test_name, filepath, num_allowed_digests))
+                        'test %s has %d allowed digests' % (
+                            test_name, num_allowed_digests))
                 digest_pair = allowed_digests[0]
                 if digest_pair[0] != gm_json.JSONKEY_HASHTYPE_BITMAP_64BITMD5:
                     raise ValueError(
-                        'test %s in file %s has unsupported hashtype %s' % (
-                            test_name, filepath, digest_pair[0]))
+                        'test %s has unsupported hashtype %s' % (
+                            test_name, digest_pair[0]))
                 result_dict[test_name] = digest_pair[1]
         return result_dict
 
-    def _GetActualResults(self, filepath):
-        """Returns the dictionary of actual results from a JSON file,
+    def _GetActualResults(self, contents):
+        """Returns the dictionary of actual results from a JSON string,
         in this form:
 
         {
@@ -114,7 +123,6 @@ class GMDiffer(object):
         returned dictionary.
         """
         result_dict = {}
-        contents = self._GetFileContentsAsString(filepath)
         json_dict = gm_json.LoadFromString(contents)
         all_result_types = json_dict[gm_json.JSONKEY_ACTUALRESULTS]
         for result_type in all_result_types.keys():
@@ -124,8 +132,8 @@ class GMDiffer(object):
                     digest_pair = results_of_this_type[test_name]
                     if digest_pair[0] != gm_json.JSONKEY_HASHTYPE_BITMAP_64BITMD5:
                         raise ValueError(
-                            'test %s in file %s has unsupported hashtype %s' % (
-                                test_name, filepath, digest_pair[0]))
+                            'test %s has unsupported hashtype %s' % (
+                                test_name, digest_pair[0]))
                     result_dict[test_name] = digest_pair[1]
         return result_dict
 
@@ -150,26 +158,43 @@ class GMDiffer(object):
         If newfile is not specified, then 'new' is the actual results within
         oldfile.
         """
-        old_results = self._GetExpectedResults(oldfile)
-        if newfile:
-            new_results = self._GetExpectedResults(newfile)
+        return self.GenerateDiffDictFromStrings(self._GetFileContentsAsString(oldfile),
+                                                self._GetFileContentsAsString(newfile))
+
+    def GenerateDiffDictFromStrings(self, oldjson, newjson=None):
+        """Generate a dictionary showing the diffs:
+        old = expectations within oldjson
+        new = expectations within newjson
+
+        If newfile is not specified, then 'new' is the actual results within
+        oldfile.
+        """
+        old_results = self._GetExpectedResults(oldjson)
+        if newjson:
+            new_results = self._GetExpectedResults(newjson)
         else:
-            new_results = self._GetActualResults(oldfile)
+            new_results = self._GetActualResults(oldjson)
         return self._DictionaryDiff(old_results, new_results)
 
 
-# main...
-parser = argparse.ArgumentParser()
-parser.add_argument('old',
-                    help='Path to JSON file whose expectations to display on ' +
-                    'the "old" side of the diff. This can be a filepath on ' +
-                    'local storage, or a URL.')
-parser.add_argument('new', nargs='?',
-                    help='Path to JSON file whose expectations to display on ' +
-                    'the "new" side of the diff; if not specified, uses the ' +
-                    'ACTUAL results from the "old" JSON file. This can be a ' +
-                    'filepath on local storage, or a URL.')
-args = parser.parse_args()
-differ = GMDiffer()
-diffs = differ.GenerateDiffDict(oldfile=args.old, newfile=args.new)
-json.dump(diffs, sys.stdout, sort_keys=True, indent=2)
+def _Main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'old',
+        help='Path to JSON file whose expectations to display on ' +
+        'the "old" side of the diff. This can be a filepath on ' +
+        'local storage, or a URL.')
+    parser.add_argument(
+        'new', nargs='?',
+        help='Path to JSON file whose expectations to display on ' +
+        'the "new" side of the diff; if not specified, uses the ' +
+        'ACTUAL results from the "old" JSON file. This can be a ' +
+        'filepath on local storage, or a URL.')
+    args = parser.parse_args()
+    differ = GMDiffer()
+    diffs = differ.GenerateDiffDict(oldfile=args.old, newfile=args.new)
+    json.dump(diffs, sys.stdout, sort_keys=True, indent=2)
+
+
+if __name__ == '__main__':
+    _Main()

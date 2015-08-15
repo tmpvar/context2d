@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #Animator is basically Skia's (much saner) version of Flash.
 #On top of Views it provides a declarative UI model which can be updated
 #based on events which trigger changes or scripts.
@@ -9,19 +13,18 @@
       'product_name': 'skia_animator',
       'type': 'static_library',
       'standalone_static_library': 1,
+      'dependencies': [
+        'skia_lib.gyp:skia_lib',
+        'views.gyp:*',
+        'xml.gyp:*',
+      ],
       'include_dirs': [
         '../include/animator',
-        '../include/config',
-        '../include/core',
-        '../include/effects',
-        '../include/images',
-        '../include/lazy',
-        '../include/utils',
-        '../include/views',
-        '../include/xml',
         '../src/utils',
       ],
       'sources': [
+        '../src/animator/SkADrawable.cpp',
+        '../src/animator/SkADrawable.h',
         '../include/animator/SkAnimator.h',
         '../include/animator/SkAnimatorView.h',
 
@@ -84,8 +87,6 @@
         '../src/animator/SkDisplayXMLParser.h',
         '../src/animator/SkDraw3D.cpp',
         '../src/animator/SkDraw3D.h',
-        '../src/animator/SkDrawable.cpp',
-        '../src/animator/SkDrawable.h',
         '../src/animator/SkDrawBitmap.cpp',
         '../src/animator/SkDrawBitmap.h',
         '../src/animator/SkDrawBlur.cpp',
@@ -131,8 +132,6 @@
         '../src/animator/SkDrawTextBox.h',
         '../src/animator/SkDrawTo.cpp',
         '../src/animator/SkDrawTo.h',
-        '../src/animator/SkDrawTransparentShader.cpp',
-        '../src/animator/SkDrawTransparentShader.h',
         '../src/animator/SkDump.cpp',
         '../src/animator/SkDump.h',
         '../src/animator/SkExtras.h',
@@ -152,8 +151,8 @@
         '../src/animator/SkOperand2.h',
         '../src/animator/SkOperandInterpolator.h',
         '../src/animator/SkOperandIterpolator.cpp',
-        '../src/animator/SkPaintParts.cpp',
-        '../src/animator/SkPaintParts.h',
+        '../src/animator/SkPaintPart.cpp',
+        '../src/animator/SkPaintPart.h',
         '../src/animator/SkParseSVGPath.cpp',
         '../src/animator/SkPathParts.cpp',
         '../src/animator/SkPathParts.h',
@@ -188,9 +187,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

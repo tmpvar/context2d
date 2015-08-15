@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
@@ -15,13 +14,14 @@
 #include "SkUtils.h"
 #include "SkImageDecoder.h"
 
+#include <math.h>
+
 static void test_strokerect(SkCanvas* canvas) {
     int width = 100;
     int height = 100;
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kA8_Config, width*2, height*2);
-    bitmap.allocPixels();
+    bitmap.allocPixels(SkImageInfo::MakeA8(width*2, height*2));
     bitmap.eraseColor(SK_ColorTRANSPARENT);
 
     SkScalar dx = 20;
@@ -76,7 +76,7 @@ static void drawFadingText(SkCanvas* canvas,
 
     // pos[1] value is where we start to fade, relative to the width
     // of our pts[] array.
-    const SkScalar pos[] = { 0, SkFloatToScalar(0.9f), SK_Scalar1 };
+    const SkScalar pos[] = { 0, 0.9f, SK_Scalar1 };
 
     SkShader* s = SkGradientShader::CreateLinear(pts, colors, pos, 3,
                                                  SkShader::kClamp_TileMode);
@@ -116,14 +116,9 @@ static void test_text(SkCanvas* canvas) {
     drawFadingText(canvas, str, len, x, y, paint);
 }
 
-#ifdef SK_BUILD_FOR_WIN
-// windows doesn't have roundf
-inline float roundf(float x) { return (x-floor(x))>0.5 ? ceil(x) : floor(x); }
-#endif
-
 #ifdef SK_DEBUG
 static void make_rgn(SkRegion* rgn, int left, int top, int right, int bottom,
-                     size_t count, int32_t runs[]) {
+                     int count, int32_t runs[]) {
     SkIRect r;
     r.set(left, top, right, bottom);
 
@@ -220,7 +215,7 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Regions");
             return true;
@@ -280,7 +275,7 @@ protected:
                 SkASSERT(size == size2);
 
                 SkRegion    tmp3;
-                SkDEBUGCODE(size2 = ) tmp3.readFromMemory(buffer);
+                SkDEBUGCODE(size2 = ) tmp3.readFromMemory(buffer, 1000);
                 SkASSERT(size == size2);
 
                 SkASSERT(tmp3 == tmp);
@@ -322,7 +317,7 @@ protected:
         canvas->drawPath(path, paint);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         if (false) { // avoid bit rot, suppress warning
             test_strokerect(canvas);
             return;
@@ -395,11 +390,12 @@ protected:
     }
 
     virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y,
-                                              unsigned modi) SK_OVERRIDE {
-        return fRect.contains(SkScalarRound(x), SkScalarRound(y)) ? new Click(this) : NULL;
+                                              unsigned modi) override {
+        return fRect.contains(SkScalarRoundToInt(x),
+                              SkScalarRoundToInt(y)) ? new Click(this) : NULL;
     }
 
-    virtual bool onClick(Click* click) {
+    bool onClick(Click* click) override {
         fRect.offset(click->fICurr.fX - click->fIPrev.fX,
                      click->fICurr.fY - click->fIPrev.fY);
         this->inval(NULL);

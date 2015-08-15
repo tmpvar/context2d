@@ -1,9 +1,14 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 # The minimal set of static libraries for basic Skia functionality.
 
 {
   'variables': {
     'component_libs': [
       'core.gyp:core',
+      'codec.gyp:codec',
       'effects.gyp:effects',
       'images.gyp:images',
       'opts.gyp:opts',
@@ -12,9 +17,10 @@
       'utils.gyp:utils',
     ],
     'conditions': [
-      [ 'skia_arch_type == "x86" and skia_os != "android"', {
+      [ '"x86" in skia_arch_type and skia_os != "android"', {
         'component_libs': [
           'opts.gyp:opts_ssse3',
+          'opts.gyp:opts_sse41',
         ],
       }],
       [ 'arm_neon == 1', {
@@ -27,16 +33,12 @@
           'gpu.gyp:skgpu',
         ],
       }],
-      [ 'skia_os == "nacl"', {
-        'component_libs': [
-          'freetype.gyp:freetype',
-        ],
-      }],
     ],
   },
   'targets': [
     {
       'target_name': 'skia_lib',
+      'sources': [ '<(skia_src_path)/core/SkForceCPlusPlusLinking.cpp', ],
       'conditions': [
         [ 'skia_shared_lib', {
           'conditions': [
@@ -63,9 +65,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

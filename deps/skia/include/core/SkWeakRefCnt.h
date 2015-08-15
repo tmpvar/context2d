@@ -9,7 +9,7 @@
 #define SkWeakRefCnt_DEFINED
 
 #include "SkRefCnt.h"
-#include "SkThread.h"
+#include "SkAtomics.h"
 
 /** \class SkWeakRefCnt
 
@@ -23,7 +23,7 @@
     getRefCnt() > 1.
 
     In addition to strong ownership, an owner may instead obtain a weak
-    reference by calling weak_ref(). A call to weak_ref() must be balanced my a
+    reference by calling weak_ref(). A call to weak_ref() must be balanced by a
     call to weak_unref(). To obtain a strong reference from a weak reference,
     call try_ref(). If try_ref() returns true, the owner's pointer is now also
     a strong reference on which unref() must be called. Note that this does not
@@ -51,8 +51,6 @@
 */
 class SK_API SkWeakRefCnt : public SkRefCnt {
 public:
-    SK_DECLARE_INST_COUNT(SkWeakRefCnt)
-
     /** Default construct, initializing the reference counts to 1.
         The strong references collectively hold one weak reference. When the
         strong reference count goes to zero, the collectively held weak
@@ -73,10 +71,12 @@ public:
     */
     int32_t getWeakCnt() const { return fWeakCnt; }
 
+#ifdef SK_DEBUG
     void validate() const {
-        SkRefCnt::validate();
+        this->INHERITED::validate();
         SkASSERT(fWeakCnt > 0);
     }
+#endif
 
     /** Creates a strong reference from a weak reference, if possible. The
         caller must already be an owner. If try_ref() returns true the owner
@@ -87,9 +87,9 @@ public:
     */
     bool SK_WARN_UNUSED_RESULT try_ref() const {
         if (sk_atomic_conditional_inc(&fRefCnt) != 0) {
-            // Aquire barrier (L/SL), if not provided above.
+            // Acquire barrier (L/SL), if not provided above.
             // Prevents subsequent code from happening before the increment.
-            sk_membar_aquire__after_atomic_conditional_inc();
+            sk_membar_acquire__after_atomic_conditional_inc();
             return true;
         }
         return false;
@@ -113,14 +113,14 @@ public:
         SkASSERT(fWeakCnt > 0);
         // Release barrier (SL/S), if not provided below.
         if (sk_atomic_dec(&fWeakCnt) == 1) {
-            // Aquire barrier (L/SL), if not provided above.
+            // Acquire barrier (L/SL), if not provided above.
             // Prevents code in destructor from happening before the decrement.
-            sk_membar_aquire__after_atomic_dec();
+            sk_membar_acquire__after_atomic_dec();
 #ifdef SK_DEBUG
             // so our destructor won't complain
             fWeakCnt = 1;
 #endif
-            SkRefCnt::internal_dispose();
+            this->INHERITED::internal_dispose();
         }
     }
 
@@ -145,7 +145,7 @@ private:
         on the object and releases the implicit weak reference held
         collectively by the strong references.
     */
-    virtual void internal_dispose() const SK_OVERRIDE {
+    void internal_dispose() const override {
         weak_dispose();
         weak_unref();
     }

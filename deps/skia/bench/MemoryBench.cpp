@@ -5,40 +5,39 @@
  * found in the LICENSE file.
  */
 
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
+#include "SkChunkAlloc.h"
 #include "SkPaint.h"
 #include "SkRandom.h"
-#include "SkChunkAlloc.h"
 #include "SkString.h"
 
-class ChunkAllocBench : public SkBenchmark {
+class ChunkAllocBench : public Benchmark {
     SkString    fName;
     size_t      fMinSize;
-
-    enum {
-        N = SkBENCHLOOP(1000)
-    };
 public:
-    ChunkAllocBench(void* param, size_t minSize) : INHERITED(param) {
+    ChunkAllocBench(size_t minSize)  {
         fMinSize = minSize;
         fName.printf("chunkalloc_" SK_SIZE_T_SPECIFIER, minSize);
-        fIsRendering = false;
+    }
+
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return fName.c_str();
     }
 
-    virtual void onDraw(SkCanvas*) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas*) override {
         size_t inc = fMinSize >> 4;
         SkASSERT(inc > 0);
         size_t total = fMinSize * 64;
 
         SkChunkAlloc alloc(fMinSize);
 
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < loops; ++i) {
             size_t size = 0;
             int calls = 0;
             while (size < total) {
@@ -51,11 +50,9 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
-static SkBenchmark* F0(void* p) { return new ChunkAllocBench(p, 64); }
-static SkBenchmark* F1(void* p) { return new ChunkAllocBench(p, 8*1024); }
+DEF_BENCH( return new ChunkAllocBench(64); )
+DEF_BENCH( return new ChunkAllocBench(8*1024); )
 
-static BenchRegistry gR0(F0);
-static BenchRegistry gR1(F1);

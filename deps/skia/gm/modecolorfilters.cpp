@@ -24,7 +24,7 @@ static SkShader* make_color_shader(SkColor color) {
 }
 
 static SkShader* make_solid_shader() {
-    return make_color_shader(SkColorSetARGB(0xFF, 0x40, 0x80, 0x20));
+    return make_color_shader(SkColorSetARGB(0xFF, 0x42, 0x82, 0x21));
 }
 
 static SkShader* make_transparent_shader() {
@@ -38,12 +38,11 @@ static SkShader* make_trans_black_shader() {
 // draws a background behind each test rect to see transparency
 static SkShader* make_bg_shader(int checkSize) {
     SkBitmap bmp;
-    bmp.setConfig(SkBitmap::kARGB_8888_Config, 2 * checkSize, 2 * checkSize);
-    bmp.allocPixels();
+    bmp.allocN32Pixels(2 * checkSize, 2 * checkSize);
     SkCanvas canvas(bmp);
-    canvas.clear(0xFF800000);
+    canvas.clear(sk_tool_utils::color_to_565(0xFF800000));
     SkPaint paint;
-    paint.setColor(0xFF000080);
+    paint.setColor(sk_tool_utils::color_to_565(0xFF000080));
     SkRect rect0 = SkRect::MakeXYWH(0, 0,
                                     SkIntToScalar(checkSize), SkIntToScalar(checkSize));
     SkRect rect1 = SkRect::MakeXYWH(SkIntToScalar(checkSize), SkIntToScalar(checkSize),
@@ -57,7 +56,7 @@ static SkShader* make_bg_shader(int checkSize) {
 class ModeColorFilterGM : public GM {
 public:
     ModeColorFilterGM() {
-        this->setBGColor(0xFF303030);
+        this->setBGColor(sk_tool_utils::color_to_565(0xFF303030));
     }
 
 protected:
@@ -66,7 +65,7 @@ protected:
     }
 
     virtual SkISize onISize() {
-        return make_isize(WIDTH, HEIGHT);
+        return SkISize::Make(WIDTH, HEIGHT);
     }
 
     virtual void onDraw(SkCanvas* canvas) {
@@ -95,7 +94,7 @@ protected:
             SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF),
             SkColorSetARGB(0xFF, 0x00, 0x00, 0x00),
             SkColorSetARGB(0x00, 0x00, 0x00, 0x00),
-            SkColorSetARGB(0xFF, 0x10, 0x20, 0x40),
+            SkColorSetARGB(0xFF, 0x10, 0x20, 0x42),
             SkColorSetARGB(0xA0, 0x20, 0x30, 0x90),
         };
 

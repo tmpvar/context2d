@@ -4,21 +4,23 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkColor.h"
 #include "SkPaint.h"
 #include "SkPicture.h"
+#include "SkPictureRecorder.h"
 #include "SkPoint.h"
+#include "SkRandom.h"
 #include "SkRect.h"
 #include "SkString.h"
 
 // This is designed to emulate about 4 screens of textual content
 
 
-class PicturePlaybackBench : public SkBenchmark {
+class PicturePlaybackBench : public Benchmark {
 public:
-    PicturePlaybackBench(void* param, const char name[]) : INHERITED(param) {
+    PicturePlaybackBench(const char name[])  {
         fName.printf("picture_playback_%s", name);
         fPictureWidth = SkIntToScalar(PICTURE_WIDTH);
         fPictureHeight = SkIntToScalar(PICTURE_HEIGHT);
@@ -26,7 +28,6 @@ public:
     }
 
     enum {
-        N = SkBENCHLOOP(200),   // number of times to playback the picture
         PICTURE_WIDTH = 1000,
         PICTURE_HEIGHT = 4000,
         TEXT_SIZE = 10
@@ -36,24 +37,23 @@ protected:
         return fName.c_str();
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    virtual void onDraw(const int loops, SkCanvas* canvas) {
 
-        SkPicture picture;
+        SkPictureRecorder recorder;
+        SkCanvas* pCanvas = recorder.beginRecording(PICTURE_WIDTH, PICTURE_HEIGHT, NULL, 0);
+        this->recordCanvas(pCanvas);
+        SkAutoTUnref<SkPicture> picture(recorder.endRecording());
 
-        SkCanvas* pCanvas = picture.beginRecording(PICTURE_WIDTH, PICTURE_HEIGHT);
-        recordCanvas(pCanvas);
-        picture.endRecording();
+        const SkPoint translateDelta = getTranslateDelta(loops);
 
-        const SkPoint translateDelta = getTranslateDelta();
-
-        for (int i = 0; i < N; i++) {
-            picture.draw(canvas);
+        for (int i = 0; i < loops; i++) {
+            picture->playback(canvas);
             canvas->translate(translateDelta.fX, translateDelta.fY);
         }
     }
 
     virtual void recordCanvas(SkCanvas* canvas) = 0;
-    virtual SkPoint getTranslateDelta() {
+    virtual SkPoint getTranslateDelta(int N) {
         SkIPoint canvasSize = onGetSize();
         return SkPoint::Make(SkIntToScalar((PICTURE_WIDTH - canvasSize.fX)/N),
                              SkIntToScalar((PICTURE_HEIGHT- canvasSize.fY)/N));
@@ -64,15 +64,15 @@ protected:
     SkScalar fPictureHeight;
     SkScalar fTextSize;
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 
 class TextPlaybackBench : public PicturePlaybackBench {
 public:
-    TextPlaybackBench(void* param) : INHERITED(param, "drawText") { }
+    TextPlaybackBench() : INHERITED("drawText") { }
 protected:
-    virtual void recordCanvas(SkCanvas* canvas) {
+    void recordCanvas(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setTextSize(fTextSize);
         paint.setColor(SK_ColorBLACK);
@@ -93,11 +93,11 @@ private:
 
 class PosTextPlaybackBench : public PicturePlaybackBench {
 public:
-    PosTextPlaybackBench(void* param, bool drawPosH)
-        : INHERITED(param, drawPosH ? "drawPosTextH" : "drawPosText")
+    PosTextPlaybackBench(bool drawPosH)
+        : INHERITED(drawPosH ? "drawPosTextH" : "drawPosText")
         , fDrawPosH(drawPosH) { }
 protected:
-    virtual void recordCanvas(SkCanvas* canvas) {
+    void recordCanvas(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setTextSize(fTextSize);
         paint.setColor(SK_ColorBLACK);
@@ -137,10 +137,83 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* Fact0(void* p) { return new TextPlaybackBench(p); }
-static SkBenchmark* Fact1(void* p) { return new PosTextPlaybackBench(p, true); }
-static SkBenchmark* Fact2(void* p) { return new PosTextPlaybackBench(p, false); }
+DEF_BENCH( return new TextPlaybackBench(); )
+DEF_BENCH( return new PosTextPlaybackBench(true); )
+DEF_BENCH( return new PosTextPlaybackBench(false); )
 
-static BenchRegistry gReg0(Fact0);
-static BenchRegistry gReg1(Fact1);
-static BenchRegistry gReg2(Fact2);
+// Chrome draws into small tiles with impl-side painting.
+// This benchmark measures the relative performance of our bounding-box hierarchies,
+// both when querying tiles perfectly and when not.
+enum BBH  { kNone, kRTree };
+enum Mode { kTiled, kRandom };
+class TiledPlaybackBench : public Benchmark {
+public:
+    TiledPlaybackBench(BBH bbh, Mode mode) : fBBH(bbh), fMode(mode), fName("tiled_playback") {
+        switch (fBBH) {
+            case kNone:     fName.append("_none"    ); break;
+            case kRTree:    fName.append("_rtree"   ); break;
+        }
+        switch (fMode) {
+            case kTiled:  fName.append("_tiled" ); break;
+            case kRandom: fName.append("_random"); break;
+        }
+    }
+
+    const char* onGetName() override { return fName.c_str(); }
+    SkIPoint onGetSize() override { return SkIPoint::Make(1024,1024); }
+
+    void onPreDraw() override {
+        SkAutoTDelete<SkBBHFactory> factory;
+        switch (fBBH) {
+            case kNone:                                                 break;
+            case kRTree:    factory.reset(new SkRTreeFactory);          break;
+        }
+
+        SkPictureRecorder recorder;
+        SkCanvas* canvas = recorder.beginRecording(1024, 1024, factory);
+            SkRandom rand;
+            for (int i = 0; i < 10000; i++) {
+                SkScalar x = rand.nextRangeScalar(0, 1024),
+                         y = rand.nextRangeScalar(0, 1024),
+                         w = rand.nextRangeScalar(0, 128),
+                         h = rand.nextRangeScalar(0, 128);
+                SkPaint paint;
+                paint.setColor(rand.nextU());
+                paint.setAlpha(0xFF);
+                canvas->drawRect(SkRect::MakeXYWH(x,y,w,h), paint);
+            }
+        fPic.reset(recorder.endRecording());
+    }
+
+    void onDraw(const int loops, SkCanvas* canvas) override {
+        for (int i = 0; i < loops; i++) {
+            // This inner loop guarantees we make the same choices for all bench variants.
+            SkRandom rand;
+            for (int j = 0; j < 10; j++) {
+                SkScalar x = 0, y = 0;
+                switch (fMode) {
+                    case kTiled:  x = SkScalar(256 * rand.nextULessThan(4));
+                                  y = SkScalar(256 * rand.nextULessThan(4));
+                                  break;
+                    case kRandom: x = rand.nextRangeScalar(0, 768);
+                                  y = rand.nextRangeScalar(0, 768);
+                                  break;
+                }
+                SkAutoCanvasRestore ar(canvas, true/*save now*/);
+                canvas->clipRect(SkRect::MakeXYWH(x,y,256,256));
+                fPic->playback(canvas);
+            }
+        }
+    }
+
+private:
+    BBH                     fBBH;
+    Mode                    fMode;
+    SkString                fName;
+    SkAutoTUnref<SkPicture> fPic;
+};
+
+DEF_BENCH( return new TiledPlaybackBench(kNone,     kRandom); )
+DEF_BENCH( return new TiledPlaybackBench(kNone,     kTiled ); )
+DEF_BENCH( return new TiledPlaybackBench(kRTree,    kRandom); )
+DEF_BENCH( return new TiledPlaybackBench(kRTree,    kTiled ); )

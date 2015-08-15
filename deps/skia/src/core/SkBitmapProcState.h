@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2007 The Android Open Source Project
  *
@@ -6,32 +5,27 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef SkBitmapProcState_DEFINED
 #define SkBitmapProcState_DEFINED
 
 #include "SkBitmap.h"
+#include "SkBitmapController.h"
+#include "SkBitmapFilter.h"
 #include "SkMatrix.h"
+#include "SkMipMap.h"
+#include "SkPaint.h"
 
-#define FractionalInt_IS_64BIT
-
-#ifdef FractionalInt_IS_64BIT
-    typedef SkFixed48    SkFractionalInt;
-    #define SkScalarToFractionalInt(x)  SkScalarToFixed48(x)
-    #define SkFractionalIntToFixed(x)   SkFixed48ToFixed(x)
-    #define SkFixedToFractionalInt(x)   SkFixedToFixed48(x)
-    #define SkFractionalIntToInt(x)     SkFixed48ToInt(x)
-#else
-    typedef SkFixed    SkFractionalInt;
-    #define SkScalarToFractionalInt(x)  SkScalarToFixed(x)
-    #define SkFractionalIntToFixed(x)   (x)
-    #define SkFixedToFractionalInt(x)   (x)
-    #define SkFractionalIntToInt(x)     ((x) >> 16)
-#endif
+typedef SkFixed3232    SkFractionalInt;
+#define SkScalarToFractionalInt(x)  SkScalarToFixed3232(x)
+#define SkFractionalIntToFixed(x)   SkFixed3232ToFixed(x)
+#define SkFixedToFractionalInt(x)   SkFixedToFixed3232(x)
+#define SkFractionalIntToInt(x)     SkFixed3232ToInt(x)
 
 class SkPaint;
 
 struct SkBitmapProcState {
+    SkBitmapProcState();
+    ~SkBitmapProcState();
 
     typedef void (*ShaderProc32)(const SkBitmapProcState&, int x, int y,
                                  SkPMColor[], int count);
@@ -58,8 +52,9 @@ struct SkBitmapProcState {
     typedef U16CPU (*FixedTileLowBitsProc)(SkFixed, int);   // returns 0..0xF
     typedef U16CPU (*IntTileProc)(int value, int count);   // returns 0..count-1
 
-    const SkBitmap*     fBitmap;            // chooseProcs - orig or mip
-    const SkMatrix*     fInvMatrix;         // chooseProcs
+    SkPixmap            fPixmap;
+    SkMatrix            fInvMatrix;         // copy of what is in fBMState, can we remove the dup?
+
     SkMatrix::MapXYProc fInvProc;           // chooseProcs
 
     SkFractionalInt     fInvSxFractionalInt;
@@ -80,7 +75,7 @@ struct SkBitmapProcState {
     uint8_t             fInvType;           // chooseProcs
     uint8_t             fTileModeX;         // CONSTRUCTOR
     uint8_t             fTileModeY;         // CONSTRUCTOR
-    SkBool8             fDoFilter;          // chooseProcs
+    uint8_t             fFilterLevel;       // chooseProcs
 
     /** Platforms implement this, and can optionally overwrite only the
         following fields:
@@ -96,7 +91,6 @@ struct SkBitmapProcState {
         implementation can do nothing (see SkBitmapProcState_opts_none.cpp)
      */
     void platformProcs();
-
 
     /** Given the byte size of the index buffer to be passed to the matrix proc,
         return the maximum number of resulting pixels that can be computed
@@ -124,6 +118,7 @@ struct SkBitmapProcState {
 
 private:
     friend class SkBitmapProcShader;
+    friend class SkLightingShaderImpl;
 
     ShaderProc32        fShaderProc32;      // chooseProcs
     ShaderProc16        fShaderProc16;      // chooseProcs
@@ -132,19 +127,18 @@ private:
     SampleProc32        fSampleProc32;      // chooseProcs
     SampleProc16        fSampleProc16;      // chooseProcs
 
-    SkMatrix            fUnitInvMatrix;     // chooseProcs
     SkBitmap            fOrigBitmap;        // CONSTRUCTOR
-    SkBitmap            fMipBitmap;
+
+    enum {
+        kBMStateSize = 136  // found by inspection. if too small, we will call new/delete
+    };
+    SkAlignedSStorage<kBMStateSize> fBMStateStorage;
+    SkBitmapController::State* fBMState;
 
     MatrixProc chooseMatrixProc(bool trivial_matrix);
     bool chooseProcs(const SkMatrix& inv, const SkPaint&);
+    bool chooseScanlineProcs(bool trivialMatrix, bool clampClamp, const SkPaint& paint);
     ShaderProc32 chooseShaderProc32();
-
-
-    /** test method for choosing a bicubic shading filter
-      */
-
-    ShaderProc32 chooseBicubicFilterProc(const SkPaint &paint);
 
     // Return false if we failed to setup for fast translate (e.g. overflow)
     bool setupForTranslate();
@@ -186,9 +180,9 @@ void S32_opaque_D32_filter_DX(const SkBitmapProcState& s, const uint32_t xy[],
 void S32_alpha_D32_filter_DX(const SkBitmapProcState& s, const uint32_t xy[],
                              int count, SkPMColor colors[]);
 void S32_opaque_D32_filter_DXDY(const SkBitmapProcState& s,
-                           const uint32_t xy[], int count, SkPMColor colors[]);
+                                const uint32_t xy[], int count, SkPMColor colors[]);
 void S32_alpha_D32_filter_DXDY(const SkBitmapProcState& s,
-                           const uint32_t xy[], int count, SkPMColor colors[]);
+                               const uint32_t xy[], int count, SkPMColor colors[]);
 void ClampX_ClampY_filter_scale(const SkBitmapProcState& s, uint32_t xy[],
                                 int count, int x, int y);
 void ClampX_ClampY_nofilter_scale(const SkBitmapProcState& s, uint32_t xy[],
@@ -198,6 +192,8 @@ void ClampX_ClampY_filter_affine(const SkBitmapProcState& s,
 void ClampX_ClampY_nofilter_affine(const SkBitmapProcState& s,
                                    uint32_t xy[], int count, int x, int y);
 void S32_D16_filter_DX(const SkBitmapProcState& s,
-                                   const uint32_t* xy, int count, uint16_t* colors);
+                       const uint32_t* xy, int count, uint16_t* colors);
+void S32_D16_filter_DXDY(const SkBitmapProcState& s,
+                         const uint32_t* xy, int count, uint16_t* colors);
 
 #endif

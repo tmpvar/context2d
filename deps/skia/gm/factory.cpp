@@ -6,11 +6,14 @@
  */
 
 #include "gm.h"
-#include "SkBitmapFactory.h"
+
+#include "Resources.h"
 #include "SkCanvas.h"
 #include "SkData.h"
+#include "SkDiscardableMemoryPool.h"
+#include "SkDiscardablePixelRef.h"
 #include "SkImageDecoder.h"
-#include "SkLruImageCache.h"
+#include "SkImageGeneratorPriv.h"
 #include "SkOSFile.h"
 #include "SkStream.h"
 
@@ -24,36 +27,29 @@ public:
     FactoryGM() {}
 
 protected:
-    virtual void onOnceBeforeDraw() SK_OVERRIDE {
+    void onOnceBeforeDraw() override {
         // Copyright-free file from http://openclipart.org/detail/29213/paper-plane-by-ddoo
-        SkString filename = SkOSPath::SkPathJoin(INHERITED::gResourcePath.c_str(),
-                                                 "plane.png");
-
-        SkAutoTUnref<SkStream> stream(SkStream::NewFromFile(filename.c_str()));
-        if (NULL != stream.get()) {
-            stream->rewind();
-            size_t length = stream->getLength();
-            void* buffer = sk_malloc_throw(length);
-            stream->read(buffer, length);
-            SkAutoDataUnref data(SkData::NewFromMalloc(buffer, length));
-            SkBitmapFactory factory(&SkImageDecoder::DecodeMemoryToTarget);
+        SkString pngFilename = GetResourcePath("plane.png");
+        SkAutoDataUnref data(SkData::NewFromFileName(pngFilename.c_str()));
+        if (data.get()) {
             // Create a cache which will boot the pixels out anytime the
             // bitmap is unlocked.
-            SkAutoTUnref<SkLruImageCache> cache(SkNEW_ARGS(SkLruImageCache, (1)));
-            factory.setImageCache(cache);
-            factory.installPixelRef(data, &fBitmap);
+            SkAutoTUnref<SkDiscardableMemoryPool> pool(
+                SkDiscardableMemoryPool::Create(1));
+            SkAssertResult(SkInstallDiscardablePixelRef(SkImageGenerator::NewFromEncoded(data),
+                                                        NULL, &fBitmap, pool));
         }
     }
 
-    virtual SkString onShortName() {
+    SkString onShortName() override {
         return SkString("factory");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(640, 480);
+    SkISize onISize() override {
+        return SkISize::Make(640, 480);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         canvas->drawBitmap(fBitmap, 0, 0);
     }
 
@@ -68,4 +64,4 @@ private:
 static GM* MyFactory(void*) { return new FactoryGM; }
 static GMRegistry reg(MyFactory);
 
-}
+}  // namespace skiagm

@@ -1,10 +1,10 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "Test.h"
 #if SK_SUPPORT_GPU
     #include "GrReducedClip.h"
@@ -14,7 +14,6 @@
 #include "SkRandom.h"
 #include "SkRect.h"
 #include "SkRegion.h"
-
 
 static void test_assign_and_comparison(skiatest::Reporter* reporter) {
     SkClipStack s;
@@ -59,7 +58,6 @@ static void test_assign_and_comparison(skiatest::Reporter* reporter) {
     // Test that an equal, but not copied version is equal.
     s.save();
     REPORTER_ASSERT(reporter, 3 == s.getSaveCount());
-
     r = SkRect::MakeLTRB(14, 15, 16, 17);
     s.clipDevRect(r, SkRegion::kUnion_Op, doAA);
     REPORTER_ASSERT(reporter, s == copy);
@@ -69,23 +67,17 @@ static void test_assign_and_comparison(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 2 == s.getSaveCount());
     s.save();
     REPORTER_ASSERT(reporter, 3 == s.getSaveCount());
-
     r = SkRect::MakeLTRB(14, 15, 16, 17);
     s.clipDevRect(r, SkRegion::kIntersect_Op, doAA);
     REPORTER_ASSERT(reporter, s != copy);
 
-    // Test that different state (clip type) triggers not equal.
-    // NO LONGER VALID: if a path contains only a rect, we turn
-    // it into a bare rect for performance reasons (working
-    // around Chromium/JavaScript bad pattern).
-/*
+    // Test that version constructed with rect-path rather than a rect is still considered equal.
     s.restore();
     s.save();
     SkPath rp;
     rp.addRect(r);
     s.clipDevPath(rp, SkRegion::kUnion_Op, doAA);
-    REPORTER_ASSERT(reporter, s != copy);
-*/
+    REPORTER_ASSERT(reporter, s == copy);
 
     // Test that different rects triggers not equal.
     s.restore();
@@ -193,8 +185,7 @@ static void test_iterators(skiatest::Reporter* reporter) {
 }
 
 // Exercise the SkClipStack's getConservativeBounds computation
-static void test_bounds(skiatest::Reporter* reporter, bool useRects) {
-
+static void test_bounds(skiatest::Reporter* reporter, SkClipStack::Element::Type primType) {
     static const int gNumCases = 20;
     static const SkRect gAnswerRectsBW[gNumCases] = {
         // A op B
@@ -239,17 +230,21 @@ static void test_bounds(skiatest::Reporter* reporter, bool useRects) {
     rectA.iset(10, 10, 50, 50);
     rectB.iset(40, 40, 80, 80);
 
-    SkPath clipA, clipB;
+    SkRRect rrectA, rrectB;
+    rrectA.setOval(rectA);
+    rrectB.setRectXY(rectB, SkIntToScalar(1), SkIntToScalar(2));
 
-    clipA.addRoundRect(rectA, SkIntToScalar(5), SkIntToScalar(5));
-    clipB.addRoundRect(rectB, SkIntToScalar(5), SkIntToScalar(5));
+    SkPath pathA, pathB;
+
+    pathA.addRoundRect(rectA, SkIntToScalar(5), SkIntToScalar(5));
+    pathB.addRoundRect(rectB, SkIntToScalar(5), SkIntToScalar(5));
 
     SkClipStack stack;
     SkRect devClipBound;
     bool isIntersectionOfRects = false;
 
     int testCase = 0;
-    int numBitTests = useRects ? 1 : 4;
+    int numBitTests = SkClipStack::Element::kPath_Type == primType ? 4 : 1;
     for (int invBits = 0; invBits < numBitTests; ++invBits) {
         for (size_t op = 0; op < SK_ARRAY_COUNT(gOps); ++op) {
 
@@ -257,25 +252,36 @@ static void test_bounds(skiatest::Reporter* reporter, bool useRects) {
             bool doInvA = SkToBool(invBits & 1);
             bool doInvB = SkToBool(invBits & 2);
 
-            clipA.setFillType(doInvA ? SkPath::kInverseEvenOdd_FillType :
+            pathA.setFillType(doInvA ? SkPath::kInverseEvenOdd_FillType :
                                        SkPath::kEvenOdd_FillType);
-            clipB.setFillType(doInvB ? SkPath::kInverseEvenOdd_FillType :
+            pathB.setFillType(doInvB ? SkPath::kInverseEvenOdd_FillType :
                                        SkPath::kEvenOdd_FillType);
 
-            if (useRects) {
-                stack.clipDevRect(rectA, SkRegion::kIntersect_Op, false);
-                stack.clipDevRect(rectB, gOps[op], false);
-            } else {
-                stack.clipDevPath(clipA, SkRegion::kIntersect_Op, false);
-                stack.clipDevPath(clipB, gOps[op], false);
+            switch (primType) {
+                case SkClipStack::Element::kEmpty_Type:
+                    SkDEBUGFAIL("Don't call this with kEmpty.");
+                    break;
+                case SkClipStack::Element::kRect_Type:
+                    stack.clipDevRect(rectA, SkRegion::kIntersect_Op, false);
+                    stack.clipDevRect(rectB, gOps[op], false);
+                    break;
+                case SkClipStack::Element::kRRect_Type:
+                    stack.clipDevRRect(rrectA, SkRegion::kIntersect_Op, false);
+                    stack.clipDevRRect(rrectB, gOps[op], false);
+                    break;
+                case SkClipStack::Element::kPath_Type:
+                    stack.clipDevPath(pathA, SkRegion::kIntersect_Op, false);
+                    stack.clipDevPath(pathB, gOps[op], false);
+                    break;
             }
 
             REPORTER_ASSERT(reporter, !stack.isWideOpen());
+            REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID != stack.getTopmostGenID());
 
             stack.getConservativeBounds(0, 0, 100, 100, &devClipBound,
                                         &isIntersectionOfRects);
 
-            if (useRects) {
+            if (SkClipStack::Element::kRect_Type == primType) {
                 REPORTER_ASSERT(reporter, isIntersectionOfRects ==
                         (gOps[op] == SkRegion::kIntersect_Op));
             } else {
@@ -293,6 +299,12 @@ static void test_bounds(skiatest::Reporter* reporter, bool useRects) {
 
 // Test out 'isWideOpen' entry point
 static void test_isWideOpen(skiatest::Reporter* reporter) {
+    {
+        // Empty stack is wide open. Wide open stack means that gen id is wide open.
+        SkClipStack stack;
+        REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
+    }
 
     SkRect rectA, rectB;
 
@@ -304,6 +316,7 @@ static void test_isWideOpen(skiatest::Reporter* reporter) {
         SkClipStack stack;
 
         REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
     }
 
     // Test out case where the user specifies a union that includes everything
@@ -322,6 +335,7 @@ static void test_isWideOpen(skiatest::Reporter* reporter) {
         stack.clipDevPath(clipB, SkRegion::kUnion_Op, false);
 
         REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
     }
 
     // Test out union w/ a wide open clip
@@ -331,6 +345,7 @@ static void test_isWideOpen(skiatest::Reporter* reporter) {
         stack.clipDevRect(rectA, SkRegion::kUnion_Op, false);
 
         REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
     }
 
     // Test out empty difference from a wide open clip
@@ -343,6 +358,7 @@ static void test_isWideOpen(skiatest::Reporter* reporter) {
         stack.clipDevRect(emptyRect, SkRegion::kDifference_Op, false);
 
         REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
     }
 
     // Test out return to wide open
@@ -354,10 +370,12 @@ static void test_isWideOpen(skiatest::Reporter* reporter) {
         stack.clipDevRect(rectA, SkRegion::kReplace_Op, false);
 
         REPORTER_ASSERT(reporter, !stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID != stack.getTopmostGenID());
 
         stack.restore();
 
         REPORTER_ASSERT(reporter, stack.isWideOpen());
+        REPORTER_ASSERT(reporter, SkClipStack::kWideOpenGenID == stack.getTopmostGenID());
     }
 }
 
@@ -789,14 +807,18 @@ typedef void (*AddElementFunc) (const SkRect& rect,
                                 SkClipStack* stack);
 
 static void add_round_rect(const SkRect& rect, bool invert, SkRegion::Op op, SkClipStack* stack) {
-    SkPath path;
     SkScalar rx = rect.width() / 10;
     SkScalar ry = rect.height() / 20;
-    path.addRoundRect(rect, rx, ry);
     if (invert) {
+        SkPath path;
+        path.addRoundRect(rect, rx, ry);
         path.setFillType(SkPath::kInverseWinding_FillType);
+        stack->clipDevPath(path, op, false);
+    } else {
+        SkRRect rrect;
+        rrect.setRectXY(rect, rx, ry);
+        stack->clipDevRRect(rrect, op, false);
     }
-    stack->clipDevPath(path, op, false);
 };
 
 static void add_rect(const SkRect& rect, bool invert, SkRegion::Op op, SkClipStack* stack) {
@@ -824,6 +846,9 @@ static void add_elem_to_stack(const SkClipStack::Element& element, SkClipStack* 
         case SkClipStack::Element::kRect_Type:
             stack->clipDevRect(element.getRect(), element.getOp(), element.isAA());
             break;
+        case SkClipStack::Element::kRRect_Type:
+            stack->clipDevRRect(element.getRRect(), element.getOp(), element.isAA());
+            break;
         case SkClipStack::Element::kPath_Type:
             stack->clipDevPath(element.getPath(), element.getOp(), element.isAA());
             break;
@@ -839,46 +864,18 @@ static void add_elem_to_region(const SkClipStack::Element& element,
                                SkRegion* region) {
     SkRegion elemRegion;
     SkRegion boundsRgn(bounds);
+    SkPath path;
 
     switch (element.getType()) {
-        case SkClipStack::Element::kRect_Type: {
-            SkPath path;
-            path.addRect(element.getRect());
+        case SkClipStack::Element::kEmpty_Type:
+            elemRegion.setEmpty();
+            break;
+        default:
+            element.asPath(&path);
             elemRegion.setPath(path, boundsRgn);
             break;
-        }
-        case SkClipStack::Element::kPath_Type:
-            elemRegion.setPath(element.getPath(), boundsRgn);
-            break;
-        case SkClipStack::Element::kEmpty_Type:
-            //
-            region->setEmpty();
-            return;
     }
     region->op(elemRegion, element.getOp());
-}
-
-// This can assist with debugging the clip stack reduction code when the test below fails.
-static inline void print_clip(const SkClipStack::Element& element) {
-    static const char* kOpStrs[] = {
-        "DF",
-        "IS",
-        "UN",
-        "XR",
-        "RD",
-        "RP",
-    };
-    if (SkClipStack::Element::kEmpty_Type != element.getType()) {
-        const SkRect& bounds = element.getBounds();
-        bool isRect = SkClipStack::Element::kRect_Type == element.getType();
-        SkDebugf("%s %s %s [%f %f] x [%f %f]\n",
-                 kOpStrs[element.getOp()],
-                 (isRect ? "R" : "P"),
-                 (element.isInverseFilled() ? "I" : " "),
-                 bounds.fLeft, bounds.fRight, bounds.fTop, bounds.fBottom);
-    } else {
-        SkDebugf("EM\n");
-    }
 }
 
 static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
@@ -921,7 +918,7 @@ static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
         add_oval,
     };
 
-    SkMWCRandom r;
+    SkRandom r;
 
     for (int i = 0; i < kNumTests; ++i) {
         // Randomly generate a clip stack.
@@ -949,6 +946,7 @@ static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
             SkRect rect = SkRect::MakeXYWH(xy.fX, xy.fY, size.fWidth, size.fHeight);
 
             bool invert = r.nextBiasedBool(kFractionInverted);
+
             kElementFuncs[r.nextULessThan(SK_ARRAY_COUNT(kElementFuncs))](rect, invert, op, &stack);
             if (doSave) {
                 stack.save();
@@ -963,15 +961,18 @@ static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
         typedef GrReducedClip::ElementList ElementList;
         // Get the reduced version of the stack.
         ElementList reducedClips;
-
+        int32_t reducedGenID;
         GrReducedClip::InitialState initial;
         SkIRect tBounds(inflatedIBounds);
         SkIRect* tightBounds = r.nextBool() ? &tBounds : NULL;
         GrReducedClip::ReduceClipStack(stack,
                                        inflatedIBounds,
                                        &reducedClips,
+                                       &reducedGenID,
                                        &initial,
                                        tightBounds);
+
+        REPORTER_ASSERT(reporter, SkClipStack::kInvalidGenID != reducedGenID);
 
         // Build a new clip stack based on the reduced clip elements
         SkClipStack reducedStack;
@@ -979,12 +980,12 @@ static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
             // whether the result is bounded or not, the whole plane should start outside the clip.
             reducedStack.clipEmpty();
         }
-        for (ElementList::Iter iter = reducedClips.headIter(); NULL != iter.get(); iter.next()) {
+        for (ElementList::Iter iter = reducedClips.headIter(); iter.get(); iter.next()) {
             add_elem_to_stack(*iter.get(), &reducedStack);
         }
 
         // GrReducedClipStack assumes that the final result is clipped to the returned bounds
-        if (NULL != tightBounds) {
+        if (tightBounds) {
             reducedStack.clipDevRect(*tightBounds, SkRegion::kIntersect_Op);
         }
 
@@ -1004,15 +1005,171 @@ static void test_reduced_clip_stack(skiatest::Reporter* reporter) {
         while ((element = iter.next())) {
             add_elem_to_region(*element, inflatedIBounds, &reducedRegion);
         }
-
-        REPORTER_ASSERT(reporter, region == reducedRegion);
+        SkString testCase;
+        testCase.printf("Iteration %d", i);
+        REPORTER_ASSERT_MESSAGE(reporter, region == reducedRegion, testCase.c_str());
     }
 }
 
+#if defined(WIN32)
+    #define SUPPRESS_VISIBILITY_WARNING
+#else
+    #define SUPPRESS_VISIBILITY_WARNING __attribute__((visibility("hidden")))
 #endif
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void TestClipStack(skiatest::Reporter* reporter) {
+static void test_reduced_clip_stack_genid(skiatest::Reporter* reporter) {
+    {
+        SkClipStack stack;
+        stack.clipDevRect(SkRect::MakeXYWH(0, 0, 100, 100), SkRegion::kReplace_Op, true);
+        stack.clipDevRect(SkRect::MakeXYWH(0, 0, SkScalar(50.3), SkScalar(50.3)), SkRegion::kReplace_Op, true);
+        SkIRect inflatedIBounds = SkIRect::MakeXYWH(0, 0, 100, 100);
+
+        GrReducedClip::ElementList reducedClips;
+        int32_t reducedGenID;
+        GrReducedClip::InitialState initial;
+        SkIRect tightBounds;
+
+        GrReducedClip::ReduceClipStack(stack,
+                                       inflatedIBounds,
+                                       &reducedClips,
+                                       &reducedGenID,
+                                       &initial,
+                                       &tightBounds);
+
+        REPORTER_ASSERT(reporter, reducedClips.count() == 1);
+        // Clips will be cached based on the generation id. Make sure the gen id is valid.
+        REPORTER_ASSERT(reporter, SkClipStack::kInvalidGenID != reducedGenID);
+    }
+    {
+        SkClipStack stack;
+
+        // Create a clip with following 25.3, 25.3 boxes which are 25 apart:
+        //  A  B
+        //  C  D
+
+        stack.clipDevRect(SkRect::MakeXYWH(0, 0, SkScalar(25.3), SkScalar(25.3)), SkRegion::kReplace_Op, true);
+        int32_t genIDA = stack.getTopmostGenID();
+        stack.clipDevRect(SkRect::MakeXYWH(50, 0, SkScalar(25.3), SkScalar(25.3)), SkRegion::kUnion_Op, true);
+        int32_t genIDB = stack.getTopmostGenID();
+        stack.clipDevRect(SkRect::MakeXYWH(0, 50, SkScalar(25.3), SkScalar(25.3)), SkRegion::kUnion_Op, true);
+        int32_t genIDC = stack.getTopmostGenID();
+        stack.clipDevRect(SkRect::MakeXYWH(50, 50, SkScalar(25.3), SkScalar(25.3)), SkRegion::kUnion_Op, true);
+        int32_t genIDD = stack.getTopmostGenID();
+
+
+#define XYWH SkIRect::MakeXYWH
+
+        SkIRect unused;
+        unused.setEmpty();
+        SkIRect stackBounds = XYWH(0, 0, 76, 76);
+
+        // The base test is to test each rect in two ways:
+        // 1) The box dimensions. (Should reduce to "all in", no elements).
+        // 2) A bit over the box dimensions.
+        // In the case 2, test that the generation id is what is expected.
+        // The rects are of fractional size so that case 2 never gets optimized to an empty element
+        // list.
+
+        // Not passing in tighter bounds is tested for consistency.
+        static const struct SUPPRESS_VISIBILITY_WARNING {
+            SkIRect testBounds;
+            int reducedClipCount;
+            int32_t reducedGenID;
+            GrReducedClip::InitialState initialState;
+            SkIRect tighterBounds; // If this is empty, the query will not pass tighter bounds
+            // parameter.
+        } testCases[] = {
+            // Rect A.
+            { XYWH(0, 0, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, XYWH(0, 0, 25, 25) },
+            { XYWH(0, 0, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, unused },
+            { XYWH(0, 0, 27, 27), 1, genIDA, GrReducedClip::kAllOut_InitialState, XYWH(0, 0, 27, 27)},
+            { XYWH(0, 0, 27, 27), 1, genIDA, GrReducedClip::kAllOut_InitialState, unused },
+
+            // Rect B.
+            { XYWH(50, 0, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, XYWH(50, 0, 25, 25) },
+            { XYWH(50, 0, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, unused },
+            { XYWH(50, 0, 27, 27), 1, genIDB, GrReducedClip::kAllOut_InitialState, XYWH(50, 0, 26, 27) },
+            { XYWH(50, 0, 27, 27), 1, genIDB, GrReducedClip::kAllOut_InitialState, unused },
+
+            // Rect C.
+            { XYWH(0, 50, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, XYWH(0, 50, 25, 25) },
+            { XYWH(0, 50, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, unused },
+            { XYWH(0, 50, 27, 27), 1, genIDC, GrReducedClip::kAllOut_InitialState, XYWH(0, 50, 27, 26) },
+            { XYWH(0, 50, 27, 27), 1, genIDC, GrReducedClip::kAllOut_InitialState, unused },
+
+            // Rect D.
+            { XYWH(50, 50, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, unused },
+            { XYWH(50, 50, 25, 25), 0, SkClipStack::kWideOpenGenID, GrReducedClip::kAllIn_InitialState, XYWH(50, 50, 25, 25)},
+            { XYWH(50, 50, 27, 27), 1, genIDD, GrReducedClip::kAllOut_InitialState, unused },
+            { XYWH(50, 50, 27, 27), 1, genIDD, GrReducedClip::kAllOut_InitialState,  XYWH(50, 50, 26, 26)},
+
+            // Other tests:
+            { XYWH(0, 0, 100, 100), 4, genIDD, GrReducedClip::kAllOut_InitialState, unused },
+            { XYWH(0, 0, 100, 100), 4, genIDD, GrReducedClip::kAllOut_InitialState, stackBounds },
+
+            // Rect in the middle, touches none.
+            { XYWH(26, 26, 24, 24), 0, SkClipStack::kEmptyGenID, GrReducedClip::kAllOut_InitialState, unused },
+            { XYWH(26, 26, 24, 24), 0, SkClipStack::kEmptyGenID, GrReducedClip::kAllOut_InitialState, XYWH(26, 26, 24, 24) },
+
+            // Rect in the middle, touches all the rects. GenID is the last rect.
+            { XYWH(24, 24, 27, 27), 4, genIDD, GrReducedClip::kAllOut_InitialState, unused },
+            { XYWH(24, 24, 27, 27), 4, genIDD, GrReducedClip::kAllOut_InitialState, XYWH(24, 24, 27, 27) },
+        };
+
+#undef XYWH
+
+        for (size_t i = 0; i < SK_ARRAY_COUNT(testCases); ++i) {
+            GrReducedClip::ElementList reducedClips;
+            int32_t reducedGenID;
+            GrReducedClip::InitialState initial;
+            SkIRect tightBounds;
+
+            GrReducedClip::ReduceClipStack(stack,
+                                           testCases[i].testBounds,
+                                           &reducedClips,
+                                           &reducedGenID,
+                                           &initial,
+                                           testCases[i].tighterBounds.isEmpty() ? NULL : &tightBounds);
+
+            REPORTER_ASSERT(reporter, reducedClips.count() == testCases[i].reducedClipCount);
+            SkASSERT(reducedClips.count() == testCases[i].reducedClipCount);
+            REPORTER_ASSERT(reporter, reducedGenID == testCases[i].reducedGenID);
+            SkASSERT(reducedGenID == testCases[i].reducedGenID);
+            REPORTER_ASSERT(reporter, initial == testCases[i].initialState);
+            SkASSERT(initial == testCases[i].initialState);
+            if (!testCases[i].tighterBounds.isEmpty()) {
+                REPORTER_ASSERT(reporter, tightBounds == testCases[i].tighterBounds);
+                SkASSERT(tightBounds == testCases[i].tighterBounds);
+            }
+        }
+    }
+}
+
+static void test_reduced_clip_stack_no_aa_crash(skiatest::Reporter* reporter) {
+    SkClipStack stack;
+    stack.clipDevRect(SkIRect::MakeXYWH(0, 0, 100, 100), SkRegion::kReplace_Op);
+    stack.clipDevRect(SkIRect::MakeXYWH(0, 0, 50, 50), SkRegion::kReplace_Op);
+    SkIRect inflatedIBounds = SkIRect::MakeXYWH(0, 0, 100, 100);
+
+    GrReducedClip::ElementList reducedClips;
+    int32_t reducedGenID;
+    GrReducedClip::InitialState initial;
+    SkIRect tightBounds;
+
+    // At the time, this would crash.
+    GrReducedClip::ReduceClipStack(stack,
+                                   inflatedIBounds,
+                                   &reducedClips,
+                                   &reducedGenID,
+                                   &initial,
+                                   &tightBounds);
+
+    REPORTER_ASSERT(reporter, 0 == reducedClips.count());
+}
+
+#endif
+
+DEF_TEST(ClipStack, reporter) {
     SkClipStack stack;
 
     REPORTER_ASSERT(reporter, 0 == stack.getSaveCount());
@@ -1034,7 +1191,7 @@ static void TestClipStack(skiatest::Reporter* reporter) {
     SkRect answer;
     answer.iset(25, 25, 75, 75);
 
-    REPORTER_ASSERT(reporter, NULL != element);
+    REPORTER_ASSERT(reporter, element);
     REPORTER_ASSERT(reporter, SkClipStack::Element::kRect_Type == element->getType());
     REPORTER_ASSERT(reporter, SkRegion::kIntersect_Op == element->getOp());
     REPORTER_ASSERT(reporter, element->getRect() == answer);
@@ -1047,8 +1204,9 @@ static void TestClipStack(skiatest::Reporter* reporter) {
 
     test_assign_and_comparison(reporter);
     test_iterators(reporter);
-    test_bounds(reporter, true);        // once with rects
-    test_bounds(reporter, false);       // once with paths
+    test_bounds(reporter, SkClipStack::Element::kRect_Type);
+    test_bounds(reporter, SkClipStack::Element::kRRect_Type);
+    test_bounds(reporter, SkClipStack::Element::kPath_Type);
     test_isWideOpen(reporter);
     test_rect_merging(reporter);
     test_rect_replace(reporter);
@@ -1057,8 +1215,7 @@ static void TestClipStack(skiatest::Reporter* reporter) {
     test_quickContains(reporter);
 #if SK_SUPPORT_GPU
     test_reduced_clip_stack(reporter);
+    test_reduced_clip_stack_genid(reporter);
+    test_reduced_clip_stack_no_aa_crash(reporter);
 #endif
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("ClipStack", TestClipStackClass, TestClipStack)

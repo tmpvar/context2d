@@ -1,9 +1,18 @@
-# To update the Doxygen output checked into the Skia subversion repo (which is
-# browsable at http://skia-autogen.googlecode.com/svn/docs/html/index.html ), run:
-# tools/update-doxygen.sh
+# Configuration used by
+# https://chromium.googlesource.com/chromium/tools/build/+/0f611b202b0e/scripts/slave/recipe_modules/skia/resources/generate_and_upload_doxygen.py
+# to generate our Doxygen docs, which are then uploaded to
+# http://chromium-skia-gm.commondatastorage.googleapis.com/doxygen/doxygen/html/index.html
 
-PROJECT_NAME = skia
+
+PROJECT_NAME = Skia
 PROJECT_BRIEF = 2D Graphics Library
+
+PROJECT_LOGO = https://skia.org/res/img/logo.png
+
+# These lines are overridden by
+# https://chromium.googlesource.com/chromium/tools/build/+/0f611b202b0e/scripts/slave/recipe_modules/skia/resources/generate_and_upload_doxygen.py
+# but they are needed in case someone wants to generate the doxygen manually
+# for some reason.
 OUTPUT_DIRECTORY = ../docs
 HTML_FOOTER = ../docs/static_footer.txt
 
@@ -16,7 +25,7 @@ WARN_IF_UNDOCUMENTED = NO
 
 # This file only creates documentation for the most important parts of the
 # external-visible API.
-INPUT = include/core include/effects
+INPUT = include/core include/effects include/gpu
 EXTRACT_PRIVATE = YES
 EXTRACT_STATIC = YES
 
@@ -32,9 +41,9 @@ CLASS_DIAGRAMS = YES
 # CLASS_GRAPH = YES
 # COLLABORATION_GRAPH = YES
 # UML_LOOK = YES
-# GRAPHICAL_HIERARCHY = YES 
+# GRAPHICAL_HIERARCHY = YES
 
-# Make SkDEBUGCODE disappear, but not SK_OVERRIDE.
+# Make SkDEBUGCODE disappear.
 ENABLE_PREPROCESSING = YES
 MACRO_EXPANSION = YES
 EXPAND_ONLY_PREDEF = YES

@@ -5,8 +5,47 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
+#include "SkMatrix.h"
 #include "SkRRect.h"
+#include "Test.h"
+
+static void test_tricky_radii(skiatest::Reporter* reporter) {
+    {
+        // crbug.com/458522
+        SkRRect rr;
+        const SkRect bounds = { 3709, 3709, 3709 + 7402, 3709 + 29825 };
+        const SkScalar rad = 12814;
+        const SkVector vec[] = { { rad, rad }, { 0, rad }, { rad, rad }, { 0, rad } };
+        rr.setRectRadii(bounds, vec);
+    }
+
+    {
+        // crbug.com//463920
+        SkRect r = SkRect::MakeLTRB(0, 0, 1009, 33554432.0);
+        SkVector radii[4] = {
+            { 13.0f, 8.0f }, { 170.0f, 2.0 }, { 256.0f, 33554432.0 }, { 110.0f, 5.0f }
+        };
+        SkRRect rr;
+        rr.setRectRadii(r, radii);
+
+        REPORTER_ASSERT(reporter, (double) rr.radii(SkRRect::kUpperRight_Corner).fY +
+                                  (double) rr.radii(SkRRect::kLowerRight_Corner).fY <=
+                                  rr.height());
+    }
+}
+
+static void test_empty_crbug_458524(skiatest::Reporter* reporter) {
+    SkRRect rr;
+    const SkRect bounds = { 3709, 3709, 3709 + 7402, 3709 + 29825 };
+    const SkScalar rad = 40;
+    rr.setRectXY(bounds, rad, rad);
+
+    SkRRect other;
+    SkMatrix matrix;
+    matrix.setScale(0, 1);
+    rr.transform(matrix, &other);
+    REPORTER_ASSERT(reporter, SkRRect::kEmpty_Type == other.getType());
+}
 
 static const SkScalar kWidth = 100.0f;
 static const SkScalar kHeight = 100.0f;
@@ -30,6 +69,32 @@ static void test_inset(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, rr2.isSimple());
     rr.inset(20, 20, &rr2);
     REPORTER_ASSERT(reporter, rr2.isRect());
+}
+
+
+static void test_9patch_rrect(skiatest::Reporter* reporter,
+                              const SkRect& rect,
+                              SkScalar l, SkScalar t, SkScalar r, SkScalar b,
+                              bool checkRadii) {
+    SkRRect rr;
+    rr.setNinePatch(rect, l, t, r, b);
+
+    REPORTER_ASSERT(reporter, SkRRect::kNinePatch_Type == rr.type());
+    REPORTER_ASSERT(reporter, rr.rect() == rect);
+
+    if (checkRadii) {
+        // This test doesn't hold if the radii will be rescaled by SkRRect
+        SkRect ninePatchRadii = { l, t, r, b };
+        SkPoint rquad[4];
+        ninePatchRadii.toQuad(rquad);
+        for (int i = 0; i < 4; ++i) {
+            REPORTER_ASSERT(reporter, rquad[i] == rr.radii((SkRRect::Corner) i));
+        }
+    }
+    SkRRect rr2; // construct the same RR using the most general set function
+    SkVector radii[4] = { { l, t }, { r, t }, { r, b }, { l, b } };
+    rr2.setRectRadii(rect, radii);
+    REPORTER_ASSERT(reporter, rr2 == rr && rr2.getType() == rr.getType());
 }
 
 // Test out the basic API entry points
@@ -59,6 +124,13 @@ static void test_round_rect_basic(skiatest::Reporter* reporter) {
     for (int i = 0; i < 4; ++i) {
         REPORTER_ASSERT(reporter, zeroPt == rr1.radii((SkRRect::Corner) i));
     }
+    SkRRect rr1_2; // construct the same RR using the most general set function
+    SkVector rr1_2_radii[4] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
+    rr1_2.setRectRadii(rect, rr1_2_radii);
+    REPORTER_ASSERT(reporter, rr1_2 == rr1 && rr1_2.getType() == rr1.getType());
+    SkRRect rr1_3;  // construct the same RR using the nine patch set function
+    rr1_3.setNinePatch(rect, 0, 0, 0, 0);
+    REPORTER_ASSERT(reporter, rr1_3 == rr1 && rr1_3.getType() == rr1.getType());
 
     //----
     SkPoint halfPoint = { SkScalarHalf(kWidth), SkScalarHalf(kHeight) };
@@ -72,6 +144,14 @@ static void test_round_rect_basic(skiatest::Reporter* reporter) {
         REPORTER_ASSERT(reporter,
                         rr2.radii((SkRRect::Corner) i).equalsWithinTolerance(halfPoint));
     }
+    SkRRect rr2_2;  // construct the same RR using the most general set function
+    SkVector rr2_2_radii[4] = { { halfPoint.fX, halfPoint.fY }, { halfPoint.fX, halfPoint.fY },
+                                { halfPoint.fX, halfPoint.fY }, { halfPoint.fX, halfPoint.fY } };
+    rr2_2.setRectRadii(rect, rr2_2_radii);
+    REPORTER_ASSERT(reporter, rr2_2 == rr2 && rr2_2.getType() == rr2.getType());
+    SkRRect rr2_3;  // construct the same RR using the nine patch set function
+    rr2_3.setNinePatch(rect, halfPoint.fX, halfPoint.fY, halfPoint.fX, halfPoint.fY);
+    REPORTER_ASSERT(reporter, rr2_3 == rr2 && rr2_3.getType() == rr2.getType());
 
     //----
     SkPoint p = { 5, 5 };
@@ -84,18 +164,25 @@ static void test_round_rect_basic(skiatest::Reporter* reporter) {
     for (int i = 0; i < 4; ++i) {
         REPORTER_ASSERT(reporter, p == rr3.radii((SkRRect::Corner) i));
     }
+    SkRRect rr3_2; // construct the same RR using the most general set function
+    SkVector rr3_2_radii[4] = { { 5, 5 }, { 5, 5 }, { 5, 5 }, { 5, 5 } };
+    rr3_2.setRectRadii(rect, rr3_2_radii);
+    REPORTER_ASSERT(reporter, rr3_2 == rr3 && rr3_2.getType() == rr3.getType());
+    SkRRect rr3_3;  // construct the same RR using the nine patch set function
+    rr3_3.setNinePatch(rect, 5, 5, 5, 5);
+    REPORTER_ASSERT(reporter, rr3_3 == rr3 && rr3_3.getType() == rr3.getType());
 
     //----
-    SkPoint radii[4] = { { 5, 5 }, { 5, 5 }, { 5, 5 }, { 5, 5 } };
+    test_9patch_rrect(reporter, rect, 10, 9, 8, 7, true);
 
-    SkRRect rr4;
-    rr4.setRectRadii(rect, radii);
+    {
+        // Test out the rrect from skia:3466
+        SkRect rect2 = SkRect::MakeLTRB(0.358211994f, 0.755430222f, 0.872866154f, 0.806214333f);
 
-    REPORTER_ASSERT(reporter, SkRRect::kSimple_Type == rr4.type());
-    REPORTER_ASSERT(reporter, rr4.rect() == rect);
-
-    for (int i = 0; i < 4; ++i) {
-        REPORTER_ASSERT(reporter, radii[i] == rr4.radii((SkRRect::Corner) i));
+        test_9patch_rrect(reporter,
+                          rect2,
+                          0.926942348f, 0.642850280f, 0.529063463f, 0.587844372f,
+                          false);
     }
 
     //----
@@ -113,32 +200,12 @@ static void test_round_rect_basic(skiatest::Reporter* reporter) {
 
     // Test out == & !=
     REPORTER_ASSERT(reporter, empty != rr3);
-    REPORTER_ASSERT(reporter, rr3 == rr4);
-    REPORTER_ASSERT(reporter, rr4 != rr5);
+    REPORTER_ASSERT(reporter, rr3 != rr5);
 }
 
 // Test out the cases when the RR degenerates to a rect
 static void test_round_rect_rects(skiatest::Reporter* reporter) {
     SkRect r;
-    static const SkPoint pts[] = {
-        // Upper Left
-        { -SK_Scalar1, -SK_Scalar1 },               // out
-        { SK_Scalar1, SK_Scalar1 },                 // in
-        // Upper Right
-        { SkIntToScalar(101), -SK_Scalar1},         // out
-        { SkIntToScalar(99), SK_Scalar1 },          // in
-        // Lower Right
-        { SkIntToScalar(101), SkIntToScalar(101) }, // out
-        { SkIntToScalar(99), SkIntToScalar(99) },   // in
-        // Lower Left
-        { -SK_Scalar1, SkIntToScalar(101) },        // out
-        { SK_Scalar1, SkIntToScalar(99) },          // in
-        // Middle
-        { SkIntToScalar(50), SkIntToScalar(50) }    // in
-    };
-    static const bool isIn[] = { false, true, false, true, false, true, false, true, true };
-
-    SkASSERT(SK_ARRAY_COUNT(pts) == SK_ARRAY_COUNT(isIn));
 
     //----
     SkRRect empty;
@@ -157,9 +224,6 @@ static void test_round_rect_rects(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, SkRRect::kRect_Type == rr1.type());
     r = rr1.rect();
     REPORTER_ASSERT(reporter, rect == r);
-    for (size_t i = 0; i < SK_ARRAY_COUNT(pts); ++i) {
-        REPORTER_ASSERT(reporter, isIn[i] == rr1.contains(pts[i].fX, pts[i].fY));
-    }
 
     //----
     SkPoint radii[4] = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
@@ -170,9 +234,6 @@ static void test_round_rect_rects(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, SkRRect::kRect_Type == rr2.type());
     r = rr2.rect();
     REPORTER_ASSERT(reporter, rect == r);
-    for (size_t i = 0; i < SK_ARRAY_COUNT(pts); ++i) {
-        REPORTER_ASSERT(reporter, isIn[i] == rr2.contains(pts[i].fX, pts[i].fY));
-    }
 
     //----
     SkPoint radii2[4] = { { 0, 0 }, { 20, 20 }, { 50, 50 }, { 20, 50 } };
@@ -184,29 +245,6 @@ static void test_round_rect_rects(skiatest::Reporter* reporter) {
 
 // Test out the cases when the RR degenerates to an oval
 static void test_round_rect_ovals(skiatest::Reporter* reporter) {
-    static const SkScalar kEps = 0.1f;
-    static const SkScalar kWidthTol = SkScalarHalf(kWidth) * (SK_Scalar1 - SK_ScalarRoot2Over2);
-    static const SkScalar kHeightTol = SkScalarHalf(kHeight) * (SK_Scalar1 - SK_ScalarRoot2Over2);
-    static const SkPoint pts[] = {
-        // Upper Left
-        { kWidthTol - kEps, kHeightTol - kEps },       // out
-        { kWidthTol + kEps, kHeightTol + kEps },       // in
-        // Upper Right
-        { kWidth + kEps - kWidthTol, kHeightTol - kEps },     // out
-        { kWidth - kEps - kWidthTol, kHeightTol + kEps },      // in
-        // Lower Right
-        { kWidth + kEps - kWidthTol, kHeight + kEps - kHeightTol },   // out
-        { kWidth - kEps - kWidthTol, kHeight - kEps - kHeightTol },   // in
-        // Lower Left
-        { kWidthTol - kEps, kHeight + kEps - kHeightTol },     //out
-        { kWidthTol + kEps, kHeight - kEps - kHeightTol },     // in
-        // Middle
-        { SkIntToScalar(50), SkIntToScalar(50) } // in
-    };
-    static const bool isIn[] = { false, true, false, true, false, true, false, true, true };
-
-    SkASSERT(SK_ARRAY_COUNT(pts) == SK_ARRAY_COUNT(isIn));
-
     //----
     SkRect oval;
     SkRect rect = SkRect::MakeLTRB(0, 0, kWidth, kHeight);
@@ -216,75 +254,24 @@ static void test_round_rect_ovals(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, SkRRect::kOval_Type == rr1.type());
     oval = rr1.rect();
     REPORTER_ASSERT(reporter, oval == rect);
-    for (size_t i = 0; i < SK_ARRAY_COUNT(pts); ++i) {
-        REPORTER_ASSERT(reporter, isIn[i] == rr1.contains(pts[i].fX, pts[i].fY));
-    }
 }
 
 // Test out the non-degenerate RR cases
 static void test_round_rect_general(skiatest::Reporter* reporter) {
-    static const SkScalar kEps = 0.1f;
-    static const SkScalar kDist20 = 20 * (SK_Scalar1 - SK_ScalarRoot2Over2);
-    static const SkPoint pts[] = {
-        // Upper Left
-        { kDist20 - kEps, kDist20 - kEps },       // out
-        { kDist20 + kEps, kDist20 + kEps },       // in
-        // Upper Right
-        { kWidth + kEps - kDist20, kDist20 - kEps },     // out
-        { kWidth - kEps - kDist20, kDist20 + kEps },      // in
-        // Lower Right
-        { kWidth + kEps - kDist20, kHeight + kEps - kDist20 },   // out
-        { kWidth - kEps - kDist20, kHeight - kEps - kDist20 },   // in
-        // Lower Left
-        { kDist20 - kEps, kHeight + kEps - kDist20 },     //out
-        { kDist20 + kEps, kHeight - kEps - kDist20 },     // in
-        // Middle
-        { SkIntToScalar(50), SkIntToScalar(50) } // in
-    };
-    static const bool isIn[] = { false, true, false, true, false, true, false, true, true };
-
-    SkASSERT(SK_ARRAY_COUNT(pts) == SK_ARRAY_COUNT(isIn));
-
     //----
     SkRect rect = SkRect::MakeLTRB(0, 0, kWidth, kHeight);
     SkRRect rr1;
     rr1.setRectXY(rect, 20, 20);
 
     REPORTER_ASSERT(reporter, SkRRect::kSimple_Type == rr1.type());
-    for (size_t i = 0; i < SK_ARRAY_COUNT(pts); ++i) {
-        REPORTER_ASSERT(reporter, isIn[i] == rr1.contains(pts[i].fX, pts[i].fY));
-    }
 
     //----
-    static const SkScalar kDist50 = 50*(SK_Scalar1 - SK_ScalarRoot2Over2);
-    static const SkPoint pts2[] = {
-        // Upper Left
-        { -SK_Scalar1, -SK_Scalar1 },           // out
-        { SK_Scalar1, SK_Scalar1 },             // in
-        // Upper Right
-        { kWidth + kEps - kDist20, kDist20 - kEps },     // out
-        { kWidth - kEps - kDist20, kDist20 + kEps },     // in
-        // Lower Right
-        { kWidth + kEps - kDist50, kHeight + kEps - kDist50 },   // out
-        { kWidth - kEps - kDist50, kHeight - kEps - kDist50 },   // in
-        // Lower Left
-        { kDist20 - kEps, kHeight + kEps - kDist50 },     // out
-        { kDist20 + kEps, kHeight - kEps - kDist50 },     // in
-        // Middle
-        { SkIntToScalar(50), SkIntToScalar(50) }  // in
-    };
-
-    SkASSERT(SK_ARRAY_COUNT(pts2) == SK_ARRAY_COUNT(isIn));
-
     SkPoint radii[4] = { { 0, 0 }, { 20, 20 }, { 50, 50 }, { 20, 50 } };
 
     SkRRect rr2;
     rr2.setRectRadii(rect, radii);
 
     REPORTER_ASSERT(reporter, SkRRect::kComplex_Type == rr2.type());
-    for (size_t i = 0; i < SK_ARRAY_COUNT(pts); ++i) {
-        REPORTER_ASSERT(reporter, isIn[i] == rr2.contains(pts2[i].fX, pts2[i].fY));
-    }
 }
 
 // Test out questionable-parameter handling
@@ -451,7 +438,236 @@ static void test_round_rect_contains_rect(skiatest::Reporter* reporter) {
     }
 }
 
-static void TestRoundRect(skiatest::Reporter* reporter) {
+// Called for a matrix that should cause SkRRect::transform to fail.
+static void assert_transform_failure(skiatest::Reporter* reporter, const SkRRect& orig,
+                                     const SkMatrix& matrix) {
+    // The test depends on the fact that the original is not empty.
+    SkASSERT(!orig.isEmpty());
+    SkRRect dst;
+    dst.setEmpty();
+
+    const SkRRect copyOfDst = dst;
+    const SkRRect copyOfOrig = orig;
+    bool success = orig.transform(matrix, &dst);
+    // This transform should fail.
+    REPORTER_ASSERT(reporter, !success);
+    // Since the transform failed, dst should be unchanged.
+    REPORTER_ASSERT(reporter, copyOfDst == dst);
+    // original should not be modified.
+    REPORTER_ASSERT(reporter, copyOfOrig == orig);
+    REPORTER_ASSERT(reporter, orig != dst);
+}
+
+#define GET_RADII                                                       \
+    const SkVector& origUL = orig.radii(SkRRect::kUpperLeft_Corner);    \
+    const SkVector& origUR = orig.radii(SkRRect::kUpperRight_Corner);   \
+    const SkVector& origLR = orig.radii(SkRRect::kLowerRight_Corner);   \
+    const SkVector& origLL = orig.radii(SkRRect::kLowerLeft_Corner);    \
+    const SkVector& dstUL = dst.radii(SkRRect::kUpperLeft_Corner);      \
+    const SkVector& dstUR = dst.radii(SkRRect::kUpperRight_Corner);     \
+    const SkVector& dstLR = dst.radii(SkRRect::kLowerRight_Corner);     \
+    const SkVector& dstLL = dst.radii(SkRRect::kLowerLeft_Corner)
+
+// Called to test various transforms on a single SkRRect.
+static void test_transform_helper(skiatest::Reporter* reporter, const SkRRect& orig) {
+    SkRRect dst;
+    dst.setEmpty();
+
+    // The identity matrix will duplicate the rrect.
+    bool success = orig.transform(SkMatrix::I(), &dst);
+    REPORTER_ASSERT(reporter, success);
+    REPORTER_ASSERT(reporter, orig == dst);
+
+    // Skew and Perspective make transform fail.
+    SkMatrix matrix;
+    matrix.reset();
+    matrix.setSkewX(SkIntToScalar(2));
+    assert_transform_failure(reporter, orig, matrix);
+
+    matrix.reset();
+    matrix.setSkewY(SkIntToScalar(3));
+    assert_transform_failure(reporter, orig, matrix);
+
+    matrix.reset();
+    matrix.setPerspX(4);
+    assert_transform_failure(reporter, orig, matrix);
+
+    matrix.reset();
+    matrix.setPerspY(5);
+    assert_transform_failure(reporter, orig, matrix);
+
+    // Rotation fails.
+    matrix.reset();
+    matrix.setRotate(SkIntToScalar(90));
+    assert_transform_failure(reporter, orig, matrix);
+    matrix.setRotate(SkIntToScalar(37));
+    assert_transform_failure(reporter, orig, matrix);
+
+    // Translate will keep the rect moved, but otherwise the same.
+    matrix.reset();
+    SkScalar translateX = SkIntToScalar(32);
+    SkScalar translateY = SkIntToScalar(15);
+    matrix.setTranslateX(translateX);
+    matrix.setTranslateY(translateY);
+    dst.setEmpty();
+    success = orig.transform(matrix, &dst);
+    REPORTER_ASSERT(reporter, success);
+    for (int i = 0; i < 4; ++i) {
+        REPORTER_ASSERT(reporter,
+                orig.radii((SkRRect::Corner) i) == dst.radii((SkRRect::Corner) i));
+    }
+    REPORTER_ASSERT(reporter, orig.rect().width() == dst.rect().width());
+    REPORTER_ASSERT(reporter, orig.rect().height() == dst.rect().height());
+    REPORTER_ASSERT(reporter, dst.rect().left() == orig.rect().left() + translateX);
+    REPORTER_ASSERT(reporter, dst.rect().top() == orig.rect().top() + translateY);
+
+    // Keeping the translation, but adding skew will make transform fail.
+    matrix.setSkewY(SkIntToScalar(7));
+    assert_transform_failure(reporter, orig, matrix);
+
+    // Scaling in -x will flip the round rect horizontally.
+    matrix.reset();
+    matrix.setScaleX(SkIntToScalar(-1));
+    dst.setEmpty();
+    success = orig.transform(matrix, &dst);
+    REPORTER_ASSERT(reporter, success);
+    {
+        GET_RADII;
+        // Radii have swapped in x.
+        REPORTER_ASSERT(reporter, origUL == dstUR);
+        REPORTER_ASSERT(reporter, origUR == dstUL);
+        REPORTER_ASSERT(reporter, origLR == dstLL);
+        REPORTER_ASSERT(reporter, origLL == dstLR);
+    }
+    // Width and height remain the same.
+    REPORTER_ASSERT(reporter, orig.rect().width() == dst.rect().width());
+    REPORTER_ASSERT(reporter, orig.rect().height() == dst.rect().height());
+    // Right and left have swapped (sort of)
+    REPORTER_ASSERT(reporter, orig.rect().right() == -dst.rect().left());
+    // Top has stayed the same.
+    REPORTER_ASSERT(reporter, orig.rect().top() == dst.rect().top());
+
+    // Keeping the scale, but adding a persp will make transform fail.
+    matrix.setPerspX(7);
+    assert_transform_failure(reporter, orig, matrix);
+
+    // Scaling in -y will flip the round rect vertically.
+    matrix.reset();
+    matrix.setScaleY(SkIntToScalar(-1));
+    dst.setEmpty();
+    success = orig.transform(matrix, &dst);
+    REPORTER_ASSERT(reporter, success);
+    {
+        GET_RADII;
+        // Radii have swapped in y.
+        REPORTER_ASSERT(reporter, origUL == dstLL);
+        REPORTER_ASSERT(reporter, origUR == dstLR);
+        REPORTER_ASSERT(reporter, origLR == dstUR);
+        REPORTER_ASSERT(reporter, origLL == dstUL);
+    }
+    // Width and height remain the same.
+    REPORTER_ASSERT(reporter, orig.rect().width() == dst.rect().width());
+    REPORTER_ASSERT(reporter, orig.rect().height() == dst.rect().height());
+    // Top and bottom have swapped (sort of)
+    REPORTER_ASSERT(reporter, orig.rect().top() == -dst.rect().bottom());
+    // Left has stayed the same.
+    REPORTER_ASSERT(reporter, orig.rect().left() == dst.rect().left());
+
+    // Scaling in -x and -y will swap in both directions.
+    matrix.reset();
+    matrix.setScaleY(SkIntToScalar(-1));
+    matrix.setScaleX(SkIntToScalar(-1));
+    dst.setEmpty();
+    success = orig.transform(matrix, &dst);
+    REPORTER_ASSERT(reporter, success);
+    {
+        GET_RADII;
+        REPORTER_ASSERT(reporter, origUL == dstLR);
+        REPORTER_ASSERT(reporter, origUR == dstLL);
+        REPORTER_ASSERT(reporter, origLR == dstUL);
+        REPORTER_ASSERT(reporter, origLL == dstUR);
+    }
+    // Width and height remain the same.
+    REPORTER_ASSERT(reporter, orig.rect().width() == dst.rect().width());
+    REPORTER_ASSERT(reporter, orig.rect().height() == dst.rect().height());
+    REPORTER_ASSERT(reporter, orig.rect().top() == -dst.rect().bottom());
+    REPORTER_ASSERT(reporter, orig.rect().right() == -dst.rect().left());
+
+    // Scale in both directions.
+    SkScalar xScale = SkIntToScalar(3);
+    SkScalar yScale = 3.2f;
+    matrix.reset();
+    matrix.setScaleX(xScale);
+    matrix.setScaleY(yScale);
+    dst.setEmpty();
+    success = orig.transform(matrix, &dst);
+    REPORTER_ASSERT(reporter, success);
+    // Radii are scaled.
+    for (int i = 0; i < 4; ++i) {
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.radii((SkRRect::Corner) i).fX,
+                                    SkScalarMul(orig.radii((SkRRect::Corner) i).fX, xScale)));
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.radii((SkRRect::Corner) i).fY,
+                                    SkScalarMul(orig.radii((SkRRect::Corner) i).fY, yScale)));
+    }
+    REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.rect().width(),
+                                                  SkScalarMul(orig.rect().width(), xScale)));
+    REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.rect().height(),
+                                                  SkScalarMul(orig.rect().height(), yScale)));
+    REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.rect().left(),
+                                                  SkScalarMul(orig.rect().left(), xScale)));
+    REPORTER_ASSERT(reporter, SkScalarNearlyEqual(dst.rect().top(),
+                                                  SkScalarMul(orig.rect().top(), yScale)));
+}
+
+static void test_round_rect_transform(skiatest::Reporter* reporter) {
+    SkRRect rrect;
+    {
+        SkRect r = { 0, 0, kWidth, kHeight };
+        rrect.setRectXY(r, SkIntToScalar(4), SkIntToScalar(7));
+        test_transform_helper(reporter, rrect);
+    }
+    {
+        SkRect r = { SkIntToScalar(5), SkIntToScalar(15),
+                     SkIntToScalar(27), SkIntToScalar(34) };
+        SkVector radii[4] = { { 0, SkIntToScalar(1) },
+                              { SkIntToScalar(2), SkIntToScalar(3) },
+                              { SkIntToScalar(4), SkIntToScalar(5) },
+                              { SkIntToScalar(6), SkIntToScalar(7) } };
+        rrect.setRectRadii(r, radii);
+        test_transform_helper(reporter, rrect);
+    }
+}
+
+// Test out the case where an oval already off in space is translated/scaled 
+// further off into space - yielding numerical issues when the rect & radii
+// are transformed separatly
+// BUG=skia:2696
+static void test_issue_2696(skiatest::Reporter* reporter) {
+    SkRRect rrect;
+    SkRect r = { 28443.8594f, 53.1428604f, 28446.7148f, 56.0000038f };
+    rrect.setOval(r);
+
+    SkMatrix xform;
+    xform.setAll(2.44f,  0.0f, 485411.7f,
+                 0.0f,  2.44f,   -438.7f,
+                 0.0f,   0.0f,      1.0f);
+    SkRRect dst;
+
+    bool success = rrect.transform(xform, &dst);
+    REPORTER_ASSERT(reporter, success);
+
+    SkScalar halfWidth = SkScalarHalf(dst.width());
+    SkScalar halfHeight = SkScalarHalf(dst.height());
+
+    for (int i = 0; i < 4; ++i) {
+        REPORTER_ASSERT(reporter, 
+                        SkScalarNearlyEqual(dst.radii((SkRRect::Corner)i).fX, halfWidth));
+        REPORTER_ASSERT(reporter, 
+                        SkScalarNearlyEqual(dst.radii((SkRRect::Corner)i).fY, halfHeight));
+    }
+}
+
+DEF_TEST(RoundRect, reporter) {
     test_round_rect_basic(reporter);
     test_round_rect_rects(reporter);
     test_round_rect_ovals(reporter);
@@ -459,7 +675,8 @@ static void TestRoundRect(skiatest::Reporter* reporter) {
     test_round_rect_iffy_parameters(reporter);
     test_inset(reporter);
     test_round_rect_contains_rect(reporter);
+    test_round_rect_transform(reporter);
+    test_issue_2696(reporter);
+    test_tricky_radii(reporter);
+    test_empty_crbug_458524(reporter);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("RoundRect", TestRoundRectClass, TestRoundRect)

@@ -30,7 +30,7 @@
  * file (if one is in use). If a GR_GL_CUSTOM_SETUP_HEADER is used they can
  * also be placed there.
  *
- * GR_GL_LOG_CALLS: if 1 Gr can print every GL call using GrPrintf. Defaults to
+ * GR_GL_LOG_CALLS: if 1 Gr can print every GL call using SkDebugf. Defaults to
  * 0. Logging can be enabled and disabled at runtime using a debugger via to
  * global gLogCallsGL. The initial value of gLogCallsGL is controlled by
  * GR_GL_LOG_CALLS_START.
@@ -39,18 +39,12 @@
  * GR_GL_LOG_CALLS is 1. Defaults to 0.
  *
  * GR_GL_CHECK_ERROR: if enabled Gr can do a glGetError() after every GL call.
- * Defaults to 1 if GR_DEBUG is set, otherwise 0. When GR_GL_CHECK_ERROR is 1
+ * Defaults to 1 if SK_DEBUG is set, otherwise 0. When GR_GL_CHECK_ERROR is 1
  * this can be toggled in a debugger using the gCheckErrorGL global. The initial
  * value of gCheckErrorGL is controlled by by GR_GL_CHECK_ERROR_START.
  *
  * GR_GL_CHECK_ERROR_START: controls the initial value of gCheckErrorGL
  * when GR_GL_CHECK_ERROR is 1.  Defaults to 1.
- *
- * GR_GL_NO_CONSTANT_ATTRIBUTES: if this evaluates to true then the GL backend
- * will use uniforms instead of attributes in all cases when there is not
- * per-vertex data. This is important when the underlying GL implementation
- * doesn't actually support immediate style attribute values (e.g. when
- * the GL stream is converted to DX as in ANGLE on Chrome). Defaults to 0.
  *
  * GR_GL_USE_BUFFER_DATA_NULL_HINT: When specifing new data for a vertex/index
  * buffer that replaces old data Ganesh can give a hint to the driver that the
@@ -71,15 +65,6 @@
  * The GrGLInterface field fCallback specifies the function ptr and there is an
  * additional field fCallbackData of type intptr_t for client data.
  *
- * GR_GL_RGBA_8888_PIXEL_OPS_SLOW: Set this to 1 if it is known that performing
- * glReadPixels / glTex(Sub)Image with format=GL_RGBA, type=GL_UNISIGNED_BYTE is
- * significantly slower than format=GL_BGRA, type=GL_UNISIGNED_BYTE.
- *
- * GR_GL_FULL_READPIXELS_FASTER_THAN_PARTIAL: Set this to 1 if calling
- * glReadPixels to read the entire framebuffer is faster than calling it with
- * the same sized rectangle but with a framebuffer bound that is larger than
- * the rectangle read.
- *
  * GR_GL_CHECK_ALLOC_WITH_GET_ERROR: If set to 1 this will then glTexImage,
  * glBufferData, glRenderbufferStorage, etc will be checked for errors. This
  * amounts to ensuring the error is GL_NO_ERROR, calling the allocating
@@ -93,10 +78,6 @@
  * stencil formats as attachments. If the FBO is complete we will assume
  * subsequent attachments with the same formats are complete as well.
  *
- * GR_GL_USE_NV_PATH_RENDERING: Enable experimental support for
- * GL_NV_path_rendering. There are known issues with clipping, non-AA paths, and
- * perspective.
- *
  * GR_GL_MUST_USE_VBO: Indicates that all vertices and indices must be rendered
  * from VBOs. Chromium's command buffer doesn't allow glVertexAttribArray with
  * ARARY_BUFFER 0 bound or glDrawElements with ELEMENT_ARRAY_BUFFER 0 bound.
@@ -107,7 +88,11 @@
  */
 
 #if !defined(GR_GL_LOG_CALLS)
-    #define GR_GL_LOG_CALLS                             GR_DEBUG
+    #ifdef SK_DEBUG
+        #define GR_GL_LOG_CALLS 1
+    #else
+        #define GR_GL_LOG_CALLS 0
+    #endif
 #endif
 
 #if !defined(GR_GL_LOG_CALLS_START)
@@ -115,15 +100,15 @@
 #endif
 
 #if !defined(GR_GL_CHECK_ERROR)
-    #define GR_GL_CHECK_ERROR                           GR_DEBUG
+    #ifdef SK_DEBUG
+        #define GR_GL_CHECK_ERROR 1
+    #else
+        #define GR_GL_CHECK_ERROR 0
+    #endif
 #endif
 
 #if !defined(GR_GL_CHECK_ERROR_START)
     #define GR_GL_CHECK_ERROR_START                     1
-#endif
-
-#if !defined(GR_GL_NO_CONSTANT_ATTRIBUTES)
-    #define GR_GL_NO_CONSTANT_ATTRIBUTES                0
 #endif
 
 #if !defined(GR_GL_USE_BUFFER_DATA_NULL_HINT)
@@ -134,24 +119,12 @@
     #define GR_GL_PER_GL_FUNC_CALLBACK                  0
 #endif
 
-#if !defined(GR_GL_RGBA_8888_PIXEL_OPS_SLOW)
-    #define GR_GL_RGBA_8888_PIXEL_OPS_SLOW              0
-#endif
-
-#if !defined(GR_GL_FULL_READPIXELS_FASTER_THAN_PARTIAL)
-    #define GR_GL_FULL_READPIXELS_FASTER_THAN_PARTIAL   0
-#endif
-
 #if !defined(GR_GL_CHECK_ALLOC_WITH_GET_ERROR)
     #define GR_GL_CHECK_ALLOC_WITH_GET_ERROR            1
 #endif
 
 #if !defined(GR_GL_CHECK_FBO_STATUS_ONCE_PER_FORMAT)
     #define GR_GL_CHECK_FBO_STATUS_ONCE_PER_FORMAT      0
-#endif
-
-#if !defined(GR_GL_USE_NV_PATH_RENDERING)
-    #define GR_GL_USE_NV_PATH_RENDERING                 0
 #endif
 
 #if !defined(GR_GL_MUST_USE_VBO)
@@ -187,8 +160,10 @@
  * Hopefully we will understand this better and have a cleaner fix or get a
  * OS/driver level fix.
  */
-#define GR_GL_MAC_BUFFER_OBJECT_PERFOMANCE_WORKAROUND   \
-    (GR_MAC_BUILD &&                                    \
-     !GR_GL_USE_BUFFER_DATA_NULL_HINT)
+#if (defined(SK_BUILD_FOR_MAC) && !GR_GL_USE_BUFFER_DATA_NULL_HINT)
+#       define GR_GL_MAC_BUFFER_OBJECT_PERFOMANCE_WORKAROUND 1
+#else
+#       define GR_GL_MAC_BUFFER_OBJECT_PERFOMANCE_WORKAROUND 0
+#endif
 
 #endif

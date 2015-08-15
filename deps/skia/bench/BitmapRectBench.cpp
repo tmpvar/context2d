@@ -5,15 +5,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkBitmap.h"
-#include "SkPaint.h"
 #include "SkCanvas.h"
 #include "SkColorPriv.h"
+#include "SkPaint.h"
 #include "SkRandom.h"
 #include "SkString.h"
 
-static void drawIntoBitmap(const SkBitmap& bm) {
+static void draw_into_bitmap(const SkBitmap& bm) {
     const int w = bm.width();
     const int h = bm.height();
 
@@ -38,71 +38,77 @@ static void drawIntoBitmap(const SkBitmap& bm) {
     paint : filter-p
  */
 
-class BitmapRectBench : public SkBenchmark {
-    SkBitmap    fBitmap;
-    bool        fDoFilter;
-    bool        fSlightMatrix;
-    uint8_t     fAlpha;
-    SkString    fName;
-    SkRect      fSrcR, fDstR;
-    enum { N = SkBENCHLOOP(300) };
+class BitmapRectBench : public Benchmark {
+    SkBitmap                fBitmap;
+    bool                    fSlightMatrix;
+    uint8_t                 fAlpha;
+    SkFilterQuality         fFilterQuality;
+    SkString                fName;
+    SkRect                  fSrcR, fDstR;
+
+    static const int kWidth = 128;
+    static const int kHeight = 128;
 public:
-    BitmapRectBench(void* param, U8CPU alpha, bool doFilter, bool slightMatrix) : INHERITED(param) {
+    BitmapRectBench(U8CPU alpha, SkFilterQuality filterQuality,
+                    bool slightMatrix)  {
         fAlpha = SkToU8(alpha);
-        fDoFilter = doFilter;
+        fFilterQuality = filterQuality;
         fSlightMatrix = slightMatrix;
 
-        const int w = 128;
-        const int h = 128;
+        fBitmap.setInfo(SkImageInfo::MakeN32Premul(kWidth, kHeight));
+    }
 
-        fBitmap.setConfig(SkBitmap::kARGB_8888_Config, w, h);
+protected:
+    const char* onGetName() override {
+        fName.printf("bitmaprect_%02X_%sfilter_%s",
+                     fAlpha,
+                     kNone_SkFilterQuality == fFilterQuality ? "no" : "",
+                     fSlightMatrix ? "trans" : "identity");
+        return fName.c_str();
+    }
+
+    void onPreDraw() override {
         fBitmap.allocPixels();
-        fBitmap.setIsOpaque(true);
+        fBitmap.setAlphaType(kOpaque_SkAlphaType);
         fBitmap.eraseColor(SK_ColorBLACK);
-        drawIntoBitmap(fBitmap);
+        draw_into_bitmap(fBitmap);
 
-        fSrcR.iset(0, 0, w, h);
-        fDstR.iset(0, 0, w, h);
+        fSrcR.iset(0, 0, kWidth, kHeight);
+        fDstR.iset(0, 0, kWidth, kHeight);
 
-        if (slightMatrix) {
+        if (fSlightMatrix) {
             // want fractional translate
             fDstR.offset(SK_Scalar1 / 3, SK_Scalar1 * 5 / 7);
             // want enough to create a scale matrix, but not enough to scare
             // off our sniffer which tries to see if the matrix is "effectively"
             // translate-only.
-            fDstR.fRight += SK_Scalar1 / (w * 60);
+            fDstR.fRight += SK_Scalar1 / (kWidth * 60);
         }
     }
 
-protected:
-    virtual const char* onGetName() {
-        fName.printf("bitmaprect_%02X_%sfilter_%s",
-                     fAlpha, fDoFilter ? "" : "no",
-                     fSlightMatrix ? "trans" : "identity");
-        return fName.c_str();
-    }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(const int loops, SkCanvas* canvas) override {
         SkRandom rand;
 
         SkPaint paint;
         this->setupPaint(&paint);
-        paint.setFilterBitmap(fDoFilter);
+        paint.setFilterQuality(fFilterQuality);
         paint.setAlpha(fAlpha);
 
-        for (int i = 0; i < N; i++) {
-            canvas->drawBitmapRectToRect(fBitmap, &fSrcR, fDstR, &paint);
+        for (int i = 0; i < loops; i++) {
+            canvas->drawBitmapRect(fBitmap, fSrcR, fDstR, &paint,
+                                   SkCanvas::kStrict_SrcRectConstraint);
         }
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
-DEF_BENCH(return new BitmapRectBench(p, 0xFF, false, false))
-DEF_BENCH(return new BitmapRectBench(p, 0x80, false, false))
-DEF_BENCH(return new BitmapRectBench(p, 0xFF, true, false))
-DEF_BENCH(return new BitmapRectBench(p, 0x80, true, false))
+DEF_BENCH(return new BitmapRectBench(0xFF, kNone_SkFilterQuality, false))
+DEF_BENCH(return new BitmapRectBench(0x80, kNone_SkFilterQuality, false))
+DEF_BENCH(return new BitmapRectBench(0xFF, kLow_SkFilterQuality, false))
+DEF_BENCH(return new BitmapRectBench(0x80, kLow_SkFilterQuality, false))
 
-DEF_BENCH(return new BitmapRectBench(p, 0xFF, false, true))
-DEF_BENCH(return new BitmapRectBench(p, 0xFF, true, true))
+DEF_BENCH(return new BitmapRectBench(0xFF, kNone_SkFilterQuality, true))
+DEF_BENCH(return new BitmapRectBench(0xFF, kLow_SkFilterQuality, true))

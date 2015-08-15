@@ -1,10 +1,10 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
 #include "SkView.h"
 #include "SkCanvas.h"
@@ -35,14 +35,12 @@ public:
         fBitmaps = new SkBitmap[fBitmapCount];
 
         for (int i = 0; i < fBitmapCount/2; i++) {
-            SkImageDecoder::DecodeFile(gNames[i], &fBitmaps[i],
-                                       SkBitmap::kARGB_8888_Config,
-                                   SkImageDecoder::kDecodePixels_Mode, NULL);
+            SkImageDecoder::DecodeFile(gNames[i], &fBitmaps[i], kN32_SkColorType,
+                                       SkImageDecoder::kDecodePixels_Mode, NULL);
         }
         for (int i = fBitmapCount/2; i < fBitmapCount; i++) {
-            SkImageDecoder::DecodeFile(gNames[i-fBitmapCount/2], &fBitmaps[i],
-                                       SkBitmap::kRGB_565_Config,
-                                   SkImageDecoder::kDecodePixels_Mode, NULL);
+            SkImageDecoder::DecodeFile(gNames[i-fBitmapCount/2], &fBitmaps[i], kRGB_565_SkColorType,
+                                       SkImageDecoder::kDecodePixels_Mode, NULL);
         }
         fCurrIndex = 0;
 
@@ -72,18 +70,18 @@ protected:
         const SkScalar H = SkIntToScalar(fBitmaps[0].height() + 1);
         SkPaint paint;
 
-        const SkScalar scale = SkFloatToScalar(0.897917f);
+        const SkScalar scale = 0.897917f;
         canvas->scale(SK_Scalar1, scale);
 
         for (int k = 0; k < 2; k++) {
-            paint.setFilterBitmap(k == 1);
+            paint.setFilterQuality(k == 1 ? kLow_SkFilterQuality : kNone_SkFilterQuality);
             for (int j = 0; j < 2; j++) {
                 paint.setDither(j == 1);
                 for (int i = 0; i < fBitmapCount; i++) {
                     SkScalar x = (k * fBitmapCount + j) * W;
                     SkScalar y = i * H;
-                    x = SkIntToScalar(SkScalarRound(x));
-                    y = SkIntToScalar(SkScalarRound(y));
+                    x = SkScalarRoundToScalar(x);
+                    y = SkScalarRoundToScalar(y);
                     canvas->drawBitmap(fBitmaps[i], x, y, &paint);
                     if (i == 0) {
                         SkPaint p;
@@ -93,7 +91,7 @@ protected:
                         SkString s("dither=");
                         s.appendS32(paint.isDither());
                         s.append(" filter=");
-                        s.appendS32(paint.isFilterBitmap());
+                        s.appendS32(paint.getFilterQuality() != kNone_SkFilterQuality);
                         canvas->drawText(s.c_str(), s.size(), x + W/2,
                                          y - p.getTextSize(), p);
                     }
@@ -103,7 +101,7 @@ protected:
                         p.setTextSize(SkIntToScalar(18));
                         SkString s;
                         s.append(" depth=");
-                        s.appendS32(fBitmaps[i].config() == SkBitmap::kRGB_565_Config ? 16 : 32);
+                        s.appendS32(fBitmaps[i].colorType() == kRGB_565_SkColorType ? 16 : 32);
                         canvas->drawText(s.c_str(), s.size(), x + W + SkIntToScalar(4),
                                          y + H/2, p);
                     }

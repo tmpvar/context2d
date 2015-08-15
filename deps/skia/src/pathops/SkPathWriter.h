@@ -13,6 +13,7 @@ class SkPathWriter {
 public:
     SkPathWriter(SkPath& path);
     void close();
+    void conicTo(const SkPoint& pt1, const SkPoint& pt2, SkScalar weight);
     void cubicTo(const SkPoint& pt1, const SkPoint& pt2, const SkPoint& pt3);
     void deferredLine(const SkPoint& pt);
     void deferredMove(const SkPoint& pt);
@@ -40,6 +41,5 @@ private:
     bool fHasMove;
     bool fMoved;
 };
-
 
 #endif /* defined(__PathOps__SkPathWriter__) */

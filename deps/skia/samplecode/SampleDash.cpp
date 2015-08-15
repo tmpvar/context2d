@@ -17,8 +17,7 @@ static void setBitmapDash(SkPaint* paint, int width) {
     SkColor c = paint->getColor();
 
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 2, 1);
-    bm.allocPixels();
+    bm.allocN32Pixels(2, 1);
     bm.lockPixels();
     *bm.getAddr32(0, 0) = SkPreMultiplyARGB(0xFF, SkColorGetR(c),
                                             SkColorGetG(c), SkColorGetB(c));
@@ -29,8 +28,7 @@ static void setBitmapDash(SkPaint* paint, int width) {
     matrix.setScale(SkIntToScalar(width), SK_Scalar1);
 
     SkShader* s = SkShader::CreateBitmapShader(bm, SkShader::kRepeat_TileMode,
-                                               SkShader::kClamp_TileMode);
-    s->setLocalMatrix(matrix);
+                                               SkShader::kClamp_TileMode, &matrix);
 
     paint->setShader(s)->unref();
 }

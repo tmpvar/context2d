@@ -5,7 +5,12 @@
  * found in the LICENSE file.
  */
 #include "SkOpContour.h"
+#include "SkOpSegment.h"
 #include "SkPath.h"
+
+#ifdef SK_DEBUG
+#include "SkPathOpsPoint.h"
+#endif
 
 class SkIntersectionHelper {
 public:
@@ -14,39 +19,13 @@ public:
         kVerticalLine_Segment = 0,
         kLine_Segment = SkPath::kLine_Verb,
         kQuad_Segment = SkPath::kQuad_Verb,
+        kConic_Segment = SkPath::kConic_Verb,
         kCubic_Segment = SkPath::kCubic_Verb,
     };
 
-    void addCoincident(SkIntersectionHelper& other, const SkIntersections& ts, bool swap) {
-        fContour->addCoincident(fIndex, other.fContour, other.fIndex, ts, swap);
-    }
-
-    // FIXME: does it make sense to write otherIndex now if we're going to
-    // fix it up later?
-    void addOtherT(int index, double otherT, int otherIndex) {
-        fContour->addOtherT(fIndex, index, otherT, otherIndex);
-    }
-
-    // Avoid collapsing t values that are close to the same since
-    // we walk ts to describe consecutive intersections. Since a pair of ts can
-    // be nearly equal, any problems caused by this should be taken care
-    // of later.
-    // On the edge or out of range values are negative; add 2 to get end
-    int addT(const SkIntersectionHelper& other, const SkPoint& pt, double newT) {
-        return fContour->addT(fIndex, other.fContour, other.fIndex, pt, newT);
-    }
-
-    int addSelfT(const SkIntersectionHelper& other, const SkPoint& pt, double newT) {
-        return fContour->addSelfT(fIndex, other.fContour, other.fIndex, pt, newT);
-    }
-
-    int addUnsortableT(const SkIntersectionHelper& other, bool start, const SkPoint& pt,
-                       double newT) {
-        return fContour->addUnsortableT(fIndex, other.fContour, other.fIndex, start, pt, newT);
-    }
-
     bool advance() {
-        return ++fIndex < fLast;
+        fSegment = fSegment->next();
+        return fSegment != NULL;
     }
 
     SkScalar bottom() const {
@@ -54,22 +33,15 @@ public:
     }
 
     const SkPathOpsBounds& bounds() const {
-        return fContour->segments()[fIndex].bounds();
+        return fSegment->bounds();
+    }
+
+    SkOpContour* contour() const {
+        return fSegment->contour();
     }
 
     void init(SkOpContour* contour) {
-        fContour = contour;
-        fIndex = 0;
-        fLast = contour->segments().count();
-    }
-
-    bool isAdjacent(const SkIntersectionHelper& next) {
-        return fContour == next.fContour && fIndex + 1 == next.fIndex;
-    }
-
-    bool isFirstLast(const SkIntersectionHelper& next) {
-        return fContour == next.fContour && fIndex == 0
-                && next.fIndex == fLast - 1;
+        fSegment = contour->first();
     }
 
     SkScalar left() const {
@@ -77,39 +49,42 @@ public:
     }
 
     const SkPoint* pts() const {
-        return fContour->segments()[fIndex].pts();
+        return fSegment->pts();
     }
 
     SkScalar right() const {
         return bounds().fRight;
     }
 
+    SkOpSegment* segment() const {
+        return fSegment;
+    }
+
     SegmentType segmentType() const {
-        const SkOpSegment& segment = fContour->segments()[fIndex];
-        SegmentType type = (SegmentType) segment.verb();
+        SegmentType type = (SegmentType) fSegment->verb();
         if (type != kLine_Segment) {
             return type;
         }
-        if (segment.isHorizontal()) {
+        if (fSegment->isHorizontal()) {
             return kHorizontalLine_Segment;
         }
-        if (segment.isVertical()) {
+        if (fSegment->isVertical()) {
             return kVerticalLine_Segment;
         }
         return kLine_Segment;
     }
 
     bool startAfter(const SkIntersectionHelper& after) {
-        fIndex = after.fIndex;
-        return advance();
+        fSegment = after.fSegment->next();
+        return fSegment != NULL;
     }
 
     SkScalar top() const {
         return bounds().fTop;
     }
 
-    SkPath::Verb verb() const {
-        return fContour->segments()[fIndex].verb();
+    SkScalar weight() const {
+        return fSegment->weight();
     }
 
     SkScalar x() const {
@@ -129,7 +104,5 @@ public:
     }
 
 private:
-    SkOpContour* fContour;
-    int fIndex;
-    int fLast;
+    SkOpSegment* fSegment;
 };

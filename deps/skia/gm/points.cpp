@@ -15,12 +15,13 @@ public:
     PointsGM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("points");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(640, 490);
+    SkISize onISize() override {
+        return SkISize::Make(640, 490);
     }
 
     static void fill_pts(SkPoint pts[], size_t n, SkRandom* rand) {
@@ -34,7 +35,7 @@ protected:
         }
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         canvas->translate(SK_Scalar1, SK_Scalar1);
 
         SkRandom rand;

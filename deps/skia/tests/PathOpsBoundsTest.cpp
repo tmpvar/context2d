@@ -4,7 +4,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "PathOpsTestCommon.h"
 #include "SkPathOpsBounds.h"
+#include "SkPathOpsCurve.h"
 #include "Test.h"
 
 static const SkRect sectTests[][2] = {
@@ -27,34 +29,20 @@ static const SkRect noSectTests[][2] = {
 
 static const size_t noSectTestsCount = SK_ARRAY_COUNT(noSectTests);
 
-static const SkRect reallyEmpty[] = {
-    {0, 0, 0, 0},
-    {1, 1, 1, 0},
-    {1, 1, 0, 1},
-    {1, 1, 0, 0},
-    {1, 2, 3, SK_ScalarNaN},
-};
-
-static const size_t emptyTestsCount = SK_ARRAY_COUNT(reallyEmpty);
-
-static const SkRect notReallyEmpty[] = {
-    {0, 0, 1, 0},
-    {0, 0, 0, 1},
-    {0, 0, 1, 1},
-};
-
-static const size_t notEmptyTestsCount = SK_ARRAY_COUNT(notReallyEmpty);
-
-static void PathOpsBoundsTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsBounds, reporter) {
     for (size_t index = 0; index < sectTestsCount; ++index) {
         const SkPathOpsBounds& bounds1 = static_cast<const SkPathOpsBounds&>(sectTests[index][0]);
+        SkASSERT(ValidBounds(bounds1));
         const SkPathOpsBounds& bounds2 = static_cast<const SkPathOpsBounds&>(sectTests[index][1]);
+        SkASSERT(ValidBounds(bounds2));
         bool touches = SkPathOpsBounds::Intersects(bounds1, bounds2);
         REPORTER_ASSERT(reporter, touches);
     }
     for (size_t index = 0; index < noSectTestsCount; ++index) {
         const SkPathOpsBounds& bounds1 = static_cast<const SkPathOpsBounds&>(noSectTests[index][0]);
+        SkASSERT(ValidBounds(bounds1));
         const SkPathOpsBounds& bounds2 = static_cast<const SkPathOpsBounds&>(noSectTests[index][1]);
+        SkASSERT(ValidBounds(bounds2));
         bool touches = SkPathOpsBounds::Intersects(bounds1, bounds2);
         REPORTER_ASSERT(reporter, !touches);
     }
@@ -69,38 +57,18 @@ static void PathOpsBoundsTest(skiatest::Reporter* reporter) {
     ordinal.set(1, 2, 3, 4);
     bounds.add(ordinal);
     REPORTER_ASSERT(reporter, bounds == expected);
-    SkPoint topLeft = {0, 0};
-    bounds.setPointBounds(topLeft);
-    SkPoint botRight = {3, 4};
+    bounds.setEmpty();
+    SkDPoint botRight = {3, 4};
     bounds.add(botRight);
     REPORTER_ASSERT(reporter, bounds == expected);
-    for (size_t index = 0; index < emptyTestsCount; ++index) {
-        const SkPathOpsBounds& bounds = static_cast<const SkPathOpsBounds&>(reallyEmpty[index]);
-        bool empty = bounds.isReallyEmpty();
-        REPORTER_ASSERT(reporter, empty);
-    }
-    for (size_t index = 0; index < notEmptyTestsCount; ++index) {
-        const SkPathOpsBounds& bounds = static_cast<const SkPathOpsBounds&>(notReallyEmpty[index]);
-        bool empty = bounds.isReallyEmpty();
-        REPORTER_ASSERT(reporter, !empty);
-    }
     const SkPoint curvePts[] = {{0, 0}, {1, 2}, {3, 4}, {5, 6}};
-    bounds.setLineBounds(curvePts);
-    expected.set(0, 0, 1, 2);
-    REPORTER_ASSERT(reporter, bounds == expected);
-    (bounds.*SetCurveBounds[1])(curvePts);
-    REPORTER_ASSERT(reporter, bounds == expected);
-    bounds.setQuadBounds(curvePts);
+    SkDCurve curve;
+    curve.fQuad.set(curvePts);
+    curve.setQuadBounds(curvePts, 1, 0, 1, &bounds);
     expected.set(0, 0, 3, 4);
     REPORTER_ASSERT(reporter, bounds == expected);
-    (bounds.*SetCurveBounds[2])(curvePts);
-    REPORTER_ASSERT(reporter, bounds == expected);
-    bounds.setCubicBounds(curvePts);
+    curve.fCubic.set(curvePts);
+    curve.setCubicBounds(curvePts, 1, 0, 1, &bounds);
     expected.set(0, 0, 5, 6);
     REPORTER_ASSERT(reporter, bounds == expected);
-    (bounds.*SetCurveBounds[3])(curvePts);
-    REPORTER_ASSERT(reporter, bounds == expected);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsBoundsTest)

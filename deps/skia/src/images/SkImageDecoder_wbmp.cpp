@@ -17,12 +17,12 @@
 
 class SkWBMPImageDecoder : public SkImageDecoder {
 public:
-    virtual Format getFormat() const SK_OVERRIDE {
+    Format getFormat() const override {
         return kWBMP_Format;
     }
 
 protected:
-    virtual bool onDecode(SkStream* stream, SkBitmap* bm, Mode) SK_OVERRIDE;
+    Result onDecode(SkStream* stream, SkBitmap* bm, Mode) override;
 
 private:
     typedef SkImageDecoder INHERITED;
@@ -93,44 +93,37 @@ static void expand_bits_to_bytes(uint8_t dst[], const uint8_t src[], int bits)
     if (bits > 0) {
         unsigned mask = *src;
         do {
-            *dst++ = (mask >> 7) & 1;;
+            *dst++ = (mask >> 7) & 1;
             mask <<= 1;
         } while (--bits != 0);
     }
 }
 
-bool SkWBMPImageDecoder::onDecode(SkStream* stream, SkBitmap* decodedBitmap,
-                                  Mode mode)
+SkImageDecoder::Result SkWBMPImageDecoder::onDecode(SkStream* stream, SkBitmap* decodedBitmap,
+                                                    Mode mode)
 {
     wbmp_head   head;
 
     if (!head.init(stream)) {
-        return false;
+        return kFailure;
     }
 
     int width = head.fWidth;
     int height = head.fHeight;
 
+    decodedBitmap->setInfo(SkImageInfo::Make(width, height,
+                                             kIndex_8_SkColorType, kOpaque_SkAlphaType));
+
     if (SkImageDecoder::kDecodeBounds_Mode == mode) {
-        decodedBitmap->setConfig(SkBitmap::kIndex8_Config, width, height);
-        decodedBitmap->setIsOpaque(true);
-        return true;
+        return kSuccess;
     }
-
-    // No Bitmap reuse supported for this format
-    if (!decodedBitmap->isNull()) {
-        return false;
-    }
-
-    decodedBitmap->setConfig(SkBitmap::kIndex8_Config, width, height);
-    decodedBitmap->setIsOpaque(true);
 
     const SkPMColor colors[] = { SK_ColorBLACK, SK_ColorWHITE };
     SkColorTable* ct = SkNEW_ARGS(SkColorTable, (colors, 2));
     SkAutoUnref   aur(ct);
 
     if (!this->allocPixelRef(decodedBitmap, ct)) {
-        return false;
+        return kFailure;
     }
 
     SkAutoLockPixels alp(*decodedBitmap);
@@ -142,7 +135,7 @@ bool SkWBMPImageDecoder::onDecode(SkStream* stream, SkBitmap* decodedBitmap,
     size_t srcSize = height * srcRB;
     uint8_t* src = dst + decodedBitmap->getSize() - srcSize;
     if (stream->read(src, srcSize) != srcSize) {
-        return false;
+        return kFailure;
     }
 
     for (int y = 0; y < height; y++)
@@ -152,16 +145,14 @@ bool SkWBMPImageDecoder::onDecode(SkStream* stream, SkBitmap* decodedBitmap,
         src += srcRB;
     }
 
-    return true;
+    return kSuccess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 DEFINE_DECODER_CREATOR(WBMPImageDecoder);
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkTRegistry.h"
-
-static SkImageDecoder* sk_wbmp_dfactory(SkStream* stream) {
+static SkImageDecoder* sk_wbmp_dfactory(SkStreamRewindable* stream) {
     wbmp_head   head;
 
     if (head.init(stream)) {
@@ -170,7 +161,7 @@ static SkImageDecoder* sk_wbmp_dfactory(SkStream* stream) {
     return NULL;
 }
 
-static SkImageDecoder::Format get_format_wbmp(SkStream* stream) {
+static SkImageDecoder::Format get_format_wbmp(SkStreamRewindable* stream) {
     wbmp_head head;
     if (head.init(stream)) {
         return SkImageDecoder::kWBMP_Format;
@@ -178,5 +169,5 @@ static SkImageDecoder::Format get_format_wbmp(SkStream* stream) {
     return SkImageDecoder::kUnknown_Format;
 }
 
-static SkTRegistry<SkImageDecoder*, SkStream*> gReg(sk_wbmp_dfactory);
-static SkTRegistry<SkImageDecoder::Format, SkStream*> gFormatReg(get_format_wbmp);
+static SkImageDecoder_DecodeReg gDReg(sk_wbmp_dfactory);
+static SkImageDecoder_FormatReg gFormatReg(get_format_wbmp);

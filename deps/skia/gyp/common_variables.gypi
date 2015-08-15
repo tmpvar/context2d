@@ -36,61 +36,109 @@
   # which deals with these same constraints in a similar manner.
   #
   'variables': {  # level 1
+    'angle_path%': '../',
     'variables': {  # level 2
 
       # Variables needed by conditions list within the level-2 variables dict.
       'variables': {  # level 3
-        # We use 'skia_os' instead of 'OS' throughout our gyp files, to allow
-        # for cross-compilation (e.g. building for either MacOS or iOS on Mac).
-        # We set it automatically based on 'OS' (the host OS), but allow the
-        # user to override it via GYP_DEFINES if they like.
-        'skia_os%': '<(OS)',
+        'variables': { # level 4
+          # We use 'skia_os' instead of 'OS' throughout our gyp files, to allow
+          # for cross-compilation (e.g. building for either MacOS or iOS on Mac).
+          # We set it automatically based on 'OS' (the host OS), but allow the
+          # user to override it via GYP_DEFINES if they like.
+          'skia_os%': '<(OS)',
+        },
+        'skia_os%': '<(skia_os)',
+
+        'skia_android_framework%': 0,
+        'conditions' : [
+          [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris", "mac"]', {
+            'skia_arch_type%': 'x86_64',
+          }, {
+            'skia_arch_type%': 'x86',
+          }],
+        ],
+        'arm_version%': 0,
+        'arm_neon%': 0,
+        'skia_egl%': 0,
       },
 
       # Re-define all variables defined within the level-3 'variables' dict,
       # so that siblings of the level-2 'variables' dict can see them.
-      'skia_os%': '<(skia_os)',
+      # (skia_os will depend on skia_android_framework.)
+      'skia_android_framework%': '<(skia_android_framework)',
+      'skia_arch_type%': '<(skia_arch_type)',
+      'arm_version%': '<(arm_version)',
+      'arm_neon%': '<(arm_neon)',
+      'skia_egl%': '<(skia_egl)',
 
       'conditions': [
+        [ 'skia_android_framework == 1', {
+          'skia_os%': 'android',
+          'skia_chrome_utils%': 0,
+          'skia_use_android_framework_defines%': 1,
+          'skia_use_system_json%': 1,
+        }, {
+          'skia_os%': '<(skia_os)',
+          'skia_chrome_utils%': 1,
+          'skia_use_android_framework_defines%': 0,
+          'skia_use_system_json%': 0,
+        }],
         [ 'skia_os == "win"', {
           'os_posix%': 0,
         }, {
           'os_posix%': 1,
         }],
-        [ 'skia_os in ["linux", "freebsd", "openbsd", "solaris"]', {
-          'skia_arch_width%': 64,
-        }, {
-          'skia_arch_width%': 32,
-        }],
         [ 'skia_os == "android"', {
           'skia_static_initializers%': 0,
+          'skia_egl%': 1,
         }, {
           'skia_static_initializers%': 1,
         }],
         [ 'skia_os == "ios"', {
           'skia_arch_type%': 'arm',
-          'armv7%': 1,
+          'arm_version%': 7,
           'arm_neon%': 0, # neon asm files known not to work with the ios build
-        },{ # skia_os is not ios
-          'skia_arch_type%': 'x86',
-          'armv7%': 0,
-          'arm_neon%': 0,
         }],
+        [ 'skia_os == "android" and not skia_android_framework',
+          # skia_freetype_static - on OS variants that normally would
+          #     dynamically link the system FreeType library, don't do
+          #     that; instead statically link to the version in
+          #     third_party/freetype and third_party/externals/freetype.
+          {
+            'skia_freetype_static%': '1',
+          }, {
+            'skia_freetype_static%': '0',
+          }
+        ],
       ],
 
+      # skia_no_fontconfig - On POSIX systems that would normally use the
+      #     SkFontHost_fontconfig interface; use the SkFontHost_linux
+      #     version instead.
+      'skia_no_fontconfig%': '0',
+      'skia_embedded_fonts%': '0',
+
+      'skia_sanitizer%': '',
       'skia_scalar%': 'float',
       'skia_mesa%': 0,
-      'skia_nv_path_rendering%': 0,
+      'skia_gpu_extra_dependency_path%': '',
+      'skia_gpu_extra_tests_path%': '',
       'skia_stroke_path_rendering%': 0,
       'skia_android_path_rendering%': 0,
-      'skia_texture_cache_mb_limit%': 0,
+      'skia_resource_cache_mb_limit%': 0,
+      'skia_resource_cache_count_limit%': 0,
       'skia_angle%': 0,
-      'skia_directwrite%': 0,
+      'skia_gdi%': 0,
       'skia_gpu%': 1,
-      'skia_osx_sdkroot%': '',
+      'skia_osx_deployment_target%': '',
+      'skia_pdf%': 1,
       'skia_profile_enabled%': 0,
+      'skia_vulkan%': 0,
       'skia_win_debuggers_path%': '',
       'skia_shared_lib%': 0,
+      'skia_opencl%': 0,
+      'skia_force_distance_field_text%': 0,
 
       # These variables determine the default optimization level for different
       # compilers.
@@ -99,9 +147,8 @@
     },
 
     'conditions': [
-      [ 'skia_os == "win" and skia_arch_width == 32 or '
-        'skia_os in ["linux", "freebsd", "openbsd", "solaris", "android"] or '
-        'skia_os == "mac" and skia_arch_width == 32', {
+      [ 'skia_os in ["mac", "linux", "freebsd", "openbsd", "solaris", "android", "win"] '
+            'and skia_android_framework == 0', {
         'skia_warnings_as_errors%': 1,
       }, {
         'skia_warnings_as_errors%': 0,
@@ -116,33 +163,76 @@
       }, {
         'skia_release_optimization_level%': '<(skia_default_gcc_optimization_level)',
       }],
+      [ 'skia_sanitizer', {
+        'skia_clang_build': 1,
+        'skia_keep_frame_pointer': 1,
+      }, {
+        'skia_clang_build%': 0,
+        'skia_keep_frame_pointer%': 0,
+      }],
+      [ 'skia_shared_lib or skia_sanitizer or skia_os == "android"', {
+          'skia_pic%' : 1,
+        }, {
+          'skia_pic%' : 0,
+        }
+      ],
     ],
 
     # Re-define all variables defined within the level-2 'variables' dict,
     # so that siblings of the level-1 'variables' dict can see them.
-    'armv7%': '<(armv7)',
+    'arm_version%': '<(arm_version)',
     'arm_neon%': '<(arm_neon)',
+    'arm_neon_optional%': 0,
+    'mips_arch_variant%': 'mips32',
+    'mips_dsp%': 0,
     'skia_os%': '<(skia_os)',
     'os_posix%': '<(os_posix)',
+
+    'skia_freetype_static%': '<(skia_freetype_static)',
+    'skia_no_fontconfig%': '<(skia_no_fontconfig)',
+    'skia_embedded_fonts%': '<(skia_embedded_fonts)',
+    'skia_sanitizer%': '<(skia_sanitizer)',
     'skia_scalar%': '<(skia_scalar)',
     'skia_mesa%': '<(skia_mesa)',
-    'skia_nv_path_rendering%': '<(skia_nv_path_rendering)',
+    'skia_gpu_extra_dependency_path%': '<(skia_gpu_extra_dependency_path)',
+    'skia_gpu_extra_tests_path%': '<(skia_gpu_extra_tests_path)',
     'skia_stroke_path_rendering%': '<(skia_stroke_path_rendering)',
+    'skia_android_framework%': '<(skia_android_framework)',
+    'skia_use_android_framework_defines%': '<(skia_use_android_framework_defines)',
+    'skia_use_system_json%': '<(skia_use_system_json)',
     'skia_android_path_rendering%': '<(skia_android_path_rendering)',
-    'skia_texture_cache_mb_limit%': '<(skia_texture_cache_mb_limit)',
+    'skia_resource_cache_mb_limit%': '<(skia_resource_cache_mb_limit)',
+    'skia_resource_cache_count_limit%': '<(skia_resource_cache_count_limit)',
     'skia_angle%': '<(skia_angle)',
-    'skia_arch_width%': '<(skia_arch_width)',
     'skia_arch_type%': '<(skia_arch_type)',
-    'skia_directwrite%': '<(skia_directwrite)',
+    'skia_chrome_utils%': '<(skia_chrome_utils)',
+    'skia_gdi%': '<(skia_gdi)',
     'skia_gpu%': '<(skia_gpu)',
+    'skia_vulkan%': '<(skia_vulkan)',
     'skia_win_exceptions%': 0,
-    'skia_osx_sdkroot%': '<(skia_osx_sdkroot)',
+    'skia_win_ltcg%': 1,
+    'sknx_no_simd%': 0,
+    'skia_osx_deployment_target%': '<(skia_osx_deployment_target)',
+    'skia_pdf%': '<(skia_pdf)',
     'skia_profile_enabled%': '<(skia_profile_enabled)',
     'skia_shared_lib%': '<(skia_shared_lib)',
+    'skia_opencl%': '<(skia_opencl)',
+    'skia_force_distance_field_text%': '<(skia_force_distance_field_text)',
     'skia_static_initializers%': '<(skia_static_initializers)',
     'ios_sdk_version%': '6.0',
     'skia_win_debuggers_path%': '<(skia_win_debuggers_path)',
-    'skia_asan_build%': 0,
+    'skia_disable_inlining%': 0,
+    'skia_moz2d%': 0,
+    'skia_is_bot%': '<!(python -c "import os; print os.environ.get(\'CHROME_HEADLESS\', 0)")',
+    'skia_egl%': '<(skia_egl)',
+    'skia_fast%': 0,
+    'skia_fast_flags': [
+        '-O3',                   # Even for Debug builds.
+        '-march=native',         # Use all features of and optimize for THIS machine.
+        '-fomit-frame-pointer',  # Sometimes an extra register is nice, and cuts a push/pop.
+        '-ffast-math',           # Optimize float math even when it breaks IEEE compliance.
+        #'-flto'                  # Enable link-time optimization.
+    ],
 
     # These are referenced by our .gypi files that list files (e.g. core.gypi)
     #
@@ -150,8 +240,3 @@
     'skia_include_path%': '../include',
   },
 }
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

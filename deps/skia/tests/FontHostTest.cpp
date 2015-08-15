@@ -5,12 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
-#include "SkPaint.h"
+#include "Resources.h"
+#include "SkEndian.h"
 #include "SkFontStream.h"
+#include "SkOSFile.h"
+#include "SkPaint.h"
 #include "SkStream.h"
 #include "SkTypeface.h"
-#include "SkEndian.h"
+#include "Test.h"
 
 //#define DUMP_TABLES
 //#define DUMP_TTC_TABLES
@@ -25,35 +27,91 @@ static const struct TagSize {
 } gKnownTableSizes[] = {
     {   kFontTableTag_head,         54 },
     {   kFontTableTag_hhea,         36 },
-    {   kFontTableTag_maxp,         32 },
 };
 
 // Test that getUnitsPerEm() agrees with a direct lookup in the 'head' table
-// (if that table is available.
+// (if that table is available).
 static void test_unitsPerEm(skiatest::Reporter* reporter, SkTypeface* face) {
-    int nativeUPEM = face->getUnitsPerEm();;
+    int nativeUPEM = face->getUnitsPerEm();
 
     int tableUPEM = -1;
     size_t size = face->getTableSize(kFontTableTag_head);
     if (size) {
-        SkAutoMalloc storage(size);
-        char* ptr = (char*)storage.get();
-        face->getTableData(kFontTableTag_head, 0, size, ptr);
         // unitsPerEm is at offset 18 into the 'head' table.
-        tableUPEM = SkEndian_SwapBE16(*(uint16_t*)&ptr[18]);
+        uint16_t rawUPEM;
+        face->getTableData(kFontTableTag_head, 18, sizeof(rawUPEM), &rawUPEM);
+        tableUPEM = SkEndian_SwapBE16(rawUPEM);
     }
-//    SkDebugf("--- typeface returned %d upem [%X]\n", nativeUPEM, face->uniqueID());
 
     if (tableUPEM >= 0) {
         REPORTER_ASSERT(reporter, tableUPEM == nativeUPEM);
-    } else {
-        // not sure this is a bug, but lets report it for now as info.
-        SkDebugf("--- typeface returned 0 upem [%X]\n", face->uniqueID());
     }
 }
 
-static void test_fontstream(skiatest::Reporter* reporter,
-                            SkStream* stream, int ttcIndex) {
+// Test that countGlyphs() agrees with a direct lookup in the 'maxp' table
+// (if that table is available).
+static void test_countGlyphs(skiatest::Reporter* reporter, SkTypeface* face) {
+    int nativeGlyphs = face->countGlyphs();
+
+    int tableGlyphs = -1;
+    size_t size = face->getTableSize(kFontTableTag_maxp);
+    if (size) {
+        // glyphs is at offset 4 into the 'maxp' table.
+        uint16_t rawGlyphs;
+        face->getTableData(kFontTableTag_maxp, 4, sizeof(rawGlyphs), &rawGlyphs);
+        tableGlyphs = SkEndian_SwapBE16(rawGlyphs);
+    }
+
+    if (tableGlyphs >= 0) {
+        REPORTER_ASSERT(reporter, tableGlyphs == nativeGlyphs);
+    }
+}
+
+// The following three are all the same code points in various encodings.
+// a中Яיו𝄞a𠮟
+static uint8_t utf8Chars[] = { 0x61, 0xE4,0xB8,0xAD, 0xD0,0xAF, 0xD7,0x99, 0xD7,0x95, 0xF0,0x9D,0x84,0x9E, 0x61, 0xF0,0xA0,0xAE,0x9F };
+static uint16_t utf16Chars[] = { 0x0061, 0x4E2D, 0x042F, 0x05D9, 0x05D5, 0xD834,0xDD1E, 0x0061, 0xD842,0xDF9F };
+static uint32_t utf32Chars[] = { 0x00000061, 0x00004E2D, 0x0000042F, 0x000005D9, 0x000005D5, 0x0001D11E, 0x00000061, 0x00020B9F };
+
+struct CharsToGlyphs_TestData {
+    const void* chars;
+    int charCount;
+    size_t charsByteLength;
+    SkTypeface::Encoding typefaceEncoding;
+    const char* name;
+} static charsToGlyphs_TestData[] = {
+    { utf8Chars, 8, sizeof(utf8Chars), SkTypeface::kUTF8_Encoding, "Simple UTF-8" },
+    { utf16Chars, 8, sizeof(utf16Chars), SkTypeface::kUTF16_Encoding, "Simple UTF-16" },
+    { utf32Chars, 8, sizeof(utf32Chars), SkTypeface::kUTF32_Encoding, "Simple UTF-32" },
+};
+
+// Test that SkPaint::textToGlyphs agrees with SkTypeface::charsToGlyphs.
+static void test_charsToGlyphs(skiatest::Reporter* reporter, SkTypeface* face) {
+    uint16_t paintGlyphIds[256];
+    uint16_t faceGlyphIds[256];
+
+    for (size_t testIndex = 0; testIndex < SK_ARRAY_COUNT(charsToGlyphs_TestData); ++testIndex) {
+        CharsToGlyphs_TestData& test = charsToGlyphs_TestData[testIndex];
+
+        SkPaint paint;
+        paint.setTypeface(face);
+        paint.setTextEncoding((SkPaint::TextEncoding)test.typefaceEncoding);
+        paint.textToGlyphs(test.chars, test.charsByteLength, paintGlyphIds);
+
+        face->charsToGlyphs(test.chars, test.typefaceEncoding, faceGlyphIds, test.charCount);
+
+        for (int i = 0; i < test.charCount; ++i) {
+            SkString name;
+            face->getFamilyName(&name);
+            SkString a;
+            a.appendf("%s, paintGlyphIds[%d] = %d, faceGlyphIds[%d] = %d, face = %s",
+                      test.name, i, (int)paintGlyphIds[i], i, (int)faceGlyphIds[i], name.c_str());
+            REPORTER_ASSERT_MESSAGE(reporter, paintGlyphIds[i] == faceGlyphIds[i], a.c_str());
+        }
+    }
+}
+
+static void test_fontstream(skiatest::Reporter* reporter, SkStream* stream, int ttcIndex) {
     int n = SkFontStream::GetTableTags(stream, ttcIndex, NULL);
     SkAutoTArray<SkFontTableTag> array(n);
 
@@ -79,7 +137,13 @@ static void test_fontstream(skiatest::Reporter* reporter,
     }
 }
 
-static void test_fontstream(skiatest::Reporter* reporter, SkStream* stream) {
+static void test_fontstream(skiatest::Reporter* reporter) {
+    SkAutoTDelete<SkStreamAsset> stream(GetResourceAsStream("/fonts/test.ttc"));
+    if (!stream) {
+        SkDebugf("Skipping FontHostTest::test_fontstream\n");
+        return;
+    }
+
     int count = SkFontStream::CountTTCEntries(stream);
 #ifdef DUMP_TTC_TABLES
     SkDebugf("CountTTCEntries %d\n", count);
@@ -89,13 +153,20 @@ static void test_fontstream(skiatest::Reporter* reporter, SkStream* stream) {
     }
 }
 
-static void test_fontstream(skiatest::Reporter* reporter) {
-    // TODO: replace when we get a tools/resources/fonts/test.ttc
-    const char* name = "/AmericanTypewriter.ttc";
-    SkFILEStream stream(name);
-    if (stream.isValid()) {
-        test_fontstream(reporter, &stream);
+static void test_symbolfont(skiatest::Reporter* reporter) {
+    SkAutoTUnref<SkTypeface> typeface(GetResourceAsTypeface("/fonts/SpiderSymbol.ttf"));
+    if (!typeface) {
+        SkDebugf("Skipping FontHostTest::test_symbolfont\n");
+        return;
     }
+
+    SkUnichar c = 0xf021;
+    uint16_t g;
+    SkPaint paint;
+    paint.setTypeface(typeface);
+    paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
+    paint.textToGlyphs(&c, 4, &g);
+    REPORTER_ASSERT(reporter, g == 3);
 }
 
 static void test_tables(skiatest::Reporter* reporter, SkTypeface* face) {
@@ -144,20 +215,23 @@ static void test_tables(skiatest::Reporter* reporter, SkTypeface* face) {
 static void test_tables(skiatest::Reporter* reporter) {
     static const char* const gNames[] = {
         NULL,   // default font
-        "Arial", "Times", "Times New Roman", "Helvetica", "Courier",
-        "Courier New", "Terminal", "MS Sans Serif",
+        "Helvetica", "Arial",
+        "Times", "Times New Roman",
+        "Courier", "Courier New",
+        "Terminal", "MS Sans Serif",
+        "Hiragino Mincho ProN", "MS PGothic",
     };
 
     for (size_t i = 0; i < SK_ARRAY_COUNT(gNames); ++i) {
-        SkTypeface* face = SkTypeface::CreateFromName(gNames[i],
-                                                      SkTypeface::kNormal);
+        SkAutoTUnref<SkTypeface> face(SkTypeface::CreateFromName(gNames[i], SkTypeface::kNormal));
         if (face) {
 #ifdef DUMP_TABLES
             SkDebugf("%s\n", gNames[i]);
 #endif
             test_tables(reporter, face);
             test_unitsPerEm(reporter, face);
-            face->unref();
+            test_countGlyphs(reporter, face);
+            test_charsToGlyphs(reporter, face);
         }
     }
 }
@@ -233,13 +307,11 @@ static void test_advances(skiatest::Reporter* reporter) {
     }
 }
 
-static void TestFontHost(skiatest::Reporter* reporter) {
+DEF_TEST(FontHost, reporter) {
     test_tables(reporter);
     test_fontstream(reporter);
     test_advances(reporter);
+    test_symbolfont(reporter);
 }
 
 // need tests for SkStrSearch
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("FontHost", FontHostTestClass, TestFontHost)

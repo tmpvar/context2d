@@ -7,9 +7,10 @@
  */
 
 #include "SampleCode.h"
-#include "SkView.h"
-#include "SkCanvas.h"
 #include "SkAAClip.h"
+#include "SkCanvas.h"
+#include "SkPath.h"
+#include "SkView.h"
 
 static void testop(const SkIRect& r0, const SkIRect& r1, SkRegion::Op op,
                    const SkIRect& expectedR) {
@@ -46,9 +47,7 @@ static void drawClip(SkCanvas* canvas, const SkAAClip& clip) {
     clip.copyToMask(&mask);
     SkAutoMaskFreeImage amfi(mask.fImage);
 
-    bm.setConfig(SkBitmap::kA8_Config, mask.fBounds.width(),
-                 mask.fBounds.height(), mask.fRowBytes);
-    bm.setPixels(mask.fImage);
+    bm.installMaskPixels(mask);
 
     SkPaint paint;
     canvas->drawBitmap(bm,

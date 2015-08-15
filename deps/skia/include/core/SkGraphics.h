@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2006 The Android Open Source Project
  *
@@ -6,18 +5,20 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef SkGraphics_DEFINED
 #define SkGraphics_DEFINED
 
 #include "SkTypes.h"
 
+class SkData;
+class SkImageGenerator;
+
 class SK_API SkGraphics {
 public:
     /**
      *  Call this at process initialization time if your environment does not
-     *  permit static global initializers that execute code. Note that
-     *  Init() is not thread-safe.
+     *  permit static global initializers that execute code.
+     *  Init() is thread-safe and idempotent.
      */
     static void Init();
 
@@ -54,11 +55,64 @@ public:
     static size_t GetFontCacheUsed();
 
     /**
+     *  Return the number of entries in the font cache.
+     *  A cache "entry" is associated with each typeface + pointSize + matrix.
+     */
+    static int GetFontCacheCountUsed();
+
+    /**
+     *  Return the current limit to the number of entries in the font cache.
+     *  A cache "entry" is associated with each typeface + pointSize + matrix.
+     */
+    static int GetFontCacheCountLimit();
+
+    /**
+     *  Set the limit to the number of entries in the font cache, and return
+     *  the previous value. If this new value is lower than the previous,
+     *  it will automatically try to purge entries to meet the new limit.
+     */
+    static int SetFontCacheCountLimit(int count);
+
+    /**
      *  For debugging purposes, this will attempt to purge the font cache. It
      *  does not change the limit, but will cause subsequent font measures and
      *  draws to be recreated, since they will no longer be in the cache.
      */
     static void PurgeFontCache();
+
+    /**
+     *  Scaling bitmaps with the kHigh_SkFilterQuality setting is
+     *  expensive, so the result is saved in the global Scaled Image
+     *  Cache.
+     *
+     *  This function returns the memory usage of the Scaled Image Cache.
+     */
+    static size_t GetResourceCacheTotalBytesUsed();
+
+    /**
+     *  These functions get/set the memory usage limit for the resource cache, used for temporary
+     *  bitmaps and other resources. Entries are purged from the cache when the memory useage
+     *  exceeds this limit.
+     */
+    static size_t GetResourceCacheTotalByteLimit();
+    static size_t SetResourceCacheTotalByteLimit(size_t newLimit);
+
+    /**
+     *  For debugging purposes, this will attempt to purge the resource cache. It
+     *  does not change the limit.
+     */
+    static void PurgeResourceCache();
+
+    /**
+     *  When the cachable entry is very lage (e.g. a large scaled bitmap), adding it to the cache
+     *  can cause most/all of the existing entries to be purged. To avoid the, the client can set
+     *  a limit for a single allocation. If a cacheable entry would have been cached, but its size
+     *  exceeds this limit, then we do not attempt to cache it at all.
+     *
+     *  Zero is the default value, meaning we always attempt to cache entries.
+     */
+    static size_t GetResourceCacheSingleAllocationByteLimit();
+    static size_t SetResourceCacheSingleAllocationByteLimit(size_t newLimit);
 
     /**
      *  Applications with command line options may pass optional state, such
@@ -90,12 +144,17 @@ public:
      */
     static void SetTLSFontCacheLimit(size_t bytes);
 
-private:
-    /** This is automatically called by SkGraphics::Init(), and must be
-        implemented by the host OS. This allows the host OS to register a callback
-        with the C++ runtime to call SkGraphics::FreeCaches()
-    */
-    static void InstallNewHandler();
+    typedef SkImageGenerator* (*ImageGeneratorFromEncodedFactory)(SkData*);
+
+    /**
+     *  To instantiate images from encoded data, first looks at this runtime function-ptr. If it
+     *  exists, it is called to create an SkImageGenerator from SkData. If there is no function-ptr
+     *  or there is, but it returns NULL, then skia will call its internal default implementation.
+     *
+     *  Returns the previous factory (which could be NULL).
+     */
+    static ImageGeneratorFromEncodedFactory
+           SetImageGeneratorFromEncodedFactory(ImageGeneratorFromEncodedFactory);
 };
 
 class SkAutoGraphics {

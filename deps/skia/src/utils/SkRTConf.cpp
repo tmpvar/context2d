@@ -28,7 +28,7 @@ SkRTConfRegistry::SkRTConfRegistry(): fConfs(100) {
         if (commentptr == line) {
             continue;
         }
-        if (NULL != commentptr) {
+        if (commentptr) {
             *commentptr = '\0';
         }
 
@@ -44,13 +44,27 @@ SkRTConfRegistry::SkRTConfRegistry(): fConfs(100) {
             continue;
         }
 
-        SkString* key = new SkString(keyptr);
-        SkString* val = new SkString(valptr);
+        SkString* key = SkNEW_ARGS(SkString,(keyptr));
+        SkString* val = SkNEW_ARGS(SkString,(valptr));
 
         fConfigFileKeys.append(1, &key);
         fConfigFileValues.append(1, &val);
     }
     sk_fclose(fp);
+}
+
+SkRTConfRegistry::~SkRTConfRegistry() {
+    ConfMap::Iter iter(fConfs);
+    SkTDArray<SkRTConfBase *> *confArray;
+
+    while (iter.next(&confArray)) {
+        delete confArray;
+    }
+
+    for (int i = 0 ; i < fConfigFileKeys.count() ; i++) {
+        SkDELETE(fConfigFileKeys[i]);
+        SkDELETE(fConfigFileValues[i]);
+    }
 }
 
 const char *SkRTConfRegistry::configFileLocation() const {
@@ -85,7 +99,7 @@ void SkRTConfRegistry::validate() const {
 void SkRTConfRegistry::printAll(const char *fname) const {
     SkWStream *o;
 
-    if (NULL != fname) {
+    if (fname) {
         o = new SkFILEWStream(fname);
     } else {
         o = new SkDebugWStream();
@@ -105,10 +119,21 @@ void SkRTConfRegistry::printAll(const char *fname) const {
     delete o;
 }
 
+bool SkRTConfRegistry::hasNonDefault() const {
+    ConfMap::Iter iter(fConfs);
+    SkTDArray<SkRTConfBase *> *confArray;
+    while (iter.next(&confArray)) {
+        if (!confArray->getAt(0)->isDefault()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void SkRTConfRegistry::printNonDefault(const char *fname) const {
     SkWStream *o;
 
-    if (NULL != fname) {
+    if (fname) {
         o = new SkFILEWStream(fname);
     } else {
         o = new SkDebugWStream();
@@ -213,11 +238,12 @@ static inline void str_replace(char *s, char search, char replace) {
 }
 
 template<typename T> bool SkRTConfRegistry::parse(const char *name, T* value) {
-    SkString *str = NULL;
+    const char *str = NULL;
 
-    for (int i = 0 ; i < fConfigFileKeys.count() ; i++) {
+    for (int i = fConfigFileKeys.count() - 1 ; i >= 0; i--) {
         if (fConfigFileKeys[i]->equals(name)) {
-            str = fConfigFileValues[i];
+            str = fConfigFileValues[i]->c_str();
+            break;
         }
     }
 
@@ -226,18 +252,15 @@ template<typename T> bool SkRTConfRegistry::parse(const char *name, T* value) {
 
     const char *environment_value = getenv(environment_variable.c_str());
     if (environment_value) {
-        str->set(environment_value);
+        str = environment_value;
     } else {
         // apparently my shell doesn't let me have environment variables that
         // have periods in them, so also let the user substitute underscores.
-        SkString underscore_environment_variable("skia_");
-        char *underscore_name = SkStrDup(name);
-        str_replace(underscore_name,'.','_');
-        underscore_environment_variable.append(underscore_name);
-        sk_free(underscore_name);
-        environment_value = getenv(underscore_environment_variable.c_str());
+        SkAutoTMalloc<char> underscore_name(SkStrDup(environment_variable.c_str()));
+        str_replace(underscore_name.get(), '.', '_');
+        environment_value = getenv(underscore_name.get());
         if (environment_value) {
-            str->set(environment_value);
+            str = environment_value;
         }
     }
 
@@ -246,11 +269,12 @@ template<typename T> bool SkRTConfRegistry::parse(const char *name, T* value) {
     }
 
     bool success;
-    T new_value = doParse<T>(str->c_str(),&success);
+    T new_value = doParse<T>(str, &success);
     if (success) {
         *value = new_value;
     } else {
-        SkDebugf("WARNING: Couldn't parse value \'%s\' for variable \'%s\'\n", str->c_str(), name);
+        SkDebugf("WARNING: Couldn't parse value \'%s\' for variable \'%s\'\n",
+                 str, name);
     }
     return success;
 }
@@ -264,14 +288,18 @@ template bool SkRTConfRegistry::parse(const char *name, float *value);
 template bool SkRTConfRegistry::parse(const char *name, double *value);
 template bool SkRTConfRegistry::parse(const char *name, const char **value);
 
-template <typename T> void SkRTConfRegistry::set(const char *name, T value) {
-
+template <typename T> void SkRTConfRegistry::set(const char *name,
+                                                 T value,
+                                                 bool warnIfNotFound) {
     SkTDArray<SkRTConfBase *> *confArray;
     if (!fConfs.find(name, &confArray)) {
-        SkDebugf("WARNING: Attempting to set configuration value \"%s\", but I've never heard of that.\n", name);
+        if (warnIfNotFound) {
+            SkDebugf("WARNING: Attempting to set configuration value \"%s\","
+                     " but I've never heard of that.\n", name);
+        }
         return;
     }
-
+    SkASSERT(confArray != NULL);
     for (SkRTConfBase **confBase = confArray->begin(); confBase != confArray->end(); confBase++) {
         // static_cast here is okay because there's only one kind of child class.
         SkRTConf<T> *concrete = static_cast<SkRTConf<T> *>(*confBase);
@@ -282,12 +310,12 @@ template <typename T> void SkRTConfRegistry::set(const char *name, T value) {
     }
 }
 
-template void SkRTConfRegistry::set(const char *name, bool value);
-template void SkRTConfRegistry::set(const char *name, int value);
-template void SkRTConfRegistry::set(const char *name, unsigned int value);
-template void SkRTConfRegistry::set(const char *name, float value);
-template void SkRTConfRegistry::set(const char *name, double value);
-template void SkRTConfRegistry::set(const char *name, char * value);
+template void SkRTConfRegistry::set(const char *name, bool value, bool);
+template void SkRTConfRegistry::set(const char *name, int value, bool);
+template void SkRTConfRegistry::set(const char *name, unsigned int value, bool);
+template void SkRTConfRegistry::set(const char *name, float value, bool);
+template void SkRTConfRegistry::set(const char *name, double value, bool);
+template void SkRTConfRegistry::set(const char *name, char * value, bool);
 
 SkRTConfRegistry &skRTConfRegistry() {
     static SkRTConfRegistry r;

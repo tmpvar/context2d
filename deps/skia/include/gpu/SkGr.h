@@ -14,9 +14,9 @@
 #include <stddef.h>
 
 // Gr headers
-#include "GrTypes.h"
 #include "GrContext.h"
-#include "GrFontScaler.h"
+#include "GrTextureAccess.h"
+#include "GrTypes.h"
 
 // skia headers
 #include "SkBitmap.h"
@@ -24,10 +24,6 @@
 #include "SkPoint.h"
 #include "SkRegion.h"
 #include "SkClipStack.h"
-
-#if (GR_DEBUG && defined(SK_RELEASE)) || (GR_RELEASE && defined(SK_DEBUG))
-//    #error "inconsistent GR_DEBUG and SK_DEBUG"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Sk to Gr Type conversions
@@ -49,11 +45,13 @@ GR_STATIC_ASSERT((int)kIDA_GrBlendCoeff  == (int)SkXfermode::kIDA_Coeff);
 
 #include "SkColorPriv.h"
 
-/**
- *  Convert the SkBitmap::Config to the corresponding PixelConfig, or
- *  kUnknown_PixelConfig if the conversion cannot be done.
- */
-GrPixelConfig SkBitmapConfig2GrPixelConfig(SkBitmap::Config);
+GrPixelConfig SkImageInfo2GrPixelConfig(SkColorType, SkAlphaType, SkColorProfileType);
+
+static inline GrPixelConfig SkImageInfo2GrPixelConfig(const SkImageInfo& info) {
+    return SkImageInfo2GrPixelConfig(info.colorType(), info.alphaType(), info.profileType());
+}
+
+bool GrPixelConfig2ColorAndProfileType(GrPixelConfig, SkColorType*, SkColorProfileType*);
 
 static inline GrColor SkColor2GrColor(SkColor c) {
     SkPMColor pm = SkPreMultiplyColor(c);
@@ -64,37 +62,51 @@ static inline GrColor SkColor2GrColor(SkColor c) {
     return GrColorPackRGBA(r, g, b, a);
 }
 
+static inline GrColor SkColor2GrColorJustAlpha(SkColor c) {
+    U8CPU a = SkColorGetA(c);
+    return GrColorPackRGBA(a, a, a, a);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool GrIsBitmapInCache(const GrContext*, const SkBitmap&, const GrTextureParams*);
 
-GrTexture* GrLockAndRefCachedBitmapTexture(GrContext*, const SkBitmap&, const GrTextureParams*);
+GrTexture* GrRefCachedBitmapTexture(GrContext*, const SkBitmap&, const GrTextureParams*);
+GrTexture* GrRefCachedBitmapTexture(GrContext*, const SkBitmap&, SkImageUsageType);
 
-void GrUnlockAndUnrefCachedBitmapTexture(GrTexture*);
+////////////////////////////////////////////////////////////////////////////////
+
+// Converts a SkPaint to a GrPaint, ignoring the SkPaint's shader.
+// Sets the color of GrPaint to the value of the parameter paintColor
+// Callers may subsequently modify the GrPaint. Setting constantColor indicates
+// that the final paint will draw the same color at every pixel. This allows
+// an optimization where the color filter can be applied to the SkPaint's
+// color once while converting to GrPaint and then ignored. TODO: Remove this
+// bool and use the invariant info to automatically apply the color filter.
+bool SkPaint2GrPaintNoShader(GrContext* context, GrRenderTarget*, const SkPaint& skPaint,
+                             GrColor paintColor, bool constantColor, GrPaint* grPaint);
+
+// This function is similar to skPaint2GrPaintNoShader but also converts
+// skPaint's shader to a GrFragmentProcessor if possible.
+// constantColor has the same meaning as in skPaint2GrPaintNoShader.
+bool SkPaint2GrPaint(GrContext* context, GrRenderTarget*, const SkPaint& skPaint,
+                     const SkMatrix& viewM, bool constantColor, GrPaint* grPaint);
+
+
+SkImageInfo GrMakeInfoFromTexture(GrTexture* tex, int w, int h, bool isOpaque);
+
+// Using the dreaded SkGrPixelRef ...
+void GrWrapTextureInBitmap(GrTexture* src, int w, int h, bool isOpaque, SkBitmap* dst);
+
+GrTextureParams::FilterMode GrSkFilterQualityToGrFilterMode(SkFilterQuality paintFilterQuality,
+                                                            const SkMatrix& viewM,
+                                                            const SkMatrix& localM,
+                                                            bool* doBicubic);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Classes
 
 class SkGlyphCache;
-
-class SkGrFontScaler : public GrFontScaler {
-public:
-    explicit SkGrFontScaler(SkGlyphCache* strike);
-    virtual ~SkGrFontScaler();
-
-    // overrides
-    virtual const GrKey* getKey();
-    virtual GrMaskFormat getMaskFormat();
-    virtual bool getPackedGlyphBounds(GrGlyph::PackedID, GrIRect* bounds);
-    virtual bool getPackedGlyphImage(GrGlyph::PackedID, int width, int height,
-                                     int rowBytes, void* image);
-    virtual bool getGlyphPath(uint16_t glyphID, SkPath*);
-
-private:
-    SkGlyphCache* fStrike;
-    GrKey*  fKey;
-//    DECLARE_INSTANCE_COUNTER(SkGrFontScaler);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 

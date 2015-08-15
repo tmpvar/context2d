@@ -32,7 +32,7 @@ void* load_library(const char* appLocation, const char* libraryName)
 {
      // attempt to lookup the location of the shared libraries
     char libraryLocation[100];
-    sprintf(libraryLocation, "%s/lib/lib%s.so", appLocation, libraryName);
+    sprintf(libraryLocation, "%s/lib%s.so", appLocation, libraryName);
     if (!file_exists(libraryLocation)) {
         printf("ERROR: Unable to find the '%s' library in the Skia App.\n", libraryName);
         printf("ERROR: Did you provide the correct program_name?\n");
@@ -61,24 +61,32 @@ int main(int argc, const char** argv) {
     }
 
     // attempt to lookup the location of the skia app
-    const char* appLocation = "/data/data/com.skia";
+    const char* appLocation = "/data/local/tmp";
     if (!file_exists(appLocation)) {
-        printf("ERROR: Unable to find the com.skia app on the device.\n");
+        printf("ERROR: Unable to find /data/local/tmp on the device.\n");
         return -1;
     }
 
+    void* skiaLibrary;
+
+#if defined(SKIA_DLL)
     // load the local skia shared library
-    void* skiaLibrary = load_library(appLocation, "skia_android");
+    skiaLibrary = load_library(appLocation, "skia_android");
     if (NULL == skiaLibrary)
     {
         return -1;
     }
+#endif
 
     // load the appropriate library
     void* appLibrary = load_library(appLocation, argv[1]);
     if (NULL == appLibrary) {
         return -1;
     }
+
+#if !defined(SKIA_DLL)
+    skiaLibrary = appLibrary;
+#endif
 
     // find the address of the main function
     int (*app_main)(int, const char**);
@@ -88,17 +96,6 @@ int main(int argc, const char** argv) {
         printf("ERROR: Unable to load the main function of the selected program.\n");
         printf("ERROR: %s\n", dlerror());
         return -1;
-    }
-
-    // find the address of the SkPrintToConsole function
-    void (*app_SkDebugToStdOut)(bool);
-    *(void **) (&app_SkDebugToStdOut) = dlsym(skiaLibrary, "AndroidSkDebugToStdOut");
-
-    if (app_SkDebugToStdOut) {
-        (*app_SkDebugToStdOut)(true);
-    } else {
-        printf("WARNING: Unable to redirect output to the console.\n");
-        printf("WARNING: %s\n", dlerror());
     }
 
     // pass all additional arguments to the main function

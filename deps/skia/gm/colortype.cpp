@@ -12,23 +12,31 @@
 
 class ColorTypeGM : public skiagm::GM {
 public:
-    ColorTypeGM() {
+    ColorTypeGM()
+        : fColorType(NULL) {
+    }
+
+    virtual ~ColorTypeGM() {
+        SkSafeUnref(fColorType);
+    }
+
+protected:
+    void onOnceBeforeDraw() override {
         const SkColor colors[] = {
             SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE,
             SK_ColorMAGENTA, SK_ColorCYAN, SK_ColorYELLOW
         };
-        SkShader* s = SkGradientShader::CreateSweep(0,0, colors, NULL,
-                                                    SK_ARRAY_COUNT(colors));
         SkMatrix local;
         local.setRotate(180);
-        s->setLocalMatrix(local);
+        SkShader* s = SkGradientShader::CreateSweep(0,0, colors, NULL,
+                                                    SK_ARRAY_COUNT(colors), 0, &local);
 
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setShader(s)->unref();
 
-        SkTypeface* orig = SkTypeface::CreateFromName("Times",
-                                                      SkTypeface::kBold);
+        SkTypeface* orig = sk_tool_utils::create_portable_typeface("serif",
+                                                            SkTypeface::kBold);
         if (NULL == orig) {
             orig = SkTypeface::RefDefault();
         }
@@ -36,20 +44,15 @@ public:
         orig->unref();
     }
 
-    virtual ~ColorTypeGM() {
-        fColorType->unref();
-    }
-
-protected:
-    virtual SkString onShortName() SK_OVERRIDE {
+    SkString onShortName() override {
         return SkString("colortype");
     }
 
-    virtual SkISize onISize() SK_OVERRIDE {
+    SkISize onISize() override {
         return SkISize::Make(640, 480);
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setTypeface(fColorType);
@@ -59,10 +62,6 @@ protected:
             canvas->translate(0, paint.getFontMetrics(NULL));
             canvas->drawText("Hamburgefons", 12, 10, 10, paint);
         }
-    }
-
-    virtual uint32_t onGetFlags() const {
-        return kSkipPipe_Flag | kSkipPicture_Flag;
     }
 
 private:

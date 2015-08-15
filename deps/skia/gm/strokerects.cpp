@@ -20,17 +20,18 @@ namespace skiagm {
 static const SkScalar SW = SkIntToScalar(W);
 static const SkScalar SH = SkIntToScalar(H);
 
-class StrokeRectGM : public GM {
+class StrokeRectsGM : public GM {
 public:
-    StrokeRectGM() {}
+    StrokeRectsGM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("strokerects");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(W*2, H*2);
+    SkISize onISize() override {
+        return SkISize::Make(W*2, H*2);
     }
 
     static void rnd_rect(SkRect* r, SkRandom& rand) {
@@ -45,7 +46,7 @@ protected:
         r->offset(-w/2 + woffset, -h/2 + hoffset);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setStyle(SkPaint::kStroke_Style);
 
@@ -77,7 +78,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new StrokeRectGM; }
+static GM* MyFactory(void*) { return new StrokeRectsGM; }
 static GMRegistry reg(MyFactory);
 
 }

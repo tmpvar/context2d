@@ -8,7 +8,8 @@
 
 
 #include "SkTableMaskFilter.h"
-#include "SkFlattenableBuffers.h"
+#include "SkReadBuffer.h"
+#include "SkWriteBuffer.h"
 #include "SkString.h"
 
 SkTableMaskFilter::SkTableMaskFilter() {
@@ -69,15 +70,16 @@ SkMask::Format SkTableMaskFilter::getFormat() const {
     return SkMask::kA8_Format;
 }
 
-void SkTableMaskFilter::flatten(SkFlattenableWriteBuffer& wb) const {
-    this->INHERITED::flatten(wb);
+void SkTableMaskFilter::flatten(SkWriteBuffer& wb) const {
     wb.writeByteArray(fTable, 256);
 }
 
-SkTableMaskFilter::SkTableMaskFilter(SkFlattenableReadBuffer& rb)
-        : INHERITED(rb) {
-    SkASSERT(256 == rb.getArrayCount());
-    rb.readByteArray(fTable);
+SkFlattenable* SkTableMaskFilter::CreateProc(SkReadBuffer& buffer) {
+    uint8_t table[256];
+    if (!buffer.readByteArray(table, 256)) {
+        return NULL;
+    }
+    return Create(table);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,7 +109,7 @@ void SkTableMaskFilter::MakeClipTable(uint8_t table[256], uint8_t min,
     SkFixed scale = (1 << 16) * 255 / (max - min);
     memset(table, 0, min + 1);
     for (int i = min + 1; i < max; i++) {
-        int value = SkFixedRound(scale * (i - min));
+        int value = SkFixedRoundToInt(scale * (i - min));
         SkASSERT(value <= 255);
         table[i] = value;
     }
@@ -128,7 +130,7 @@ void SkTableMaskFilter::MakeClipTable(uint8_t table[256], uint8_t min,
 #endif
 }
 
-#ifdef SK_DEVELOPER
+#ifndef SK_IGNORE_TO_STRING
 void SkTableMaskFilter::toString(SkString* str) const {
     str->append("SkTableMaskFilter: (");
 

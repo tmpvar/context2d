@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 # Gyp file for effects
 {
   'targets': [
@@ -6,15 +10,19 @@
       'product_name': 'skia_effects',
       'type': 'static_library',
       'standalone_static_library': 1,
+      'dependencies': [
+        'core.gyp:*',
+        'images.gyp:*',
+        'utils.gyp:utils',
+      ],
       'includes': [
         'effects.gypi',
       ],
       'include_dirs': [
-        '../include/config',
-        '../include/core',
         '../include/effects',
-        '../include/lazy',
-        '../include/utils',
+        '../include/private',
+        '../src/effects',
+        '../src/opts',
         '../src/core',
       ],
       'direct_dependent_settings': {
@@ -36,9 +44,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

@@ -15,6 +15,28 @@
 
 typedef int32_t SkFDot6;
 
+/* This uses the magic number approach suggested here:
+ * http://stereopsis.com/sree/fpu2006.html and used in
+ * _cairo_fixed_from_double. It does banker's rounding
+ * (i.e. round to nearest even)
+ */
+inline SkFDot6 SkScalarRoundToFDot6(SkScalar x, int shift = 0)
+{
+    union {
+        double  fDouble;
+        int32_t fBits[2];
+    } tmp;
+    int fractionalBits = 6 + shift;
+    double magic = (1LL << (52 - (fractionalBits))) * 1.5;
+
+    tmp.fDouble = SkScalarToDouble(x) + magic;
+#ifdef SK_CPU_BENDIAN
+    return tmp.fBits[1];
+#else
+    return tmp.fBits[0];
+#endif
+}
+
 #define SK_FDot6One         (64)
 #define SK_FDot6Half        (32)
 
@@ -39,13 +61,8 @@ inline SkFixed SkFDot6ToFixed(SkFDot6 x) {
     return x << 10;
 }
 
-#ifdef SK_SCALAR_IS_FLOAT
-    #define SkScalarToFDot6(x)  (SkFDot6)((x) * 64)
-    #define SkFDot6ToScalar(x)  ((SkScalar)(x) * SkFloatToScalar(0.015625f))
-#else
-    #define SkScalarToFDot6(x)  ((x) >> 10)
-    #define SkFDot6ToScalar(x)  ((x) << 10)
-#endif
+#define SkScalarToFDot6(x)  (SkFDot6)((x) * 64)
+#define SkFDot6ToScalar(x)  ((SkScalar)(x) * 0.015625f)
 
 inline SkFixed SkFDot6Div(SkFDot6 a, SkFDot6 b) {
     SkASSERT(b != 0);

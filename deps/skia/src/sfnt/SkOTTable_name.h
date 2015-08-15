@@ -554,9 +554,15 @@ struct SkOTTableName {
             : fName(name), fIndex(0), fType(type)
         { }
 
+        void reset(SkOTTableName::Record::NameID::Predefined::Value type) {
+            fIndex = 0;
+            fType = type;
+        }
+
         struct Record {
             SkString name;
             SkString language;
+            SK_OT_USHORT type;
         };
         bool next(Record&);
 

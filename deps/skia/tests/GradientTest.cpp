@@ -1,17 +1,40 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Test.h"
-#include "SkDevice.h"
-#include "SkTemplates.h"
-#include "SkShader.h"
+
+#include "SkCanvas.h"
 #include "SkColorShader.h"
-#include "SkEmptyShader.h"
 #include "SkGradientShader.h"
+#include "SkShader.h"
+#include "SkTemplates.h"
+#include "Test.h"
+
+// https://code.google.com/p/chromium/issues/detail?id=448299
+// Giant (inverse) matrix causes overflow when converting/computing using 32.32
+// Before the fix, we would assert (and then crash).
+static void test_big_grad(skiatest::Reporter* reporter) {
+    const SkColor colors[] = { SK_ColorRED, SK_ColorBLUE };
+    const SkPoint pts[] = {{ 15, 14.7112684f }, { 0.709064007f, 12.6108112f }};
+    SkShader* s = SkGradientShader::CreateLinear(pts, colors, NULL, 2, SkShader::kClamp_TileMode);
+    SkPaint paint;
+    paint.setShader(s)->unref();
+
+    SkBitmap bm;
+    bm.allocN32Pixels(2000, 1);
+    SkCanvas c(bm);
+
+    const SkScalar affine[] = {
+        1.06608627e-06f, 4.26434525e-07f, 6.2855f, 2.6611f, 273.4393f, 244.0046f
+    };
+    SkMatrix matrix;
+    matrix.setAffine(affine);
+    c.concat(matrix);
+    
+    c.drawPaint(paint);
+}
 
 struct GradRec {
     int             fColorCount;
@@ -43,7 +66,7 @@ struct GradRec {
 
 
 static void none_gradproc(skiatest::Reporter* reporter, const GradRec&) {
-    SkAutoTUnref<SkShader> s(new SkEmptyShader);
+    SkAutoTUnref<SkShader> s(SkShader::CreateEmptyShader());
     REPORTER_ASSERT(reporter, SkShader::kNone_GradientType == s->asAGradient(NULL));
 }
 
@@ -84,22 +107,6 @@ static void radial_gradproc(skiatest::Reporter* reporter, const GradRec& rec) {
     REPORTER_ASSERT(reporter, info.fRadius[0] == rec.fRadius[0]);
 }
 
-static void radial2_gradproc(skiatest::Reporter* reporter, const GradRec& rec) {
-    SkAutoTUnref<SkShader> s(SkGradientShader::CreateTwoPointRadial(rec.fPoint[0],
-                                                            rec.fRadius[0],
-                                                            rec.fPoint[1],
-                                                            rec.fRadius[1],
-                                                            rec.fColors,
-                                                            rec.fPos,
-                                                            rec.fColorCount,
-                                                            rec.fTileMode));
-
-    SkShader::GradientInfo info;
-    rec.gradCheck(reporter, s, &info, SkShader::kRadial2_GradientType);
-    REPORTER_ASSERT(reporter, !memcmp(info.fPoint, rec.fPoint, 2 * sizeof(SkPoint)));
-    REPORTER_ASSERT(reporter, !memcmp(info.fRadius, rec.fRadius, 2 * sizeof(SkScalar)));
-}
-
 static void sweep_gradproc(skiatest::Reporter* reporter, const GradRec& rec) {
     SkAutoTUnref<SkShader> s(SkGradientShader::CreateSweep(rec.fPoint[0].fX,
                                                            rec.fPoint[0].fY,
@@ -126,34 +133,6 @@ static void conical_gradproc(skiatest::Reporter* reporter, const GradRec& rec) {
     rec.gradCheck(reporter, s, &info, SkShader::kConical_GradientType);
     REPORTER_ASSERT(reporter, !memcmp(info.fPoint, rec.fPoint, 2 * sizeof(SkPoint)));
     REPORTER_ASSERT(reporter, !memcmp(info.fRadius, rec.fRadius, 2 * sizeof(SkScalar)));
-    REPORTER_ASSERT(reporter, !s->isOpaque());
-}
-
-// 2-point radial gradient should behave as opaque when it extends to the entire plane
-static void conical_gradproc_opaque(skiatest::Reporter* reporter, const GradRec& rec) {
-    SkAutoTUnref<SkShader> s(SkGradientShader::CreateTwoPointConical(rec.fPoint[0],
-                                                                     rec.fRadius[0],
-                                                                     rec.fPoint[0],
-                                                                     rec.fRadius[1],
-                                                                     rec.fColors,
-                                                                     rec.fPos,
-                                                                     rec.fColorCount,
-                                                                     rec.fTileMode));
-    REPORTER_ASSERT(reporter, s->isOpaque());
-}
-
-// 2nd circle center lies on edge of first circle should not be considered opaque
-static void conical_gradproc_not_opaque(skiatest::Reporter* reporter, const GradRec& rec) {
-    SkScalar dist = SkPoint::Distance(rec.fPoint[0], rec.fPoint[1]);
-    SkAutoTUnref<SkShader> s(SkGradientShader::CreateTwoPointConical(rec.fPoint[0],
-                                                                     dist,
-                                                                     rec.fPoint[1],
-                                                                     rec.fRadius[1],
-                                                                     rec.fColors,
-                                                                     rec.fPos,
-                                                                     rec.fColorCount,
-                                                                     rec.fTileMode));
-    REPORTER_ASSERT(reporter, !s->isOpaque());
 }
 
 // Ensure that repeated color gradients behave like drawing a single color
@@ -170,12 +149,10 @@ static void TestConstantGradient(skiatest::Reporter*) {
                                                             2,
                                                             SkShader::kClamp_TileMode));
     SkBitmap outBitmap;
-    outBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 1);
-    outBitmap.allocPixels();
+    outBitmap.allocN32Pixels(10, 1);
     SkPaint paint;
     paint.setShader(s.get());
-    SkDevice device(outBitmap);
-    SkCanvas canvas(&device);
+    SkCanvas canvas(outBitmap);
     canvas.drawPaint(paint);
     SkAutoLockPixels alp(outBitmap);
     for (int i = 0; i < 10; i++) {
@@ -210,11 +187,8 @@ static void TestGradientShaders(skiatest::Reporter* reporter) {
         color_gradproc,
         linear_gradproc,
         radial_gradproc,
-        radial2_gradproc,
         sweep_gradproc,
         conical_gradproc,
-        conical_gradproc_opaque,
-        conical_gradproc_not_opaque,
     };
 
     for (size_t i = 0; i < SK_ARRAY_COUNT(gProcs); ++i) {
@@ -222,9 +196,8 @@ static void TestGradientShaders(skiatest::Reporter* reporter) {
     }
 }
 
-static void TestGradients(skiatest::Reporter* reporter) {
+DEF_TEST(Gradient, reporter) {
     TestGradientShaders(reporter);
     TestConstantGradient(reporter);
+    test_big_grad(reporter);
 }
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("Gradients", TestGradientsClass, TestGradients)

@@ -9,18 +9,16 @@
 #define PictureRenderer_DEFINED
 
 #include "SkCanvas.h"
-#include "SkCountdown.h"
 #include "SkDrawFilter.h"
+#include "SkJSONCPP.h"
 #include "SkMath.h"
 #include "SkPaint.h"
 #include "SkPicture.h"
+#include "SkPictureRecorder.h"
 #include "SkRect.h"
 #include "SkRefCnt.h"
-#include "SkRunnable.h"
 #include "SkString.h"
 #include "SkTDArray.h"
-#include "SkThreadPool.h"
-#include "SkTileGridPicture.h"
 #include "SkTypes.h"
 
 #if SK_SUPPORT_GPU
@@ -28,9 +26,12 @@
 #include "GrContext.h"
 #endif
 
+#include "image_expectations.h"
+
+struct GrContextOptions;
 class SkBitmap;
 class SkCanvas;
-class SkGLContextHelper;
+class SkGLContext;
 class SkThread;
 
 namespace sk_tools {
@@ -44,25 +45,30 @@ public:
 #if SK_ANGLE
         kAngle_DeviceType,
 #endif
+#if SK_MESA
+        kMesa_DeviceType,
+#endif
         kBitmap_DeviceType,
 #if SK_SUPPORT_GPU
         kGPU_DeviceType,
+        kNVPR_DeviceType,
 #endif
     };
 
     enum BBoxHierarchyType {
         kNone_BBoxHierarchyType = 0,
         kRTree_BBoxHierarchyType,
-        kTileGrid_BBoxHierarchyType,
+
+        kLast_BBoxHierarchyType = kRTree_BBoxHierarchyType,
     };
 
     // this uses SkPaint::Flags as a base and adds additional flags
     enum DrawFilterFlags {
         kNone_DrawFilterFlag = 0,
-        kMaskFilter_DrawFilterFlag = 0x8000, // toggles on/off mask filters (e.g., blurs)
         kHinting_DrawFilterFlag = 0x10000, // toggles between no hinting and normal hinting
         kSlightHinting_DrawFilterFlag = 0x20000, // toggles between slight and normal hinting
         kAAClip_DrawFilterFlag = 0x40000, // toggles between soft and hard clip
+        kMaskFilter_DrawFilterFlag = 0x80000, // toggles on/off mask filters (e.g., blurs)
     };
 
     SK_COMPILE_ASSERT(!(kMaskFilter_DrawFilterFlag & SkPaint::kAllFlags), maskfilter_flag_must_be_greater);
@@ -73,8 +79,31 @@ public:
 
     /**
      * Called with each new SkPicture to render.
+     *
+     * @param pict The SkPicture to render.
+     * @param writePath The output directory within which this renderer should write all images,
+     *     or NULL if this renderer should not write all images.
+     * @param mismatchPath The output directory within which this renderer should write any images
+     *     which do not match expectations, or NULL if this renderer should not write mismatches.
+     * @param inputFilename The name of the input file we are rendering.
+     * @param useChecksumBasedFilenames Whether to use checksum-based filenames when writing
+     *     bitmap images to disk.
+     * @param useMultiPictureDraw true if MultiPictureDraw should be used for rendering
      */
-    virtual void init(SkPicture* pict);
+    virtual void init(const SkPicture* pict,
+                      const SkString* writePath,
+                      const SkString* mismatchPath,
+                      const SkString* inputFilename,
+                      bool useChecksumBasedFilenames,
+                      bool useMultiPictureDraw);
+
+    /**
+     * TODO(epoger): Temporary hack, while we work on http://skbug.com/2584 ('bench_pictures is
+     * timing reading pixels and writing json files'), such that:
+     * - render_pictures can call this method and continue to work
+     * - any other callers (bench_pictures) will skip calls to write() by default
+     */
+    void enableWrites() { fEnableWrites = true; }
 
     /**
      *  Set the viewport so that only the portion listed gets drawn.
@@ -93,15 +122,22 @@ public:
     virtual void setup() {}
 
     /**
-     * Perform work that is to be timed. Typically this is rendering, but is also used for recording
-     * and preparing picture for playback by the subclasses which do those.
-     * If path is non-null, subclass implementations should call write().
-     * @param path If non-null, also write the output to the file specified by path. path should
-     *             have no extension; it will be added by write().
-     * @return bool True if rendering succeeded and, if path is non-null, the output was
-     *             successfully written to a file.
+     * Perform the work.  If this is being called within the context of bench_pictures,
+     * this is the step that will be timed.
+     *
+     * Typically "the work" is rendering an SkPicture into a bitmap, but in some subclasses
+     * it is recording the source SkPicture into another SkPicture.
+     *
+     * If fWritePath has been specified, the result of the work will be written to that dir.
+     * If fMismatchPath has been specified, and the actual image result differs from its
+     * expectation, the result of the work will be written to that dir.
+     *
+     * @param out If non-null, the implementing subclass MAY allocate an SkBitmap, copy the
+     *            output image into it, and return it here.  (Some subclasses ignore this parameter)
+     * @return bool True if rendering succeeded and, if fWritePath had been specified, the output
+     *              was successfully written to a file.
      */
-    virtual bool render(const SkString* path, SkBitmap** out = NULL) = 0;
+    virtual bool render(SkBitmap** out = NULL) = 0;
 
     /**
      * Called once finished with a particular SkPicture, before calling init again, and before
@@ -117,15 +153,25 @@ public:
 
     /**
      * Resets the GPU's state. Does nothing if the backing is raster. For a GPU renderer, calls
-     * flush, and calls finish if callFinish is true.
+     * flush, swapBuffers and, if callFinish is true, finish.
      * @param callFinish Whether to call finish.
      */
     void resetState(bool callFinish);
 
     /**
+     * Remove all decoded textures from the CPU caches and all uploaded textures
+     * from the GPU.
+     */
+    void purgeTextures();
+
+    /**
      * Set the backend type. Returns true on success and false on failure.
      */
+#if SK_SUPPORT_GPU
+    bool setDeviceType(SkDeviceTypes deviceType, GrGLStandard gpuAPI = kNone_GrGLStandard) {
+#else
     bool setDeviceType(SkDeviceTypes deviceType) {
+#endif
         fDeviceType = deviceType;
 #if SK_SUPPORT_GPU
         // In case this function is called more than once
@@ -141,9 +187,17 @@ public:
             case kGPU_DeviceType:
                 // Already set to GrContextFactory::kNative_GLContextType, above.
                 break;
+            case kNVPR_DeviceType:
+                glContextType = GrContextFactory::kNVPR_GLContextType;
+                break;
 #if SK_ANGLE
             case kAngle_DeviceType:
                 glContextType = GrContextFactory::kANGLE_GLContextType;
+                break;
+#endif
+#if SK_MESA
+            case kMesa_DeviceType:
+                glContextType = GrContextFactory::kMESA_GLContextType;
                 break;
 #endif
 #endif
@@ -152,7 +206,7 @@ public:
                 return false;
         }
 #if SK_SUPPORT_GPU
-        fGrContext = fGrContextFactory.get(glContextType);
+        fGrContext = fGrContextFactory.get(glContextType, gpuAPI);
         if (NULL == fGrContext) {
             return false;
         } else {
@@ -166,11 +220,20 @@ public:
     void setSampleCount(int sampleCount) {
         fSampleCount = sampleCount;
     }
+
+    void setUseDFText(bool useDFText) {
+        fUseDFText = useDFText;
+    }
 #endif
 
     void setDrawFilters(DrawFilterFlags const * const filters, const SkString& configName) {
-        memcpy(fDrawFilters, filters, sizeof(fDrawFilters));
+        fHasDrawFilters = false;
         fDrawFiltersConfig = configName;
+
+        for (size_t i = 0; i < SK_ARRAY_COUNT(fDrawFilters); ++i) {
+            fDrawFilters[i] = filters[i];
+            fHasDrawFilters |= SkToBool(filters[i]);
+        }
     }
 
     void setBBoxHierarchyType(BBoxHierarchyType bbhType) {
@@ -179,8 +242,8 @@ public:
 
     BBoxHierarchyType getBBoxHierarchyType() { return fBBoxHierarchyType; }
 
-    void setGridSize(int width, int height) {
-        fGridInfo.fTileInterval.set(width, height);
+    void setJsonSummaryPtr(ImageResultsAndExpectations* jsonSummaryPtr) {
+        fJsonSummaryPtr = jsonSummaryPtr;
     }
 
     bool isUsingBitmapDevice() {
@@ -199,23 +262,34 @@ public:
         if (!fViewport.isEmpty()) {
             config.appendf("_viewport_%ix%i", fViewport.width(), fViewport.height());
         }
+        if (fScaleFactor != SK_Scalar1) {
+            config.appendf("_scalar_%f", SkScalarToFloat(fScaleFactor));
+        }
         if (kRTree_BBoxHierarchyType == fBBoxHierarchyType) {
             config.append("_rtree");
-        } else if (kTileGrid_BBoxHierarchyType == fBBoxHierarchyType) {
-            config.append("_grid");
         }
 #if SK_SUPPORT_GPU
         switch (fDeviceType) {
             case kGPU_DeviceType:
                 if (fSampleCount) {
                     config.appendf("_msaa%d", fSampleCount);
+                } else if (fUseDFText) {
+                    config.append("_gpudft");
                 } else {
                     config.append("_gpu");
                 }
                 break;
+            case kNVPR_DeviceType:
+                config.appendf("_nvprmsaa%d", fSampleCount);
+                break;
 #if SK_ANGLE
             case kAngle_DeviceType:
                 config.append("_angle");
+                break;
+#endif
+#if SK_MESA
+            case kMesa_DeviceType:
+                config.append("_mesa");
                 break;
 #endif
             default:
@@ -227,13 +301,66 @@ public:
         return config;
     }
 
+    Json::Value getJSONConfig() {
+        Json::Value result;
+
+        result["mode"] = this->getConfigNameInternal().c_str();
+        result["scale"] = 1.0f;
+        if (SK_Scalar1 != fScaleFactor) {
+            result["scale"] = SkScalarToFloat(fScaleFactor);
+        }
+        if (kRTree_BBoxHierarchyType == fBBoxHierarchyType) {
+            result["bbh"] = "rtree";
+        }
+#if SK_SUPPORT_GPU
+        SkString tmp;
+        switch (fDeviceType) {
+            case kGPU_DeviceType:
+                if (0 != fSampleCount) {
+                    tmp = "msaa";
+                    tmp.appendS32(fSampleCount);
+                    result["config"] = tmp.c_str();
+                } else if (fUseDFText) {
+                    result["config"] = "gpudft";
+                } else {
+                    result["config"] = "gpu";
+                }
+                break;
+            case kNVPR_DeviceType:
+                tmp = "nvprmsaa";
+                tmp.appendS32(fSampleCount);
+                result["config"] = tmp.c_str();
+                break;
+#if SK_ANGLE
+            case kAngle_DeviceType:
+                result["config"] = "angle";
+                break;
+#endif
+#if SK_MESA
+            case kMesa_DeviceType:
+                result["config"] = "mesa";
+                break;
+#endif
+            default:
+                // Assume that no extra info means bitmap.
+                break;
+        }
+#endif
+        return result;
+    }
+
 #if SK_SUPPORT_GPU
     bool isUsingGpuDevice() {
         switch (fDeviceType) {
             case kGPU_DeviceType:
+            case kNVPR_DeviceType:
                 // fall through
 #if SK_ANGLE
             case kAngle_DeviceType:
+                // fall through
+#endif
+#if SK_MESA
+            case kMesa_DeviceType:
 #endif
                 return true;
             default:
@@ -241,16 +368,24 @@ public:
         }
     }
 
-    SkGLContextHelper* getGLContext() {
+    SkGLContext* getGLContext() {
         GrContextFactory::GLContextType glContextType
                 = GrContextFactory::kNull_GLContextType;
         switch(fDeviceType) {
             case kGPU_DeviceType:
                 glContextType = GrContextFactory::kNative_GLContextType;
                 break;
+            case kNVPR_DeviceType:
+                glContextType = GrContextFactory::kNVPR_GLContextType;
+                break;
 #if SK_ANGLE
             case kAngle_DeviceType:
                 glContextType = GrContextFactory::kANGLE_GLContextType;
+                break;
+#endif
+#if SK_MESA
+            case kMesa_DeviceType:
+                glContextType = GrContextFactory::kMESA_GLContextType;
                 break;
 #endif
             default:
@@ -262,21 +397,38 @@ public:
     GrContext* getGrContext() {
         return fGrContext;
     }
+
+    const GrContextOptions& getGrContextOptions() {
+        return fGrContextFactory.getGlobalOptions();
+    }
 #endif
 
+    SkCanvas* getCanvas() {
+        return fCanvas;
+    }
+
+    const SkPicture* getPicture() {
+        return fPicture;
+    }
+
+#if SK_SUPPORT_GPU
+    explicit PictureRenderer(const GrContextOptions &opts)
+#else
     PictureRenderer()
-        : fPicture(NULL)
+#endif
+        : fJsonSummaryPtr(NULL)
         , fDeviceType(kBitmap_DeviceType)
+        , fEnableWrites(false)
         , fBBoxHierarchyType(kNone_BBoxHierarchyType)
+        , fHasDrawFilters(false)
         , fScaleFactor(SK_Scalar1)
 #if SK_SUPPORT_GPU
+        , fGrContextFactory(opts)
         , fGrContext(NULL)
         , fSampleCount(0)
+        , fUseDFText(false)
 #endif
         {
-            fGridInfo.fMargin.setEmpty();
-            fGridInfo.fOffset.setZero();
-            fGridInfo.fTileInterval.set(1, 1);
             sk_bzero(fDrawFilters, sizeof(fDrawFilters));
             fViewport.set(0, 0);
         }
@@ -289,12 +441,19 @@ public:
 
 protected:
     SkAutoTUnref<SkCanvas> fCanvas;
-    SkPicture*             fPicture;
+    SkAutoTUnref<const SkPicture> fPicture;
+    bool                   fUseChecksumBasedFilenames;
+    bool                   fUseMultiPictureDraw;
+    ImageResultsAndExpectations*   fJsonSummaryPtr;
     SkDeviceTypes          fDeviceType;
+    bool                   fEnableWrites;
     BBoxHierarchyType      fBBoxHierarchyType;
+    bool                   fHasDrawFilters;
     DrawFilterFlags        fDrawFilters[SkDrawFilter::kTypeCount];
     SkString               fDrawFiltersConfig;
-    SkTileGridPicture::TileGridInfo fGridInfo; // used when fBBoxHierarchyType is TileGrid
+    SkString               fWritePath;
+    SkString               fMismatchPath;
+    SkString               fInputFilename;
 
     void buildBBoxHierarchy();
 
@@ -315,10 +474,15 @@ protected:
      */
     void scaleToScaleFactor(SkCanvas*);
 
-    SkPicture* createPicture();
-    uint32_t recordFlags();
+    SkBBHFactory* getFactory();
+    uint32_t recordFlags() const { return 0; }
     SkCanvas* setupCanvas();
     virtual SkCanvas* setupCanvas(int width, int height);
+
+    /**
+     * Copy src to dest; if src==NULL, set dest to empty string.
+     */
+    static void CopyString(SkString* dest, const SkString* src);
 
 private:
     SkISize                fViewport;
@@ -327,6 +491,7 @@ private:
     GrContextFactory       fGrContextFactory;
     GrContext*             fGrContext;
     int                    fSampleCount;
+    bool                   fUseDFText;
 #endif
 
     virtual SkString getConfigNameInternal() = 0;
@@ -339,55 +504,84 @@ private:
  * to time.
  */
 class RecordPictureRenderer : public PictureRenderer {
-    virtual bool render(const SkString*, SkBitmap** out = NULL) SK_OVERRIDE;
+public:
+#if SK_SUPPORT_GPU
+    RecordPictureRenderer(const GrContextOptions &opts) : INHERITED(opts) { }
+#endif
 
-    virtual SkString getPerIterTimeFormat() SK_OVERRIDE { return SkString("%.4f"); }
+    bool render(SkBitmap** out = NULL) override;
 
-    virtual SkString getNormalTimeFormat() SK_OVERRIDE { return SkString("%6.4f"); }
+    SkString getPerIterTimeFormat() override { return SkString("%.4f"); }
+
+    SkString getNormalTimeFormat() override { return SkString("%6.4f"); }
 
 protected:
-    virtual SkCanvas* setupCanvas(int width, int height) SK_OVERRIDE;
+    SkCanvas* setupCanvas(int width, int height) override;
 
 private:
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
+    SkString getConfigNameInternal() override;
+
+    typedef PictureRenderer INHERITED;
 };
 
 class PipePictureRenderer : public PictureRenderer {
 public:
-    virtual bool render(const SkString*, SkBitmap** out = NULL) SK_OVERRIDE;
+#if SK_SUPPORT_GPU
+    PipePictureRenderer(const GrContextOptions &opts) : INHERITED(opts) { }
+#endif
+
+    bool render(SkBitmap** out = NULL) override;
 
 private:
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
+    SkString getConfigNameInternal() override;
 
     typedef PictureRenderer INHERITED;
 };
 
 class SimplePictureRenderer : public PictureRenderer {
 public:
-    virtual void init(SkPicture* pict) SK_OVERRIDE;
+#if SK_SUPPORT_GPU
+    SimplePictureRenderer(const GrContextOptions &opts) : INHERITED(opts) { }
+#endif
 
-    virtual bool render(const SkString*, SkBitmap** out = NULL) SK_OVERRIDE;
+    virtual void init(const SkPicture* pict,
+                      const SkString* writePath,
+                      const SkString* mismatchPath,
+                      const SkString* inputFilename,
+                      bool useChecksumBasedFilenames,
+                      bool useMultiPictureDraw) override;
+
+    bool render(SkBitmap** out = NULL) override;
 
 private:
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
+    SkString getConfigNameInternal() override;
 
     typedef PictureRenderer INHERITED;
 };
 
 class TiledPictureRenderer : public PictureRenderer {
 public:
+#if SK_SUPPORT_GPU
+    TiledPictureRenderer(const GrContextOptions &opts);
+#else
     TiledPictureRenderer();
+#endif
 
-    virtual void init(SkPicture* pict) SK_OVERRIDE;
+    virtual void init(const SkPicture* pict,
+                      const SkString* writePath,
+                      const SkString* mismatchPath,
+                      const SkString* inputFilename,
+                      bool useChecksumBasedFilenames,
+                      bool useMultiPictureDraw) override;
 
     /**
-     * Renders to tiles, rather than a single canvas. If a path is provided, a separate file is
+     * Renders to tiles, rather than a single canvas.
+     * If fWritePath was provided, a separate file is
      * created for each tile, named "path0.png", "path1.png", etc.
-     * Multithreaded mode currently does not support writing to a file.
      */
-    virtual bool render(const SkString* path, SkBitmap** out = NULL) SK_OVERRIDE;
+    bool render(SkBitmap** out = NULL) override;
 
-    virtual void end() SK_OVERRIDE;
+    void end() override;
 
     void setTileWidth(int width) {
         fTileWidth = width;
@@ -434,7 +628,7 @@ public:
         return fTileMinPowerOf2Width;
     }
 
-    virtual TiledPictureRenderer* getTiledRenderer() SK_OVERRIDE { return this; }
+    TiledPictureRenderer* getTiledRenderer() override { return this; }
 
     virtual bool supportsTimingIndividualTiles() { return true; }
 
@@ -467,10 +661,10 @@ public:
     void drawCurrentTile();
 
 protected:
-    SkTDArray<SkRect> fTileRects;
+    SkTDArray<SkIRect> fTileRects;
 
-    virtual SkCanvas* setupCanvas(int width, int height) SK_OVERRIDE;
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
+    SkCanvas* setupCanvas(int width, int height) override;
+    SkString getConfigNameInternal() override;
 
 private:
     int    fTileWidth;
@@ -489,40 +683,11 @@ private:
 
     void setupTiles();
     void setupPowerOf2Tiles();
+    bool postRender(SkCanvas*, const SkIRect& tileRect,
+                    SkBitmap* tempBM, SkBitmap** out,
+                    int tileNumber);
 
     typedef PictureRenderer INHERITED;
-};
-
-class CloneData;
-
-class MultiCorePictureRenderer : public TiledPictureRenderer {
-public:
-    explicit MultiCorePictureRenderer(int threadCount);
-
-    ~MultiCorePictureRenderer();
-
-    virtual void init(SkPicture* pict) SK_OVERRIDE;
-
-    /**
-     * Behaves like TiledPictureRenderer::render(), only using multiple threads.
-     */
-    virtual bool render(const SkString* path, SkBitmap** out = NULL) SK_OVERRIDE;
-
-    virtual void end() SK_OVERRIDE;
-
-    virtual bool supportsTimingIndividualTiles() SK_OVERRIDE { return false; }
-
-private:
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
-
-    const int            fNumThreads;
-    SkTDArray<SkCanvas*> fCanvasPool;
-    SkThreadPool         fThreadPool;
-    SkPicture*           fPictureClones;
-    CloneData**          fCloneData;
-    SkCountdown          fCountdown;
-
-    typedef TiledPictureRenderer INHERITED;
 };
 
 /**
@@ -531,24 +696,31 @@ private:
  */
 class PlaybackCreationRenderer : public PictureRenderer {
 public:
-    virtual void setup() SK_OVERRIDE;
+#if SK_SUPPORT_GPU
+    PlaybackCreationRenderer(const GrContextOptions &opts) : INHERITED(opts) { }
+#endif
 
-    virtual bool render(const SkString*, SkBitmap** out = NULL) SK_OVERRIDE;
+    void setup() override;
 
-    virtual SkString getPerIterTimeFormat() SK_OVERRIDE { return SkString("%.4f"); }
+    bool render(SkBitmap** out = NULL) override;
 
-    virtual SkString getNormalTimeFormat() SK_OVERRIDE { return SkString("%6.4f"); }
+    SkString getPerIterTimeFormat() override { return SkString("%.4f"); }
+
+    SkString getNormalTimeFormat() override { return SkString("%6.4f"); }
 
 private:
-    SkAutoTUnref<SkPicture> fReplayer;
+    SkAutoTDelete<SkPictureRecorder> fRecorder;
 
-    virtual SkString getConfigNameInternal() SK_OVERRIDE;
+    SkString getConfigNameInternal() override;
 
     typedef PictureRenderer INHERITED;
 };
 
+#if SK_SUPPORT_GPU
+extern PictureRenderer* CreateGatherPixelRefsRenderer(const GrContextOptions& opts);
+#else
 extern PictureRenderer* CreateGatherPixelRefsRenderer();
-extern PictureRenderer* CreatePictureCloneRenderer();
+#endif
 
 }
 

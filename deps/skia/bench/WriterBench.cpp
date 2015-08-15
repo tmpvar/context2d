@@ -6,26 +6,26 @@
  * found in the LICENSE file.
  */
 
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkWriter32.h"
 
-class WriterBench : public SkBenchmark {
+class WriterBench : public Benchmark {
 public:
-    WriterBench(void* param) : INHERITED(param) {
-        fIsRendering = false;
+    bool isSuitableFor(Backend backend) override {
+        return backend == kNonRendering_Backend;
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return "writer";
     }
 
-    virtual void onDraw(SkCanvas*) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas*) override {
         static const char gStr[] = "abcdefghimjklmnopqrstuvwxyz";
         static const size_t gLen = strlen(gStr);
-        SkWriter32 writer(256 * 4);
-        for (int i = 0; i < SkBENCHLOOP(800); i++) {
+        SkWriter32 writer;
+        for (int i = 0; i < loops; i++) {
             for (size_t j = 0; j <= gLen; j++) {
                 writer.writeString(gStr, j);
             }
@@ -33,10 +33,9 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* fact(void* p) { return new WriterBench(p); }
-static BenchRegistry gReg(fact);
+DEF_BENCH( return new WriterBench(); )

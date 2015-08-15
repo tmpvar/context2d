@@ -13,8 +13,10 @@
 // SkPathOpsBounds, unlike SkRect, does not consider a line to be empty.
 struct SkPathOpsBounds : public SkRect {
     static bool Intersects(const SkPathOpsBounds& a, const SkPathOpsBounds& b) {
-        return a.fLeft <= b.fRight && b.fLeft <= a.fRight &&
-                a.fTop <= b.fBottom && b.fTop <= a.fBottom;
+        return AlmostLessOrEqualUlps(a.fLeft, b.fRight)
+                && AlmostLessOrEqualUlps(b.fLeft, a.fRight)
+                && AlmostLessOrEqualUlps(a.fTop, b.fBottom)
+                && AlmostLessOrEqualUlps(b.fTop, a.fBottom);
     }
 
    // Note that add(), unlike SkRect::join() or SkRect::growToInclude()
@@ -31,33 +33,21 @@ struct SkPathOpsBounds : public SkRect {
         add(toAdd.fLeft, toAdd.fTop, toAdd.fRight, toAdd.fBottom);
     }
 
-    void add(const SkPoint& pt) {
-        if (pt.fX < fLeft) fLeft = pt.fX;
-        if (pt.fY < fTop) fTop = pt.fY;
-        if (pt.fX > fRight) fRight = pt.fX;
-        if (pt.fY > fBottom) fBottom = pt.fY;
+    void add(const SkDPoint& pt) {
+        if (pt.fX < fLeft) fLeft = SkDoubleToScalar(pt.fX);
+        if (pt.fY < fTop) fTop = SkDoubleToScalar(pt.fY);
+        if (pt.fX > fRight) fRight = SkDoubleToScalar(pt.fX);
+        if (pt.fY > fBottom) fBottom = SkDoubleToScalar(pt.fY);
     }
 
-    // unlike isEmpty(), this permits lines, but not points
-    // FIXME: unused for now
-    bool isReallyEmpty() const {
-        // use !<= instead of > to detect NaN values
-        return !(fLeft <= fRight) || !(fTop <= fBottom)
-                || (fLeft == fRight && fTop == fBottom);
-    }
-
-    void setCubicBounds(const SkPoint a[4]);
-    void setLineBounds(const SkPoint a[2]);
-    void setQuadBounds(const SkPoint a[3]);
-
-    void setPointBounds(const SkPoint& pt) {
-        fLeft = fRight = pt.fX;
-        fTop = fBottom = pt.fY;
+    bool almostContains(const SkPoint& pt) {
+        return AlmostLessOrEqualUlps(fLeft, pt.fX)
+                && AlmostLessOrEqualUlps(pt.fX, fRight)
+                && AlmostLessOrEqualUlps(fTop, pt.fY)
+                && AlmostLessOrEqualUlps(pt.fY, fBottom);
     }
 
     typedef SkRect INHERITED;
 };
-
-extern void (SkPathOpsBounds::*SetCurveBounds[])(const SkPoint[]);
 
 #endif

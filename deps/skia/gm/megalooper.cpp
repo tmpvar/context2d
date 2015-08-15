@@ -6,10 +6,11 @@
  */
 
 #include "gm.h"
-#include "SkCanvas.h"
+#include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
-#include "SkLayerDrawLooper.h"
+#include "SkCanvas.h"
 #include "SkColorFilter.h"
+#include "SkLayerDrawLooper.h"
 
 // This GM tests 3 different ways of drawing four shadows around a square:
 //      just using 4 blurred rects
@@ -110,10 +111,9 @@ private:
     }
 
     SkMaskFilter* createBlur() {
-        static const SkScalar kBlurRadius = 25.0f;
+        static const SkScalar kBlurSigma = SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(25));
 
-        return SkBlurMaskFilter::Create(kBlurRadius,
-                                        SkBlurMaskFilter::kNormal_BlurStyle,
+        return SkBlurMaskFilter::Create(kNormal_SkBlurStyle, kBlurSigma,
                                         SkBlurMaskFilter::kHighQuality_BlurFlag);
     }
 
@@ -131,7 +131,7 @@ private:
         for (int i = 0; i < 4; ++i) {
             SkPaint loopPaint;
 
-            loopPaint.setLooper(create1Looper(-kOffsetToOutsideClip, 0, gColors[i]));
+            loopPaint.setLooper(create1Looper(-kOffsetToOutsideClip, 0, gColors[i]))->unref();
             loopPaint.setAntiAlias(true);
 
             SkRect outerClip = {
@@ -162,24 +162,23 @@ private:
 
     // Create a 1-tier drawlooper
     SkLayerDrawLooper* create1Looper(SkScalar xOff, SkScalar yOff, SkColor color) {
-        SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+        SkLayerDrawLooper::Builder looperBuilder;
         SkLayerDrawLooper::LayerInfo info;
 
-        info.fFlagsMask = 0;
         info.fPaintBits = SkLayerDrawLooper::kColorFilter_Bit |
                           SkLayerDrawLooper::kMaskFilter_Bit;
         info.fColorMode = SkXfermode::kSrc_Mode;
         info.fOffset.set(xOff, yOff);
         info.fPostTranslate = false;
 
-        SkPaint* paint = looper->addLayer(info);
+        SkPaint* paint = looperBuilder.addLayer(info);
 
         paint->setMaskFilter(this->createBlur())->unref();
 
         SkColorFilter* cf = SkColorFilter::CreateModeFilter(color, SkXfermode::kSrcIn_Mode);
         paint->setColorFilter(cf)->unref();
 
-        return looper;
+        return looperBuilder.detachLooper();
     }
 
     void draw1x4(SkCanvas* canvas, SkScalar x, SkScalar y) {
@@ -194,7 +193,7 @@ private:
 
         SkPaint paint;
         paint.setAntiAlias(true);
-        paint.setLooper(create4Looper(-kOffsetToOutsideClip-kHalfSquareSize, 0));
+        paint.setLooper(create4Looper(-kOffsetToOutsideClip-kHalfSquareSize, 0))->unref();
 
         canvas->save();
             canvas->clipRect(outerClip, SkRegion::kIntersect_Op);
@@ -207,10 +206,9 @@ private:
 
     // Create a 4-tier draw looper
     SkLayerDrawLooper* create4Looper(SkScalar xOff, SkScalar yOff) {
-        SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+        SkLayerDrawLooper::Builder looperBuilder;
         SkLayerDrawLooper::LayerInfo info;
 
-        info.fFlagsMask = 0;
         info.fPaintBits = SkLayerDrawLooper::kColorFilter_Bit |
                           SkLayerDrawLooper::kMaskFilter_Bit;
         info.fColorMode = SkXfermode::kSrc_Mode;
@@ -220,7 +218,7 @@ private:
 
         for (int i = 3; i >= 0; --i) {
             info.fOffset.set(xOff+gBlurOffsets[i].fX, yOff+gBlurOffsets[i].fY);
-            paint = looper->addLayer(info);
+            paint = looperBuilder.addLayer(info);
 
             paint->setMaskFilter(this->createBlur())->unref();
 
@@ -228,7 +226,7 @@ private:
             paint->setColorFilter(cf)->unref();
         }
 
-        return looper;
+        return looperBuilder.detachLooper();
     }
 
     typedef GM INHERITED;

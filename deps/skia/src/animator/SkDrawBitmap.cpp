@@ -56,7 +56,7 @@ const SkMemberInfo SkDrawBitmap::fInfo[] = {
 
 DEFINE_GET_MEMBER(SkDrawBitmap);
 
-SkDrawBitmap::SkDrawBitmap() : format((SkBitmap::Config) -1), height(-1),
+SkDrawBitmap::SkDrawBitmap() : format((SkColorType) -1), height(-1),
     rowBytes(0),    width(-1), fColor(0), fColorSet(false) {
 }
 
@@ -75,11 +75,10 @@ void SkDrawBitmap::dump(SkAnimateMaker* maker) {
     const char* formatName;
     switch (format) {
         case 0: formatName = "none"; break;
-        case 1: formatName = "A1"; break;
-        case 2: formatName = "A8"; break;
-        case 3: formatName = "Index8"; break;
-        case 4: formatName = "RGB16"; break;
-        case 5: formatName = "RGB32"; break;
+        case 1: formatName = "A8"; break;
+        case 2: formatName = "Index8"; break;
+        case 3: formatName = "RGB16"; break;
+        case 4: formatName = "RGB32"; break;
     }
     SkDebugf("format=\"%s\" />\n", formatName);
 }
@@ -89,8 +88,9 @@ void SkDrawBitmap::onEndElement(SkAnimateMaker&) {
     SkASSERT(width != -1);
     SkASSERT(height != -1);
     SkASSERT(rowBytes >= 0);
-    fBitmap.setConfig((SkBitmap::Config) format, width, height, rowBytes);
-    fBitmap.allocPixels();
+    SkColorType colorType = SkColorType(format);
+    fBitmap.allocPixels(SkImageInfo::Make(width, height, colorType, kPremul_SkAlphaType),
+                        rowBytes);
     if (fColorSet)
         fBitmap.eraseColor(fColor);
 }
@@ -189,7 +189,7 @@ void SkImageBaseBitmap::resolve() {
         fBitmap.reset();
 
         //SkStream* stream = SkStream::GetURIStream(fUriBase, src.c_str());
-        SkAutoTUnref<SkStream> stream(SkStream::NewFromFile(src.c_str()));
+        SkAutoTDelete<SkStreamAsset> stream(SkStream::NewFromFile(src.c_str()));
         if (stream.get()) {
             SkImageDecoder::DecodeStream(stream, &fBitmap);
         }

@@ -14,11 +14,7 @@
 #include "SkPaint.h"
 #include "SkTypeface.h"
 
-#ifdef SK_BUILD_FOR_ANDROID
-    #include "SkPaintOptionsAndroid.h"
-#endif
-
-struct SkGlyph;
+class SkGlyph;
 class SkDescriptor;
 class SkMaskFilter;
 class SkPathEffect;
@@ -29,14 +25,10 @@ class SkRasterizer;
  *  than a nested struct inside SkScalerContext (where it started).
  */
 struct SkScalerContextRec {
-    uint32_t    fOrigFontID;
     uint32_t    fFontID;
     SkScalar    fTextSize, fPreScaleX, fPreSkewX;
     SkScalar    fPost2x2[2][2];
     SkScalar    fFrameWidth, fMiterLimit;
-#ifdef SK_SUPPORT_HINTING_SCALE_FACTOR
-    SkScalar    fHintingScaleFactor;
-#endif
 
     //These describe the parameters to create (uniquely identify) the pre-blend.
     uint32_t    fLumBits;
@@ -92,6 +84,50 @@ struct SkScalerContextRec {
     void    getLocalMatrix(SkMatrix*) const;
     void    getSingleMatrix(SkMatrix*) const;
 
+    /** The kind of scale which will be applied by the underlying port (pre-matrix). */
+    enum PreMatrixScale {
+        kFull_PreMatrixScale,  // The underlying port can apply both x and y scale.
+        kVertical_PreMatrixScale,  // The underlying port can only apply a y scale.
+        kVerticalInteger_PreMatrixScale  // The underlying port can only apply an integer y scale.
+    };
+    /**
+     *  Compute useful matrices for use with sizing in underlying libraries.
+     *
+     *  There are two kinds of text size, a 'requested/logical size' which is like asking for size
+     *  '12' and a 'real' size which is the size after the matrix is applied. The matrices produced
+     *  by this method are based on the 'real' size. This method effectively finds the total device
+     *  matrix and decomposes it in various ways.
+     *
+     *  The most useful decomposition is into 'scale' and 'remaining'. The 'scale' is applied first
+     *  and then the 'remaining' to fully apply the total matrix. This decomposition is useful when
+     *  the text size ('scale') may have meaning apart from the total matrix. This is true when
+     *  hinting, and sometimes true for other properties as well.
+     *
+     *  The second (optional) decomposition is of 'remaining' into a non-rotational part
+     *  'remainingWithoutRotation' and a rotational part 'remainingRotation'. The 'scale' is applied
+     *  first, then 'remainingWithoutRotation', then 'remainingRotation' to fully apply the total
+     *  matrix. This decomposition is helpful when only horizontal metrics can be trusted, so the
+     *  'scale' and 'remainingWithoutRotation' will be handled by the underlying library, but
+     *  the final rotation 'remainingRotation' will be handled manually.
+     *
+     *  The 'total' matrix is also (optionally) available. This is useful in cases where the
+     *  underlying library will not be used, often when working directly with font data.
+     *
+     *  The parameters 'scale' and 'remaining' are required, the other pointers may be NULL.
+     *
+     *  @param preMatrixScale the kind of scale to extract from the total matrix.
+     *  @param scale the scale extracted from the total matrix (both values positive).
+     *  @param remaining apply after scale to apply the total matrix.
+     *  @param remainingWithoutRotation apply after scale to apply the total matrix sans rotation.
+     *  @param remainingRotation apply after remainingWithoutRotation to apply the total matrix.
+     *  @param total the total matrix.
+     */
+    void computeMatrices(PreMatrixScale preMatrixScale,
+                         SkVector* scale, SkMatrix* remaining,
+                         SkMatrix* remainingWithoutRotation = NULL,
+                         SkMatrix* remainingRotation = NULL,
+                         SkMatrix* total = NULL);
+
     inline SkPaint::Hinting getHinting() const;
     inline void setHinting(SkPaint::Hinting);
 
@@ -125,7 +161,7 @@ public:
         kEmbeddedBitmapText_Flag  = 0x0004,
         kEmbolden_Flag            = 0x0008,
         kSubpixelPositioning_Flag = 0x0010,
-        kAutohinting_Flag         = 0x0020,
+        kForceAutohinting_Flag    = 0x0020,  // Use auto instead of bytcode hinting if hinting.
         kVertical_Flag            = 0x0040,
 
         // together, these two flags resulting in a two bit value which matches
@@ -134,13 +170,14 @@ public:
         kHintingBit1_Flag         = 0x0080,
         kHintingBit2_Flag         = 0x0100,
 
-        // these should only ever be set if fMaskFormat is LCD16 or LCD32
+        // Pixel geometry information.
+        // only meaningful if fMaskFormat is kLCD16
         kLCD_Vertical_Flag        = 0x0200,    // else Horizontal
         kLCD_BGROrder_Flag        = 0x0400,    // else RGB order
 
-        // Generate A8 from LCD source (for GDI), only meaningful if fMaskFormat is kA8
-        // Perhaps we can store this (instead) in fMaskFormat, in hight bit?
-        kGenA8FromLCD_Flag        = 0x0800,
+        // Generate A8 from LCD source (for GDI and CoreGraphics).
+        // only meaningful if fMaskFormat is kA8
+        kGenA8FromLCD_Flag        = 0x0800, // could be 0x200 (bit meaning dependent on fMaskFormat)
     };
 
     // computed values
@@ -162,9 +199,8 @@ public:
         return SkToBool(fRec.fFlags & kSubpixelPositioning_Flag);
     }
 
-    // remember our glyph offset/base
-    void setBaseGlyphCount(unsigned baseGlyphCount) {
-        fBaseGlyphCount = baseGlyphCount;
+    bool isVertical() const {
+        return SkToBool(fRec.fFlags & kVertical_Flag);
     }
 
     /** Return the corresponding glyph for the specified unichar. Since contexts
@@ -172,12 +208,16 @@ public:
         fact correspond to a different font/context. In that case, we use the
         base-glyph-count to know how to translate back into local glyph space.
      */
-    uint16_t charToGlyphID(SkUnichar uni);
+    uint16_t charToGlyphID(SkUnichar uni) {
+        return generateCharToGlyph(uni);
+    }
 
     /** Map the glyphID to its glyph index, and then to its char code. Unmapped
         glyphs return zero.
     */
-    SkUnichar glyphIDToChar(uint16_t glyphID);
+    SkUnichar glyphIDToChar(uint16_t glyphID) {
+        return (glyphID < getGlyphCount()) ? generateGlyphToChar(glyphID) : 0;
+    }
 
     unsigned    getGlyphCount() { return this->generateGlyphCount(); }
     void        getAdvance(SkGlyph*);
@@ -186,44 +226,85 @@ public:
     void        getPath(const SkGlyph&, SkPath*);
     void        getFontMetrics(SkPaint::FontMetrics*);
 
-#ifdef SK_BUILD_FOR_ANDROID
-    unsigned getBaseGlyphCount(SkUnichar charCode);
+    /** Return the size in bytes of the associated gamma lookup table
+     */
+    static size_t GetGammaLUTSize(SkScalar contrast, SkScalar paintGamma, SkScalar deviceGamma,
+                                  int* width, int* height);
 
-    // This function must be public for SkTypeface_android.h, but should not be
-    // called by other callers
-    SkFontID findTypefaceIdForChar(SkUnichar uni);
-#endif
+    /** Get the associated gamma lookup table. The 'data' pointer must point to pre-allocated
+        memory, with size in bytes greater than or equal to the return value of getGammaLUTSize().
+     */
+    static void   GetGammaLUTData(SkScalar contrast, SkScalar paintGamma, SkScalar deviceGamma,
+                                  void* data);
 
-    static inline void MakeRec(const SkPaint&, const SkDeviceProperties* deviceProperties,
-                               const SkMatrix*, Rec* rec);
+    static void MakeRec(const SkPaint&, const SkSurfaceProps* surfaceProps,
+                        const SkMatrix*, Rec* rec);
     static inline void PostMakeRec(const SkPaint&, Rec*);
 
     static SkMaskGamma::PreBlend GetMaskPreBlend(const Rec& rec);
 
+    const Rec& getRec() const { return fRec; }
+
 protected:
     Rec         fRec;
-    unsigned    fBaseGlyphCount;
 
+    /** Generates the contents of glyph.fAdvanceX and glyph.fAdvanceY.
+     *  May call getMetrics if that would be just as fast.
+     */
+    virtual void generateAdvance(SkGlyph* glyph) = 0;
+
+    /** Generates the contents of glyph.fWidth, fHeight, fTop, fLeft,
+     *  as well as fAdvanceX and fAdvanceY if not already set.
+     *
+     *  TODO: fMaskFormat is set by getMetrics later; cannot be set here.
+     */
+    virtual void generateMetrics(SkGlyph* glyph) = 0;
+
+    /** Generates the contents of glyph.fImage.
+     *  When called, glyph.fImage will be pointing to a pre-allocated,
+     *  uninitialized region of memory of size glyph.computeImageSize().
+     *  This method may change glyph.fMaskFormat if the new image size is
+     *  less than or equal to the old image size.
+     *
+     *  Because glyph.computeImageSize() will determine the size of fImage,
+     *  generateMetrics will be called before generateImage.
+     */
+    virtual void generateImage(const SkGlyph& glyph) = 0;
+
+    /** Sets the passed path to the glyph outline.
+     *  If this cannot be done the path is set to empty;
+     *  this is indistinguishable from a glyph with an empty path.
+     *  This does not set glyph.fPath.
+     *
+     *  TODO: path is always glyph.fPath, no reason to pass separately.
+     */
+    virtual void generatePath(const SkGlyph& glyph, SkPath* path) = 0;
+
+    /** Retrieves font metrics. */
+    virtual void generateFontMetrics(SkPaint::FontMetrics*) = 0;
+
+    /** Returns the number of glyphs in the font. */
     virtual unsigned generateGlyphCount() = 0;
-    virtual uint16_t generateCharToGlyph(SkUnichar) = 0;
-    virtual void generateAdvance(SkGlyph*) = 0;
-    virtual void generateMetrics(SkGlyph*) = 0;
-    virtual void generateImage(const SkGlyph&) = 0;
-    virtual void generatePath(const SkGlyph&, SkPath*) = 0;
-    virtual void generateFontMetrics(SkPaint::FontMetrics* mX,
-                                     SkPaint::FontMetrics* mY) = 0;
-    // default impl returns 0, indicating failure.
-    virtual SkUnichar generateGlyphToChar(uint16_t);
+
+    /** Returns the glyph id for the given unichar.
+     *  If there is no 1:1 mapping from the unichar to a glyph id, returns 0.
+     */
+    virtual uint16_t generateCharToGlyph(SkUnichar unichar) = 0;
+
+    /** Returns the unichar for the given glyph id.
+     *  If there is no 1:1 mapping from the glyph id to a unichar, returns 0.
+     *  The default implementation always returns 0, indicating failure.
+     */
+    virtual SkUnichar generateGlyphToChar(uint16_t glyphId);
 
     void forceGenerateImageFromPath() { fGenerateImageFromPath = true; }
+    void forceOffGenerateImageFromPath() { fGenerateImageFromPath = false; }
 
 private:
+    friend class SkRandomScalerContext; // For debug purposes
+
     // never null
     SkAutoTUnref<SkTypeface> fTypeface;
-
-#ifdef SK_BUILD_FOR_ANDROID
-    SkPaintOptionsAndroid fPaintOptionsAndroid;
-#endif
 
     // optional object, which may be null
     SkPathEffect*   fPathEffect;
@@ -237,24 +318,10 @@ private:
     void internalGetPath(const SkGlyph& glyph, SkPath* fillPath,
                          SkPath* devPath, SkMatrix* fillToDevMatrix);
 
-    // Return the context associated with the next logical typeface, or NULL if
-    // there are no more entries in the fallback chain.
-    SkScalerContext* allocNextContext() const;
-
-    // return the next context, treating fNextContext as a cache of the answer
-    SkScalerContext* getNextContext();
-
-    // returns the right context from our link-list for this glyph. If no match
-    // is found, just returns the original context (this)
-    SkScalerContext* getGlyphContext(const SkGlyph& glyph);
-
     // returns the right context from our link-list for this char. If no match
     // is found it returns NULL. If a match is found then the glyphID param is
     // set to the glyphID that maps to the provided char.
     SkScalerContext* getContextFromChar(SkUnichar uni, uint16_t* glyphID);
-
-    // link-list of context, to handle missing chars. null-terminated.
-    SkScalerContext* fNextContext;
 
     // SkMaskGamma::PreBlend converts linear masks to gamma correcting masks.
 protected:
@@ -270,9 +337,6 @@ private:
 #define kPathEffect_SkDescriptorTag     SkSetFourByteTag('p', 't', 'h', 'e')
 #define kMaskFilter_SkDescriptorTag     SkSetFourByteTag('m', 's', 'k', 'f')
 #define kRasterizer_SkDescriptorTag     SkSetFourByteTag('r', 'a', 's', 't')
-#ifdef SK_BUILD_FOR_ANDROID
-#define kAndroidOpts_SkDescriptorTag    SkSetFourByteTag('a', 'n', 'd', 'r')
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

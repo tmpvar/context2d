@@ -7,9 +7,9 @@
  */
 
 
+#include "SkAtomics.h"
 #include "SkRegionPriv.h"
 #include "SkTemplates.h"
-#include "SkThread.h"
 #include "SkUtils.h"
 
 /* Region Layout
@@ -124,6 +124,15 @@ void SkRegion::swap(SkRegion& other) {
     SkTSwap<RunHead*>(fRunHead, other.fRunHead);
 }
 
+int SkRegion::computeRegionComplexity() const {
+  if (this->isEmpty()) {
+    return 0;
+  } else if (this->isRect()) {
+    return 1;
+  }
+  return fRunHead->getIntervalCount();
+}
+
 bool SkRegion::setEmpty() {
     this->freeRuns();
     fBounds.set(0, 0, 0, 0);
@@ -174,6 +183,7 @@ bool SkRegion::op(const SkRegion& rgn, const SkIRect& rect, Op op) {
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef SK_BUILD_FOR_ANDROID
+#include <stdio.h>
 char* SkRegion::toString() {
     Iterator iter(*this);
     int count = 0;
@@ -202,12 +212,6 @@ char* SkRegion::toString() {
 ///////////////////////////////////////////////////////////////////////////////
 
 int SkRegion::count_runtype_values(int* itop, int* ibot) const {
-    if (this == NULL) {
-        *itop = SK_MinS32;
-        *ibot = SK_MaxS32;
-        return 0;
-    }
-
     int maxT;
 
     if (this->isRect()) {
@@ -786,7 +790,7 @@ public:
                 fTop = (SkRegion::RunType)(bottom); // just update our bottom
             } else {
                 start[-2] = (SkRegion::RunType)(bottom);
-                start[-1] = len >> 1;
+                start[-1] = SkToS32(len >> 1);
                 fPrevDst = start;
                 fPrevLen = len;
             }
@@ -1090,9 +1094,9 @@ bool SkRegion::op(const SkRegion& rgna, const SkRegion& rgnb, Op op) {
 
 #include "SkBuffer.h"
 
-uint32_t SkRegion::writeToMemory(void* storage) const {
+size_t SkRegion::writeToMemory(void* storage) const {
     if (NULL == storage) {
-        uint32_t size = sizeof(int32_t); // -1 (empty), 0 (rect), runCount
+        size_t size = sizeof(int32_t); // -1 (empty), 0 (rect), runCount
         if (!this->isEmpty()) {
             size += sizeof(fBounds);
             if (this->isComplex()) {
@@ -1123,25 +1127,28 @@ uint32_t SkRegion::writeToMemory(void* storage) const {
     return buffer.pos();
 }
 
-uint32_t SkRegion::readFromMemory(const void* storage) {
-    SkRBuffer   buffer(storage);
-    SkRegion    tmp;
-    int32_t     count;
+size_t SkRegion::readFromMemory(const void* storage, size_t length) {
+    SkRBufferWithSizeCheck  buffer(storage, length);
+    SkRegion                tmp;
+    int32_t                 count;
 
-    count = buffer.readS32();
-    if (count >= 0) {
-        buffer.read(&tmp.fBounds, sizeof(tmp.fBounds));
+    if (buffer.readS32(&count) && (count >= 0) && buffer.read(&tmp.fBounds, sizeof(tmp.fBounds))) {
         if (count == 0) {
             tmp.fRunHead = SkRegion_gRectRunHeadPtr;
         } else {
-            int32_t ySpanCount = buffer.readS32();
-            int32_t intervalCount = buffer.readS32();
-            tmp.allocateRuns(count, ySpanCount, intervalCount);
-            buffer.read(tmp.fRunHead->writable_runs(), count * sizeof(RunType));
+            int32_t ySpanCount, intervalCount;
+            if (buffer.readS32(&ySpanCount) && buffer.readS32(&intervalCount)) {
+                tmp.allocateRuns(count, ySpanCount, intervalCount);
+                buffer.read(tmp.fRunHead->writable_runs(), count * sizeof(RunType));
+            }
         }
     }
-    this->swap(tmp);
-    return buffer.pos();
+    size_t sizeRead = 0;
+    if (buffer.isValid()) {
+        this->swap(tmp);
+        sizeRead = buffer.pos();
+    }
+    return sizeRead;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1199,7 +1206,7 @@ static void compute_bounds(const SkRegion::RunType runs[],
 
             const SkRegion::RunType* prev = runs;
             runs = skip_intervals_slow(runs);
-            int intervals = (runs - prev) >> 1;
+            int intervals = SkToInt((runs - prev) >> 1);
             SkASSERT(prev[-1] == intervals);
             intervalCount += intervals;
 

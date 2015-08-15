@@ -1,19 +1,18 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
+#include "SkAnimTimer.h"
 #include "SkView.h"
 #include "SkCanvas.h"
-#include "Sk64.h"
 #include "SkCornerPathEffect.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
-#include "SkKernel33MaskFilter.h"
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkRegion.h"
@@ -31,21 +30,6 @@
 #include "SkImageDecoder.h"
 
 static SkRandom gRand;
-
-static void test_chromium_9005() {
-    SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 800, 600);
-    bm.allocPixels();
-
-    SkCanvas canvas(bm);
-
-    SkPoint pt0 = { SkFloatToScalar(799.33374f), SkFloatToScalar(1.2360189f) };
-    SkPoint pt1 = { SkFloatToScalar(808.49969f), SkFloatToScalar(-7.4338055f) };
-
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    canvas.drawLine(pt0.fX, pt0.fY, pt1.fX, pt1.fY, paint);
-}
 
 static void generate_pts(SkPoint pts[], int count, int w, int h) {
     for (int i = 0; i < count; i++) {
@@ -75,11 +59,12 @@ static bool check_bitmap_margin(const SkBitmap& bm, int margin) {
             return false;
         }
         // left column
-        if (!check_zeros(bm.getAddr32(i, 0), bm.height(), rb >> 2)) {
+        if (!check_zeros(bm.getAddr32(i, 0), bm.height(), SkToInt(rb >> 2))) {
             return false;
         }
         int right = bm.width() - margin + i;
-        if (!check_zeros(bm.getAddr32(right, 0), bm.height(), rb >> 2)) {
+        if (!check_zeros(bm.getAddr32(right, 0), bm.height(),
+                         SkToInt(rb >> 2))) {
             return false;
         }
     }
@@ -193,7 +178,6 @@ class HairlineView : public SampleView {
     bool fDoAA;
 public:
     HairlineView() {
-        fCounter = 0;
         fProcIndex = 0;
         fDoAA = true;
         fNow = 0;
@@ -201,7 +185,7 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SkString str;
             str.printf("Hair-%s", gProcs[fProcIndex].fName);
@@ -217,26 +201,16 @@ protected:
         canvas->drawBitmap(b1, SkIntToScalar(b0.width()), 0, NULL);
     }
 
-    int fCounter;
-
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         gRand.setSeed(fNow);
 
-        if (false) { // avoid bit rot, suppress warning
-            test_chromium_9005();
-        }
-
         SkBitmap bm, bm2;
-        bm.setConfig(SkBitmap::kARGB_8888_Config,
-                     WIDTH + MARGIN*2,
-                     HEIGHT + MARGIN*2);
-        bm.allocPixels();
+        bm.allocN32Pixels(WIDTH + MARGIN*2, HEIGHT + MARGIN*2);
         // this will erase our margin, which we want to always stay 0
         bm.eraseColor(SK_ColorTRANSPARENT);
 
-        bm2.setConfig(SkBitmap::kARGB_8888_Config, WIDTH, HEIGHT,
-                      bm.rowBytes());
-        bm2.setPixels(bm.getAddr32(MARGIN, MARGIN));
+        bm2.installPixels(SkImageInfo::MakeN32Premul(WIDTH, HEIGHT),
+                          bm.getAddr32(MARGIN, MARGIN), bm.rowBytes());
 
         SkCanvas c2(bm2);
         SkPaint paint;
@@ -246,23 +220,18 @@ protected:
         bm2.eraseColor(SK_ColorTRANSPARENT);
         gProcs[fProcIndex].fProc(&c2, paint, bm);
         canvas->drawBitmap(bm2, SkIntToScalar(10), SkIntToScalar(10), NULL);
-
-        SkMSec now = SampleCode::GetAnimTime();
-        if (fNow != now) {
-            fNow = now;
-            fCounter += 1;
-            fDoAA = !fDoAA;
-            if (fCounter > 50) {
-                fProcIndex = cycle_hairproc_index(fProcIndex);
-                // todo: signal that we want to rebuild our TITLE
-                fCounter = 0;
-            }
-            this->inval(NULL);
-        }
     }
 
-    virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y,
-                                              unsigned modi) {
+    bool onAnimate(const SkAnimTimer&) override {
+        if (fDoAA) {
+            fProcIndex = cycle_hairproc_index(fProcIndex);
+            // todo: signal that we want to rebuild our TITLE
+        }
+        fDoAA = !fDoAA;
+        return true;
+    }
+
+    SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
         fDoAA = !fDoAA;
         this->inval(NULL);
         return this->INHERITED::onFindClickHandler(x, y, modi);

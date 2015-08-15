@@ -6,30 +6,28 @@
  */
 
 #include "SkDebuggerGUI.h"
-#include "SkForceLinking.h"
-#include "SkGraphics.h"
-#include "SkImageDecoder.h"
-#include <QListWidgetItem>
 #include "PictureRenderer.h"
-#include "SkPictureRecord.h"
+#include "SkPictureData.h"
 #include "SkPicturePlayback.h"
-
-__SK_FORCE_IMAGE_DECODER_LINKING;
+#include "SkPictureRecord.h"
+#include <QListWidgetItem>
+#include <QtGui>
+#include "sk_tool_utils.h"
 
 #if defined(SK_BUILD_FOR_WIN32)
-    #include "BenchSysTimer_windows.h"
+    #include "SysTimer_windows.h"
 #elif defined(SK_BUILD_FOR_MAC)
-    #include "BenchSysTimer_mach.h"
+    #include "SysTimer_mach.h"
 #elif defined(SK_BUILD_FOR_UNIX) || defined(SK_BUILD_FOR_ANDROID)
-    #include "BenchSysTimer_posix.h"
+    #include "SysTimer_posix.h"
 #else
-    #include "BenchSysTimer_c.h"
+    #include "SysTimer_c.h"
 #endif
 
 
 SkDebuggerGUI::SkDebuggerGUI(QWidget *parent) :
         QMainWindow(parent)
-    , fCentralWidget(this)
+    , fCentralSplitter(this)
     , fStatusBar(this)
     , fToolBar(this)
     , fActionOpen(this)
@@ -56,22 +54,20 @@ SkDebuggerGUI::SkDebuggerGUI(QWidget *parent) :
     , fActionZoomIn(this)
     , fActionZoomOut(this)
     , fMapper(this)
-    , fListWidget(&fCentralWidget)
-    , fDirectoryWidget(&fCentralWidget)
+    , fListWidget(&fCentralSplitter)
+    , fDirectoryWidget(&fCentralSplitter)
     , fCanvasWidget(this, &fDebugger)
-    , fImageWidget(&fDebugger)
+    , fDrawCommandGeometryWidget(&fDebugger)
     , fMenuBar(this)
     , fMenuFile(this)
     , fMenuNavigate(this)
     , fMenuView(this)
-    , fBreakpointsActivated(false)
-    , fDeletesActivated(false)
-    , fPause(false)
     , fLoading(false)
 {
     setupUi(this);
     fListWidget.setSelectionMode(QAbstractItemView::ExtendedSelection);
-    connect(&fListWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(registerListClick(QListWidgetItem *)));
+    connect(&fListWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this,
+            SLOT(updateDrawCommandInfo()));
     connect(&fActionOpen, SIGNAL(triggered()), this, SLOT(openFile()));
     connect(&fActionDirectory, SIGNAL(triggered()), this, SLOT(toggleDirectory()));
     connect(&fDirectoryWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(loadFile(QListWidgetItem *)));
@@ -90,19 +86,19 @@ SkDebuggerGUI::SkDebuggerGUI(QWidget *parent) :
     connect(&fActionClearBreakpoints, SIGNAL(triggered()), this, SLOT(actionClearBreakpoints()));
     connect(&fActionClearDeletes, SIGNAL(triggered()), this, SLOT(actionClearDeletes()));
     connect(&fActionClose, SIGNAL(triggered()), this, SLOT(actionClose()));
-    connect(fSettingsWidget.getVisibilityButton(), SIGNAL(toggled(bool)), this, SLOT(actionCommandFilter()));
 #if SK_SUPPORT_GPU
-    connect(fSettingsWidget.getGLCheckBox(), SIGNAL(toggled(bool)), this, SLOT(actionGLWidget(bool)));
+    connect(&fSettingsWidget, SIGNAL(glSettingsChanged()), this, SLOT(actionGLSettingsChanged()));
 #endif
-    connect(fSettingsWidget.getRasterCheckBox(), SIGNAL(toggled(bool)), this, SLOT(actionRasterWidget(bool)));
-    connect(fSettingsWidget.getOverdrawVizCheckBox(), SIGNAL(toggled(bool)), this, SLOT(actionOverdrawVizWidget(bool)));
+    connect(&fSettingsWidget, SIGNAL(rasterSettingsChanged()), this, SLOT(actionRasterSettingsChanged()));
+    connect(&fSettingsWidget, SIGNAL(visualizationsChanged()), this, SLOT(actionVisualizationsChanged()));
+    connect(&fSettingsWidget, SIGNAL(texFilterSettingsChanged()), this, SLOT(actionTextureFilter()));
     connect(&fActionPause, SIGNAL(toggled(bool)), this, SLOT(pauseDrawing(bool)));
     connect(&fActionCreateBreakpoint, SIGNAL(activated()), this, SLOT(toggleBreakpoint()));
     connect(&fActionShowDeletes, SIGNAL(triggered()), this, SLOT(showDeletes()));
     connect(&fCanvasWidget, SIGNAL(hitChanged(int)), this, SLOT(selectCommand(int)));
-    connect(&fCanvasWidget, SIGNAL(hitChanged(int)), &fSettingsWidget, SLOT(updateHit(int)));
+    connect(&fCanvasWidget, SIGNAL(hitChanged(int)), this, SLOT(updateHit(int)));
     connect(&fCanvasWidget, SIGNAL(scaleFactorChanged(float)), this, SLOT(actionScale(float)));
-    connect(&fCanvasWidget, SIGNAL(commandChanged(int)), &fSettingsWidget, SLOT(updateCommand(int)));
+
     connect(&fActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
     connect(&fActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 
@@ -113,177 +109,31 @@ SkDebuggerGUI::SkDebuggerGUI(QWidget *parent) :
     connect(&fActionZoomOut, SIGNAL(triggered()), &fMapper, SLOT(map()));
     connect(&fMapper, SIGNAL(mapped(int)), &fCanvasWidget, SLOT(zoom(int)));
 
+    fViewStateFrame.setDisabled(true);
     fInspectorWidget.setDisabled(true);
     fMenuEdit.setDisabled(true);
     fMenuNavigate.setDisabled(true);
     fMenuView.setDisabled(true);
-
-    SkGraphics::Init();
-}
-
-SkDebuggerGUI::~SkDebuggerGUI() {
-    SkGraphics::Term();
 }
 
 void SkDebuggerGUI::actionBreakpoints() {
-    fBreakpointsActivated = !fBreakpointsActivated;
+    bool breakpointsActivated = fActionBreakpoint.isChecked();
     for (int row = 0; row < fListWidget.count(); row++) {
         QListWidgetItem *item = fListWidget.item(row);
-        item->setHidden(item->checkState() == Qt::Unchecked && fBreakpointsActivated);
+        item->setHidden(item->checkState() == Qt::Unchecked && breakpointsActivated);
     }
 }
 
 void SkDebuggerGUI::showDeletes() {
-    fDeletesActivated = !fDeletesActivated;
+    bool deletesActivated = fActionShowDeletes.isChecked();
     for (int row = 0; row < fListWidget.count(); row++) {
         QListWidgetItem *item = fListWidget.item(row);
-        item->setHidden(fDebugger.isCommandVisible(row)
-                && fDeletesActivated);
+        item->setHidden(fDebugger.isCommandVisible(row) && deletesActivated);
     }
 }
-
-// The timed picture playback uses the SkPicturePlayback's profiling stubs
-// to time individual commands. The offsets are needed to map SkPicture
-// offsets to individual commands.
-class SkTimedPicturePlayback : public SkPicturePlayback {
-public:
-    SkTimedPicturePlayback(SkStream* stream, const SkPictInfo& info,
-                           SkPicture::InstallPixelRefProc proc,
-                           const SkTDArray<bool>& deletedCommands)
-        : INHERITED(stream, info, proc)
-        , fSkipCommands(deletedCommands)
-        , fTot(0.0)
-        , fCurCommand(0) {
-        fTimes.setCount(deletedCommands.count());
-        fTypeTimes.setCount(LAST_DRAWTYPE_ENUM+1);
-        this->resetTimes();
-    }
-
-    void resetTimes() {
-        for (int i = 0; i < fTimes.count(); ++i) {
-            fTimes[i] = 0.0;
-        }
-        for (int i = 0; i < fTypeTimes.count(); ++i) {
-            fTypeTimes[i] = 0.0f;
-        }
-        fTot = 0.0;
-    }
-
-    int count() const { return fTimes.count(); }
-
-    double time(int index) const { return fTimes[index] / fTot; }
-
-    const SkTDArray<double>* typeTimes() const { return &fTypeTimes; }
-
-    double totTime() const { return fTot; }
-
-protected:
-    BenchSysTimer fTimer;
-    SkTDArray<bool> fSkipCommands; // has the command been deleted in the GUI?
-    SkTDArray<double> fTimes;   // sum of time consumed for each command
-    SkTDArray<double> fTypeTimes; // sum of time consumed for each type of command (e.g., drawPath)
-    double fTot;                // total of all times in 'fTimes'
-    int fCurType;
-    int fCurCommand;            // the current command being executed/timed
-
-#ifdef SK_DEVELOPER
-    virtual bool preDraw(int opIndex, int type) SK_OVERRIDE {
-        fCurCommand = opIndex;
-
-        if (fSkipCommands[fCurCommand]) {
-            return true;
-        }
-
-        fCurType = type;
-        // The SkDebugCanvas doesn't recognize these types. This class needs to
-        // convert or else we'll wind up with a mismatch between the type counts
-        // the debugger displays and the profile times.
-        if (DRAW_POS_TEXT_TOP_BOTTOM == type) {
-            fCurType = DRAW_POS_TEXT;
-        } else if (DRAW_POS_TEXT_H_TOP_BOTTOM == type) {
-            fCurType = DRAW_POS_TEXT_H;
-        }
-
-#if defined(SK_BUILD_FOR_WIN32)
-        // CPU timer doesn't work well on Windows
-        fTimer.startWall();
-#else
-        fTimer.startCpu();
-#endif
-
-        return false;
-    }
-
-    virtual void postDraw(int opIndex) SK_OVERRIDE {
-#if defined(SK_BUILD_FOR_WIN32)
-        // CPU timer doesn't work well on Windows
-        double time = fTimer.endWall();
-#else
-        double time = fTimer.endCpu();
-#endif
-
-        SkASSERT(opIndex == fCurCommand);
-        SkASSERT(fCurType <= LAST_DRAWTYPE_ENUM);
-
-        fTimes[fCurCommand] += time;
-        fTypeTimes[fCurType] += time;
-        fTot += time;
-    }
-#endif
-
-private:
-    typedef SkPicturePlayback INHERITED;
-};
-
-// Wrap SkPicture to allow installation of an SkTimedPicturePlayback object
-class SkTimedPicture : public SkPicture {
-public:
-    static SkTimedPicture* CreateTimedPicture(SkStream* stream,
-                                              SkPicture::InstallPixelRefProc proc,
-                                              const SkTDArray<bool>& deletedCommands) {
-        SkPictInfo info;
-        if (!StreamIsSKP(stream, &info)) {
-            return NULL;
-        }
-
-        SkTimedPicturePlayback* playback;
-        // Check to see if there is a playback to recreate.
-        if (stream->readBool()) {
-            playback = SkNEW_ARGS(SkTimedPicturePlayback,
-                                  (stream, info, proc, deletedCommands));
-        } else {
-            playback = NULL;
-        }
-
-        return SkNEW_ARGS(SkTimedPicture, (playback, info.fWidth, info.fHeight));
-    }
-
-    void resetTimes() { ((SkTimedPicturePlayback*) fPlayback)->resetTimes(); }
-
-    int count() const { return ((SkTimedPicturePlayback*) fPlayback)->count(); }
-
-    // return the fraction of the total time this command consumed
-    double time(int index) const { return ((SkTimedPicturePlayback*) fPlayback)->time(index); }
-
-    const SkTDArray<double>* typeTimes() const { return ((SkTimedPicturePlayback*) fPlayback)->typeTimes(); }
-
-    double totTime() const { return ((SkTimedPicturePlayback*) fPlayback)->totTime(); }
-
-private:
-    // disallow default ctor b.c. we don't have a good way to setup the fPlayback ptr
-    SkTimedPicture();
-    // Private ctor only used by CreateTimedPicture, which has created the playback.
-    SkTimedPicture(SkTimedPicturePlayback* playback, int width, int height)
-        : INHERITED(playback, width, height) {}
-    // disallow the copy ctor - enabling would require copying code from SkPicture
-    SkTimedPicture(const SkTimedPicture& src);
-
-    typedef SkPicture INHERITED;
-};
-
 // This is a simplification of PictureBenchmark's run with the addition of
 // clearing of the times after the first pass (in resetTimes)
-void SkDebuggerGUI::run(SkTimedPicture* pict,
+void SkDebuggerGUI::run(const SkPicture* pict,
                         sk_tools::PictureRenderer* renderer,
                         int repeats) {
     SkASSERT(pict);
@@ -296,20 +146,18 @@ void SkDebuggerGUI::run(SkTimedPicture* pict,
         return;
     }
 
-    renderer->init(pict);
+    renderer->init(pict, NULL, NULL, NULL, false, false);
 
     renderer->setup();
-    renderer->render(NULL);
-    renderer->resetState(true);
-
-    // We throw this away the first batch of times to remove first time effects (such as paging in this program)
-    pict->resetTimes();
+    renderer->render();
+    renderer->resetState(true);    // flush, swapBuffers and Finish
 
     for (int i = 0; i < repeats; ++i) {
         renderer->setup();
-        renderer->render(NULL);
-        renderer->resetState(true);
+        renderer->render();
+        renderer->resetState(false);  // flush & swapBuffers, but don't Finish
     }
+    renderer->resetState(true);    // flush, swapBuffers and Finish
 
     renderer->end();
 }
@@ -331,58 +179,11 @@ void SkDebuggerGUI::actionProfile() {
         return;
     }
 
-    SkAutoTUnref<SkTimedPicture> picture(SkTimedPicture::CreateTimedPicture(&inputStream,
-                                         &SkImageDecoder::DecodeMemory, fSkipCommands));
+    SkAutoTUnref<SkPicture> picture(SkPicture::CreateFromStream(&inputStream,
+                                        &SkImageDecoder::DecodeMemory)); // , fSkipCommands));
     if (NULL == picture.get()) {
         return;
     }
-
-    // For now this #if allows switching between tiled and simple rendering
-    // modes. Eventually this will be accomplished via the GUI
-#if 0
-    // With the current batch of SysTimers, profiling in tiled mode
-    // gets swamped by the timing overhead:
-    //
-    //                       tile mode           simple mode
-    // debugger                64.2ms              12.8ms
-    // bench_pictures          16.9ms              12.4ms
-    //
-    // This is b.c. in tiled mode each command is called many more times
-    // but typically does less work on each invocation (due to clipping)
-    sk_tools::TiledPictureRenderer* renderer = NULL;
-
-    renderer = SkNEW(sk_tools::TiledPictureRenderer);
-    renderer->setTileWidth(256);
-    renderer->setTileHeight(256);
-#else
-    sk_tools::SimplePictureRenderer* renderer = NULL;
-
-    renderer = SkNEW(sk_tools::SimplePictureRenderer);
-
-#if SK_SUPPORT_GPU
-    if (Qt::Checked == fSettingsWidget.getGLCheckBox()->checkState()) {
-        renderer->setDeviceType(sk_tools::PictureRenderer::kGPU_DeviceType);
-    }
-#endif
-
-#endif
-
-    static const int kNumRepeats = 10;
-
-    run(picture.get(), renderer, kNumRepeats);
-
-    SkASSERT(picture->count() == fListWidget.count());
-
-    // extract the individual command times from the SkTimedPlaybackPicture
-    for (int i = 0; i < picture->count(); ++i) {
-        double temp = picture->time(i);
-
-        QListWidgetItem* item = fListWidget.item(i);
-
-        item->setData(Qt::UserRole + 4, 100.0*temp);
-    }
-
-    setupOverviewText(picture->typeTimes(), picture->totTime(), kNumRepeats);
 }
 
 void SkDebuggerGUI::actionCancel() {
@@ -407,20 +208,7 @@ void SkDebuggerGUI::actionClearDeletes() {
         fDebugger.setCommandVisible(row, true);
         fSkipCommands[row] = false;
     }
-    if (fPause) {
-        fCanvasWidget.drawTo(fPausedRow);
-        fImageWidget.draw();
-    } else {
-        fCanvasWidget.drawTo(fListWidget.currentRow());
-        fImageWidget.draw();
-    }
-}
-
-void SkDebuggerGUI::actionCommandFilter() {
-    fDebugger.highlightCurrentCommand(
-            fSettingsWidget.getVisibilityButton()->isChecked());
-    fCanvasWidget.drawTo(fListWidget.currentRow());
-    fImageWidget.draw();
+    this->updateImage();
 }
 
 void SkDebuggerGUI::actionClose() {
@@ -447,31 +235,25 @@ void SkDebuggerGUI::actionDelete() {
         }
     }
 
-    int currentRow = fListWidget.currentRow();
-
-    if (fPause) {
-        fCanvasWidget.drawTo(fPausedRow);
-        fImageWidget.draw();
-    } else {
-        fCanvasWidget.drawTo(currentRow);
-        fImageWidget.draw();
-    }
+    this->updateImage();
 }
 
 #if SK_SUPPORT_GPU
-void SkDebuggerGUI::actionGLWidget(bool isToggled) {
+void SkDebuggerGUI::actionGLSettingsChanged() {
+    bool isToggled = fSettingsWidget.isGLActive();
+    if (isToggled) {
+        fCanvasWidget.setGLSampleCount(fSettingsWidget.getGLSampleCount());
+    }
     fCanvasWidget.setWidgetVisibility(SkCanvasWidget::kGPU_WidgetType, !isToggled);
 }
 #endif
 
 void SkDebuggerGUI::actionInspector() {
-    if (fInspectorWidget.isHidden()) {
-        fInspectorWidget.setHidden(false);
-        fImageWidget.setHidden(false);
-    } else {
-        fInspectorWidget.setHidden(true);
-        fImageWidget.setHidden(true);
-    }
+    bool newState = !fInspectorWidget.isHidden();
+
+    fInspectorWidget.setHidden(newState);
+    fViewStateFrame.setHidden(newState);
+    fDrawCommandGeometryWidget.setHidden(newState);
 }
 
 void SkDebuggerGUI::actionPlay() {
@@ -486,12 +268,24 @@ void SkDebuggerGUI::actionPlay() {
     fListWidget.setCurrentRow(fListWidget.count() - 1);
 }
 
-void SkDebuggerGUI::actionRasterWidget(bool isToggled) {
-    fCanvasWidget.setWidgetVisibility(SkCanvasWidget::kRaster_8888_WidgetType, !isToggled);
+void SkDebuggerGUI::actionRasterSettingsChanged() {
+    fCanvasWidget.setWidgetVisibility(SkCanvasWidget::kRaster_8888_WidgetType,
+                                      !fSettingsWidget.isRasterEnabled());
+    fDebugger.setOverdrawViz(fSettingsWidget.isOverdrawVizEnabled());
+    this->updateImage();
 }
 
-void SkDebuggerGUI::actionOverdrawVizWidget(bool isToggled) {
-    fDebugger.setOverdrawViz(isToggled);
+void SkDebuggerGUI::actionVisualizationsChanged() {
+    fDebugger.setMegaViz(fSettingsWidget.isMegaVizEnabled());
+    fDebugger.setPathOps(fSettingsWidget.isPathOpsEnabled());
+    fDebugger.highlightCurrentCommand(fSettingsWidget.isVisibilityFilterEnabled());
+    this->updateImage();
+}
+
+void SkDebuggerGUI::actionTextureFilter() {
+    SkFilterQuality quality;
+    bool enabled = fSettingsWidget.getFilterOverride(&quality);
+    fDebugger.setTexFilterOverride(enabled, quality);
     fCanvasWidget.update();
 }
 
@@ -516,7 +310,7 @@ void SkDebuggerGUI::actionSaveAs() {
 }
 
 void SkDebuggerGUI::actionScale(float scaleFactor) {
-    fSettingsWidget.setZoomText(scaleFactor);
+    fZoomBox.setText(QString::number(scaleFactor * 100, 'f', 0).append("%"));
 }
 
 void SkDebuggerGUI::actionSettings() {
@@ -544,6 +338,10 @@ void SkDebuggerGUI::actionStepForward() {
 }
 
 void SkDebuggerGUI::drawComplete() {
+    SkString clipStack;
+    fDebugger.getClipStackText(&clipStack);
+    fInspectorWidget.setText(clipStack.c_str(), SkInspectorWidget::kClipStack_TabType);
+
     fInspectorWidget.setMatrix(fDebugger.getCurrentMatrix());
     fInspectorWidget.setClip(fDebugger.getCurrentClip());
 }
@@ -552,7 +350,8 @@ void SkDebuggerGUI::saveToFile(const SkString& filename) {
     SkFILEWStream file(filename.c_str());
     SkAutoTUnref<SkPicture> copy(fDebugger.copyPicture());
 
-    copy->serialize(&file);
+    sk_tool_utils::PngPixelSerializer serializer;
+    copy->serialize(&file, &serializer);
 }
 
 void SkDebuggerGUI::loadFile(QListWidgetItem *item) {
@@ -584,44 +383,48 @@ void SkDebuggerGUI::openFile(const QString &filename) {
 }
 
 void SkDebuggerGUI::pauseDrawing(bool isPaused) {
-    fPause = isPaused;
     fPausedRow = fListWidget.currentRow();
-    fCanvasWidget.drawTo(fPausedRow);
-    fImageWidget.draw();
+    this->updateDrawCommandInfo();
 }
 
-void SkDebuggerGUI::registerListClick(QListWidgetItem *item) {
-    if(!fLoading) {
-        int currentRow = fListWidget.currentRow();
+void SkDebuggerGUI::updateDrawCommandInfo() {
+    int currentRow = -1;
+    if (!fLoading) {
+        currentRow = fListWidget.currentRow();
+    }
+    if (currentRow == -1) {
+        fInspectorWidget.setText("", SkInspectorWidget::kDetail_TabType);
+        fInspectorWidget.setText("", SkInspectorWidget::kClipStack_TabType);
+        fCurrentCommandBox.setText("");
+        fDrawCommandGeometryWidget.setDrawCommandIndex(-1);
+    } else {
+        this->updateImage();
 
-        if (currentRow != -1) {
-            if (!fPause) {
-                fCanvasWidget.drawTo(currentRow);
-                fImageWidget.draw();
+        const SkTDArray<SkString*> *currInfo = fDebugger.getCommandInfo(currentRow);
+
+        /* TODO(chudy): Add command type before parameters. Rename v
+         * to something more informative. */
+        if (currInfo) {
+            QString info;
+            info.append("<b>Parameters: </b><br/>");
+            for (int i = 0; i < currInfo->count(); i++) {
+                info.append(QString((*currInfo)[i]->c_str()));
+                info.append("<br/>");
             }
-            SkTDArray<SkString*> *currInfo = fDebugger.getCommandInfo(
-                    currentRow);
-
-            /* TODO(chudy): Add command type before parameters. Rename v
-             * to something more informative. */
-            if (currInfo) {
-                QString info;
-                info.append("<b>Parameters: </b><br/>");
-                for (int i = 0; i < currInfo->count(); i++) {
-
-                    info.append(QString((*currInfo)[i]->c_str()));
-                    info.append("<br/>");
-                }
-                fInspectorWidget.setText(info, SkInspectorWidget::kDetail_TabType);
-                fInspectorWidget.setDisabled(false);
-            }
+            fInspectorWidget.setText(info, SkInspectorWidget::kDetail_TabType);
         }
 
+        fCurrentCommandBox.setText(QString::number(currentRow));
+
+        fDrawCommandGeometryWidget.setDrawCommandIndex(currentRow);
+
+        fInspectorWidget.setDisabled(false);
+        fViewStateFrame.setDisabled(false);
     }
 }
 
 void SkDebuggerGUI::selectCommand(int command) {
-    if (fPause) {
+    if (this->isPaused()) {
         fListWidget.setCurrentRow(command);
     }
 }
@@ -668,6 +471,7 @@ void SkDebuggerGUI::setupUi(QMainWindow *SkDebuggerGUI) {
     fActionBreakpoint.setShortcut(QKeySequence(tr("Ctrl+B")));
     fActionBreakpoint.setIcon(breakpoint);
     fActionBreakpoint.setText("Breakpoints");
+    fActionBreakpoint.setCheckable(true);
 
     QIcon cancel;
     cancel.addFile(QString::fromUtf8(":/reload.png"), QSize(),
@@ -745,6 +549,7 @@ void SkDebuggerGUI::setupUi(QMainWindow *SkDebuggerGUI) {
 
     fActionShowDeletes.setShortcut(QKeySequence(tr("Ctrl+X")));
     fActionShowDeletes.setText("Deleted Commands");
+    fActionShowDeletes.setCheckable(true);
 
     QIcon stepBack;
     stepBack.addFile(QString::fromUtf8(":/previous.png"), QSize(),
@@ -767,51 +572,69 @@ void SkDebuggerGUI::setupUi(QMainWindow *SkDebuggerGUI) {
 
     fListWidget.setItemDelegate(new SkListWidget(&fListWidget));
     fListWidget.setObjectName(QString::fromUtf8("listWidget"));
-    fListWidget.setMaximumWidth(250);
+    fListWidget.setMinimumWidth(250);
 
     fFilter.addItem("--Filter By Available Commands--");
 
-    fDirectoryWidget.setMaximumWidth(250);
+    fDirectoryWidget.setMinimumWidth(250);
     fDirectoryWidget.setStyleSheet("QListWidget::Item {padding: 5px;}");
 
     fCanvasWidget.setSizePolicy(QSizePolicy::Expanding,
             QSizePolicy::Expanding);
 
-    fImageWidget.setFixedSize(SkImageWidget::kImageWidgetWidth,
-                              SkImageWidget::kImageWidgetHeight);
+    fDrawCommandGeometryWidget.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    fInspectorWidget.setSizePolicy(QSizePolicy::Expanding,
-            QSizePolicy::Expanding);
-    fInspectorWidget.setMaximumHeight(300);
-
-    fSettingsAndImageLayout.setSpacing(6);
     fSettingsAndImageLayout.addWidget(&fSettingsWidget);
-    fSettingsAndImageLayout.addWidget(&fImageWidget);
 
-    fSettingsWidget.setSizePolicy(QSizePolicy::Expanding,
-            QSizePolicy::Expanding);
-    fSettingsWidget.setMaximumWidth(250);
+    // View state group, part of inspector.
+    fViewStateFrame.setFrameStyle(QFrame::Panel);
+    fViewStateFrame.setLayout(&fViewStateFrameLayout);
+    fViewStateFrameLayout.addWidget(&fViewStateGroup);
+    fViewStateGroup.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    fViewStateGroup.setTitle("View");
+    fViewStateLayout.addRow("Zoom Level", &fZoomBox);
+    fZoomBox.setText("100%");
+    fZoomBox.setMinimumSize(QSize(50,25));
+    fZoomBox.setMaximumSize(QSize(50,25));
+    fZoomBox.setAlignment(Qt::AlignRight);
+    fZoomBox.setReadOnly(true);
+    fViewStateLayout.addRow("Command HitBox", &fCommandHitBox);
+    fCommandHitBox.setText("0");
+    fCommandHitBox.setMinimumSize(QSize(50,25));
+    fCommandHitBox.setMaximumSize(QSize(50,25));
+    fCommandHitBox.setAlignment(Qt::AlignRight);
+    fCommandHitBox.setReadOnly(true);
+    fViewStateLayout.addRow("Current Command", &fCurrentCommandBox);
+    fCurrentCommandBox.setText("0");
+    fCurrentCommandBox.setMinimumSize(QSize(50,25));
+    fCurrentCommandBox.setMaximumSize(QSize(50,25));
+    fCurrentCommandBox.setAlignment(Qt::AlignRight);
+    fCurrentCommandBox.setReadOnly(true);
+    fViewStateGroup.setLayout(&fViewStateLayout);
+    fSettingsAndImageLayout.addWidget(&fViewStateFrame);
 
-    fLeftColumnLayout.setSpacing(6);
-    fLeftColumnLayout.addWidget(&fListWidget);
-    fLeftColumnLayout.addWidget(&fDirectoryWidget);
+    fDrawCommandGeometryWidget.setToolTip("Current Command Geometry");
+    fSettingsAndImageLayout.addWidget(&fDrawCommandGeometryWidget);
+
+    fLeftColumnSplitter.addWidget(&fListWidget);
+    fLeftColumnSplitter.addWidget(&fDirectoryWidget);
+    fLeftColumnSplitter.setOrientation(Qt::Vertical);
 
     fCanvasSettingsAndImageLayout.setSpacing(6);
-    fCanvasSettingsAndImageLayout.addWidget(&fCanvasWidget);
-    fCanvasSettingsAndImageLayout.addLayout(&fSettingsAndImageLayout);
-
+    fCanvasSettingsAndImageLayout.addWidget(&fCanvasWidget, 1);
+    fCanvasSettingsAndImageLayout.addLayout(&fSettingsAndImageLayout, 0);
 
     fMainAndRightColumnLayout.setSpacing(6);
-    fMainAndRightColumnLayout.addLayout(&fCanvasSettingsAndImageLayout);
-    fMainAndRightColumnLayout.addWidget(&fInspectorWidget);
+    fMainAndRightColumnLayout.addLayout(&fCanvasSettingsAndImageLayout, 1);
+    fMainAndRightColumnLayout.addWidget(&fInspectorWidget, 0);
+    fMainAndRightColumnWidget.setLayout(&fMainAndRightColumnLayout);
 
-    fCentralWidget.setLayout(&fContainerLayout);
-    fContainerLayout.setSpacing(6);
-    fContainerLayout.setContentsMargins(11, 11, 11, 11);
-    fContainerLayout.addLayout(&fLeftColumnLayout);
-    fContainerLayout.addLayout(&fMainAndRightColumnLayout);
+    fCentralSplitter.addWidget(&fLeftColumnSplitter);
+    fCentralSplitter.addWidget(&fMainAndRightColumnWidget);
+    fCentralSplitter.setStretchFactor(0, 0);
+    fCentralSplitter.setStretchFactor(1, 1);
 
-    SkDebuggerGUI->setCentralWidget(&fCentralWidget);
+    SkDebuggerGUI->setCentralWidget(&fCentralSplitter);
     SkDebuggerGUI->setStatusBar(&fStatusBar);
 
     fToolBar.setIconSize(QSize(32, 32));
@@ -883,8 +706,6 @@ void SkDebuggerGUI::setupUi(QMainWindow *SkDebuggerGUI) {
     fMenuBar.addAction(fMenuNavigate.menuAction());
     fMenuBar.addAction(fMenuWindows.menuAction());
 
-    fPause = false;
-
     SkDebuggerGUI->setMenuBar(&fMenuBar);
     QMetaObject::connectSlotsByName(SkDebuggerGUI);
 }
@@ -904,13 +725,12 @@ void SkDebuggerGUI::setupDirectoryWidget(const QString& path) {
 void SkDebuggerGUI::loadPicture(const SkString& fileName) {
     fFileName = fileName;
     fLoading = true;
-    SkStream* stream = SkNEW_ARGS(SkFILEStream, (fileName.c_str()));
+    SkAutoTDelete<SkStream> stream(SkNEW_ARGS(SkFILEStream, (fileName.c_str())));
 
     SkPicture* picture = SkPicture::CreateFromStream(stream);
 
     if (NULL == picture) {
         QMessageBox::critical(this, "Error loading file", "Couldn't read file, sorry.");
-        SkSafeUnref(stream);
         return;
     }
 
@@ -922,11 +742,7 @@ void SkDebuggerGUI::loadPicture(const SkString& fileName) {
         fSkipCommands[i] = false;
     }
 
-    SkSafeUnref(stream);
     SkSafeUnref(picture);
-
-    // Will this automatically clear out due to nature of refcnt?
-    SkTArray<SkString>* commands = fDebugger.getDrawCommandsAsStrings();
 
     fActionProfile.setDisabled(false);
 
@@ -935,45 +751,63 @@ void SkDebuggerGUI::loadPicture(const SkString& fileName) {
      * TODO(chudy): This should be deprecated since fDebugger is not
      * recreated.
      * */
-    fDebugger.highlightCurrentCommand(fSettingsWidget.getVisibilityButton()->isChecked());
+    fDebugger.highlightCurrentCommand(fSettingsWidget.isVisibilityFilterEnabled());
 
-    setupListWidget(commands);
-    setupComboBox(commands);
-    setupOverviewText(NULL, 0.0, 1);
+    this->setupListWidget();
+    this->setupComboBox();
+    this->setupOverviewText(NULL, 0.0, 1);
     fInspectorWidget.setDisabled(false);
+    fViewStateFrame.setDisabled(false);
     fSettingsWidget.setDisabled(false);
     fMenuEdit.setDisabled(false);
     fMenuNavigate.setDisabled(false);
     fMenuView.setDisabled(false);
     fActionSave.setDisabled(false);
     fActionSaveAs.setDisabled(false);
+    fActionPause.setChecked(false);
+    fDrawCommandGeometryWidget.setDrawCommandIndex(-1);
+
     fLoading = false;
     actionPlay();
 }
 
-void SkDebuggerGUI::setupListWidget(SkTArray<SkString>* command) {
+void SkDebuggerGUI::setupListWidget() {
+
+    SkASSERT(!strcmp("Save",
+                     SkDrawCommand::GetCommandString(SkDrawCommand::kSave_OpType)));
+    SkASSERT(!strcmp("SaveLayer",
+                     SkDrawCommand::GetCommandString(SkDrawCommand::kSaveLayer_OpType)));
+    SkASSERT(!strcmp("Restore",
+                     SkDrawCommand::GetCommandString(SkDrawCommand::kRestore_OpType)));
+    SkASSERT(!strcmp("BeginDrawPicture",
+                     SkDrawCommand::GetCommandString(SkDrawCommand::kBeginDrawPicture_OpType)));
+    SkASSERT(!strcmp("EndDrawPicture",
+                     SkDrawCommand::GetCommandString(SkDrawCommand::kEndDrawPicture_OpType)));
+
     fListWidget.clear();
     int counter = 0;
     int indent = 0;
-    for (int i = 0; i < command->count(); i++) {
+    for (int i = 0; i < fDebugger.getSize(); i++) {
         QListWidgetItem *item = new QListWidgetItem();
-        item->setData(Qt::DisplayRole, (*command)[i].c_str());
+        SkDrawCommand* command = fDebugger.getDrawCommandAt(i);
+        SkString commandString = command->toString();
+        item->setData(Qt::DisplayRole, commandString.c_str());
         item->setData(Qt::UserRole + 1, counter++);
 
-        if (0 == strcmp("Restore", (*command)[i].c_str()) ||
-            0 == strcmp("EndCommentGroup", (*command)[i].c_str())) {
+        if (0 == strcmp("Restore", commandString.c_str()) ||
+            0 == strcmp("EndDrawPicture", commandString.c_str())) {
             indent -= 10;
         }
 
         item->setData(Qt::UserRole + 3, indent);
 
-        if (0 == strcmp("Save", (*command)[i].c_str()) ||
-            0 == strcmp("Save Layer", (*command)[i].c_str()) ||
-            0 == strcmp("BeginCommentGroup", (*command)[i].c_str())) {
+        if (0 == strcmp("Save", commandString.c_str()) ||
+            0 == strcmp("SaveLayer", commandString.c_str()) ||
+            0 == strcmp("BeginDrawPicture", commandString.c_str())) {
             indent += 10;
         }
 
-        item->setData(Qt::UserRole + 4, -1.0);
+        item->setData(Qt::UserRole + 4, -1);
 
         fListWidget.addItem(item);
     }
@@ -987,13 +821,14 @@ void SkDebuggerGUI::setupOverviewText(const SkTDArray<double>* typeTimes,
     fInspectorWidget.setText(overview.c_str(), SkInspectorWidget::kOverview_TabType);
 }
 
-void SkDebuggerGUI::setupComboBox(SkTArray<SkString>* command) {
+
+void SkDebuggerGUI::setupComboBox() {
     fFilter.clear();
     fFilter.addItem("--Filter By Available Commands--");
 
     std::map<std::string, int> map;
-    for (int i = 0; i < command->count(); i++) {
-        map[(*command)[i].c_str()]++;
+    for (int i = 0; i < fDebugger.getSize(); i++) {
+        map[fDebugger.getDrawCommandAt(i)->toString().c_str()]++;
     }
 
     for (std::map<std::string, int>::iterator it = map.begin(); it != map.end();
@@ -1009,3 +844,16 @@ void SkDebuggerGUI::setupComboBox(SkTArray<SkString>* command) {
     QStandardItem* firstItem = model->itemFromIndex(firstIndex);
     firstItem->setSelectable(false);
 }
+
+void SkDebuggerGUI::updateImage() {
+    if (this->isPaused()) {
+        fCanvasWidget.drawTo(fPausedRow);
+    } else {
+        fCanvasWidget.drawTo(fListWidget.currentRow());
+    }
+}
+
+void SkDebuggerGUI::updateHit(int newHit) {
+    fCommandHitBox.setText(QString::number(newHit));
+}
+

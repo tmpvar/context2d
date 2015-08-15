@@ -12,41 +12,36 @@
 #include "GrGLBufferImpl.h"
 #include "gl/GrGLInterface.h"
 
-class GrGpuGL;
+class GrGLGpu;
 
 class GrGLVertexBuffer : public GrVertexBuffer {
 
 public:
     typedef GrGLBufferImpl::Desc Desc;
 
-    GrGLVertexBuffer(GrGpuGL* gpu, const Desc& desc);
-    virtual ~GrGLVertexBuffer() { this->release(); }
+    GrGLVertexBuffer(GrGLGpu* gpu, const Desc& desc);
 
     GrGLuint bufferID() const { return fImpl.bufferID(); }
     size_t baseOffset() const { return fImpl.baseOffset(); }
 
     void bind() const {
-        if (this->isValid()) {
+        if (!this->wasDestroyed()) {
             fImpl.bind(this->getGpuGL());
         }
     }
 
-    // overrides of GrVertexBuffer
-    virtual void* lock();
-    virtual void* lockPtr() const;
-    virtual void unlock();
-    virtual bool isLocked() const;
-    virtual bool updateData(const void* src, size_t srcSizeInBytes);
-
 protected:
-    // overrides of GrResource
-    virtual void onAbandon() SK_OVERRIDE;
-    virtual void onRelease() SK_OVERRIDE;
+    void onAbandon() override;
+    void onRelease() override;
 
 private:
-    GrGpuGL* getGpuGL() const {
-        GrAssert(this->isValid());
-        return (GrGpuGL*)(this->getGpu());
+    void* onMap() override;
+    void onUnmap() override;
+    bool onUpdateData(const void* src, size_t srcSizeInBytes) override;
+
+    GrGLGpu* getGpuGL() const {
+        SkASSERT(!this->wasDestroyed());
+        return (GrGLGpu*)(this->getGpu());
     }
 
     GrGLBufferImpl fImpl;

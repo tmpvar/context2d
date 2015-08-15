@@ -11,14 +11,9 @@
 #include "SkCanvas.h"
 #include "SkPixelRef.h"
 
-class DeferredDevice;
+class SkDeferredDevice;
 class SkImage;
 class SkSurface;
-
-#if !defined(SK_DEFERRED_CANVAS_USES_FACTORIES)
-// This is temporary, for rolling the API change into Chromium/Blink
-#define SK_DEFERRED_CANVAS_USES_FACTORIES 0
-#endif
 
 /** \class SkDeferredCanvas
     Subclass of SkCanvas that encapsulates an SkPicture or SkGPipe for deferred
@@ -30,7 +25,7 @@ class SkSurface;
 */
 class SK_API SkDeferredCanvas : public SkCanvas {
 public:
-    class NotificationClient;
+    class SK_API NotificationClient;
 
     /** Construct a canvas with the specified surface to draw into.
         This factory must be used for newImageSnapshot to work.
@@ -38,41 +33,7 @@ public:
      */
     static SkDeferredCanvas* Create(SkSurface* surface);
 
-#ifdef SK_DEVELOPER
-    static SkDeferredCanvas* Create(SkDevice* device); // Used for testing
-#endif
-
-#if !SK_DEFERRED_CANVAS_USES_FACTORIES
-    /** DEPRECATED
-     */
-    SkDeferredCanvas();
-
-    /** DEPRACATED, use create instead
-        Construct a canvas with the specified device to draw into.
-        Equivalent to calling default constructor, then setDevice.
-        @param device Specifies a device for the canvas to draw into.
-    */
-    explicit SkDeferredCanvas(SkDevice* device);
-
-    /** DEPRECATED, use create instead
-        Construct a canvas with the specified surface to draw into.
-        This constructor must be used for newImageSnapshot to work.
-        @param surface Specifies a surface for the canvas to draw into.
-    */
-    explicit SkDeferredCanvas(SkSurface* surface);
-#endif
-
     virtual ~SkDeferredCanvas();
-
-    /** DEPRECATED
-     *  Specify a device to be used by this canvas. Calling setDevice will
-     *  release the previously set device, if any. Takes a reference on the
-     *  device.
-     *
-     *  @param device The device that the canvas will raw into
-     *  @return The device argument, for convenience.
-     */
-    virtual SkDevice* setDevice(SkDevice* device);
 
     /**
      *  Specify the surface to be used by this canvas. Calling setSurface will
@@ -126,6 +87,11 @@ public:
     bool isFreshFrame() const;
 
     /**
+     * Returns canvas's size.
+     */
+    SkISize getCanvasSize() const;
+
+    /**
      *  Returns true if the canvas has recorded draw commands that have
      *  not yet been played back.
      */
@@ -168,74 +134,69 @@ public:
      * rendered using the deferred canvas.
      */
     void setBitmapSizeThreshold(size_t sizeThreshold);
+    size_t getBitmapSizeThreshold() const { return fBitmapSizeThreshold; }
 
     /**
      * Executes all pending commands without drawing
      */
     void silentFlush();
 
-    // Overrides of the SkCanvas interface
-    virtual int save(SaveFlags flags) SK_OVERRIDE;
-    virtual int saveLayer(const SkRect* bounds, const SkPaint* paint,
-                          SaveFlags flags) SK_OVERRIDE;
-    virtual void restore() SK_OVERRIDE;
-    virtual bool isDrawingToLayer() const SK_OVERRIDE;
-    virtual bool translate(SkScalar dx, SkScalar dy) SK_OVERRIDE;
-    virtual bool scale(SkScalar sx, SkScalar sy) SK_OVERRIDE;
-    virtual bool rotate(SkScalar degrees) SK_OVERRIDE;
-    virtual bool skew(SkScalar sx, SkScalar sy) SK_OVERRIDE;
-    virtual bool concat(const SkMatrix& matrix) SK_OVERRIDE;
-    virtual void setMatrix(const SkMatrix& matrix) SK_OVERRIDE;
-    virtual bool clipRect(const SkRect& rect, SkRegion::Op op,
-                          bool doAntiAlias) SK_OVERRIDE;
-    virtual bool clipRRect(const SkRRect& rect, SkRegion::Op op,
-                           bool doAntiAlias) SK_OVERRIDE;
-    virtual bool clipPath(const SkPath& path, SkRegion::Op op,
-                          bool doAntiAlias) SK_OVERRIDE;
-    virtual bool clipRegion(const SkRegion& deviceRgn,
-                            SkRegion::Op op) SK_OVERRIDE;
-    virtual void clear(SkColor) SK_OVERRIDE;
-    virtual void drawPaint(const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawPoints(PointMode mode, size_t count, const SkPoint pts[],
-                            const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawOval(const SkRect&, const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawRect(const SkRect& rect, const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawRRect(const SkRRect&, const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawPath(const SkPath& path, const SkPaint& paint)
-                          SK_OVERRIDE;
-    virtual void drawBitmap(const SkBitmap& bitmap, SkScalar left,
-                            SkScalar top, const SkPaint* paint)
-                            SK_OVERRIDE;
-    virtual void drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src,
-                                const SkRect& dst, const SkPaint* paint)
-                                SK_OVERRIDE;
+    SkDrawFilter* setDrawFilter(SkDrawFilter* filter) override;
 
-    virtual void drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m,
-                                  const SkPaint* paint) SK_OVERRIDE;
-    virtual void drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center,
-                                const SkRect& dst, const SkPaint* paint)
-                                SK_OVERRIDE;
-    virtual void drawSprite(const SkBitmap& bitmap, int left, int top,
-                            const SkPaint* paint) SK_OVERRIDE;
-    virtual void drawText(const void* text, size_t byteLength, SkScalar x,
-                          SkScalar y, const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawPosText(const void* text, size_t byteLength,
-                             const SkPoint pos[], const SkPaint& paint)
-                             SK_OVERRIDE;
-    virtual void drawPosTextH(const void* text, size_t byteLength,
-                              const SkScalar xpos[], SkScalar constY,
-                              const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawTextOnPath(const void* text, size_t byteLength,
-                                const SkPath& path, const SkMatrix* matrix,
-                                const SkPaint& paint) SK_OVERRIDE;
-    virtual void drawPicture(SkPicture& picture) SK_OVERRIDE;
-    virtual void drawVertices(VertexMode vmode, int vertexCount,
-                              const SkPoint vertices[], const SkPoint texs[],
-                              const SkColor colors[], SkXfermode* xmode,
-                              const uint16_t indices[], int indexCount,
-                              const SkPaint& paint) SK_OVERRIDE;
-    virtual SkBounder* setBounder(SkBounder* bounder) SK_OVERRIDE;
-    virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter) SK_OVERRIDE;
+protected:
+    void willSave() override;
+    SaveLayerStrategy willSaveLayer(const SkRect*, const SkPaint*, SaveFlags) override;
+    void willRestore() override;
+
+    void didConcat(const SkMatrix&) override;
+    void didSetMatrix(const SkMatrix&) override;
+
+    void onDrawDRRect(const SkRRect&, const SkRRect&, const SkPaint&) override;
+    virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
+                            const SkPaint&) override;
+    virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[],
+                               const SkPaint&) override;
+    virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[],
+                                SkScalar constY, const SkPaint&) override;
+    virtual void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath& path,
+                                  const SkMatrix* matrix, const SkPaint&) override;
+    virtual void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
+                                const SkPaint& paint) override;
+    virtual void onDrawPatch(const SkPoint cubics[12], const SkColor colors[4],
+                             const SkPoint texCoords[4], SkXfermode* xmode,
+                             const SkPaint& paint) override;
+
+    void onDrawPaint(const SkPaint&) override;
+    void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
+    void onDrawRect(const SkRect&, const SkPaint&) override;
+    void onDrawOval(const SkRect&, const SkPaint&) override;
+    void onDrawRRect(const SkRRect&, const SkPaint&) override;
+    void onDrawPath(const SkPath&, const SkPaint&) override;
+    void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
+    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*,
+                          SrcRectConstraint) override;
+    void onDrawImage(const SkImage*, SkScalar left, SkScalar top, const SkPaint*) override;
+    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst,
+                         const SkPaint*, SrcRectConstraint) override;
+    void onDrawImageNine(const SkImage*, const SkIRect& center, const SkRect& dst,
+                         const SkPaint*) override;
+    void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
+                          const SkPaint*) override;
+    void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
+    void onDrawVertices(VertexMode vmode, int vertexCount,
+                        const SkPoint vertices[], const SkPoint texs[],
+                        const SkColor colors[], SkXfermode* xmode,
+                        const uint16_t indices[], int indexCount,
+                        const SkPaint&) override;
+    void onDrawAtlas(const SkImage*, const SkRSXform[], const SkRect[], const SkColor[], int count,
+                     SkXfermode::Mode, const SkRect* cullRect, const SkPaint*) override;
+
+    void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipRegion(const SkRegion&, SkRegion::Op) override;
+
+    void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
 
 public:
     class NotificationClient {
@@ -254,8 +215,7 @@ public:
          *  @param newAllocatedStorage same value as would be returned by
          *      storageAllocatedForRecording(), for convenience.
          */
-        virtual void storageAllocatedForRecordingChanged(
-            size_t newAllocatedStorage) {}
+        virtual void storageAllocatedForRecordingChanged(size_t /*newAllocatedStorage*/) {}
 
         /**
          *  Called after pending draw commands have been flushed
@@ -271,11 +231,11 @@ public:
     };
 
 protected:
-    virtual SkCanvas* canvasForDrawIter();
-    DeferredDevice* getDeferredDevice() const;
+    SkCanvas* canvasForDrawIter() override;
+    SkDeferredDevice* getDeferredDevice() const;
 
 private:
-    SkDeferredCanvas(DeferredDevice*);
+    SkDeferredCanvas(SkDeferredDevice*);
 
     void recordedDrawCommand();
     SkCanvas* drawingCanvas() const;
@@ -283,7 +243,15 @@ private:
     bool isFullFrame(const SkRect*, const SkPaint*) const;
     void validate() const;
     void init();
-    bool            fDeferredDrawing;
+
+
+    int fSaveLevel;
+    int fFirstSaveLayerIndex;
+    size_t fBitmapSizeThreshold;
+    bool   fDeferredDrawing;
+
+    mutable SkISize fCachedCanvasSize;
+    mutable bool    fCachedCanvasSizeDirty;
 
     friend class SkDeferredCanvasTester; // for unit testing
     typedef SkCanvas INHERITED;

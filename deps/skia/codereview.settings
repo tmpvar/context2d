@@ -1,5 +1,8 @@
 # This file is used by gcl to get repository specific information.
 CODE_REVIEW_SERVER: codereview.chromium.org
-VIEW_VC: http://code.google.com/p/skia/source/detail?r=
-CC_LIST: skia-review@googlegroups.com
+VIEW_VC: https://skia.googlesource.com/skia/+/
+CC_LIST: reviews@skia.org
+BUG_PREFIX: skia:
 TRYSERVER_SVN_URL: https://skia-try.googlecode.com/svn
+PROJECT: skia
+RUN_POST_UPLOAD_HOOK: True

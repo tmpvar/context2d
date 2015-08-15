@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2013 Google Inc.
  *
@@ -6,69 +5,62 @@
  * found in the LICENSE file.
  */
 
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkConfig8888.h"
 #include "SkString.h"
+#include "sk_tool_utils.h"
 
-class PremulAndUnpremulAlphaOpsBench : public SkBenchmark {
+class PremulAndUnpremulAlphaOpsBench : public Benchmark {
+    enum {
+        W = 256,
+        H = 256,
+    };
+    SkBitmap fBmp1, fBmp2;
+
 public:
-    PremulAndUnpremulAlphaOpsBench(void* param, SkCanvas::Config8888 config)
-        : INHERITED(param) {
-        fUnPremulConfig = config;
-        fName.printf("premul_and_unpremul_alpha_%s",
-                     (config ==  SkCanvas::kRGBA_Unpremul_Config8888) ?
-                     "RGBA8888" : "Native8888");
+    PremulAndUnpremulAlphaOpsBench(SkColorType ct) {
+        fColorType = ct;
+        fName.printf("premul_and_unpremul_alpha_%s", sk_tool_utils::colortype_name(ct));
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return fName.c_str();
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
-        canvas->clear(SK_ColorBLACK);
-        SkISize size = canvas->getDeviceSize();
+    void onPreDraw() override {
+        SkImageInfo info = SkImageInfo::Make(W, H, fColorType, kUnpremul_SkAlphaType);
+        fBmp1.allocPixels(info);   // used in writePixels
 
-        SkBitmap bmp1;
-        bmp1.setConfig(SkBitmap::kARGB_8888_Config, size.width(),
-                       size.height());
-        bmp1.allocPixels();
-        SkAutoLockPixels alp(bmp1);
-        uint32_t* pixels = reinterpret_cast<uint32_t*>(bmp1.getPixels());
-        for (int h = 0; h < size.height(); ++h) {
-            for (int w = 0; w < size.width(); ++w)
-                pixels[h * size.width() + w] = SkPackConfig8888(fUnPremulConfig,
-                    h & 0xFF, w & 0xFF, w & 0xFF, w & 0xFF);
+        for (int h = 0; h < H; ++h) {
+            for (int w = 0; w < W; ++w) {
+                // SkColor places A in the right slot for either RGBA or BGRA
+                *fBmp1.getAddr32(w, h) = SkColorSetARGB(h & 0xFF, w & 0xFF, w & 0xFF, w & 0xFF);
+            }
         }
 
-        SkBitmap bmp2;
-        bmp2.setConfig(SkBitmap::kARGB_8888_Config, size.width(),
-                       size.height());
+        fBmp2.allocPixels(info);    // used in readPixels()
+    }
 
-        static const int kLoopCount = SkBENCHLOOP(10);
-        for (int loop = 0; loop < kLoopCount; ++loop) {
+    void onDraw(const int loops, SkCanvas* canvas) override {
+        canvas->clear(SK_ColorBLACK);
+
+        for (int loop = 0; loop < loops; ++loop) {
             // Unpremul -> Premul
-            canvas->writePixels(bmp1, 0, 0, fUnPremulConfig);
+            canvas->writePixels(fBmp1.info(), fBmp1.getPixels(), fBmp1.rowBytes(), 0, 0);
             // Premul -> Unpremul
-            canvas->readPixels(&bmp2, 0, 0, fUnPremulConfig);
+            canvas->readPixels(fBmp2.info(), fBmp2.getPixels(), fBmp2.rowBytes(), 0, 0);
         }
     }
 
 private:
-    SkCanvas::Config8888 fUnPremulConfig;
+    SkColorType fColorType;
     SkString fName;
-    typedef SkBenchmark INHERITED;
+
+    typedef Benchmark INHERITED;
 };
 
-static SkBenchmark* fact0(void* p) {
-    return new PremulAndUnpremulAlphaOpsBench(p,
-        SkCanvas::kRGBA_Unpremul_Config8888);
-}
-static SkBenchmark* fact1(void* p) {
-    return new PremulAndUnpremulAlphaOpsBench(p,
-        SkCanvas::kNative_Unpremul_Config8888);
-}
 
-static BenchRegistry gReg0(fact0);
-static BenchRegistry gReg1(fact1);
+DEF_BENCH(return new PremulAndUnpremulAlphaOpsBench(kRGBA_8888_SkColorType));
+DEF_BENCH(return new PremulAndUnpremulAlphaOpsBench(kBGRA_8888_SkColorType));

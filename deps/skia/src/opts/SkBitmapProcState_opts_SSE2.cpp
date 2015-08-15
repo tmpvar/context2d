@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2009 The Android Open Source Project
  *
@@ -6,21 +5,22 @@
  * found in the LICENSE file.
  */
 
-
 #include <emmintrin.h>
 #include "SkBitmapProcState_opts_SSE2.h"
+#include "SkColorPriv.h"
+#include "SkPaint.h"
 #include "SkUtils.h"
 
 void S32_opaque_D32_filter_DX_SSE2(const SkBitmapProcState& s,
                                    const uint32_t* xy,
                                    int count, uint32_t* colors) {
     SkASSERT(count > 0 && colors != NULL);
-    SkASSERT(s.fDoFilter);
-    SkASSERT(s.fBitmap->config() == SkBitmap::kARGB_8888_Config);
+    SkASSERT(s.fFilterLevel != kNone_SkFilterQuality);
+    SkASSERT(kN32_SkColorType == s.fPixmap.colorType());
     SkASSERT(s.fAlphaScale == 256);
 
-    const char* srcAddr = static_cast<const char*>(s.fBitmap->getPixels());
-    size_t rb = s.fBitmap->rowBytes();
+    const char* srcAddr = static_cast<const char*>(s.fPixmap.addr());
+    size_t rb = s.fPixmap.rowBytes();
     uint32_t XY = *xy++;
     unsigned y0 = XY >> 14;
     const uint32_t* row0 = reinterpret_cast<const uint32_t*>(srcAddr + (y0 >> 4) * rb);
@@ -121,12 +121,12 @@ void S32_alpha_D32_filter_DX_SSE2(const SkBitmapProcState& s,
                                   const uint32_t* xy,
                                   int count, uint32_t* colors) {
     SkASSERT(count > 0 && colors != NULL);
-    SkASSERT(s.fDoFilter);
-    SkASSERT(s.fBitmap->config() == SkBitmap::kARGB_8888_Config);
+    SkASSERT(s.fFilterLevel != kNone_SkFilterQuality);
+    SkASSERT(kN32_SkColorType == s.fPixmap.colorType());
     SkASSERT(s.fAlphaScale < 256);
 
-    const char* srcAddr = static_cast<const char*>(s.fBitmap->getPixels());
-    size_t rb = s.fBitmap->rowBytes();
+    const char* srcAddr = static_cast<const char*>(s.fPixmap.addr());
+    size_t rb = s.fPixmap.rowBytes();
     uint32_t XY = *xy++;
     unsigned y0 = XY >> 14;
     const uint32_t* row0 = reinterpret_cast<const uint32_t*>(srcAddr + (y0 >> 4) * rb);
@@ -249,16 +249,16 @@ void ClampX_ClampY_filter_scale_SSE2(const SkBitmapProcState& s, uint32_t xy[],
                              SkMatrix::kScale_Mask)) == 0);
     SkASSERT(s.fInvKy == 0);
 
-    const unsigned maxX = s.fBitmap->width() - 1;
+    const unsigned maxX = s.fPixmap.width() - 1;
     const SkFixed one = s.fFilterOneX;
     const SkFixed dx = s.fInvSx;
     SkFixed fx;
 
     SkPoint pt;
-    s.fInvProc(*s.fInvMatrix, SkIntToScalar(x) + SK_ScalarHalf,
-                                SkIntToScalar(y) + SK_ScalarHalf, &pt);
+    s.fInvProc(s.fInvMatrix, SkIntToScalar(x) + SK_ScalarHalf,
+                             SkIntToScalar(y) + SK_ScalarHalf, &pt);
     const SkFixed fy = SkScalarToFixed(pt.fY) - (s.fFilterOneY >> 1);
-    const unsigned maxY = s.fBitmap->height() - 1;
+    const unsigned maxY = s.fPixmap.height() - 1;
     // compute our two Y values up front
     *xy++ = ClampX_ClampY_pack_filter(fy, maxY, s.fFilterOneY);
     // now initialize fx
@@ -373,13 +373,13 @@ void ClampX_ClampY_nofilter_scale_SSE2(const SkBitmapProcState& s,
                              SkMatrix::kScale_Mask)) == 0);
 
     // we store y, x, x, x, x, x
-    const unsigned maxX = s.fBitmap->width() - 1;
+    const unsigned maxX = s.fPixmap.width() - 1;
     SkFixed fx;
     SkPoint pt;
-    s.fInvProc(*s.fInvMatrix, SkIntToScalar(x) + SK_ScalarHalf,
-                                SkIntToScalar(y) + SK_ScalarHalf, &pt);
+    s.fInvProc(s.fInvMatrix, SkIntToScalar(x) + SK_ScalarHalf,
+                             SkIntToScalar(y) + SK_ScalarHalf, &pt);
     fx = SkScalarToFixed(pt.fY);
-    const unsigned maxY = s.fBitmap->height() - 1;
+    const unsigned maxY = s.fPixmap.height() - 1;
     *xy++ = SkClampMax(fx >> 16, maxY);
     fx = SkScalarToFixed(pt.fX);
 
@@ -490,7 +490,7 @@ void ClampX_ClampY_nofilter_scale_SSE2(const SkBitmapProcState& s,
 void ClampX_ClampY_filter_affine_SSE2(const SkBitmapProcState& s,
                                       uint32_t xy[], int count, int x, int y) {
     SkPoint srcPt;
-    s.fInvProc(*s.fInvMatrix,
+    s.fInvProc(s.fInvMatrix,
                SkIntToScalar(x) + SK_ScalarHalf,
                SkIntToScalar(y) + SK_ScalarHalf, &srcPt);
 
@@ -500,8 +500,8 @@ void ClampX_ClampY_filter_affine_SSE2(const SkBitmapProcState& s,
     SkFixed fy = SkScalarToFixed(srcPt.fY) - (oneY >> 1);
     SkFixed dx = s.fInvSx;
     SkFixed dy = s.fInvKy;
-    unsigned maxX = s.fBitmap->width() - 1;
-    unsigned maxY = s.fBitmap->height() - 1;
+    unsigned maxX = s.fPixmap.width() - 1;
+    unsigned maxY = s.fPixmap.height() - 1;
 
     if (count >= 2 && (maxX <= 0xFFFF)) {
         SkFixed dx2 = dx + dx;
@@ -566,7 +566,7 @@ void ClampX_ClampY_nofilter_affine_SSE2(const SkBitmapProcState& s,
                              SkMatrix::kAffine_Mask)) == 0);
 
     SkPoint srcPt;
-    s.fInvProc(*s.fInvMatrix,
+    s.fInvProc(s.fInvMatrix,
                SkIntToScalar(x) + SK_ScalarHalf,
                SkIntToScalar(y) + SK_ScalarHalf, &srcPt);
 
@@ -574,8 +574,8 @@ void ClampX_ClampY_nofilter_affine_SSE2(const SkBitmapProcState& s,
     SkFixed fy = SkScalarToFixed(srcPt.fY);
     SkFixed dx = s.fInvSx;
     SkFixed dy = s.fInvKy;
-    int maxX = s.fBitmap->width() - 1;
-    int maxY = s.fBitmap->height() - 1;
+    int maxX = s.fPixmap.width() - 1;
+    int maxY = s.fPixmap.height() - 1;
 
     if (count >= 4 && (maxX <= 0xFFFF)) {
         while (((size_t)xy & 0x0F) != 0) {
@@ -638,16 +638,16 @@ void ClampX_ClampY_nofilter_affine_SSE2(const SkBitmapProcState& s,
  *  It combines S32_opaque_D32_filter_DX_SSE2 and SkPixel32ToPixel16
  */
 void S32_D16_filter_DX_SSE2(const SkBitmapProcState& s,
-                                   const uint32_t* xy,
-                                   int count, uint16_t* colors) {
+                            const uint32_t* xy,
+                            int count, uint16_t* colors) {
     SkASSERT(count > 0 && colors != NULL);
-    SkASSERT(s.fDoFilter);
-    SkASSERT(s.fBitmap->config() == SkBitmap::kARGB_8888_Config);
-    SkASSERT(s.fBitmap->isOpaque());
+    SkASSERT(s.fFilterLevel != kNone_SkFilterQuality);
+    SkASSERT(kN32_SkColorType == s.fPixmap.colorType());
+    SkASSERT(s.fPixmap.isOpaque());
 
     SkPMColor dstColor;
-    const char* srcAddr = static_cast<const char*>(s.fBitmap->getPixels());
-    size_t rb = s.fBitmap->rowBytes();
+    const char* srcAddr = static_cast<const char*>(s.fPixmap.addr());
+    size_t rb = s.fPixmap.rowBytes();
     uint32_t XY = *xy++;
     unsigned y0 = XY >> 14;
     const uint32_t* row0 = reinterpret_cast<const uint32_t*>(srcAddr + (y0 >> 4) * rb);
@@ -743,23 +743,6 @@ void S32_D16_filter_DX_SSE2(const SkBitmapProcState& s,
         // Extract low int and store.
         dstColor = _mm_cvtsi128_si32(sum);
 
-        //*colors++ = SkPixel32ToPixel16(dstColor);
-        // below is much faster than the above. It's tested for Android benchmark--Softweg
-        __m128i _m_temp1 = _mm_set1_epi32(dstColor);
-        __m128i _m_temp2 = _mm_srli_epi32(_m_temp1, 3);
-
-        unsigned int r32 = _mm_cvtsi128_si32(_m_temp2);
-        unsigned r = (r32 & ((1<<5) -1)) << 11;
-
-        _m_temp2 = _mm_srli_epi32(_m_temp2, 7);
-        unsigned int g32 = _mm_cvtsi128_si32(_m_temp2);
-        unsigned g = (g32 & ((1<<6) -1)) << 5;
-
-        _m_temp2 = _mm_srli_epi32(_m_temp2, 9);
-        unsigned int b32 = _mm_cvtsi128_si32(_m_temp2);
-        unsigned b = (b32 & ((1<<5) -1));
-
-        *colors++ = r | g | b;
-
+        *colors++ = SkPixel32ToPixel16(dstColor);
     } while (--count > 0);
 }

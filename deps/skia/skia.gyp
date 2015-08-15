@@ -6,7 +6,7 @@
 # More targets are defined within the gyp/ directory, but those are
 # not intended for external use and may change without notice.
 #
-# Full documentation at https://sites.google.com/site/skiadocs/
+# Full documentation at https://skia.org.
 #
 {
   'targets': [
@@ -20,9 +20,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

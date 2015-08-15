@@ -1,22 +1,21 @@
-
 /*
  * Copyright 2013 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
+#include "SkPath.h"
 #include "SkRandom.h"
 #include "SkView.h"
 
-namespace {
-
 // Generates y values for the chart plots.
-void gen_data(SkScalar yAvg, SkScalar ySpread, int count, SkTDArray<SkScalar>* dataPts) {
+static void gen_data(SkScalar yAvg, SkScalar ySpread, int count, SkTDArray<SkScalar>* dataPts) {
     dataPts->setCount(count);
-    static SkMWCRandom gRandom;
+    static SkRandom gRandom;
     for (int i = 0; i < count; ++i) {
         (*dataPts)[i] = gRandom.nextRangeScalar(yAvg - SkScalarHalf(ySpread),
                                                 yAvg + SkScalarHalf(ySpread));
@@ -27,12 +26,12 @@ void gen_data(SkScalar yAvg, SkScalar ySpread, int count, SkTDArray<SkScalar>* d
 // plot. The fill path is bounded below by the bottomData plot points or a horizontal line at
 // yBase if bottomData == NULL.
 // The plots are animated by rotating the data points by leftShift.
-void gen_paths(const SkTDArray<SkScalar>& topData,
-               const SkTDArray<SkScalar>* bottomData,
-               SkScalar yBase,
-               SkScalar xLeft, SkScalar xDelta,
-               int leftShift,
-               SkPath* plot, SkPath* fill) {
+static void gen_paths(const SkTDArray<SkScalar>& topData,
+                      const SkTDArray<SkScalar>* bottomData,
+                      SkScalar yBase,
+                      SkScalar xLeft, SkScalar xDelta,
+                      int leftShift,
+                      SkPath* plot, SkPath* fill) {
     plot->rewind();
     fill->rewind();
     plot->incReserve(topData.count());
@@ -62,7 +61,7 @@ void gen_paths(const SkTDArray<SkScalar>& topData,
         x += xDelta;
     }
 
-    if (NULL != bottomData) {
+    if (bottomData) {
         SkASSERT(bottomData->count() == topData.count());
         // iterate backwards over the previous graph's data to generate the bottom of the filled
         // area (and account for leftShift).
@@ -80,8 +79,6 @@ void gen_paths(const SkTDArray<SkScalar>& topData,
     }
 }
 
-}
-
 // A set of scrolling line plots with the area between each plot filled. Stresses out GPU path
 // filling
 class ChartView : public SampleView {
@@ -92,7 +89,7 @@ public:
     }
 
 protected:
-    virtual bool onQuery(SkEvent* evt) SK_OVERRIDE {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Chart");
             return true;
@@ -100,7 +97,7 @@ protected:
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) SK_OVERRIDE {
+    void onDrawContent(SkCanvas* canvas) override {
         bool sizeChanged = false;
         if (canvas->getDeviceSize() != fSize) {
             fSize = canvas->getDeviceSize();
@@ -123,7 +120,7 @@ protected:
 
         canvas->clear(0xFFE0F0E0);
 
-        static SkMWCRandom colorRand;
+        static SkRandom colorRand;
         static SkColor gColors[kNumGraphs] = { 0x0 };
         if (0 == gColors[0]) {
             for (int i = 0; i < kNumGraphs; ++i) {

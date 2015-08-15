@@ -6,21 +6,33 @@
  */
 
 #include "SkData.h"
-#include "SkFlattenableBuffers.h"
+#include "SkLazyPtr.h"
 #include "SkOSFile.h"
-
-SK_DEFINE_INST_COUNT(SkData)
+#include "SkReadBuffer.h"
+#include "SkStream.h"
+#include "SkWriteBuffer.h"
 
 SkData::SkData(const void* ptr, size_t size, ReleaseProc proc, void* context) {
-    fPtr = ptr;
+    fPtr = const_cast<void*>(ptr);
     fSize = size;
     fReleaseProc = proc;
     fReleaseProcContext = context;
 }
 
+// This constructor means we are inline with our fPtr's contents. Thus we set fPtr
+// to point right after this. We also set our releaseproc to sk_inplace_sentinel_releaseproc,
+// since we need to handle "delete" ourselves. See internal_displose().
+//
+SkData::SkData(size_t size) {
+    fPtr = (char*)(this + 1);   // contents are immediately after this
+    fSize = size;
+    fReleaseProc = NULL;
+    fReleaseProcContext = NULL;
+}
+
 SkData::~SkData() {
     if (fReleaseProc) {
-        fReleaseProc(fPtr, fSize, fReleaseProcContext);
+        fReleaseProc(fPtr, fReleaseProcContext);
     }
 }
 
@@ -47,19 +59,39 @@ size_t SkData::copyRange(size_t offset, size_t length, void* buffer) const {
     return length;
 }
 
+SkData* SkData::PrivateNewWithCopy(const void* srcOrNull, size_t length) {
+    if (0 == length) {
+        return SkData::NewEmpty();
+    }
+
+    const size_t actualLength = length + sizeof(SkData);
+    if (actualLength < length) {
+        // we overflowed
+        sk_throw();
+    }
+
+    char* storage = (char*)sk_malloc_throw(actualLength);
+    SkData* data = new (storage) SkData(length);
+    if (srcOrNull) {
+        memcpy(data->writable_data(), srcOrNull, length);
+    }
+    return data;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
+// As a template argument these must have external linkage.
+SkData* sk_new_empty_data() { return new SkData(NULL, 0, NULL, NULL); }
+namespace { void sk_unref_data(SkData* ptr) { return SkSafeUnref(ptr); } }
+
+SK_DECLARE_STATIC_LAZY_PTR(SkData, empty, sk_new_empty_data, sk_unref_data);
+
 SkData* SkData::NewEmpty() {
-    static SkData* gEmptyRef;
-    if (NULL == gEmptyRef) {
-        gEmptyRef = new SkData(NULL, 0, NULL, NULL);
-    }
-    gEmptyRef->ref();
-    return gEmptyRef;
+    return SkRef(empty.get());
 }
 
 // assumes fPtr was allocated via sk_malloc
-static void sk_free_releaseproc(const void* ptr, size_t, void*) {
+static void sk_free_releaseproc(const void* ptr, void*) {
     sk_free((void*)ptr);
 }
 
@@ -67,23 +99,22 @@ SkData* SkData::NewFromMalloc(const void* data, size_t length) {
     return new SkData(data, length, sk_free_releaseproc, NULL);
 }
 
-SkData* SkData::NewWithCopy(const void* data, size_t length) {
-    if (0 == length) {
-        return SkData::NewEmpty();
-    }
-
-    void* copy = sk_malloc_throw(length); // balanced in sk_free_releaseproc
-    memcpy(copy, data, length);
-    return new SkData(copy, length, sk_free_releaseproc, NULL);
+SkData* SkData::NewWithCopy(const void* src, size_t length) {
+    SkASSERT(src);
+    return PrivateNewWithCopy(src, length);
 }
 
-SkData* SkData::NewWithProc(const void* data, size_t length,
-                            ReleaseProc proc, void* context) {
-    return new SkData(data, length, proc, context);
+SkData* SkData::NewUninitialized(size_t length) {
+    return PrivateNewWithCopy(NULL, length);
+}
+
+SkData* SkData::NewWithProc(const void* ptr, size_t length, ReleaseProc proc, void* context) {
+    return new SkData(ptr, length, proc, context);
 }
 
 // assumes fPtr was allocated with sk_fmmap
-static void sk_mmap_releaseproc(const void* addr, size_t length, void*) {
+static void sk_mmap_releaseproc(const void* addr, void* ctx) {
+    size_t length = reinterpret_cast<size_t>(ctx);
     sk_fmunmap(addr, length);
 }
 
@@ -94,7 +125,7 @@ SkData* SkData::NewFromFILE(SkFILE* f) {
         return NULL;
     }
 
-    return SkData::NewWithProc(addr, size, sk_mmap_releaseproc, NULL);
+    return SkData::NewWithProc(addr, size, sk_mmap_releaseproc, reinterpret_cast<void*>(size));
 }
 
 SkData* SkData::NewFromFileName(const char path[]) {
@@ -118,7 +149,7 @@ SkData* SkData::NewFromFD(int fd) {
 }
 
 // assumes context is a SkData
-static void sk_dataref_releaseproc(const void*, size_t, void* context) {
+static void sk_dataref_releaseproc(const void*, void* context) {
     SkData* src = reinterpret_cast<SkData*>(context);
     src->unref();
 }
@@ -158,181 +189,11 @@ SkData* SkData::NewWithCString(const char cstr[]) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void SkData::flatten(SkFlattenableWriteBuffer& buffer) const {
-    buffer.writeByteArray(fPtr, fSize);
-}
-
-SkData::SkData(SkFlattenableReadBuffer& buffer) {
-    fSize = buffer.getArrayCount();
-    fReleaseProcContext = NULL;
-
-    if (fSize > 0) {
-        fPtr = sk_malloc_throw(fSize);
-        fReleaseProc = sk_free_releaseproc;
-    } else {
-        fPtr = NULL;
-        fReleaseProc = NULL;
+SkData* SkData::NewFromStream(SkStream* stream, size_t size) {
+    SkAutoDataUnref data(SkData::NewUninitialized(size));
+    if (stream->read(data->writable_data(), size) != size) {
+        return NULL;
     }
-
-    buffer.readByteArray(const_cast<void*>(fPtr));
+    return data.detach();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#include "SkDataSet.h"
-#include "SkFlattenable.h"
-#include "SkStream.h"
-
-static SkData* dupdata(SkData* data) {
-    if (data) {
-        data->ref();
-    } else {
-        data = SkData::NewEmpty();
-    }
-    return data;
-}
-
-static SkData* findValue(const char key[], const SkDataSet::Pair array[], int n) {
-    for (int i = 0; i < n; ++i) {
-        if (!strcmp(key, array[i].fKey)) {
-            return array[i].fValue;
-        }
-    }
-    return NULL;
-}
-
-static SkDataSet::Pair* allocatePairStorage(int count, size_t storage) {
-    size_t size = count * sizeof(SkDataSet::Pair) + storage;
-    return (SkDataSet::Pair*)sk_malloc_throw(size);
-}
-
-SkDataSet::SkDataSet(const char key[], SkData* value) {
-    size_t keyLen = strlen(key);
-
-    fCount = 1;
-    fKeySize = keyLen + 1;
-    fPairs = allocatePairStorage(1, keyLen + 1);
-
-    fPairs[0].fKey = (char*)(fPairs + 1);
-    memcpy(const_cast<char*>(fPairs[0].fKey), key, keyLen + 1);
-
-    fPairs[0].fValue = dupdata(value);
-}
-
-SkDataSet::SkDataSet(const Pair array[], int count) {
-    if (count < 1) {
-        fCount = 0;
-        fKeySize = 0;
-        fPairs = NULL;
-        return;
-    }
-
-    int i;
-    size_t keySize = 0;
-    for (i = 0; i < count; ++i) {
-        keySize += strlen(array[i].fKey) + 1;
-    }
-
-    Pair* pairs = fPairs = allocatePairStorage(count, keySize);
-    char* keyStorage = (char*)(pairs + count);
-
-    keySize = 0;    // reset this, so we can compute the size for unique keys
-    int uniqueCount = 0;
-    for (int i = 0; i < count; ++i) {
-        if (!findValue(array[i].fKey, pairs, uniqueCount)) {
-            size_t len = strlen(array[i].fKey);
-            memcpy(keyStorage, array[i].fKey, len + 1);
-            pairs[uniqueCount].fKey = keyStorage;
-            keyStorage += len + 1;
-            keySize += len + 1;
-
-            pairs[uniqueCount].fValue = dupdata(array[i].fValue);
-            uniqueCount += 1;
-        }
-    }
-    fCount = uniqueCount;
-    fKeySize = keySize;
-}
-
-SkDataSet::~SkDataSet() {
-    for (int i = 0; i < fCount; ++i) {
-        fPairs[i].fValue->unref();
-    }
-    sk_free(fPairs);    // this also frees the key storage
-}
-
-SkData* SkDataSet::find(const char key[]) const {
-    return findValue(key, fPairs, fCount);
-}
-
-void SkDataSet::writeToStream(SkWStream* stream) const {
-    stream->write32(fCount);
-    if (fCount > 0) {
-        stream->write32(fKeySize);
-        // our first key points to all the key storage
-        stream->write(fPairs[0].fKey, fKeySize);
-        for (int i = 0; i < fCount; ++i) {
-            stream->writeData(fPairs[i].fValue);
-        }
-    }
-}
-
-void SkDataSet::flatten(SkFlattenableWriteBuffer& buffer) const {
-    buffer.writeInt(fCount);
-    if (fCount > 0) {
-        buffer.writeByteArray(fPairs[0].fKey, fKeySize);
-        for (int i = 0; i < fCount; ++i) {
-            buffer.writeFlattenable(fPairs[i].fValue);
-        }
-    }
-}
-
-SkDataSet::SkDataSet(SkStream* stream) {
-    fCount = stream->readU32();
-    if (fCount > 0) {
-        fKeySize = stream->readU32();
-        fPairs = allocatePairStorage(fCount, fKeySize);
-        char* keyStorage = (char*)(fPairs + fCount);
-
-        stream->read(keyStorage, fKeySize);
-
-        for (int i = 0; i < fCount; ++i) {
-            fPairs[i].fKey = keyStorage;
-            keyStorage += strlen(keyStorage) + 1;
-            fPairs[i].fValue = stream->readData();
-        }
-    } else {
-        fKeySize = 0;
-        fPairs = NULL;
-    }
-}
-
-SkDataSet::SkDataSet(SkFlattenableReadBuffer& buffer) {
-    fCount = buffer.readInt();
-    if (fCount > 0) {
-        fKeySize = buffer.getArrayCount();
-        fPairs = allocatePairStorage(fCount, fKeySize);
-        char* keyStorage = (char*)(fPairs + fCount);
-
-        buffer.readByteArray(keyStorage);
-
-        for (int i = 0; i < fCount; ++i) {
-            fPairs[i].fKey = keyStorage;
-            keyStorage += strlen(keyStorage) + 1;
-            fPairs[i].fValue = buffer.readFlattenableT<SkData>();
-        }
-    } else {
-        fKeySize = 0;
-        fPairs = NULL;
-    }
-}
-
-SkDataSet* SkDataSet::NewEmpty() {
-    static SkDataSet* gEmptySet;
-    if (NULL == gEmptySet) {
-        gEmptySet = SkNEW_ARGS(SkDataSet, (NULL, 0));
-    }
-    gEmptySet->ref();
-    return gEmptySet;
-}

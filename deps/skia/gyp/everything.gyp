@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 # Build EVERYTHING provided by Skia.
 # (Start with the "most" target, and then add targets that we intentionally
 # left out of "most".  See most.gyp for an explanation of which targets are
@@ -12,20 +16,19 @@
     {
       'target_name': 'everything',
       'type': 'none',
-      'dependencies': ['most.gyp:most'],
+      'dependencies': [
+        'most.gyp:most',
+      ],
       'conditions': [
-        ['skia_os in ("ios", "android") or (skia_os == "mac" and skia_arch_width == 32)', {
+        ['skia_os in ("ios", "android", "chromeos")', {
           # debugger is not supported on this platform
         }, {
-          'dependencies': [ 'debugger.gyp:debugger' ],
+          'dependencies': [
+            'debugger.gyp:debugger',
+            #'v8.gyp:SkV8Example',
+          ],
         }],
       ],
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

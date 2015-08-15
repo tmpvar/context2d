@@ -8,6 +8,8 @@
 #include "SampleCode.h"
 #include "SkView.h"
 #include "SkCanvas.h"
+#include "SkData.h"
+#include "SkImageGenerator.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
@@ -24,14 +26,13 @@
 
 #include "SkStream.h"
 
-static void make_image(SkBitmap* bm, SkBitmap::Config config, int configIndex) {
+static void make_image(SkBitmap* bm, SkColorType ct, int configIndex) {
     const int   width = 98;
     const int   height = 100;
+    const SkImageInfo info = SkImageInfo::Make(width, height, ct, kPremul_SkAlphaType);
+
     SkBitmap    device;
-
-    device.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-    device.allocPixels();
-
+    device.allocN32Pixels(width, height);
     SkCanvas    canvas(device);
     SkPaint     paint;
 
@@ -41,13 +42,12 @@ static void make_image(SkBitmap* bm, SkBitmap::Config config, int configIndex) {
     canvas.drawCircle(SkIntToScalar(width)/2, SkIntToScalar(height)/2,
                       SkIntToScalar(width)/2, paint);
 
-    bm->setConfig(config, width, height);
-    switch (config) {
-        case SkBitmap::kARGB_8888_Config:
+    switch (ct) {
+        case kN32_SkColorType:
             bm->swap(device);
             break;
-        case SkBitmap::kRGB_565_Config: {
-            bm->allocPixels();
+        case kRGB_565_SkColorType: {
+            bm->allocPixels(info);
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     *bm->getAddr16(x, y) = SkPixel32ToPixel16(*device.getAddr32(x, y));
@@ -55,7 +55,7 @@ static void make_image(SkBitmap* bm, SkBitmap::Config config, int configIndex) {
             }
             break;
         }
-        case SkBitmap::kIndex8_Config: {
+        case kIndex_8_SkColorType: {
             SkPMColor colors[256];
             for (int i = 0; i < 256; i++) {
                 if (configIndex & 1) {
@@ -65,9 +65,8 @@ static void make_image(SkBitmap* bm, SkBitmap::Config config, int configIndex) {
                 }
             }
             SkColorTable* ctable = new SkColorTable(colors, 256);
-            bm->allocPixels(ctable);
+            bm->allocPixels(info, NULL, ctable);
             ctable->unref();
-
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     *bm->getAddr8(x, y) = SkGetPackedR32(*device.getAddr32(x, y));
@@ -76,16 +75,16 @@ static void make_image(SkBitmap* bm, SkBitmap::Config config, int configIndex) {
             break;
         }
         default:
-            break;
+            SkASSERT(0);
     }
 }
 
 // configs to build the original bitmap in. Can be at most these 3
-static const SkBitmap::Config gConfigs[] = {
-    SkBitmap::kARGB_8888_Config,
-    SkBitmap::kRGB_565_Config,
-    SkBitmap::kIndex8_Config,   // opaque
-    SkBitmap::kIndex8_Config    // alpha
+static const SkColorType gColorTypes[] = {
+    kN32_SkColorType,
+    kRGB_565_SkColorType,
+    kIndex_8_SkColorType,   // opaque
+    kIndex_8_SkColorType    // alpha
 };
 
 static const char* const gConfigLabels[] = {
@@ -103,55 +102,51 @@ static const char* const gExt[] = {
     ".jpg", ".png"
 };
 
-static const char* gPath = "/encoded/";
-
-static void make_name(SkString* name, int config, int ext) {
-    name->set(gPath);
-    name->append(gConfigLabels[config]);
-    name->append(gExt[ext]);
-}
-
 #include <sys/stat.h>
 
 class EncodeView : public SampleView {
 public:
-    SkBitmap*   fBitmaps;
-    size_t      fBitmapCount;
+    SkBitmap*        fBitmaps;
+    SkAutoDataUnref* fEncodedPNGs;
+    SkAutoDataUnref* fEncodedJPEGs;
+    int              fBitmapCount;
 
     EncodeView() {
-    #if 1
-        (void)mkdir(gPath, S_IRWXU | S_IRWXG | S_IRWXO);
-
-        fBitmapCount = SK_ARRAY_COUNT(gConfigs);
+        fBitmapCount = SK_ARRAY_COUNT(gColorTypes);
         fBitmaps = new SkBitmap[fBitmapCount];
-        for (size_t i = 0; i < fBitmapCount; i++) {
-            make_image(&fBitmaps[i], gConfigs[i], i);
+        fEncodedPNGs = new SkAutoDataUnref[fBitmapCount];
+        fEncodedJPEGs = new SkAutoDataUnref[fBitmapCount];
+        for (int i = 0; i < fBitmapCount; i++) {
+            make_image(&fBitmaps[i], gColorTypes[i], i);
 
-            for (size_t j = 0; j < SK_ARRAY_COUNT(gExt); j++) {
-                SkString path;
-                make_name(&path, i, j);
-
-                // remove any previous run of this file
-                remove(path.c_str());
-
-                SkImageEncoder* codec = SkImageEncoder::Create(gTypes[j]);
-                if (NULL == codec ||
-                        !codec->encodeFile(path.c_str(), fBitmaps[i], 100)) {
-                    SkDebugf("------ failed to encode %s\n", path.c_str());
-                    remove(path.c_str());   // remove any partial file
+            for (size_t j = 0; j < SK_ARRAY_COUNT(gTypes); j++) {
+                SkAutoTDelete<SkImageEncoder> codec(
+                    SkImageEncoder::Create(gTypes[j]));
+                if (NULL == codec.get()) {
+                    SkDebugf("[%s:%d] failed to encode %s%s\n",
+                             __FILE__, __LINE__,gConfigLabels[i], gExt[j]);
+                    continue;
                 }
-                delete codec;
+                SkAutoDataUnref data(codec->encodeData(fBitmaps[i], 100));
+                if (NULL == data.get()) {
+                    SkDebugf("[%s:%d] failed to encode %s%s\n",
+                             __FILE__, __LINE__,gConfigLabels[i], gExt[j]);
+                    continue;
+                }
+                if (SkImageEncoder::kJPEG_Type == gTypes[j]) {
+                    fEncodedJPEGs[i].reset(data.detach());
+                } else if (SkImageEncoder::kPNG_Type == gTypes[j]) {
+                    fEncodedPNGs[i].reset(data.detach());
+                }
             }
         }
-    #else
-        fBitmaps = NULL;
-        fBitmapCount = 0;
-    #endif
         this->setBGColor(0xFFDDDDDD);
     }
 
     virtual ~EncodeView() {
         delete[] fBitmaps;
+        delete[] fEncodedPNGs;
+        delete[] fEncodedJPEGs;
     }
 
 protected:
@@ -178,7 +173,7 @@ protected:
         SkScalar x = 0, y = 0, maxX = 0;
         const int SPACER = 10;
 
-        for (size_t i = 0; i < fBitmapCount; i++) {
+        for (int i = 0; i < fBitmapCount; i++) {
             canvas->drawText(gConfigLabels[i], strlen(gConfigLabels[i]),
                              x + SkIntToScalar(fBitmaps[i].width()) / 2, 0,
                              paint);
@@ -187,16 +182,23 @@ protected:
             canvas->drawBitmap(fBitmaps[i], x, y);
 
             SkScalar yy = y;
-            for (size_t j = 0; j < SK_ARRAY_COUNT(gExt); j++) {
+            for (size_t j = 0; j < SK_ARRAY_COUNT(gTypes); j++) {
                 yy += SkIntToScalar(fBitmaps[i].height() + 10);
 
                 SkBitmap bm;
-                SkString name;
-
-                make_name(&name, i, j);
-
-                SkImageDecoder::DecodeFile(name.c_str(), &bm);
-                canvas->drawBitmap(bm, x, yy);
+                SkData* encoded = NULL;
+                if (SkImageEncoder::kJPEG_Type == gTypes[j]) {
+                    encoded = fEncodedJPEGs[i].get();
+                } else if (SkImageEncoder::kPNG_Type == gTypes[j]) {
+                    encoded = fEncodedPNGs[i].get();
+                }
+                if (encoded) {
+                    if (!SkInstallDiscardablePixelRef(encoded, &bm)) {
+                    SkDebugf("[%s:%d] failed to decode %s%s\n",
+                             __FILE__, __LINE__,gConfigLabels[i], gExt[j]);
+                    }
+                    canvas->drawBitmap(bm, x, yy);
+                }
             }
 
             x += SkIntToScalar(fBitmaps[i].width() + SPACER);

@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 #include "PathOpsExtendedTest.h"
+#include "PathOpsTestCommon.h"
 #include "SkIntersections.h"
 #include "SkPathOpsLine.h"
 #include "SkPathOpsQuad.h"
@@ -58,11 +59,20 @@ static struct oneLineQuad {
     SkDQuad quad;
     SkDLine line;
 } oneOffs[] = {
+    {{{{97.9337616,100}, {88,112.94265}, {88,130}}},
+     {{{88.919838,120}, {107.058823,120}}}},
+    {{{{447.96701049804687, 894.4381103515625}, {448.007080078125, 894.4239501953125},
+       {448.0140380859375, 894.4215087890625}}},
+     {{{490.43548583984375, 879.40740966796875}, {405.59262084960937, 909.435546875}}}},
+    {{{{142.589081, 102.283646}, {149.821579, 100}, {158, 100}}},
+        {{{90, 230}, {160, 60}}}},
+    {{{{1101, 10}, {1101, 8.3431453704833984}, {1099.828857421875, 7.1711997985839844}}},
+        {{{1099.828857421875,7.1711711883544922}, {1099.121337890625,7.8786783218383789}}}},
     {{{{973, 507}, {973, 508.24264526367187}, {972.12158203125, 509.12161254882812}}},
         {{{930, 467}, {973, 510}}}},
     {{{{369.848602, 145.680267}, {382.360413, 121.298294}, {406.207703, 121.298294}}},
-        {{{406.207703, 121.298294}, {348.781738, 123.864815}}}}
-    };
+        {{{406.207703, 121.298294}, {348.781738, 123.864815}}}},
+};
 
 static size_t oneOffs_count = SK_ARRAY_COUNT(oneOffs);
 
@@ -70,27 +80,38 @@ static void testOneOffs(skiatest::Reporter* reporter) {
     bool flipped = false;
     for (size_t index = 0; index < oneOffs_count; ++index) {
         const SkDQuad& quad = oneOffs[index].quad;
+        SkASSERT(ValidQuad(quad));
         const SkDLine& line = oneOffs[index].line;
+        SkASSERT(ValidLine(line));
         SkIntersections intersections;
         int result = doIntersect(intersections, quad, line, flipped);
         for (int inner = 0; inner < result; ++inner) {
             double quadT = intersections[0][inner];
-            SkDPoint quadXY = quad.xyAtT(quadT);
+            SkDPoint quadXY = quad.ptAtT(quadT);
             double lineT = intersections[1][inner];
-            SkDPoint lineXY = line.xyAtT(lineT);
+            SkDPoint lineXY = line.ptAtT(lineT);
+            if (!quadXY.approximatelyEqual(lineXY)) {
+                quadXY.approximatelyEqual(lineXY);
+                SkDebugf("");
+            }
             REPORTER_ASSERT(reporter, quadXY.approximatelyEqual(lineXY));
         }
     }
 }
 
-static void PathOpsQuadLineIntersectionTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsQuadLineIntersectionOneOff, reporter) {
     testOneOffs(reporter);
+}
+
+DEF_TEST(PathOpsQuadLineIntersection, reporter) {
     for (size_t index = 0; index < lineQuadTests_count; ++index) {
         int iIndex = static_cast<int>(index);
         const SkDQuad& quad = lineQuadTests[index].quad;
+        SkASSERT(ValidQuad(quad));
         const SkDLine& line = lineQuadTests[index].line;
+        SkASSERT(ValidLine(line));
         SkReduceOrder reducer1, reducer2;
-        int order1 = reducer1.reduce(quad, SkReduceOrder::kFill_Style);
+        int order1 = reducer1.reduce(quad);
         int order2 = reducer2.reduce(line);
         if (order1 < 3) {
             SkDebugf("%s [%d] quad order=%d\n", __FUNCTION__, iIndex, order1);
@@ -110,10 +131,10 @@ static void PathOpsQuadLineIntersectionTest(skiatest::Reporter* reporter) {
         for (int pt = 0; pt < result; ++pt) {
             double tt1 = intersections[0][pt];
             REPORTER_ASSERT(reporter, tt1 >= 0 && tt1 <= 1);
-            SkDPoint t1 = quad.xyAtT(tt1);
+            SkDPoint t1 = quad.ptAtT(tt1);
             double tt2 = intersections[1][pt];
             REPORTER_ASSERT(reporter, tt2 >= 0 && tt2 <= 1);
-            SkDPoint t2 = line.xyAtT(tt2);
+            SkDPoint t2 = line.ptAtT(tt2);
             if (!t1.approximatelyEqual(t2)) {
                 SkDebugf("%s [%d,%d] x!= t1=%1.9g (%1.9g,%1.9g) t2=%1.9g (%1.9g,%1.9g)\n",
                     __FUNCTION__, iIndex, pt, tt1, t1.fX, t1.fY, tt2, t2.fX, t2.fY);
@@ -128,6 +149,3 @@ static void PathOpsQuadLineIntersectionTest(skiatest::Reporter* reporter) {
         }
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsQuadLineIntersectionTest)

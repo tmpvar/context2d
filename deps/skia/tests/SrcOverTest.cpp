@@ -1,13 +1,13 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Test.h"
+
 #include "SkColorPriv.h"
 #include "SkXfermode.h"
+#include "Test.h"
 
 // our std SkAlpha255To256
 static int test_srcover0(unsigned dst, unsigned alpha) {
@@ -24,7 +24,7 @@ static int test_srcover2(unsigned dst, unsigned alpha) {
     return alpha + SkMulDiv255Round(dst, 255 - alpha);
 }
 
-static void test_srcover_hack(skiatest::Reporter* reporter) {
+DEF_TEST(SrcOver, reporter) {
     /*  Here's the idea. Can we ensure that when we blend on top of an opaque
         dst, that the result always stay's opaque (i.e. exactly 255)?
      */
@@ -74,6 +74,3 @@ static void test_srcover_hack(skiatest::Reporter* reporter) {
         }
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("SrcOver", SrcOverTestClass, test_srcover_hack)

@@ -12,17 +12,8 @@
 
 #include "SkRect.h"
 
+struct SkRSXform;
 class SkString;
-
-#ifdef SK_SCALAR_IS_FLOAT
-    typedef SkScalar SkPersp;
-    #define SkScalarToPersp(x) (x)
-    #define SkPerspToScalar(x) (x)
-#else
-    typedef SkFract SkPersp;
-    #define SkScalarToPersp(x) SkFixedToFract(x)
-    #define SkPerspToScalar(x) SkFractToFixed(x)
-#endif
 
 /** \class SkMatrix
 
@@ -33,6 +24,24 @@ class SkString;
 */
 class SK_API SkMatrix {
 public:
+    static SkMatrix SK_WARN_UNUSED_RESULT MakeScale(SkScalar sx, SkScalar sy) {
+        SkMatrix m;
+        m.setScale(sx, sy);
+        return m;
+    }
+    
+    static SkMatrix SK_WARN_UNUSED_RESULT MakeScale(SkScalar scale) {
+        SkMatrix m;
+        m.setScale(scale, scale);
+        return m;
+    }
+    
+    static SkMatrix SK_WARN_UNUSED_RESULT MakeTrans(SkScalar dx, SkScalar dy) {
+        SkMatrix m;
+        m.setTranslate(dx, dy);
+        return m;
+    }
+
     /** Enum of bit fields for the mask return by getType().
         Use this to identify the complexity of the matrix.
     */
@@ -64,6 +73,10 @@ public:
         return this->getType() == 0;
     }
 
+    bool isScaleTranslate() const {
+        return !(this->getType() & ~(kScale_Mask | kTranslate_Mask));
+    }
+
     /** Returns true if will map a rectangle to another rectangle. This can be
         true if the matrix is identity, scale-only, or rotates a multiple of
         90 degrees.
@@ -85,12 +98,12 @@ public:
                         kPerspective_Mask);
     }
 
-    /** Returns true if the matrix contains only translation, rotation or uniform scale
+    /** Returns true if the matrix contains only translation, rotation/reflection or uniform scale
         Returns false if other transformation types are included or is degenerate
      */
     bool isSimilarity(SkScalar tol = SK_ScalarNearlyZero) const;
 
-    /** Returns true if the matrix contains only translation, rotation or scale
+    /** Returns true if the matrix contains only translation, rotation/reflection or scale
         (non-uniform scale is allowed).
         Returns false if other transformation types are included or is degenerate
      */
@@ -136,8 +149,8 @@ public:
     SkScalar getSkewX() const { return fMat[kMSkewX]; }
     SkScalar getTranslateX() const { return fMat[kMTransX]; }
     SkScalar getTranslateY() const { return fMat[kMTransY]; }
-    SkPersp getPerspX() const { return fMat[kMPersp0]; }
-    SkPersp getPerspY() const { return fMat[kMPersp1]; }
+    SkScalar getPerspX() const { return fMat[kMPersp0]; }
+    SkScalar getPerspY() const { return fMat[kMPersp1]; }
 
     SkScalar& operator[](int index) {
         SkASSERT((unsigned)index < 9);
@@ -157,12 +170,12 @@ public:
     void setSkewX(SkScalar v) { this->set(kMSkewX, v); }
     void setTranslateX(SkScalar v) { this->set(kMTransX, v); }
     void setTranslateY(SkScalar v) { this->set(kMTransY, v); }
-    void setPerspX(SkPersp v) { this->set(kMPersp0, v); }
-    void setPerspY(SkPersp v) { this->set(kMPersp1, v); }
+    void setPerspX(SkScalar v) { this->set(kMPersp0, v); }
+    void setPerspY(SkScalar v) { this->set(kMPersp1, v); }
 
-    void setAll(SkScalar scaleX, SkScalar skewX, SkScalar transX,
-                SkScalar skewY, SkScalar scaleY, SkScalar transY,
-                SkPersp persp0, SkPersp persp1, SkPersp persp2) {
+    void setAll(SkScalar scaleX, SkScalar skewX,  SkScalar transX,
+                SkScalar skewY,  SkScalar scaleY, SkScalar transY,
+                SkScalar persp0, SkScalar persp1, SkScalar persp2) {
         fMat[kMScaleX] = scaleX;
         fMat[kMSkewX]  = skewX;
         fMat[kMTransX] = transX;
@@ -174,6 +187,23 @@ public:
         fMat[kMPersp2] = persp2;
         this->setTypeMask(kUnknown_Mask);
     }
+
+    /**
+     *  Copy the 9 scalars for this matrix into buffer, in the same order as the kMScaleX
+     *  enum... scalex, skewx, transx, skewy, scaley, transy, persp0, persp1, persp2
+     */
+    void get9(SkScalar buffer[9]) const {
+        memcpy(buffer, fMat, 9 * sizeof(SkScalar));
+    }
+
+    /**
+     *  Set this matrix to the 9 scalars from the buffer, in the same order as the kMScaleX
+     *  enum... scalex, skewx, transx, skewy, scaley, transy, persp0, persp1, persp2
+     *
+     *  Note: calling set9 followed by get9 may not return the exact same values. Since the matrix
+     *  is used to map non-homogeneous coordinates, it is free to rescale the 9 values as needed.
+     */
+    void set9(const SkScalar buffer[9]);
 
     /** Set the matrix to identity
     */
@@ -215,6 +245,9 @@ public:
     /** Set the matrix to rotate by the specified sine and cosine values.
     */
     void setSinCos(SkScalar sinValue, SkScalar cosValue);
+
+    SkMatrix& setRSXform(const SkRSXform&);
+
     /** Set the matrix to skew by sx and sy, with a pivot point at (px, py).
         The pivot point is the coordinate that should remain unchanged by the
         specified transformation.
@@ -223,57 +256,57 @@ public:
     /** Set the matrix to skew by sx and sy.
     */
     void setSkew(SkScalar kx, SkScalar ky);
-    /** Set the matrix to the concatenation of the two specified matrices,
-        returning true if the the result can be represented. Either of the
-        two matrices may also be the target matrix. *this = a * b;
+    /** Set the matrix to the concatenation of the two specified matrices.
+        Either of the two matrices may also be the target matrix.
+        *this = a * b;
     */
-    bool setConcat(const SkMatrix& a, const SkMatrix& b);
+    void setConcat(const SkMatrix& a, const SkMatrix& b);
 
     /** Preconcats the matrix with the specified translation.
         M' = M * T(dx, dy)
     */
-    bool preTranslate(SkScalar dx, SkScalar dy);
+    void preTranslate(SkScalar dx, SkScalar dy);
     /** Preconcats the matrix with the specified scale.
         M' = M * S(sx, sy, px, py)
     */
-    bool preScale(SkScalar sx, SkScalar sy, SkScalar px, SkScalar py);
+    void preScale(SkScalar sx, SkScalar sy, SkScalar px, SkScalar py);
     /** Preconcats the matrix with the specified scale.
         M' = M * S(sx, sy)
     */
-    bool preScale(SkScalar sx, SkScalar sy);
+    void preScale(SkScalar sx, SkScalar sy);
     /** Preconcats the matrix with the specified rotation.
         M' = M * R(degrees, px, py)
     */
-    bool preRotate(SkScalar degrees, SkScalar px, SkScalar py);
+    void preRotate(SkScalar degrees, SkScalar px, SkScalar py);
     /** Preconcats the matrix with the specified rotation.
         M' = M * R(degrees)
     */
-    bool preRotate(SkScalar degrees);
+    void preRotate(SkScalar degrees);
     /** Preconcats the matrix with the specified skew.
         M' = M * K(kx, ky, px, py)
     */
-    bool preSkew(SkScalar kx, SkScalar ky, SkScalar px, SkScalar py);
+    void preSkew(SkScalar kx, SkScalar ky, SkScalar px, SkScalar py);
     /** Preconcats the matrix with the specified skew.
         M' = M * K(kx, ky)
     */
-    bool preSkew(SkScalar kx, SkScalar ky);
+    void preSkew(SkScalar kx, SkScalar ky);
     /** Preconcats the matrix with the specified matrix.
         M' = M * other
     */
-    bool preConcat(const SkMatrix& other);
+    void preConcat(const SkMatrix& other);
 
     /** Postconcats the matrix with the specified translation.
         M' = T(dx, dy) * M
     */
-    bool postTranslate(SkScalar dx, SkScalar dy);
+    void postTranslate(SkScalar dx, SkScalar dy);
     /** Postconcats the matrix with the specified scale.
         M' = S(sx, sy, px, py) * M
     */
-    bool postScale(SkScalar sx, SkScalar sy, SkScalar px, SkScalar py);
+    void postScale(SkScalar sx, SkScalar sy, SkScalar px, SkScalar py);
     /** Postconcats the matrix with the specified scale.
         M' = S(sx, sy) * M
     */
-    bool postScale(SkScalar sx, SkScalar sy);
+    void postScale(SkScalar sx, SkScalar sy);
     /** Postconcats the matrix by dividing it by the specified integers.
         M' = S(1/divx, 1/divy, 0, 0) * M
     */
@@ -281,23 +314,23 @@ public:
     /** Postconcats the matrix with the specified rotation.
         M' = R(degrees, px, py) * M
     */
-    bool postRotate(SkScalar degrees, SkScalar px, SkScalar py);
+    void postRotate(SkScalar degrees, SkScalar px, SkScalar py);
     /** Postconcats the matrix with the specified rotation.
         M' = R(degrees) * M
     */
-    bool postRotate(SkScalar degrees);
+    void postRotate(SkScalar degrees);
     /** Postconcats the matrix with the specified skew.
         M' = K(kx, ky, px, py) * M
     */
-    bool postSkew(SkScalar kx, SkScalar ky, SkScalar px, SkScalar py);
+    void postSkew(SkScalar kx, SkScalar ky, SkScalar px, SkScalar py);
     /** Postconcats the matrix with the specified skew.
         M' = K(kx, ky) * M
     */
-    bool postSkew(SkScalar kx, SkScalar ky);
+    void postSkew(SkScalar kx, SkScalar ky);
     /** Postconcats the matrix with the specified matrix.
         M' = other * M
     */
-    bool postConcat(const SkMatrix& other);
+    void postConcat(const SkMatrix& other);
 
     enum ScaleToFit {
         /**
@@ -336,6 +369,11 @@ public:
         @return true if the matrix can be represented by the rectangle mapping.
     */
     bool setRectToRect(const SkRect& src, const SkRect& dst, ScaleToFit stf);
+    static SkMatrix MakeRectToRect(const SkRect& src, const SkRect& dst, ScaleToFit stf) {
+        SkMatrix m;
+        m.setRectToRect(src, dst, stf);
+        return m;
+    }
 
     /** Set the matrix such that the specified src points would map to the
         specified dst points. count must be within [0..4].
@@ -353,7 +391,7 @@ public:
     bool SK_WARN_UNUSED_RESULT invert(SkMatrix* inverse) const {
         // Allow the trivial case to be inlined.
         if (this->isIdentity()) {
-            if (NULL != inverse) {
+            if (inverse) {
                 inverse->reset();
             }
             return true;
@@ -373,7 +411,12 @@ public:
         and does not change the passed array.
         @param affine  The array to fill with affine values. Ignored if NULL.
     */
-    bool asAffine(SkScalar affine[6]) const;
+    bool SK_WARN_UNUSED_RESULT asAffine(SkScalar affine[6]) const;
+
+    /** Set the matrix to the specified affine values.
+     *  Note: these are passed in column major order.
+     */
+    void setAffine(const SkScalar affine[6]);
 
     /** Apply this matrix to the array of points specified by src, and write
         the transformed points into the array of points specified by dst.
@@ -385,7 +428,12 @@ public:
         @param count The number of points in src to read, and then transform
                      into dst.
     */
-    void mapPoints(SkPoint dst[], const SkPoint src[], int count) const;
+    void mapPoints(SkPoint dst[], const SkPoint src[], int count) const {
+        SkASSERT((dst && src && count > 0) || 0 == count);
+        // no partial overlap
+        SkASSERT(src == dst || &dst[count] <= &src[0] || &src[count] <= &dst[0]);
+        this->getMapPtsProc()(*this, dst, src, count);
+    }
 
     /** Apply this matrix to the array of points, overwriting it with the
         transformed values.
@@ -423,9 +471,28 @@ public:
         }
     }
 
+    /** Apply this matrix to the array of homogeneous points, specified by src,
+        where a homogeneous point is defined by 3 contiguous scalar values,
+        and write the transformed points into the array of scalars specified by dst.
+        dst[] = M * src[]
+        @param dst  Where the transformed coordinates are written. It must
+                    contain at least 3 * count entries
+        @param src  The original coordinates that are to be transformed. It
+                    must contain at least 3 * count entries
+        @param count The number of triples (homogeneous points) in src to read,
+                     and then transform into dst.
+    */
+    void mapHomogeneousPoints(SkScalar dst[], const SkScalar src[], int count) const;
+
     void mapXY(SkScalar x, SkScalar y, SkPoint* result) const {
         SkASSERT(result);
         this->getMapXYProc()(*this, x, y, result);
+    }
+
+    SkPoint mapXY(SkScalar x, SkScalar y) const {
+        SkPoint result;
+        this->getMapXYProc()(*this, x, y, &result);
+        return result;
     }
 
     /** Apply this matrix to the array of vectors specified by src, and write
@@ -451,6 +518,17 @@ public:
         this->mapVectors(vecs, vecs, count);
     }
 
+    void mapVector(SkScalar dx, SkScalar dy, SkVector* result) const {
+        SkVector vec = { dx, dy };
+        this->mapVectors(result, &vec, 1);
+    }
+
+    SkVector mapVector(SkScalar dx, SkScalar dy) const {
+        SkVector vec = { dx, dy };
+        this->mapVectors(&vec, &vec, 1);
+        return vec;
+    }
+
     /** Apply this matrix to the src rectangle, and write the transformed
         rectangle into dst. This is accomplished by transforming the 4 corners
         of src, and then setting dst to the bounds of those points.
@@ -468,6 +546,18 @@ public:
     */
     bool mapRect(SkRect* rect) const {
         return this->mapRect(rect, *rect);
+    }
+
+    /** Apply this matrix to the src rectangle, and write the four transformed
+        points into dst. The points written to dst will be the original top-left, top-right,
+        bottom-right, and bottom-left points transformed by the matrix.
+        @param dst  Where the transformed quad is written.
+        @param rect The original rectangle to be transformed.
+    */
+    void mapRectToQuad(SkPoint dst[4], const SkRect& rect) const {
+        // This could potentially be faster if we only transformed each x and y of the rect once.
+        rect.toQuad(dst);
+        this->mapPoints(dst, 4);
     }
 
     /** Return the mean radius of a circle after it has been mapped by
@@ -518,14 +608,8 @@ public:
         return 0 == memcmp(fMat, m.fMat, sizeof(fMat));
     }
 
-#ifdef SK_SCALAR_IS_FIXED
-    friend bool operator==(const SkMatrix& a, const SkMatrix& b) {
-        return a.cheapEqualTo(b);
-    }
-#else
-    friend bool operator==(const SkMatrix& a, const SkMatrix& b);
-#endif
-    friend bool operator!=(const SkMatrix& a, const SkMatrix& b) {
+    friend SK_API bool operator==(const SkMatrix& a, const SkMatrix& b);
+    friend SK_API bool operator!=(const SkMatrix& a, const SkMatrix& b) {
         return !(a == b);
     }
 
@@ -534,20 +618,55 @@ public:
         kMaxFlattenSize = 9 * sizeof(SkScalar) + sizeof(uint32_t)
     };
     // return the number of bytes written, whether or not buffer is null
-    uint32_t writeToMemory(void* buffer) const;
-    // return the number of bytes read
-    uint32_t readFromMemory(const void* buffer);
+    size_t writeToMemory(void* buffer) const;
+    /**
+     * Reads data from the buffer parameter
+     *
+     * @param buffer Memory to read from
+     * @param length Amount of memory available in the buffer
+     * @return number of bytes read (must be a multiple of 4) or
+     *         0 if there was not enough memory available
+     */
+    size_t readFromMemory(const void* buffer, size_t length);
 
-    SkDEVCODE(void dump() const;)
-    SkDEVCODE(void toString(SkString*) const;)
+    void dump() const;
+    void toString(SkString*) const;
 
     /**
-     * Calculates the maximum stretching factor of the matrix. If the matrix has
-     * perspective -1 is returned.
+     * Calculates the minimum scaling factor of the matrix as computed from the SVD of the upper
+     * left 2x2. If the matrix has perspective -1 is returned.
      *
-     * @return maximum strecthing factor
+     * @return minumum scale factor
      */
-    SkScalar getMaxStretch() const;
+    SkScalar getMinScale() const;
+
+    /**
+     * Calculates the maximum scaling factor of the matrix as computed from the SVD of the upper
+     * left 2x2. If the matrix has perspective -1 is returned.
+     *
+     * @return maximum scale factor
+     */
+    SkScalar getMaxScale() const;
+
+    /**
+     * Gets both the min and max scale factors. The min scale factor is scaleFactors[0] and the max
+     * is scaleFactors[1]. If the matrix has perspective false will be returned and scaleFactors
+     * will be unchanged.
+     */
+    bool getMinMaxScales(SkScalar scaleFactors[2]) const;
+
+    /**
+     *  Attempt to decompose this matrix into a scale-only component and whatever remains, where
+     *  the scale component is to be applied first.
+     *
+     *  M -> Remaining * Scale
+     *
+     *  On success, return true and assign the scale and remaining components (assuming their
+     *  respective parameters are not null). On failure return false and ignore the parameters.
+     *
+     *  Possible reasons to fail: perspective, one or more scale factors are zero.
+     */
+    bool decomposeScale(SkSize* scale, SkMatrix* remaining = NULL) const;
 
     /**
      *  Return a reference to a const identity matrix
@@ -559,6 +678,15 @@ public:
      *  never be used.
      */
     static const SkMatrix& InvalidMatrix();
+
+    /**
+     * Return the concatenation of two matrices, a * b.
+     */
+    static SkMatrix Concat(const SkMatrix& a, const SkMatrix& b) {
+        SkMatrix result;
+        result.setConcat(a, b);
+        return result;
+    }
 
     /**
      * Testing routine; the matrix's type cache should never need to be
@@ -600,6 +728,35 @@ private:
     SkScalar         fMat[9];
     mutable uint32_t fTypeMask;
 
+    /** Are all elements of the matrix finite?
+     */
+    bool isFinite() const { return SkScalarsAreFinite(fMat, 9); }
+
+    static void ComputeInv(SkScalar dst[9], const SkScalar src[9], double invDet, bool isPersp);
+
+    void setScaleTranslate(SkScalar sx, SkScalar sy, SkScalar tx, SkScalar ty) {
+        fMat[kMScaleX] = sx;
+        fMat[kMSkewX]  = 0;
+        fMat[kMTransX] = tx;
+
+        fMat[kMSkewY]  = 0;
+        fMat[kMScaleY] = sy;
+        fMat[kMTransY] = ty;
+
+        fMat[kMPersp0] = 0;
+        fMat[kMPersp1] = 0;
+        fMat[kMPersp2] = 1;
+
+        unsigned mask = 0;
+        if (sx != 1 || sy != 1) {
+            mask |= kScale_Mask;
+        }
+        if (tx || ty) {
+            mask |= kTranslate_Mask;
+        }
+        this->setTypeMask(mask | kRectStaysRect_Mask);
+    }
+
     uint8_t computeTypeMask() const;
     uint8_t computePerspectiveTypeMask() const;
 
@@ -619,7 +776,7 @@ private:
     void clearTypeMask(int mask) {
         // only allow a valid mask
         SkASSERT((mask & kAllMasks) == mask);
-        fTypeMask &= ~mask;
+        fTypeMask = fTypeMask & ~mask;
     }
 
     TypeMask getPerspectiveTypeMaskOnly() const {
@@ -661,10 +818,9 @@ private:
     static void Scale_pts(const SkMatrix&, SkPoint dst[], const SkPoint[], int);
     static void ScaleTrans_pts(const SkMatrix&, SkPoint dst[], const SkPoint[],
                                int count);
-    static void Rot_pts(const SkMatrix&, SkPoint dst[], const SkPoint[], int);
-    static void RotTrans_pts(const SkMatrix&, SkPoint dst[], const SkPoint[],
-                             int count);
     static void Persp_pts(const SkMatrix&, SkPoint dst[], const SkPoint[], int);
+
+    static void Affine_vpts(const SkMatrix&, SkPoint dst[], const SkPoint[], int);
 
     static const MapPtsProc gMapPtsProcs[];
 

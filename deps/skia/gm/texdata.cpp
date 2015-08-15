@@ -12,13 +12,12 @@
 
 #if SK_SUPPORT_GPU
 #include "GrContext.h"
-#include "effects/GrSimpleTextureEffect.h"
+#include "GrDrawContext.h"
 #include "SkColorPriv.h"
-#include "SkDevice.h"
+#include "effects/GrPorterDuffXferProcessor.h"
+#include "effects/GrSimpleTextureEffect.h"
 
 namespace skiagm {
-
-extern GrContext* GetGr();
 
 static const int S = 200;
 
@@ -29,20 +28,20 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() {
+    SkString onShortName() override {
         return SkString("texdata");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(2*S, 2*S);
+    SkISize onISize() override {
+        return SkISize::Make(2*S, 2*S);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
-        SkDevice* device = canvas->getTopDevice();
-        GrRenderTarget* target = device->accessRenderTarget();
-        GrContext* ctx = GetGr();
-        if (ctx && target) {
-            SkPMColor gTextureData[(2 * S) * (2 * S)];
+    void onDraw(SkCanvas* canvas) override {
+        GrRenderTarget* target = canvas->internal_private_accessTopLayerRenderTarget();
+        GrContext* ctx = canvas->getGrContext();
+        GrDrawContext* drawContext = ctx ? ctx->drawContext() : NULL;
+        if (drawContext && target) {
+            SkAutoTArray<SkPMColor> gTextureData((2 * S) * (2 * S));
             static const int stride = 2 * S;
             static const SkPMColor gray  = SkPackARGB32(0x40, 0x40, 0x40, 0x40);
             static const SkPMColor white = SkPackARGB32(0xff, 0xff, 0xff, 0xff);
@@ -80,27 +79,27 @@ protected:
                     }
                 }
 
-                GrTextureDesc desc;
+                GrSurfaceDesc desc;
                 // use RT flag bit because in GL it makes the texture be bottom-up
-                desc.fFlags     = i ? kRenderTarget_GrTextureFlagBit :
-                                      kNone_GrTextureFlags;
+                desc.fFlags     = i ? kRenderTarget_GrSurfaceFlag :
+                                      kNone_GrSurfaceFlags;
                 desc.fConfig    = kSkia8888_GrPixelConfig;
                 desc.fWidth     = 2 * S;
                 desc.fHeight    = 2 * S;
-                GrTexture* texture =
-                    ctx->createUncachedTexture(desc, gTextureData, 0);
+                GrTexture* texture = ctx->textureProvider()->createTexture(
+                    desc, false, gTextureData.get(), 0);
 
                 if (!texture) {
                     return;
                 }
-                GrAutoUnref au(texture);
+                SkAutoTUnref<GrTexture> au(texture);
 
-                GrContext::AutoClip acs(ctx, GrRect::MakeWH(2*S, 2*S));
-
-                ctx->setRenderTarget(target);
+                // setup new clip
+                GrClip clip(SkRect::MakeWH(2*S, 2*S));
 
                 GrPaint paint;
-                paint.setBlendFunc(kOne_GrBlendCoeff, kISA_GrBlendCoeff);
+                paint.setPorterDuffXPFactory(SkXfermode::kSrcOver_Mode);
+
                 SkMatrix vm;
                 if (i) {
                     vm.setRotate(90 * SK_Scalar1,
@@ -109,13 +108,12 @@ protected:
                 } else {
                     vm.reset();
                 }
-                ctx->setMatrix(vm);
                 SkMatrix tm;
                 tm = vm;
                 tm.postIDiv(2*S, 2*S);
-                paint.colorStage(0)->setEffect(GrSimpleTextureEffect::Create(texture, tm))->unref();
+                paint.addColorTextureProcessor(texture, tm);
 
-                ctx->drawRect(paint, GrRect::MakeWH(2*S, 2*S));
+                drawContext->drawRect(target, clip, paint, vm, SkRect::MakeWH(2*S, 2*S));
 
                 // now update the lower right of the texture in first pass
                 // or upper right in second pass
@@ -127,10 +125,12 @@ protected:
                     }
                 }
                 texture->writePixels(S, (i ? 0 : S), S, S,
-                                     texture->config(), gTextureData,
+                                     texture->config(), gTextureData.get(),
                                      4 * stride);
-                ctx->drawRect(paint, GrRect::MakeWH(2*S, 2*S));
+                drawContext->drawRect(target, clip, paint, vm, SkRect::MakeWH(2*S, 2*S));
             }
+        } else {
+            this->drawGpuOnlyMessage(canvas);
         }
     }
 

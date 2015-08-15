@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 {
   'conditions' : [
     [ 'skia_os != "ios"', {
@@ -11,19 +15,15 @@
       'mac_bundle' : 1,
       'include_dirs' : [
         '../experimental/iOSSampleApp/Shared',
+        '../src/views/mac',
       ],
       'sources': [
         '../src/views/ios/SkOSWindow_iOS.mm',
-        '../src/views/mac/SkEventNotifier.h',
         '../src/views/mac/SkEventNotifier.mm',
-        '../experimental/iOSSampleApp/iPad/AppDelegate_iPad.h',
         '../experimental/iOSSampleApp/iPad/AppDelegate_iPad.mm',
-        '../experimental/iOSSampleApp/iPhone/AppDelegate_iPhone.h',
         '../experimental/iOSSampleApp/iPhone/AppDelegate_iPhone.mm',
-        '../experimental/iOSSampleApp/Shared/SkUIView.h',
         '../experimental/iOSSampleApp/Shared/SkUIView.mm',
         '../experimental/iOSSampleApp/Shared/skia_ios.mm',
-        '../experimental/SimpleiOSApp/SimpleApp.h',
         '../experimental/SimpleiOSApp/SimpleApp.mm',
         '../experimental/SimpleiOSApp/SimpleiOSApp-Info.plist',
       ],
@@ -61,9 +61,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

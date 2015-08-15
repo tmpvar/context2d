@@ -11,15 +11,6 @@
 // glGetError() forces a sync with gpu process on chrome
 #define GR_GL_CHECK_ERROR_START                     0
 
-// ANGLE creates a temp VB for vertex attributes not specified per-vertex.
-#define GR_GL_NO_CONSTANT_ATTRIBUTES                GR_WIN32_BUILD
-
-// For RGBA teximage/readpixels ANGLE will sw-convert to/from BGRA.
-#define GR_GL_RGBA_8888_PIXEL_OPS_SLOW              GR_WIN32_BUILD
-
-// ANGLE can go faster if the entire fbo is read rather than a subrect
-#define GR_GL_FULL_READPIXELS_FASTER_THAN_PARTIAL   GR_WIN32_BUILD
-
 // cmd buffer allocates memory and memsets it to zero when it sees glBufferData
 // with NULL.
 #define GR_GL_USE_BUFFER_DATA_NULL_HINT             0
@@ -40,5 +31,9 @@
 // Use updated Khronos signature for glShaderSource
 // (const char* const instead of char**).
 #define GR_GL_USE_NEW_SHADER_SOURCE_SIGNATURE       1
+
+#if !defined(GR_GL_IGNORE_ES3_MSAA)
+    #define GR_GL_IGNORE_ES3_MSAA 1
+#endif
 
 #endif

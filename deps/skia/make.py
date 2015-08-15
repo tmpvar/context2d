@@ -4,11 +4,11 @@
 # found in the LICENSE file.
 
 # "Makefile" replacement to build skia for Windows.
-# More info at https://sites.google.com/site/skiadocs/
+# More info at https://skia.org.
 #
 # Some usage examples:
 #   make clean
-#   make tests
+#   make dm
 #   make bench BUILDTYPE=Release
 #   make gm GYP_DEFINES=skia_scalar=fixed BUILDTYPE=Release
 #   make all
@@ -17,7 +17,7 @@ import os
 import shutil
 import sys
 
-BUILDTYPE = 'Debug'
+BUILDTYPE = os.environ.get('BUILDTYPE', 'Debug')
 
 # special targets
 TARGET_ALL     = 'all'
@@ -26,7 +26,7 @@ TARGET_DEFAULT = 'most'
 TARGET_GYP     = 'gyp'
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
-OUT_SUBDIR = 'out'
+OUT_SUBDIR = os.environ.get('SKIA_OUT', 'out')
 GYP_SUBDIR = 'gyp'
 
 
@@ -42,11 +42,6 @@ def rmtree(path):
     print '> rmtree %s' % path
     shutil.rmtree(path, ignore_errors=True)
 
-def mkdirs(path):
-    print '> mkdirs %s' % path
-    if not os.path.isdir(path):
-        os.makedirs(path)
-
 def runcommand(command):
     print '> %s' % command
     if os.system(command):
@@ -56,8 +51,6 @@ def MakeClean():
     """Cross-platform "make clean" operation."""
     cd(SCRIPT_DIR)
     rmtree(OUT_SUBDIR)
-    # clean up the directory that XCode (on Mac) creates
-    rmtree('xcodebuild')
 
 
 def CheckWindowsEnvironment():
@@ -68,11 +61,8 @@ def CheckWindowsEnvironment():
     it displays an error message and exits.
     """
     # If we already have the proper environment variables, nothing to do here.
-    try:
-        env_DevEnvDir = os.environ['DevEnvDir']
-        return  # found it, so we are done
-    except KeyError:
-        pass # go on and run the rest of this function
+    if os.environ.get('DevEnvDir'):
+      return
 
     print ('\nCould not find Visual Studio environment variables.'
            '\nPerhaps you have not yet run vcvars32.bat as described at'
@@ -99,30 +89,22 @@ def MakeWindows(targets):
     parameters:
         targets: build targets as a list of strings
     """
-    CheckWindowsEnvironment()
+    if os.environ.get('CHROME_HEADLESS', '0') != '1':
+        # TODO(epoger): I'm not sure if this is needed for ninja builds.
+        CheckWindowsEnvironment()
 
     # Run gyp_skia to prepare Visual Studio projects.
     cd(SCRIPT_DIR)
-    runcommand('python gyp_skia')
+    runcommand('python gyp_skia --no-parallel -G config=%s' % BUILDTYPE)
 
-    # Prepare final output dir into which we will copy all binaries.
-    msbuild_working_dir = os.path.join(SCRIPT_DIR, OUT_SUBDIR, GYP_SUBDIR)
-    msbuild_output_dir = os.path.join(msbuild_working_dir, BUILDTYPE)
-    final_output_dir = os.path.join(SCRIPT_DIR, OUT_SUBDIR, BUILDTYPE)
-    mkdirs(final_output_dir)
+    # We already built the gypfiles...
+    while TARGET_GYP in targets:
+        targets.remove(TARGET_GYP)
 
-    for target in targets:
-        # We already built the gypfiles...
-        if target == TARGET_GYP:
-            continue
-
-        cd(msbuild_working_dir)
-        runcommand(
-            ('msbuild /nologo /property:Configuration=%s'
-            ' /target:%s /verbosity:minimal %s.sln') % (
-                BUILDTYPE, target, target))
-        runcommand('xcopy /y %s\* %s' % (
-            msbuild_output_dir, final_output_dir))
+    # And call ninja to do the work!
+    if targets:
+        runcommand('ninja -C %s %s' % (
+            os.path.join(OUT_SUBDIR, BUILDTYPE), ' '.join(targets)))
 
 
 def Make(args):
@@ -140,9 +122,11 @@ def Make(args):
 
     targets = []
     for arg in args:
-        # If user requests "make all", chain to our explicitly-declared "everything"
-        # target. See https://code.google.com/p/skia/issues/detail?id=932 ("gyp
-        # automatically creates "all" target on some build flavors but not others")
+        # If user requests "make all", chain to our explicitly-declared
+        # "everything" target. See
+        # https://code.google.com/p/skia/issues/detail?id=932 ("gyp
+        # automatically creates "all" target on some build flavors but not
+        # others")
         if arg == TARGET_ALL:
             targets.append('everything')
         elif arg == TARGET_CLEAN:
@@ -164,20 +148,20 @@ def Make(args):
         sys.exit(0)
     elif os.name == 'posix':
         if sys.platform == 'darwin':
-            print 'Mac developers should not run this script; see ' \
-                'https://sites.google.com/site/skiadocs/user-documentation/quick-start-guides/mac'
+            print ('Mac developers should not run this script; see '
+                   'https://skia.org/user/quick/macos')
             sys.exit(1)
         elif sys.platform == 'cygwin':
-            print 'Windows development on Cygwin is not currently supported; see ' \
-                'https://sites.google.com/site/skiadocs/user-documentation/quick-start-guides/windows'
+            print ('Windows development on Cygwin is not currently supported; '
+                   'see https://skia.org/user/quick/windows')
             sys.exit(1)
         else:
-            print 'Unix developers should not run this script; see ' \
-                'https://sites.google.com/site/skiadocs/user-documentation/quick-start-guides/linux'
+            print ('Unix developers should not run this script; see '
+                   'https://skia.org/user/quick/linux')
             sys.exit(1)
     else:
         print 'unknown platform (os.name=%s, sys.platform=%s); see %s' % (
-            os.name, sys.platform, 'https://sites.google.com/site/skiadocs/')
+            os.name, sys.platform, 'https://skia.org/user/quick')
         sys.exit(1)
     sys.exit(0)
 

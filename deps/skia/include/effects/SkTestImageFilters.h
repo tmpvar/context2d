@@ -1,42 +1,40 @@
+/*
+ * Copyright 2011 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #ifndef _SkTestImageFilters_h
 #define _SkTestImageFilters_h
 
 #include "SkImageFilter.h"
 #include "SkPoint.h"
 
-class SK_API SkComposeImageFilter : public SkImageFilter {
-public:
-    SkComposeImageFilter(SkImageFilter* outer, SkImageFilter* inner) : INHERITED(outer, inner) {}
-    virtual ~SkComposeImageFilter();
-
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkComposeImageFilter)
-
-protected:
-    SkComposeImageFilter(SkFlattenableReadBuffer& buffer);
-
-    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const SkMatrix&,
-                               SkBitmap* result, SkIPoint* loc) SK_OVERRIDE;
-    virtual bool onFilterBounds(const SkIRect&, const SkMatrix&, SkIRect*) SK_OVERRIDE;
-
-private:
-    typedef SkImageFilter INHERITED;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 // Fun mode that scales down (only) and then scales back up to look pixelated
 class SK_API SkDownSampleImageFilter : public SkImageFilter {
 public:
-    SkDownSampleImageFilter(SkScalar scale) : INHERITED(0), fScale(scale) {}
+    static SkDownSampleImageFilter* Create(SkScalar scale, SkImageFilter* input = NULL) {
+        if (!SkScalarIsFinite(scale)) {
+            return NULL;
+        }
+        // we don't support scale in this range
+        if (scale > SK_Scalar1 || scale <= 0) {
+            return NULL;
+        }
+        return SkNEW_ARGS(SkDownSampleImageFilter, (scale, input));
+    }
 
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkDownSampleImageFilter)
 
 protected:
-    SkDownSampleImageFilter(SkFlattenableReadBuffer& buffer);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
+    SkDownSampleImageFilter(SkScalar scale, SkImageFilter* input)
+      : INHERITED(1, &input), fScale(scale) {}
+    void flatten(SkWriteBuffer&) const override;
 
-    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const SkMatrix&,
-                               SkBitmap* result, SkIPoint* loc) SK_OVERRIDE;
+    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const Context&,
+                               SkBitmap* result, SkIPoint* loc) const override;
 
 private:
     SkScalar fScale;

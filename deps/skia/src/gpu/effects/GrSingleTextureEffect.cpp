@@ -7,32 +7,35 @@
 
 #include "effects/GrSingleTextureEffect.h"
 
-GrSingleTextureEffect::GrSingleTextureEffect(GrTexture* texture,
+GrSingleTextureEffect::GrSingleTextureEffect(GrProcessorDataManager* procDataManager,
+                                             GrTexture* texture,
                                              const SkMatrix& m,
-                                             CoordsType coordsType)
-    : fTextureAccess(texture)
-    , fMatrix(m)
-    , fCoordsType(coordsType) {
+                                             GrCoordSet coordSet)
+    : fCoordTransform(coordSet, m, texture, GrTextureParams::kNone_FilterMode)
+    , fTextureAccess(texture) {
+    this->addCoordTransform(&fCoordTransform);
     this->addTextureAccess(&fTextureAccess);
 }
 
-GrSingleTextureEffect::GrSingleTextureEffect(GrTexture* texture,
+GrSingleTextureEffect::GrSingleTextureEffect(GrProcessorDataManager* procDataManager,
+                                             GrTexture* texture,
                                              const SkMatrix& m,
-                                             bool bilerp,
-                                             CoordsType coordsType)
-    : fTextureAccess(texture, bilerp)
-    , fMatrix(m)
-    , fCoordsType(coordsType) {
+                                             GrTextureParams::FilterMode filterMode,
+                                             GrCoordSet coordSet)
+    : fCoordTransform(coordSet, m, texture, filterMode)
+    , fTextureAccess(texture, filterMode) {
+    this->addCoordTransform(&fCoordTransform);
     this->addTextureAccess(&fTextureAccess);
 }
 
-GrSingleTextureEffect::GrSingleTextureEffect(GrTexture* texture,
+GrSingleTextureEffect::GrSingleTextureEffect(GrProcessorDataManager* procDataManager,
+                                             GrTexture* texture,
                                              const SkMatrix& m,
                                              const GrTextureParams& params,
-                                             CoordsType coordsType)
-    : fTextureAccess(texture, params)
-    , fMatrix(m)
-    , fCoordsType(coordsType) {
+                                             GrCoordSet coordSet)
+    : fCoordTransform(coordSet, m, texture, params.filterMode())
+    , fTextureAccess(texture, params) {
+    this->addCoordTransform(&fCoordTransform);
     this->addTextureAccess(&fTextureAccess);
 }
 

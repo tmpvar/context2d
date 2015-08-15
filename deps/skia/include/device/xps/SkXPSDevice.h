@@ -9,14 +9,15 @@
 #define SkXPSDevice_DEFINED
 
 #include "SkTypes.h"
+
 #include <ObjBase.h>
 #include <XpsObjectModel.h>
 
 #include "SkAutoCoInitialize.h"
+#include "SkBitmapDevice.h"
 #include "SkBitSet.h"
 #include "SkCanvas.h"
 #include "SkColor.h"
-#include "SkDevice.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkPoint.h"
@@ -26,11 +27,13 @@
 #include "SkTScopedComPtr.h"
 #include "SkTypeface.h"
 
+//#define SK_XPS_USE_DETERMINISTIC_IDS
+
 /** \class SkXPSDevice
 
     The drawing context for the XPS backend.
 */
-class SkXPSDevice : public SkDevice {
+class SkXPSDevice : public SkBitmapDevice {
 public:
     SK_API SkXPSDevice();
     SK_API virtual ~SkXPSDevice();
@@ -67,62 +70,55 @@ public:
     virtual bool endSheet();
     virtual bool endPortfolio();
 
-    virtual uint32_t getDeviceCapabilities() SK_OVERRIDE;
-
 protected:
-    virtual void clear(SkColor color) SK_OVERRIDE;
-
-    virtual void drawPaint(const SkDraw&, const SkPaint& paint) SK_OVERRIDE;
+    void drawPaint(const SkDraw&, const SkPaint& paint) override;
 
     virtual void drawPoints(
         const SkDraw&,
         SkCanvas::PointMode mode,
         size_t count, const SkPoint[],
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
     virtual void drawRect(
         const SkDraw&,
         const SkRect& r,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
+
+    virtual void drawRRect(
+        const SkDraw&,
+        const SkRRect&,
+        const SkPaint& paint) override;
 
     virtual void drawPath(
         const SkDraw&,
         const SkPath& platonicPath,
         const SkPaint& paint,
         const SkMatrix* prePathMatrix,
-        bool pathIsMutable) SK_OVERRIDE;
+        bool pathIsMutable) override;
 
     virtual void drawBitmap(
         const SkDraw&,
         const SkBitmap& bitmap,
-        const SkIRect* srcRectOrNull,
         const SkMatrix& matrix,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
     virtual void drawSprite(
         const SkDraw&,
         const SkBitmap& bitmap,
         int x, int y,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
     virtual void drawText(
         const SkDraw&,
         const void* text, size_t len,
         SkScalar x, SkScalar y,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
     virtual void drawPosText(
         const SkDraw&,
         const void* text, size_t len,
-        const SkScalar pos[], SkScalar constY, int scalarsPerPos,
-        const SkPaint& paint) SK_OVERRIDE;
-
-    virtual void drawTextOnPath(
-        const SkDraw&,
-        const void* text, size_t len,
-        const SkPath& path,
-        const SkMatrix* matrix,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkScalar pos[], int scalarsPerPos,
+        const SkPoint& offset, const SkPaint& paint) override;
 
     virtual void drawVertices(
         const SkDraw&,
@@ -131,20 +127,13 @@ protected:
         const SkPoint texs[], const SkColor colors[],
         SkXfermode* xmode,
         const uint16_t indices[], int indexCount,
-        const SkPaint& paint) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
     virtual void drawDevice(
         const SkDraw&,
-        SkDevice* device,
+        SkBaseDevice* device,
         int x, int y,
-        const SkPaint& paint) SK_OVERRIDE;
-
-    virtual bool onReadPixels(const SkBitmap& bitmap,
-                              int x,
-                              int y,
-                              SkCanvas::Config8888) SK_OVERRIDE;
-
-    virtual bool allowImageFilter(SkImageFilter*) SK_OVERRIDE;
+        const SkPaint& paint) override;
 
 private:
     class TypefaceUse : ::SkNoncopyable {
@@ -174,6 +163,18 @@ private:
     SkVector fCurrentPixelsPerMeter;
 
     SkTArray<TypefaceUse, true> fTypefaces;
+
+    /** Creates a GUID based id and places it into buffer.
+        buffer should have space for at least GUID_ID_LEN wide characters.
+        The string will always be wchar null terminated.
+        XXXXXXXXsXXXXsXXXXsXXXXsXXXXXXXXXXXX0
+        The string may begin with a digit,
+        and so may not be suitable as a bare resource key.
+     */
+    HRESULT createId(wchar_t* buffer, size_t bufferSize, wchar_t sep = '-');
+#ifdef SK_XPS_USE_DETERMINISTIC_IDS
+    decltype(GUID::Data1) fNextId = 0;
+#endif
 
     HRESULT initXpsDocumentWriter(IXpsOMImageResource* image);
 
@@ -308,18 +309,13 @@ private:
         const SkVector& ppuScale,
         IXpsOMPath* shadedPath);
 
-    // override from SkDevice
-    virtual SkDevice* onCreateCompatibleDevice(
-        SkBitmap::Config config,
-        int width, int height,
-        bool isOpaque,
-        Usage usage) SK_OVERRIDE;
+    SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
     // Disable the default copy and assign implementation.
     SkXPSDevice(const SkXPSDevice&);
     void operator=(const SkXPSDevice&);
 
-    typedef SkDevice INHERITED;
+    typedef SkBitmapDevice INHERITED;
 };
 
 #endif

@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 {
   'targets': [
     {
@@ -5,14 +9,19 @@
       'product_name': 'skia_sfnt',
       'type': 'static_library',
       'standalone_static_library': 1,
+      'dependencies': [
+        'core.gyp:*',
+      ],
       'include_dirs': [
-        '../include/config',
-        '../include/core',
         '../src/sfnt',
       ],
       'sources': [
         '../src/sfnt/SkIBMFamilyClass.h',
         '../src/sfnt/SkOTTableTypes.h',
+        '../src/sfnt/SkOTTable_EBDT.h',
+        '../src/sfnt/SkOTTable_EBLC.h',
+        '../src/sfnt/SkOTTable_EBSC.h',
+        '../src/sfnt/SkOTTable_gasp.h',
         '../src/sfnt/SkOTTable_glyf.h',
         '../src/sfnt/SkOTTable_head.h',
         '../src/sfnt/SkOTTable_hhea.h',
@@ -47,9 +56,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

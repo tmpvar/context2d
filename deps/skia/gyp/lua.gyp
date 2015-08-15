@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 #
 
-
 {
   'targets': [
     {
@@ -58,14 +57,17 @@
         ],
       },
       'defines': [
-        "getlocaledecpoint()='.'"
+        "getlocaledecpoint()='.'",
+      ],
+      'conditions': [
+        ['skia_os != "win"',
+         {
+            'defines': [
+              'LUA_USE_POSIX',  # Fix warning re dangerous tmpnam.
+            ],
+          }
+        ],
       ],
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

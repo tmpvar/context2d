@@ -5,10 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkBlurImageFilter.h"
 #include "SkCanvas.h"
-#include "SkDevice.h"
 #include "SkPaint.h"
 #include "SkRandom.h"
 #include "SkShader.h"
@@ -18,43 +17,55 @@
 #define FILTER_HEIGHT_SMALL 32
 #define FILTER_WIDTH_LARGE  256
 #define FILTER_HEIGHT_LARGE 256
-#define BLUR_SIGMA_SMALL    SkFloatToScalar(1.0f)
-#define BLUR_SIGMA_LARGE    SkFloatToScalar(10.0f)
+#define BLUR_SIGMA_MINI     0.5f
+#define BLUR_SIGMA_SMALL    1.0f
+#define BLUR_SIGMA_LARGE    10.0f
+#define BLUR_SIGMA_HUGE     80.0f
 
-class BlurImageFilterBench : public SkBenchmark {
+class BlurImageFilterBench : public Benchmark {
 public:
-    BlurImageFilterBench(void* param, SkScalar sigmaX, SkScalar sigmaY,  bool small) :
-        INHERITED(param), fIsSmall(small), fInitialized(false), fSigmaX(sigmaX), fSigmaY(sigmaY) {
-        fName.printf("blur_image_filter_%s_%.2f_%.2f", fIsSmall ? "small" : "large",
-            SkScalarToFloat(sigmaX), SkScalarToFloat(sigmaY));
+    BlurImageFilterBench(SkScalar sigmaX, SkScalar sigmaY,  bool small, bool cropped) :
+        fIsSmall(small), fIsCropped(cropped), fInitialized(false), fSigmaX(sigmaX), fSigmaY(sigmaY) {
+        fName.printf("blur_image_filter_%s%s_%.2f_%.2f", fIsSmall ? "small" : "large",
+            fIsCropped ? "_cropped" : "", SkScalarToFloat(sigmaX), SkScalarToFloat(sigmaY));
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return fName.c_str();
     }
 
-    virtual void onPreDraw() SK_OVERRIDE {
+    void onPreDraw() override {
         if (!fInitialized) {
             make_checkerboard();
             fInitialized = true;
         }
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas* canvas) override {
         SkPaint paint;
-        paint.setImageFilter(new SkBlurImageFilter(fSigmaX, fSigmaY))->unref();
-        canvas->drawBitmap(fCheckerboard, 0, 0, &paint);
+        static const SkScalar kX = 0;
+        static const SkScalar kY = 0;
+        const SkRect bmpRect = SkRect::MakeXYWH(kX, kY,
+                                                SkIntToScalar(fCheckerboard.width()),
+                                                SkIntToScalar(fCheckerboard.height()));
+        const SkImageFilter::CropRect cropRect =
+                                        SkImageFilter::CropRect(bmpRect.makeInset(10.f, 10.f));
+        const SkImageFilter::CropRect* crop = fIsCropped ? &cropRect : NULL;
+
+        paint.setImageFilter(SkBlurImageFilter::Create(fSigmaX, fSigmaY, NULL, crop))->unref();
+
+        for (int i = 0; i < loops; i++) {
+            canvas->drawBitmap(fCheckerboard, kX, kY, &paint);
+        }
     }
 
 private:
     void make_checkerboard() {
         const int w = fIsSmall ? FILTER_WIDTH_SMALL : FILTER_WIDTH_LARGE;
         const int h = fIsSmall ? FILTER_HEIGHT_LARGE : FILTER_HEIGHT_LARGE;
-        fCheckerboard.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-        fCheckerboard.allocPixels();
-        SkDevice device(fCheckerboard);
-        SkCanvas canvas(&device);
+        fCheckerboard.allocN32Pixels(w, h);
+        SkCanvas canvas(fCheckerboard);
         canvas.clear(0x00000000);
         SkPaint darkPaint;
         darkPaint.setColor(0xFF804020);
@@ -75,13 +86,35 @@ private:
 
     SkString fName;
     bool fIsSmall;
+    bool fIsCropped;
     bool fInitialized;
     SkBitmap fCheckerboard;
     SkScalar fSigmaX, fSigmaY;
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
-DEF_BENCH(return new BlurImageFilterBench(p, BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, true);)
-DEF_BENCH(return new BlurImageFilterBench(p, BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, false);)
-DEF_BENCH(return new BlurImageFilterBench(p, BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, true);)
-DEF_BENCH(return new BlurImageFilterBench(p, BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, 0, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, 0, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(0, BLUR_SIGMA_LARGE, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(0, BLUR_SIGMA_SMALL, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_MINI, BLUR_SIGMA_MINI, true, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_MINI, BLUR_SIGMA_MINI, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, true, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, true, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, false, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_HUGE, BLUR_SIGMA_HUGE, true, false);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_HUGE, BLUR_SIGMA_HUGE, false, false);)
+
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, 0, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, 0, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(0, BLUR_SIGMA_LARGE, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(0, BLUR_SIGMA_SMALL, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_MINI, BLUR_SIGMA_MINI, true, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_MINI, BLUR_SIGMA_MINI, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, true, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_SMALL, BLUR_SIGMA_SMALL, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, true, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_LARGE, BLUR_SIGMA_LARGE, false, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_HUGE, BLUR_SIGMA_HUGE, true, true);)
+DEF_BENCH(return new BlurImageFilterBench(BLUR_SIGMA_HUGE, BLUR_SIGMA_HUGE, false, true);)

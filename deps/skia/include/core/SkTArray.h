@@ -17,6 +17,10 @@ template <typename T, bool MEM_COPY = false> class SkTArray;
 namespace SkTArrayExt {
 
 template<typename T>
+inline void copy(SkTArray<T, true>* self, int dst, int src) {
+    memcpy(&self->fItemArray[dst], &self->fItemArray[src], sizeof(T));
+}
+template<typename T>
 inline void copy(SkTArray<T, true>* self, const T* array) {
     memcpy(self->fMemArray, array, self->fCount * sizeof(T));
 }
@@ -25,6 +29,10 @@ inline void copyAndDelete(SkTArray<T, true>* self, char* newMemArray) {
     memcpy(newMemArray, self->fMemArray, self->fCount * sizeof(T));
 }
 
+template<typename T>
+inline void copy(SkTArray<T, false>* self, int dst, int src) {
+    SkNEW_PLACEMENT_ARGS(&self->fItemArray[dst], T, (self->fItemArray[src]));
+}
 template<typename T>
 inline void copy(SkTArray<T, false>* self, const T* array) {
     for (int i = 0; i < self->fCount; ++i) {
@@ -45,7 +53,7 @@ template <typename T, bool MEM_COPY> void* operator new(size_t, SkTArray<T, MEM_
 
 /** When MEM_COPY is true T will be bit copied when moved.
     When MEM_COPY is false, T will be copy constructed / destructed.
-    In all cases T's constructor will be called on allocation,
+    In all cases T will be default-initialized on allocation,
     and its destructor will be called from this object's destructor.
 */
 template <typename T, bool MEM_COPY> class SkTArray {
@@ -99,7 +107,7 @@ public:
         return *this;
     }
 
-    virtual ~SkTArray() {
+    ~SkTArray() {
         for (int i = 0; i < fCount; ++i) {
             fItemArray[i].~T();
         }
@@ -140,8 +148,17 @@ public:
         int delta = count - fCount;
         this->checkRealloc(delta);
         fCount = count;
-        for (int i = 0; i < count; ++i) {
-            SkTArrayExt::copy(this, array);
+        SkTArrayExt::copy(this, array);
+    }
+
+    void removeShuffle(int n) {
+        SkASSERT(n < fCount);
+        int newCount = fCount - 1;
+        fCount = newCount;
+        fItemArray[n].~T();
+        if (n != newCount) {
+            SkTArrayExt::copy(this, n, newCount);
+            fItemArray[newCount].~T();
         }
     }
 
@@ -156,7 +173,7 @@ public:
     bool empty() const { return !fCount; }
 
     /**
-     * Adds 1 new default-constructed T value and returns in by reference. Note
+     * Adds 1 new default-initialized T value and returns it by reference. Note
      * the reference only remains valid until the next call that adds or removes
      * elements.
      */
@@ -176,9 +193,9 @@ public:
     }
 
     /**
-     * Allocates n more default T values, and returns the address of the start
-     * of that new range. Note: this address is only valid until the next API
-     * call made on the array that might add or remove elements.
+     * Allocates n more default-initialized T values, and returns the address of
+     * the start of that new range. Note: this address is only valid until the
+     * next API call made on the array that might add or remove elements.
      */
     T* push_back_n(int n) {
         SkASSERT(n >= 0);
@@ -253,6 +270,26 @@ public:
         }
     }
 
+    /** Swaps the contents of this array with that array. Does a pointer swap if possible,
+        otherwise copies the T values. */
+    void swap(SkTArray* that) {
+        if (this == that) {
+            return;
+        }
+        if (this->fPreAllocMemArray != this->fItemArray &&
+            that->fPreAllocMemArray != that->fItemArray) {
+            // If neither is using a preallocated array then just swap.
+            SkTSwap(fItemArray, that->fItemArray);
+            SkTSwap(fCount, that->fCount);
+            SkTSwap(fAllocCount, that->fAllocCount);
+        } else {
+            // This could be more optimal...
+            SkTArray copy(*that);
+            *that = *this;
+            *this = copy;
+        }
+    }
+
     T* begin() {
         return fItemArray;
     }
@@ -263,7 +300,7 @@ public:
         return fItemArray ? fItemArray + fCount : NULL;
     }
     const T* end() const {
-        return fItemArray ? fItemArray + fCount : NULL;;
+        return fItemArray ? fItemArray + fCount : NULL;
     }
 
    /**
@@ -358,7 +395,7 @@ protected:
     }
 
     void init(const T* array, int count,
-               void* preAllocStorage, int preAllocOrReserveCount) {
+              void* preAllocStorage, int preAllocOrReserveCount) {
         SkASSERT(count >= 0);
         SkASSERT(preAllocOrReserveCount >= 0);
         fCount              = count;
@@ -367,7 +404,7 @@ protected:
                                     gMIN_ALLOC_COUNT;
         fPreAllocMemArray   = preAllocStorage;
         if (fReserveCount >= fCount &&
-            NULL != preAllocStorage) {
+            preAllocStorage) {
             fAllocCount = fReserveCount;
             fMemArray = preAllocStorage;
         } else {
@@ -410,7 +447,7 @@ private:
             fAllocCount = newAllocCount;
             char* newMemArray;
 
-            if (fAllocCount == fReserveCount && NULL != fPreAllocMemArray) {
+            if (fAllocCount == fReserveCount && fPreAllocMemArray) {
                 newMemArray = (char*) fPreAllocMemArray;
             } else {
                 newMemArray = (char*) sk_malloc_throw(fAllocCount*sizeof(T));
@@ -427,16 +464,18 @@ private:
 
     friend void* operator new<T>(size_t, SkTArray*, int);
 
+    template<typename X> friend void SkTArrayExt::copy(SkTArray<X, true>* that, int dst, int src);
     template<typename X> friend void SkTArrayExt::copy(SkTArray<X, true>* that, const X*);
     template<typename X> friend void SkTArrayExt::copyAndDelete(SkTArray<X, true>* that, char*);
 
+    template<typename X> friend void SkTArrayExt::copy(SkTArray<X, false>* that, int dst, int src);
     template<typename X> friend void SkTArrayExt::copy(SkTArray<X, false>* that, const X*);
     template<typename X> friend void SkTArrayExt::copyAndDelete(SkTArray<X, false>* that, char*);
 
-    int fReserveCount;
-    int fCount;
-    int fAllocCount;
-    void*    fPreAllocMemArray;
+    int     fReserveCount;
+    int     fCount;
+    int     fAllocCount;
+    void*   fPreAllocMemArray;
     union {
         T*       fItemArray;
         void*    fMemArray;
@@ -445,7 +484,7 @@ private:
 
 // Use the below macro (SkNEW_APPEND_TO_TARRAY) rather than calling this directly
 template <typename T, bool MEM_COPY>
-void* operator new(size_t, SkTArray<T, MEM_COPY>* array, int atIndex) {
+void* operator new(size_t, SkTArray<T, MEM_COPY>* array, int SkDEBUGCODE(atIndex)) {
     // Currently, we only support adding to the end of the array. When the array class itself
     // supports random insertion then this should be updated.
     // SkASSERT(atIndex >= 0 && atIndex <= array->count());
@@ -457,7 +496,7 @@ void* operator new(size_t, SkTArray<T, MEM_COPY>* array, int atIndex) {
 // to match the op new silences warnings about missing op delete when a constructor throws an
 // exception.
 template <typename T, bool MEM_COPY>
-void operator delete(void*, SkTArray<T, MEM_COPY>* array, int atIndex) {
+void operator delete(void*, SkTArray<T, MEM_COPY>* /*array*/, int /*atIndex*/) {
     SK_CRASH();
 }
 
@@ -484,6 +523,10 @@ public:
 
     explicit SkSTArray(const INHERITED& array)
         : INHERITED(array, &fStorage) {
+    }
+
+    explicit SkSTArray(int reserveCount)
+        : INHERITED(reserveCount) {
     }
 
     SkSTArray(const T* array, int count)

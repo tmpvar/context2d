@@ -6,123 +6,72 @@
  */
 
 #include "GrSimpleTextureEffect.h"
-#include "gl/GrGLEffect.h"
-#include "gl/GrGLEffectMatrix.h"
-#include "gl/GrGLSL.h"
-#include "gl/GrGLTexture.h"
-#include "GrTBackendEffectFactory.h"
+#include "GrInvariantOutput.h"
 #include "GrTexture.h"
+#include "gl/GrGLCaps.h"
+#include "gl/GrGLFragmentProcessor.h"
+#include "gl/GrGLTexture.h"
+#include "gl/builders/GrGLProgramBuilder.h"
 
-class GrGLSimpleTextureEffect : public GrGLEffect {
+class GrGLSimpleTextureEffect : public GrGLFragmentProcessor {
 public:
-    GrGLSimpleTextureEffect(const GrBackendEffectFactory& factory, const GrDrawEffect& drawEffect)
-    : INHERITED (factory) {
-        GrEffect::CoordsType coordsType =
-            drawEffect.castEffect<GrSimpleTextureEffect>().coordsType();
-        if (GrEffect::kCustom_CoordsType != coordsType) {
-            SkNEW_IN_TLAZY(&fEffectMatrix, GrGLEffectMatrix, (coordsType));
-        }
-    }
+    GrGLSimpleTextureEffect(const GrProcessor&) {}
 
-    virtual void emitCode(GrGLShaderBuilder* builder,
-                          const GrDrawEffect& drawEffect,
-                          EffectKey key,
-                          const char* outputColor,
-                          const char* inputColor,
-                          const TextureSamplerArray& samplers) SK_OVERRIDE {
-        const GrSimpleTextureEffect& ste = drawEffect.castEffect<GrSimpleTextureEffect>();
-        const char* fsCoordName;
-        GrSLType fsCoordSLType;
-        if (GrEffect::kCustom_CoordsType == ste.coordsType()) {
-            GrAssert(ste.getMatrix().isIdentity());
-            GrAssert(1 == ste.numVertexAttribs());
-            fsCoordSLType = kVec2f_GrSLType;
-            const char* vsVaryingName;
-            builder->addVarying(kVec2f_GrSLType, "textureCoords", &vsVaryingName, &fsCoordName);
-            const char* attrName =
-                builder->getEffectAttributeName(drawEffect.getVertexAttribIndices()[0])->c_str();
-            builder->vsCodeAppendf("\t%s = %s;\n", vsVaryingName, attrName);
-        } else {
-            fsCoordSLType = fEffectMatrix.get()->emitCode(builder, key, &fsCoordName);
-        }
-        builder->fsCodeAppendf("\t%s = ", outputColor);
-        builder->appendTextureLookupAndModulate(GrGLShaderBuilder::kFragment_ShaderType,
-                                                inputColor,
-                                                samplers[0],
-                                                fsCoordName,
-                                                fsCoordSLType);
-        builder->fsCodeAppend(";\n");
-    }
-
-    static inline EffectKey GenKey(const GrDrawEffect& drawEffect, const GrGLCaps&) {
-        const GrSimpleTextureEffect& ste = drawEffect.castEffect<GrSimpleTextureEffect>();
-        if (GrEffect::kCustom_CoordsType == ste.coordsType()) {
-            return 1 << GrGLEffectMatrix::kKeyBits;
-        } else {
-            return GrGLEffectMatrix::GenKey(ste.getMatrix(),
-                                            drawEffect,
-                                            ste.coordsType(),
-                                            ste.texture(0));
-        }
-    }
-
-    virtual void setData(const GrGLUniformManager& uman,
-                         const GrDrawEffect& drawEffect) SK_OVERRIDE {
-        const GrSimpleTextureEffect& ste = drawEffect.castEffect<GrSimpleTextureEffect>();
-        if (GrEffect::kCustom_CoordsType == ste.coordsType()) {
-            GrAssert(ste.getMatrix().isIdentity());
-        } else {
-            fEffectMatrix.get()->setData(uman, ste.getMatrix(), drawEffect, ste.texture(0));
-        }
+    virtual void emitCode(EmitArgs& args) override {
+        GrGLFragmentBuilder* fsBuilder = args.fBuilder->getFragmentShaderBuilder();
+        fsBuilder->codeAppendf("\t%s = ", args.fOutputColor);
+        fsBuilder->appendTextureLookupAndModulate(args.fInputColor,
+                                                  args.fSamplers[0],
+                                                  args.fCoords[0].c_str(),
+                                                  args.fCoords[0].getType());
+        fsBuilder->codeAppend(";\n");
     }
 
 private:
-    SkTLazy<GrGLEffectMatrix> fEffectMatrix;
-    typedef GrGLEffect INHERITED;
+    typedef GrGLFragmentProcessor INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void GrSimpleTextureEffect::getConstantColorComponents(GrColor* color, uint32_t* validFlags) const {
-    this->updateConstantColorComponentsForModulation(color, validFlags);
+void GrSimpleTextureEffect::onComputeInvariantOutput(GrInvariantOutput* inout) const {
+    this->updateInvariantOutputForModulation(inout);
 }
 
-const GrBackendEffectFactory& GrSimpleTextureEffect::getFactory() const {
-    return GrTBackendEffectFactory<GrSimpleTextureEffect>::getInstance();
+void GrSimpleTextureEffect::onGetGLProcessorKey(const GrGLSLCaps& caps,
+                                              GrProcessorKeyBuilder* b) const {
+    GrGLSimpleTextureEffect::GenKey(*this, caps, b);
+}
+
+GrGLFragmentProcessor* GrSimpleTextureEffect::createGLInstance() const  {
+    return SkNEW_ARGS(GrGLSimpleTextureEffect, (*this));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GR_DEFINE_EFFECT_TEST(GrSimpleTextureEffect);
+GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrSimpleTextureEffect);
 
-GrEffectRef* GrSimpleTextureEffect::TestCreate(SkMWCRandom* random,
-                                               GrContext*,
-                                               const GrDrawTargetCaps&,
-                                               GrTexture* textures[]) {
-    int texIdx = random->nextBool() ? GrEffectUnitTest::kSkiaPMTextureIdx :
-                                      GrEffectUnitTest::kAlphaTextureIdx;
+GrFragmentProcessor* GrSimpleTextureEffect::TestCreate(GrProcessorTestData* d) {
+    int texIdx = d->fRandom->nextBool() ? GrProcessorUnitTest::kSkiaPMTextureIdx :
+                                          GrProcessorUnitTest::kAlphaTextureIdx;
     static const SkShader::TileMode kTileModes[] = {
         SkShader::kClamp_TileMode,
         SkShader::kRepeat_TileMode,
         SkShader::kMirror_TileMode,
     };
     SkShader::TileMode tileModes[] = {
-        kTileModes[random->nextULessThan(SK_ARRAY_COUNT(kTileModes))],
-        kTileModes[random->nextULessThan(SK_ARRAY_COUNT(kTileModes))],
+        kTileModes[d->fRandom->nextULessThan(SK_ARRAY_COUNT(kTileModes))],
+        kTileModes[d->fRandom->nextULessThan(SK_ARRAY_COUNT(kTileModes))],
     };
-    GrTextureParams params(tileModes, random->nextBool());
+    GrTextureParams params(tileModes, d->fRandom->nextBool() ? GrTextureParams::kBilerp_FilterMode :
+                                                               GrTextureParams::kNone_FilterMode);
 
-    static const CoordsType kCoordsTypes[] = {
-        kLocal_CoordsType,
-        kPosition_CoordsType,
-        kCustom_CoordsType
+    static const GrCoordSet kCoordSets[] = {
+        kLocal_GrCoordSet,
+        kDevice_GrCoordSet
     };
-    CoordsType coordsType = kCoordsTypes[random->nextULessThan(GR_ARRAY_COUNT(kCoordsTypes))];
+    GrCoordSet coordSet = kCoordSets[d->fRandom->nextULessThan(SK_ARRAY_COUNT(kCoordSets))];
 
-    if (kCustom_CoordsType == coordsType) {
-        return GrSimpleTextureEffect::CreateWithCustomCoords(textures[texIdx], params);
-    } else {
-        const SkMatrix& matrix = GrEffectUnitTest::TestMatrix(random);
-        return GrSimpleTextureEffect::Create(textures[texIdx], matrix);
-    }
+    const SkMatrix& matrix = GrTest::TestMatrix(d->fRandom);
+    return GrSimpleTextureEffect::Create(d->fProcDataManager, d->fTextures[texIdx], matrix,
+                                         coordSet);
 }

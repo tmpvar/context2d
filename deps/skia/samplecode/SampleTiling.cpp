@@ -10,6 +10,7 @@
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "SkPath.h"
+#include "SkPictureRecorder.h"
 #include "SkRegion.h"
 #include "SkShader.h"
 #include "SkUtils.h"
@@ -20,12 +21,11 @@
 
 // effects
 #include "SkGradientShader.h"
-#include "SkUnitMappers.h"
+#include "SkBlurMask.h"
 #include "SkBlurDrawLooper.h"
 
-static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
-    bm->setConfig(config, w, h);
-    bm->allocPixels();
+static void makebm(SkBitmap* bm, SkColorType ct, int w, int h) {
+    bm->allocPixels(SkImageInfo::Make(w, h, ct, kPremul_SkAlphaType));
     bm->eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas    canvas(*bm);
@@ -34,16 +34,9 @@ static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
     SkScalar    pos[] = { 0, SK_Scalar1/2, SK_Scalar1 };
     SkPaint     paint;
 
-    SkUnitMapper*   um = NULL;
-
-    um = new SkCosineMapper;
-//    um = new SkDiscreteMapper(12);
-
-    SkAutoUnref au(um);
-
     paint.setDither(true);
     paint.setShader(SkGradientShader::CreateLinear(pts, colors, pos,
-                SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode, um))->unref();
+                SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode))->unref();
     canvas.drawPaint(paint);
 }
 
@@ -51,34 +44,33 @@ static void setup(SkPaint* paint, const SkBitmap& bm, bool filter,
                   SkShader::TileMode tmx, SkShader::TileMode tmy) {
     SkShader* shader = SkShader::CreateBitmapShader(bm, tmx, tmy);
     paint->setShader(shader)->unref();
-    paint->setFilterBitmap(filter);
+    paint->setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
 }
 
-static const SkBitmap::Config gConfigs[] = {
-    SkBitmap::kARGB_8888_Config,
-    SkBitmap::kRGB_565_Config,
+static const SkColorType gColorTypes[] = {
+    kN32_SkColorType,
+    kRGB_565_SkColorType,
 };
 static const int gWidth = 32;
 static const int gHeight = 32;
 
 class TilingView : public SampleView {
-    SkPicture*          fTextPicture;
-    SkBlurDrawLooper    fLooper;
+    SkAutoTUnref<SkPicture>        fTextPicture;
+    SkAutoTUnref<SkBlurDrawLooper> fLooper;
 public:
     TilingView()
-            : fLooper(SkIntToScalar(1), SkIntToScalar(2), SkIntToScalar(2),
-                      0x88000000) {
-        fTextPicture = new SkPicture();
-        for (size_t i = 0; i < SK_ARRAY_COUNT(gConfigs); i++) {
-            makebm(&fTexture[i], gConfigs[i], gWidth, gHeight);
+            : fLooper(SkBlurDrawLooper::Create(0x88000000,
+                                               SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(1)),
+                                               SkIntToScalar(2), SkIntToScalar(2))) {
+        for (size_t i = 0; i < SK_ARRAY_COUNT(gColorTypes); i++) {
+            makebm(&fTexture[i], gColorTypes[i], gWidth, gHeight);
         }
     }
 
-    ~TilingView() {
-        fTextPicture->unref();
+    virtual ~TilingView() {
     }
 
-    SkBitmap    fTexture[SK_ARRAY_COUNT(gConfigs)];
+    SkBitmap    fTexture[SK_ARRAY_COUNT(gColorTypes)];
 
 protected:
     // overrides from SkEventSink
@@ -104,9 +96,10 @@ protected:
         SkScalar y = SkIntToScalar(24);
         SkScalar x = SkIntToScalar(10);
 
+        SkPictureRecorder recorder;
         SkCanvas* textCanvas = NULL;
-        if (fTextPicture->width() == 0) {
-            textCanvas = fTextPicture->beginRecording(1000, 1000);
+        if (NULL == fTextPicture) {
+            textCanvas = recorder.beginRecording(1000, 1000, NULL, 0);
         }
 
         if (textCanvas) {
@@ -116,7 +109,7 @@ protected:
                     SkString str;
                     p.setAntiAlias(true);
                     p.setDither(true);
-                    p.setLooper(&fLooper);
+                    p.setLooper(fLooper);
                     str.printf("[%s,%s]", gModeNames[kx], gModeNames[ky]);
 
                     p.setTextAlign(SkPaint::kCenter_Align);
@@ -129,7 +122,7 @@ protected:
 
         y += SkIntToScalar(16);
 
-        for (size_t i = 0; i < SK_ARRAY_COUNT(gConfigs); i++) {
+        for (size_t i = 0; i < SK_ARRAY_COUNT(gColorTypes); i++) {
             for (size_t j = 0; j < SK_ARRAY_COUNT(gFilters); j++) {
                 x = SkIntToScalar(10);
                 for (size_t kx = 0; kx < SK_ARRAY_COUNT(gModes); kx++) {
@@ -150,7 +143,7 @@ protected:
                     SkPaint p;
                     SkString str;
                     p.setAntiAlias(true);
-                    p.setLooper(&fLooper);
+                    p.setLooper(fLooper);
                     str.printf("%s, %s", gConfigNames[i], gFilterNames[j]);
                     textCanvas->drawText(str.c_str(), str.size(), x, y + r.height() * 2 / 3, p);
                 }
@@ -159,7 +152,13 @@ protected:
             }
         }
 
-        canvas->drawPicture(*fTextPicture);
+        if (textCanvas) {
+            SkASSERT(NULL == fTextPicture);
+            fTextPicture.reset(recorder.endRecording());
+        }
+
+        SkASSERT(fTextPicture);
+        canvas->drawPicture(fTextPicture);
     }
 
 private:

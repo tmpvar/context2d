@@ -8,16 +8,15 @@
 #include "PictureRenderingFlags.h"
 
 #include "CopyTilesRenderer.h"
+#if SK_SUPPORT_GPU
+#include "GrContextOptions.h"
+#endif
 #include "PictureRenderer.h"
 #include "picture_utils.h"
-
-#include "SkBitmapFactory.h"
 #include "SkCommandLineFlags.h"
 #include "SkData.h"
 #include "SkImage.h"
 #include "SkImageDecoder.h"
-#include "SkLruImageCache.h"
-#include "SkPurgeableImageCache.h"
 #include "SkString.h"
 
 // Alphabetized list of flags used by this file or bench_ and render_pictures.
@@ -27,16 +26,31 @@ DEFINE_string(bbh, "none", "bbhType [width height]: Set the bounding box hierarc
               "'grid', width and height must be specified. 'grid' can "
               "only be used with modes tile, record, and "
               "playbackCreation.");
+
+
+#if SK_SUPPORT_GPU
+static const char kGpuAPINameGL[] = "gl";
+static const char kGpuAPINameGLES[] = "gles";
+#define GPU_CONFIG_STRING "|gpu|msaa4|msaa16|nvprmsaa4|nvprmsaa16|gpudft"
+#else
+#define GPU_CONFIG_STRING ""
+#endif
+#if SK_ANGLE
+#define ANGLE_CONFIG_STRING "|angle"
+#else
+#define ANGLE_CONFIG_STRING ""
+#endif
+#if SK_MESA
+#define MESA_CONFIG_STRING "|mesa"
+#else
+#define MESA_CONFIG_STRING ""
+#endif
+
 // Although this config does not support all the same options as gm, the names should be kept
 // consistent.
-#if SK_ANGLE
-// ANGLE assumes GPU
-DEFINE_string(config, "8888", "[8888|gpu|msaa4|msaa16|angle]: Use the corresponding config.");
-#elif SK_SUPPORT_GPU
-DEFINE_string(config, "8888", "[8888|gpu|msaa4|msaa16]: Use the corresponding config.");
-#else
-DEFINE_string(config, "8888", "[8888]: Use the corresponding config.");
-#endif
+DEFINE_string(config, "8888", "["
+              "8888" GPU_CONFIG_STRING ANGLE_CONFIG_STRING MESA_CONFIG_STRING
+              "]: Use the corresponding config.");
 
 DEFINE_bool(deferImageDecoding, false, "Defer decoding until drawing images. "
             "Has no effect if the provided skp does not have its images encoded.");
@@ -57,25 +71,23 @@ DEFINE_string(mode, "simple", "Run in the corresponding mode:\n"
               "\tSkPicturePlayback.\n"
               "rerecord: (Only in render_pictures) Record the picture as a new skp,\n"
               "\twith the bitmaps PNG encoded.\n");
-DEFINE_int32(multi, 1, "Set the number of threads for multi threaded drawing. "
-             "If > 1, requires tiled rendering.");
 DEFINE_bool(pipe, false, "Use SkGPipe rendering. Currently incompatible with \"mode\".");
 DEFINE_string2(readPath, r, "", "skp files or directories of skp files to process.");
 DEFINE_double(scale, 1, "Set the scale factor.");
 DEFINE_string(tiles, "", "Used with --mode copyTile to specify number of tiles per larger tile "
               "in the x and y directions.");
-DEFINE_bool(useVolatileCache, false, "Use a volatile cache for deferred image decoding pixels. "
-            "Only meaningful if --deferImageDecoding is set to true and the platform has an "
-            "implementation.");
 DEFINE_string(viewport, "", "width height: Set the viewport.");
+#if SK_SUPPORT_GPU
+DEFINE_string(gpuAPI, "", "Force use of specific gpu API.  Using \"gl\" "
+              "forces OpenGL API. Using \"gles\" forces OpenGL ES API. "
+              "Defaults to empty string, which selects the API native to the "
+              "system.");
+DEFINE_bool(gpuCompressAlphaMasks, false, "Compress masks generated from falling back to "
+                                          "software path rendering.");
+#endif
 
 sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
     error.reset();
-
-    if (FLAGS_multi <= 0) {
-        error.printf("--multi must be > 0, was %i", FLAGS_multi);
-        return NULL;
-    }
 
     bool useTiles = false;
     const char* widthString = NULL;
@@ -83,17 +95,20 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
     bool isPowerOf2Mode = false;
     bool isCopyMode = false;
     const char* mode = NULL;
-    bool gridSupported = false;
+
+#if SK_SUPPORT_GPU
+    GrContextOptions grContextOpts;
+    grContextOpts.fDrawPathToCompressedTexture = FLAGS_gpuCompressAlphaMasks;
+  #define RENDERER_ARGS (grContextOpts)
+#else
+  #define RENDERER_ARGS ()
+#endif
 
     SkAutoTUnref<sk_tools::PictureRenderer> renderer;
     if (FLAGS_mode.count() >= 1) {
         mode = FLAGS_mode[0];
         if (0 == strcmp(mode, "record")) {
-            renderer.reset(SkNEW(sk_tools::RecordPictureRenderer));
-            gridSupported = true;
-        // undocumented
-        } else if (0 == strcmp(mode, "clone")) {
-            renderer.reset(sk_tools::CreatePictureCloneRenderer());
+            renderer.reset(SkNEW_ARGS(sk_tools::RecordPictureRenderer, RENDERER_ARGS));
         } else if (0 == strcmp(mode, "tile") || 0 == strcmp(mode, "pow2tile")
                    || 0 == strcmp(mode, "copyTile")) {
             useTiles = true;
@@ -102,8 +117,6 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
                 isPowerOf2Mode = true;
             } else if (0 == strcmp(mode, "copyTile")) {
                 isCopyMode = true;
-            } else {
-                gridSupported = true;
             }
 
             if (FLAGS_mode.count() < 2) {
@@ -119,17 +132,15 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
 
             heightString = FLAGS_mode[2];
         } else if (0 == strcmp(mode, "playbackCreation") && kBench_PictureTool == tool) {
-            renderer.reset(SkNEW(sk_tools::PlaybackCreationRenderer));
-            gridSupported = true;
+            renderer.reset(SkNEW_ARGS(sk_tools::PlaybackCreationRenderer, RENDERER_ARGS));
         // undocumented
-        } else if (0 == strcmp(mode, "gatherPixelRefs") && kBench_PictureTool == tool) {
-            renderer.reset(sk_tools::CreateGatherPixelRefsRenderer());
         } else if (0 == strcmp(mode, "rerecord") && kRender_PictureTool == tool) {
-            renderer.reset(SkNEW(sk_tools::RecordPictureRenderer));
-        // Allow 'mode' to be set to 'simple', but do not create a renderer, so we can
-        // ensure that pipe does not override a mode besides simple. The renderer will
-        // be created below.
-        } else if (0 != strcmp(mode, "simple")) {
+            renderer.reset(SkNEW_ARGS(sk_tools::RecordPictureRenderer, RENDERER_ARGS));
+        } else if (0 == strcmp(mode, "simple")) {
+            // Allow 'mode' to be set to 'simple', but do not create a renderer, so we can
+            // ensure that pipe does not override a mode besides simple. The renderer will
+            // be created below.
+        } else {
             error.printf("%s is not a valid mode for --mode\n", mode);
             return NULL;
         }
@@ -161,12 +172,13 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
             } else {
                 x = y = 4;
             }
+#if SK_SUPPORT_GPU
+            tiledRenderer.reset(SkNEW_ARGS(sk_tools::CopyTilesRenderer, (grContextOpts, x, y)));
+#else
             tiledRenderer.reset(SkNEW_ARGS(sk_tools::CopyTilesRenderer, (x, y)));
-        } else if (FLAGS_multi > 1) {
-            tiledRenderer.reset(SkNEW_ARGS(sk_tools::MultiCorePictureRenderer,
-                                           (FLAGS_multi)));
+#endif
         } else {
-            tiledRenderer.reset(SkNEW(sk_tools::TiledPictureRenderer));
+            tiledRenderer.reset(SkNEW_ARGS(sk_tools::TiledPictureRenderer, RENDERER_ARGS));
         }
 
         if (isPowerOf2Mode) {
@@ -222,21 +234,17 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
         }
 
     } else { // useTiles
-        if (FLAGS_multi > 1) {
-            error.printf("Multithreaded drawing requires tiled rendering.\n");
-            return NULL;
-        }
         if (FLAGS_pipe) {
             if (renderer != NULL) {
                 error.printf("Pipe is incompatible with other modes.\n");
                 return NULL;
             }
-            renderer.reset(SkNEW(sk_tools::PipePictureRenderer));
+            renderer.reset(SkNEW_ARGS(sk_tools::PipePictureRenderer, RENDERER_ARGS));
         }
     }
 
     if (NULL == renderer) {
-        renderer.reset(SkNEW(sk_tools::SimplePictureRenderer));
+        renderer.reset(SkNEW_ARGS(sk_tools::SimplePictureRenderer, RENDERER_ARGS));
     }
 
     if (FLAGS_viewport.count() > 0) {
@@ -253,7 +261,23 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
     sk_tools::PictureRenderer::SkDeviceTypes deviceType =
         sk_tools::PictureRenderer::kBitmap_DeviceType;
 #if SK_SUPPORT_GPU
+    GrGLStandard gpuAPI = kNone_GrGLStandard;
+    if (1 == FLAGS_gpuAPI.count()) {
+        if (FLAGS_gpuAPI.contains(kGpuAPINameGL)) {
+            gpuAPI = kGL_GrGLStandard;
+        } else if (FLAGS_gpuAPI.contains(kGpuAPINameGLES)) {
+            gpuAPI = kGLES_GrGLStandard;
+        } else {
+            error.printf("--gpuAPI invalid api value.\n");
+            return NULL;
+        }
+    } else if (FLAGS_gpuAPI.count() > 1) {
+        error.printf("--gpuAPI invalid api value.\n");
+        return NULL;
+    }
+
     int sampleCount = 0;
+    bool useDFText = false;
 #endif
     if (FLAGS_config.count() > 0) {
         if (0 == strcmp(FLAGS_config[0], "8888")) {
@@ -262,34 +286,35 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
 #if SK_SUPPORT_GPU
         else if (0 == strcmp(FLAGS_config[0], "gpu")) {
             deviceType = sk_tools::PictureRenderer::kGPU_DeviceType;
-            if (FLAGS_multi > 1) {
-                error.printf("GPU not compatible with multithreaded tiling.\n");
-                return NULL;
-            }
         }
         else if (0 == strcmp(FLAGS_config[0], "msaa4")) {
             deviceType = sk_tools::PictureRenderer::kGPU_DeviceType;
-            if (FLAGS_multi > 1) {
-                error.printf("GPU not compatible with multithreaded tiling.\n");
-                return NULL;
-            }
             sampleCount = 4;
         }
         else if (0 == strcmp(FLAGS_config[0], "msaa16")) {
             deviceType = sk_tools::PictureRenderer::kGPU_DeviceType;
-            if (FLAGS_multi > 1) {
-                error.printf("GPU not compatible with multithreaded tiling.\n");
-                return NULL;
-            }
             sampleCount = 16;
+        }
+        else if (0 == strcmp(FLAGS_config[0], "nvprmsaa4")) {
+            deviceType = sk_tools::PictureRenderer::kNVPR_DeviceType;
+            sampleCount = 4;
+        }
+        else if (0 == strcmp(FLAGS_config[0], "nvprmsaa16")) {
+            deviceType = sk_tools::PictureRenderer::kNVPR_DeviceType;
+            sampleCount = 16;
+        }
+        else if (0 == strcmp(FLAGS_config[0], "gpudft")) {
+            deviceType = sk_tools::PictureRenderer::kGPU_DeviceType;
+            useDFText = true;
         }
 #if SK_ANGLE
         else if (0 == strcmp(FLAGS_config[0], "angle")) {
             deviceType = sk_tools::PictureRenderer::kAngle_DeviceType;
-            if (FLAGS_multi > 1) {
-                error.printf("Angle not compatible with multithreaded tiling.\n");
-                return NULL;
-            }
+        }
+#endif
+#if SK_MESA
+        else if (0 == strcmp(FLAGS_config[0], "mesa")) {
+            deviceType = sk_tools::PictureRenderer::kMesa_DeviceType;
         }
 #endif
 #endif
@@ -297,9 +322,17 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
             error.printf("%s is not a valid mode for --config\n", FLAGS_config[0]);
             return NULL;
         }
-        renderer->setDeviceType(deviceType);
+#if SK_SUPPORT_GPU
+        if (!renderer->setDeviceType(deviceType, gpuAPI)) {
+#else
+        if (!renderer->setDeviceType(deviceType)) {
+#endif
+            error.printf("Could not create backend for --config %s\n", FLAGS_config[0]);
+            return NULL;
+        }
 #if SK_SUPPORT_GPU
         renderer->setSampleCount(sampleCount);
+        renderer->setUseDFText(useDFText);
 #endif
     }
 
@@ -312,20 +345,6 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
             bbhType = sk_tools::PictureRenderer::kNone_BBoxHierarchyType;
         } else if (0 == strcmp(type, "rtree")) {
             bbhType = sk_tools::PictureRenderer::kRTree_BBoxHierarchyType;
-        } else if (0 == strcmp(type, "grid")) {
-            if (!gridSupported) {
-                error.printf("'--bbh grid' is not compatible with --mode=%s.\n", mode);
-                return NULL;
-            }
-            bbhType = sk_tools::PictureRenderer::kTileGrid_BBoxHierarchyType;
-            if (FLAGS_bbh.count() != 3) {
-                error.printf("--bbh grid requires a width and a height.\n");
-                return NULL;
-            }
-            int gridWidth = atoi(FLAGS_bbh[1]);
-            int gridHeight = atoi(FLAGS_bbh[2]);
-            renderer->setGridSize(gridWidth, gridHeight);
-
         } else {
             error.printf("%s is not a valid value for --bbhType\n", type);
             return NULL;
@@ -339,53 +358,4 @@ sk_tools::PictureRenderer* parseRenderer(SkString& error, PictureTool tool) {
     renderer->setScaleFactor(SkDoubleToScalar(FLAGS_scale));
 
     return renderer.detach();
-}
-
-SkLruImageCache gLruImageCache(1024*1024);
-
-// Simple cache selector to choose between a purgeable cache for large images and the standard one
-// for smaller images.
-class MyCacheSelector : public SkBitmapFactory::CacheSelector {
-
-public:
-    MyCacheSelector() {
-        fPurgeableImageCache = SkPurgeableImageCache::Create();
-    }
-
-    ~MyCacheSelector() {
-        SkSafeUnref(fPurgeableImageCache);
-    }
-
-    virtual SkImageCache* selectCache(const SkImage::Info& info) SK_OVERRIDE {
-        if (info.fWidth * info.fHeight > 32 * 1024 && fPurgeableImageCache != NULL) {
-            return fPurgeableImageCache;
-        }
-        return &gLruImageCache;
-    }
-private:
-    SkImageCache* fPurgeableImageCache;
-};
-
-static MyCacheSelector gCacheSelector;
-static SkBitmapFactory gFactory(&SkImageDecoder::DecodeMemoryToTarget);
-
-bool lazy_decode_bitmap(const void* buffer, size_t size, SkBitmap* bitmap);
-bool lazy_decode_bitmap(const void* buffer, size_t size, SkBitmap* bitmap) {
-    void* copiedBuffer = sk_malloc_throw(size);
-    memcpy(copiedBuffer, buffer, size);
-    SkAutoDataUnref data(SkData::NewFromMalloc(copiedBuffer, size));
-
-    static bool gOnce;
-    if (!gOnce) {
-        // Only use the cache selector if there is a purgeable image cache to use for large
-        // images.
-        if (FLAGS_useVolatileCache && SkAutoTUnref<SkImageCache>(
-                SkPurgeableImageCache::Create()).get() != NULL) {
-            gFactory.setCacheSelector(&gCacheSelector);
-        } else {
-            gFactory.setImageCache(&gLruImageCache);
-        }
-        gOnce = true;
-    }
-    return gFactory.installPixelRef(data, bitmap);
 }

@@ -6,8 +6,8 @@
  */
 
 #include "GrGLNoOpInterface.h"
+#include "SkMutex.h"
 #include "SkString.h"
-#include "SkThread.h"
 
 // the OpenGLES 2.0 spec says this must be >= 128
 static const GrGLint kDefaultMaxVertexUniformVectors = 128;
@@ -27,7 +27,6 @@ static const char* kExtensions[] = {
     "GL_ARB_timer_query",
     "GL_ARB_draw_buffers",
     "GL_ARB_occlusion_query",
-    "GL_EXT_blend_color",
     "GL_EXT_stencil_wrap"
 };
 
@@ -37,15 +36,20 @@ const GrGLubyte* combined_extensions_string() {
     static SkMutex gMutex;
     gMutex.acquire();
     if (0 == gExtString.size()) {
-        for (size_t i = 0; i < GR_ARRAY_COUNT(kExtensions) - 1; ++i) {
+        for (size_t i = 0; i < SK_ARRAY_COUNT(kExtensions) - 1; ++i) {
             gExtString.append(kExtensions[i]);
             gExtString.append(" ");
         }
-        gExtString.append(kExtensions[GR_ARRAY_COUNT(kExtensions) - 1]);
+        gExtString.append(kExtensions[SK_ARRAY_COUNT(kExtensions) - 1]);
     }
     gMutex.release();
     return (const GrGLubyte*) gExtString.c_str();
 }
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBindFragDataLocation(GrGLuint program,
+                                                        GrGLuint colorNumber,
+                                                        const GrGLchar* name) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBlendColor(GrGLclampf red,
@@ -54,9 +58,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBlendColor(GrGLclampf red,
                                               GrGLclampf alpha) {
 }
 
-GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBindFragDataLocation(GrGLuint program,
-                                                        GrGLuint colorNumber,
-                                                        const GrGLchar* name) {
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBlendEquation(GrGLenum mode) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLBlendFunc(GrGLenum sfactor,
@@ -100,6 +102,17 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLCompressedTexImage2D(GrGLenum target,
                                                         const GrGLvoid* data) {
 }
 
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLCompressedTexSubImage2D(GrGLenum target,
+                                                           GrGLint level,
+                                                           GrGLint xoffset,
+                                                           GrGLint yoffset,
+                                                           GrGLsizei width,
+                                                           GrGLsizei height,
+                                                           GrGLenum format,
+                                                           GrGLsizei imageSize,
+                                                           const GrGLvoid* data) {
+}
+
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLCopyTexSubImage2D(GrGLenum target,
                                                      GrGLint level,
                                                      GrGLint xoffset,
@@ -127,6 +140,12 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLDrawArrays(GrGLenum mode,
                                               GrGLsizei count) {
 }
 
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLDrawArraysInstanced(GrGLenum mode,
+                                                       GrGLint first,
+                                                       GrGLsizei count,
+                                                       GrGLsizei primcount) {
+}
+
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLDrawBuffer(GrGLenum mode) {
 }
 
@@ -138,6 +157,13 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLDrawElements(GrGLenum mode,
                                                 GrGLsizei count,
                                                 GrGLenum type,
                                                 const GrGLvoid* indices) {
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLDrawElementsInstanced(GrGLenum mode,
+                                                         GrGLsizei count,
+                                                         GrGLenum type,
+                                                         const GrGLvoid* indices,
+                                                         GrGLsizei primcount) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLEnable(GrGLenum cap) {
@@ -162,6 +188,12 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLLineWidth(GrGLfloat width) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLLinkProgram(GrGLuint program) {
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLMatrixLoadf(GrGLenum, const GrGLfloat*) {
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLMatrixLoadIdentity(GrGLenum) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLQueryCounter(GrGLuint id, GrGLenum target) {
@@ -350,6 +382,15 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLUniformMatrix4fv(GrGLint location,
                                                     const GrGLfloat* value) {
 }
 
+ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttrib1f(GrGLuint indx, const GrGLfloat value) {
+}
+
+ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttrib2fv(GrGLuint indx, const GrGLfloat* values) {
+}
+
+ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttrib3fv(GrGLuint indx, const GrGLfloat* values) {
+}
+
  GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttrib4fv(GrGLuint indx, const GrGLfloat* values) {
 }
 
@@ -359,6 +400,9 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttribPointer(GrGLuint indx,
                                                        GrGLboolean normalized,
                                                        GrGLsizei stride,
                                                        const GrGLvoid* ptr) {
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLVertexAttribDivisor(GrGLuint index, GrGLuint divisor) {
 }
 
 GrGLvoid GR_GL_FUNCTION_TYPE noOpGLViewport(GrGLint x,
@@ -458,6 +502,9 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLGetIntegerv(GrGLenum pname, GrGLint* params) 
         case GR_GL_MAX_TEXTURE_IMAGE_UNITS:
             *params = 8;
             break;
+        case GR_GL_MAX_TEXTURE_COORDS:
+            *params = 8;
+            break;
         case GR_GL_MAX_VERTEX_UNIFORM_VECTORS:
             *params = kDefaultMaxVertexUniformVectors;
             break;
@@ -488,10 +535,10 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLGetIntegerv(GrGLenum pname, GrGLint* params) 
             *params = kDefaultMaxVaryingVectors;
             break;
         case GR_GL_NUM_EXTENSIONS:
-            *params = GR_ARRAY_COUNT(kExtensions);
+            *params = SK_ARRAY_COUNT(kExtensions);
             break;
         default:
-            GrCrash("Unexpected pname to GetIntegerv");
+            SkFAIL("Unexpected pname to GetIntegerv");
    }
 }
 
@@ -520,7 +567,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLGetShaderOrProgramiv(GrGLuint program,
             break;
         // we don't expect any other pnames
         default:
-            GrCrash("Unexpected pname to GetProgramiv");
+            SkFAIL("Unexpected pname to GetProgramiv");
             break;
    }
 }
@@ -536,7 +583,7 @@ void query_result(GrGLenum GLtarget, GrGLenum pname, T *params) {
             *params = 0;
             break;
         default:
-            GrCrash("Unexpected pname passed to GetQueryObject.");
+            SkFAIL("Unexpected pname passed to GetQueryObject.");
             break;
    }
 }
@@ -553,7 +600,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLGetQueryiv(GrGLenum GLtarget,
             *params = 32;
             break;
         default:
-            GrCrash("Unexpected pname passed GetQueryiv.");
+            SkFAIL("Unexpected pname passed GetQueryiv.");
    }
 }
 
@@ -594,7 +641,7 @@ const GrGLubyte* GR_GL_FUNCTION_TYPE noOpGLGetString(GrGLenum name) {
         case GR_GL_RENDERER:
             return (const GrGLubyte*)"The Debug (Non-)Renderer";
         default:
-            GrCrash("Unexpected name passed to GetString");
+            SkFAIL("Unexpected name passed to GetString");
             return NULL;
    }
 }
@@ -602,13 +649,13 @@ const GrGLubyte* GR_GL_FUNCTION_TYPE noOpGLGetString(GrGLenum name) {
 const GrGLubyte* GR_GL_FUNCTION_TYPE noOpGLGetStringi(GrGLenum name, GrGLuint i) {
     switch (name) {
         case GR_GL_EXTENSIONS:
-            if (static_cast<size_t>(i) <= GR_ARRAY_COUNT(kExtensions)) {
+            if (static_cast<size_t>(i) <= SK_ARRAY_COUNT(kExtensions)) {
                 return (const GrGLubyte*) kExtensions[i];
             } else {
                 return NULL;
             }
         default:
-            GrCrash("Unexpected name passed to GetStringi");
+            SkFAIL("Unexpected name passed to GetStringi");
             return NULL;
     }
 }
@@ -619,10 +666,17 @@ GrGLvoid GR_GL_FUNCTION_TYPE noOpGLGetTexLevelParameteriv(GrGLenum target,
                                                           GrGLint* params) {
     // we used to use this to query stuff about externally created textures,
     // now we just require clients to tell us everything about the texture.
-    GrCrash("Should never query texture parameters.");
+    SkFAIL("Should never query texture parameters.");
 }
 
 GrGLint GR_GL_FUNCTION_TYPE noOpGLGetUniformLocation(GrGLuint program, const char* name) {
     static int gUniLocation = 0;
     return ++gUniLocation;
+}
+
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLInsertEventMarker(GrGLsizei length, const char* marker) {
+}
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLPushGroupMarker(GrGLsizei length  , const char* marker) {
+}
+GrGLvoid GR_GL_FUNCTION_TYPE noOpGLPopGroupMarker() {
 }

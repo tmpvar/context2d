@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2006 The Android Open Source Project
  *
@@ -6,8 +5,9 @@
  * found in the LICENSE file.
  */
 
-
 #include "SkBuffer.h"
+
+#include <string.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +32,14 @@ size_t SkRBuffer::skipToAlign4()
     size_t n = SkAlign4(pos) - pos;
     fPos += n;
     return n;
+}
+
+bool SkRBufferWithSizeCheck::read(void* buffer, size_t size) {
+    fError = fError || (fPos + size > fStop);
+    if (!fError && (size > 0)) {
+        readNoSizeCheck(buffer, size);
+    }
+    return !fError;
 }
 
 void* SkWBuffer::skip(size_t size)

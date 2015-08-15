@@ -14,21 +14,32 @@
 
 class SK_API SkMergeImageFilter : public SkImageFilter {
 public:
-    SkMergeImageFilter(SkImageFilter* first, SkImageFilter* second,
-                       SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
-    SkMergeImageFilter(SkImageFilter* filters[], int count,
-                       const SkXfermode::Mode modes[] = NULL);
     virtual ~SkMergeImageFilter();
 
+    static SkMergeImageFilter* Create(SkImageFilter* first, SkImageFilter* second,
+                                      SkXfermode::Mode mode = SkXfermode::kSrcOver_Mode,
+                                      const CropRect* cropRect = NULL) {
+        SkImageFilter* inputs[2] = { first, second };
+        SkXfermode::Mode modes[2] = { mode, mode };
+        return SkNEW_ARGS(SkMergeImageFilter, (inputs, 2, modes, cropRect));
+    }
+    static SkMergeImageFilter* Create(SkImageFilter* filters[], int count,
+                                      const SkXfermode::Mode modes[] = NULL,
+                                      const CropRect* cropRect = NULL) {
+        return SkNEW_ARGS(SkMergeImageFilter, (filters, count, modes, cropRect));
+    }
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkMergeImageFilter)
 
 protected:
-    SkMergeImageFilter(SkFlattenableReadBuffer& buffer);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
+    SkMergeImageFilter(SkImageFilter* filters[], int count,
+                       const SkXfermode::Mode modes[],
+                       const CropRect* cropRect);
+    void flatten(SkWriteBuffer&) const override;
 
-    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const SkMatrix&,
-                               SkBitmap* result, SkIPoint* loc) SK_OVERRIDE;
-    virtual bool onFilterBounds(const SkIRect&, const SkMatrix&, SkIRect*) SK_OVERRIDE;
+    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const Context&,
+                               SkBitmap* result, SkIPoint* loc) const override;
 
 private:
     uint8_t*            fModes; // SkXfermode::Mode

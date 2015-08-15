@@ -18,15 +18,15 @@ public:
     Xfermodes2GM() {}
 
 protected:
-    virtual SkString onShortName() SK_OVERRIDE {
+    SkString onShortName() override {
         return SkString("xfermodes2");
     }
 
-    virtual SkISize onISize() SK_OVERRIDE {
-        return make_isize(455, 475);
+    SkISize onISize() override {
+        return SkISize::Make(455, 475);
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(SkCanvas* canvas) override {
         canvas->translate(SkIntToScalar(10), SkIntToScalar(20));
 
         const SkScalar w = SkIntToScalar(kSize);
@@ -34,6 +34,7 @@ protected:
 
         SkPaint labelP;
         labelP.setAntiAlias(true);
+        sk_tool_utils::set_portable_typeface(&labelP);
         labelP.setTextAlign(SkPaint::kCenter_Align);
 
         const int W = 6;
@@ -54,7 +55,7 @@ protected:
             SkRect r = SkRect::MakeWH(w, h);
             canvas->drawRect(r, p);
 
-            canvas->saveLayer(&r, NULL, SkCanvas::kARGB_ClipLayer_SaveFlag);
+            canvas->saveLayer(&r, NULL);
 
             p.setShader(fDst);
             canvas->drawRect(r, p);
@@ -85,32 +86,27 @@ protected:
     }
 
 private:
-    virtual void onOnceBeforeDraw() SK_OVERRIDE {
+    void onOnceBeforeDraw() override {
         static const uint32_t kCheckData[] = {
-            SkPackARGB32(0xFF, 0x40, 0x40, 0x40),
-            SkPackARGB32(0xFF, 0xD0, 0xD0, 0xD0),
-            SkPackARGB32(0xFF, 0xD0, 0xD0, 0xD0),
-            SkPackARGB32(0xFF, 0x40, 0x40, 0x40)
+            SkPackARGB32(0xFF, 0x42, 0x41, 0x42),
+            SkPackARGB32(0xFF, 0xD6, 0xD3, 0xD6),
+            SkPackARGB32(0xFF, 0xD6, 0xD3, 0xD6),
+            SkPackARGB32(0xFF, 0x42, 0x41, 0x42)
         };
         SkBitmap bg;
-        bg.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-        bg.allocPixels();
-        SkAutoLockPixels bgAlp(bg);
+        bg.allocN32Pixels(2, 2, true);
         memcpy(bg.getPixels(), kCheckData, sizeof(kCheckData));
-        bg.setIsOpaque(true);
 
-        fBG.reset(SkShader::CreateBitmapShader(bg,
-                                               SkShader::kRepeat_TileMode,
-                                               SkShader::kRepeat_TileMode));
         SkMatrix lm;
         lm.setScale(SkIntToScalar(16), SkIntToScalar(16));
-        fBG->setLocalMatrix(lm);
+        fBG.reset(SkShader::CreateBitmapShader(bg,
+                                               SkShader::kRepeat_TileMode,
+                                               SkShader::kRepeat_TileMode,
+                                               &lm));
 
-        SkBitmap dstBmp;
-        dstBmp.setConfig(SkBitmap::kARGB_8888_Config, kSize, kSize);
-        dstBmp.allocPixels();
-        SkAutoLockPixels dstAlp(dstBmp);
-        SkPMColor* pixels = reinterpret_cast<SkPMColor*>(dstBmp.getPixels());
+        SkBitmap srcBmp;
+        srcBmp.allocN32Pixels(kSize, kSize);
+        SkPMColor* pixels = reinterpret_cast<SkPMColor*>(srcBmp.getPixels());
 
         for (int y = 0; y < kSize; ++y) {
             int c = y * (1 << kShift);
@@ -119,14 +115,12 @@ private:
                 pixels[kSize * y + x] = rowColor;
             }
         }
-        fSrc.reset(SkShader::CreateBitmapShader(dstBmp,
+        fSrc.reset(SkShader::CreateBitmapShader(srcBmp,
                                                 SkShader::kClamp_TileMode,
                                                 SkShader::kClamp_TileMode));
-        SkBitmap srcBmp;
-        srcBmp.setConfig(SkBitmap::kARGB_8888_Config, kSize, kSize);
-        srcBmp.allocPixels();
-        SkAutoLockPixels srcAlp(srcBmp);
-        pixels = reinterpret_cast<SkPMColor*>(srcBmp.getPixels());
+        SkBitmap dstBmp;
+        dstBmp.allocN32Pixels(kSize, kSize);
+        pixels = reinterpret_cast<SkPMColor*>(dstBmp.getPixels());
 
         for (int x = 0; x < kSize; ++x) {
             int c = x * (1 << kShift);
@@ -135,7 +129,7 @@ private:
                 pixels[kSize * y + x] = colColor;
             }
         }
-        fDst.reset(SkShader::CreateBitmapShader(srcBmp,
+        fDst.reset(SkShader::CreateBitmapShader(dstBmp,
                                                 SkShader::kClamp_TileMode,
                                                 SkShader::kClamp_TileMode));
     }

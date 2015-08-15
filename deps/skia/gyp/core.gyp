@@ -1,3 +1,7 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 # Core Skia library code.
 {
   'targets': [
@@ -13,16 +17,20 @@
       ],
 
       'include_dirs': [
+        '../include/c',
         '../include/config',
         '../include/core',
-        '../include/lazy',
         '../include/pathops',
         '../include/pipe',
         '../include/ports',
+        '../include/private',
         '../include/utils',
-        '../include/xml',
+        '../include/images',
         '../src/core',
+        '../src/sfnt',
         '../src/image',
+        '../src/opts',
+        '../src/utils',
       ],
       'sources': [
         'core.gypi', # Makes the gypi appear in IDEs (but does not modify the build).
@@ -39,7 +47,6 @@
         [ 'skia_os == "mac"', {
           'include_dirs': [
             '../include/utils/mac',
-            '../third_party/freetype/include/**',
           ],
           'sources': [
             '../include/utils/mac/SkCGUtils.h',
@@ -77,14 +84,13 @@
           ],
         }],
         [ 'skia_os == "android"', {
-          'sources': [
-            '../src/core/SkPaintOptionsAndroid.cpp',
+          'dependencies': [
+            'android_deps.gyp:cpu_features',
           ],
         }],
-        [ 'skia_os == "android" and skia_arch_type == "arm" and armv7 == 1', {
+        [ 'skia_arch_type == "arm"', {
           # The code in SkUtilsArm.cpp can be used on an ARM-based Linux system, not only Android.
           'sources': [
-            '../src/core/SkPaintOptionsAndroid.cpp',
             '../src/core/SkUtilsArm.cpp',
             '../src/core/SkUtilsArm.h',
           ],
@@ -98,19 +104,16 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          'config',
+          '../include/c',
           '../include/config',
           '../include/core',
-          '../include/lazy',
           '../include/pathops',
           '../include/pipe',
-          'ext',
         ],
         'conditions': [
           [ 'skia_os == "mac"', {
             'include_dirs': [
               '../include/utils/mac',
-              '../third_party/freetype/include/**',
             ],
           }],
           [ 'skia_os == "ios"', {
@@ -128,9 +131,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

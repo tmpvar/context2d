@@ -6,147 +6,72 @@
  * found in the LICENSE file.
  */
 
-
-#include "GrTexture.h"
-
 #include "GrContext.h"
-#include "GrDrawTargetCaps.h"
+#include "GrCaps.h"
 #include "GrGpu.h"
+#include "GrResourceKey.h"
 #include "GrRenderTarget.h"
-#include "GrResourceCache.h"
+#include "GrRenderTargetPriv.h"
+#include "GrTexture.h"
+#include "GrTexturePriv.h"
 
-SK_DEFINE_INST_COUNT(GrTexture)
-
-GrTexture::~GrTexture() {
-    if (NULL != fRenderTarget.get()) {
-        fRenderTarget.get()->owningTextureDestroyed();
+void GrTexture::dirtyMipMaps(bool mipMapsDirty) {
+    if (mipMapsDirty) {
+        if (kValid_MipMapsStatus == fMipMapsStatus) {
+           fMipMapsStatus = kAllocated_MipMapsStatus;
+        }
+    } else {
+        const bool sizeChanged = kNotAllocated_MipMapsStatus == fMipMapsStatus;
+        fMipMapsStatus = kValid_MipMapsStatus;
+        if (sizeChanged) {
+            // This must not be called until after changing fMipMapsStatus.
+            this->didChangeGpuMemorySize();
+        }
     }
 }
 
-/**
- * This method allows us to interrupt the normal deletion process and place
- * textures back in the texture cache when their ref count goes to zero.
- */
-void GrTexture::internal_dispose() const {
+size_t GrTexture::onGpuMemorySize() const {
+    size_t textureSize;
 
-    if (this->isSetFlag((GrTextureFlags) kReturnToCache_FlagBit) &&
-        NULL != this->INHERITED::getContext()) {
-        GrTexture* nonConstThis = const_cast<GrTexture *>(this);
-        this->fRefCnt = 1;      // restore ref count to initial setting
-
-        nonConstThis->resetFlag((GrTextureFlags) kReturnToCache_FlagBit);
-        nonConstThis->INHERITED::getContext()->addExistingTextureToCache(nonConstThis);
-
-        // Note: "this" texture might be freed inside addExistingTextureToCache
-        // if it is purged.
-        return;
+    if (GrPixelConfigIsCompressed(fDesc.fConfig)) {
+        textureSize = GrCompressedFormatDataSize(fDesc.fConfig, fDesc.fWidth, fDesc.fHeight);
+    } else {
+        textureSize = (size_t) fDesc.fWidth * fDesc.fHeight * GrBytesPerPixel(fDesc.fConfig);
     }
 
-    this->INHERITED::internal_dispose();
-}
-
-bool GrTexture::readPixels(int left, int top, int width, int height,
-                           GrPixelConfig config, void* buffer,
-                           size_t rowBytes, uint32_t pixelOpsFlags) {
-    // go through context so that all necessary flushing occurs
-    GrContext* context = this->getContext();
-    if (NULL == context) {
-        return false;
+    if (this->texturePriv().hasMipMaps()) {
+        // We don't have to worry about the mipmaps being a different size than
+        // we'd expect because we never change fDesc.fWidth/fHeight.
+        textureSize += textureSize/3;
     }
-    return context->readTexturePixels(this,
-                                      left, top, width, height,
-                                      config, buffer, rowBytes,
-                                      pixelOpsFlags);
-}
 
-void GrTexture::writePixels(int left, int top, int width, int height,
-                            GrPixelConfig config, const void* buffer,
-                            size_t rowBytes, uint32_t pixelOpsFlags) {
-    // go through context so that all necessary flushing occurs
-    GrContext* context = this->getContext();
-    if (NULL == context) {
-        return;
-    }
-    context->writeTexturePixels(this,
-                                left, top, width, height,
-                                config, buffer, rowBytes,
-                                pixelOpsFlags);
-}
+    SkASSERT(!SkToBool(fDesc.fFlags & kRenderTarget_GrSurfaceFlag));
+    SkASSERT(textureSize <= WorseCaseSize(fDesc));
 
-void GrTexture::onRelease() {
-    GrAssert(!this->isSetFlag((GrTextureFlags) kReturnToCache_FlagBit));
-    INHERITED::onRelease();
-}
-
-void GrTexture::onAbandon() {
-    if (NULL != fRenderTarget.get()) {
-        fRenderTarget->abandon();
-    }
-    INHERITED::onAbandon();
+    return textureSize;
 }
 
 void GrTexture::validateDesc() const {
-    if (NULL != this->asRenderTarget()) {
+    if (this->asRenderTarget()) {
         // This texture has a render target
-        GrAssert(0 != (fDesc.fFlags & kRenderTarget_GrTextureFlagBit));
-
-        if (NULL != this->asRenderTarget()->getStencilBuffer()) {
-            GrAssert(0 != (fDesc.fFlags & kNoStencil_GrTextureFlagBit));
-        } else {
-            GrAssert(0 == (fDesc.fFlags & kNoStencil_GrTextureFlagBit));
-        }
-
-        GrAssert(fDesc.fSampleCnt == this->asRenderTarget()->numSamples());
+        SkASSERT(0 != (fDesc.fFlags & kRenderTarget_GrSurfaceFlag));
+        SkASSERT(fDesc.fSampleCnt == this->asRenderTarget()->numColorSamples());
     } else {
-        GrAssert(0 == (fDesc.fFlags & kRenderTarget_GrTextureFlagBit));
-        GrAssert(0 == (fDesc.fFlags & kNoStencil_GrTextureFlagBit));
-        GrAssert(0 == fDesc.fSampleCnt);
+        SkASSERT(0 == (fDesc.fFlags & kRenderTarget_GrSurfaceFlag));
+        SkASSERT(0 == fDesc.fSampleCnt);
     }
 }
 
-// These flags need to fit in a GrResourceKey::ResourceFlags so they can be folded into the texture
-// key
-enum TextureFlags {
-    /**
-     * The kStretchToPOT bit is set when the texture is NPOT and is being repeated but the
-     * hardware doesn't support that feature.
-     */
-    kStretchToPOT_TextureFlag = 0x1,
-    /**
-     * The kFilter bit can only be set when the kStretchToPOT flag is set and indicates whether the
-     * stretched texture should be bilerp filtered or point sampled.
-     */
-    kFilter_TextureFlag       = 0x2,
-};
+//////////////////////////////////////////////////////////////////////////////
 
 namespace {
-GrResourceKey::ResourceFlags get_texture_flags(const GrGpu* gpu,
-                                               const GrTextureParams* params,
-                                               const GrTextureDesc& desc) {
-    GrResourceKey::ResourceFlags flags = 0;
-    bool tiled = NULL != params && params->isTiled();
-    if (tiled && !gpu->caps()->npotTextureTileSupport()) {
-        if (!GrIsPow2(desc.fWidth) || !GrIsPow2(desc.fHeight)) {
-            flags |= kStretchToPOT_TextureFlag;
-            if (params->isBilerp()) {
-                flags |= kFilter_TextureFlag;
-            }
-        }
-    }
-    return flags;
-}
 
-GrResourceKey::ResourceType texture_resource_type() {
-    static const GrResourceKey::ResourceType gType = GrResourceKey::GenerateResourceType();
-    return gType;
-}
-
-// FIXME:  This should be refactored with the code in gl/GrGpuGL.cpp.
-GrSurfaceOrigin resolve_origin(const GrTextureDesc& desc) {
+// FIXME:  This should be refactored with the code in gl/GrGLGpu.cpp.
+GrSurfaceOrigin resolve_origin(const GrSurfaceDesc& desc) {
     // By default, GrRenderTargets are GL's normal orientation so that they
     // can be drawn to by the outside world without the client having
     // to render upside down.
-    bool renderTarget = 0 != (desc.fFlags & kRenderTarget_GrTextureFlagBit);
+    bool renderTarget = 0 != (desc.fFlags & kRenderTarget_GrSurfaceFlag);
     if (kDefault_GrSurfaceOrigin == desc.fOrigin) {
         return renderTarget ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
     } else {
@@ -155,37 +80,36 @@ GrSurfaceOrigin resolve_origin(const GrTextureDesc& desc) {
 }
 }
 
-GrResourceKey GrTexture::ComputeKey(const GrGpu* gpu,
-                                    const GrTextureParams* params,
-                                    const GrTextureDesc& desc,
-                                    const GrCacheID& cacheID) {
-    GrResourceKey::ResourceFlags flags = get_texture_flags(gpu, params, desc);
-    return GrResourceKey(cacheID, texture_resource_type(), flags);
+//////////////////////////////////////////////////////////////////////////////
+GrTexture::GrTexture(GrGpu* gpu, LifeCycle lifeCycle, const GrSurfaceDesc& desc)
+    : INHERITED(gpu, lifeCycle, desc)
+    , fMipMapsStatus(kNotAllocated_MipMapsStatus) {
+
+    if (!this->isExternal() && !GrPixelConfigIsCompressed(desc.fConfig)) {
+        GrScratchKey key;
+        GrTexturePriv::ComputeScratchKey(desc, &key);
+        this->setScratchKey(key);
+    }
+    // only make sense if alloc size is pow2
+    fShiftFixedX = 31 - SkCLZ(fDesc.fWidth);
+    fShiftFixedY = 31 - SkCLZ(fDesc.fHeight);
 }
 
-GrResourceKey GrTexture::ComputeScratchKey(const GrTextureDesc& desc) {
-    GrCacheID::Key idKey;
-    // Instead of a client-provided key of the texture contents we create a key from the
-    // descriptor.
-    GR_STATIC_ASSERT(sizeof(idKey) >= 16);
-    GrAssert(desc.fHeight < (1 << 16));
-    GrAssert(desc.fWidth < (1 << 16));
-    idKey.fData32[0] = (desc.fWidth) | (desc.fHeight << 16);
-    idKey.fData32[1] = desc.fConfig | desc.fSampleCnt << 16;
-    idKey.fData32[2] = desc.fFlags;
-    idKey.fData32[3] = resolve_origin(desc);    // Only needs 2 bits actually
-    static const int kPadSize = sizeof(idKey) - 16;
-    GR_STATIC_ASSERT(kPadSize >= 0);
-    memset(idKey.fData8 + 16, 0, kPadSize);
+void GrTexturePriv::ComputeScratchKey(const GrSurfaceDesc& desc, GrScratchKey* key) {
+    static const GrScratchKey::ResourceType kType = GrScratchKey::GenerateResourceType();
 
-    GrCacheID cacheID(GrResourceKey::ScratchDomain(), idKey);
-    return GrResourceKey(cacheID, texture_resource_type(), 0);
-}
+    GrScratchKey::Builder builder(key, kType, 2);
 
-bool GrTexture::NeedsResizing(const GrResourceKey& key) {
-    return SkToBool(key.getResourceFlags() & kStretchToPOT_TextureFlag);
-}
+    GrSurfaceOrigin origin = resolve_origin(desc);
+    uint32_t flags = desc.fFlags & ~kCheckAllocation_GrSurfaceFlag;
 
-bool GrTexture::NeedsFiltering(const GrResourceKey& key) {
-    return SkToBool(key.getResourceFlags() & kFilter_TextureFlag);
+    SkASSERT(desc.fWidth <= SK_MaxU16);
+    SkASSERT(desc.fHeight <= SK_MaxU16);
+    SkASSERT(static_cast<int>(desc.fConfig) < (1 << 6));
+    SkASSERT(desc.fSampleCnt < (1 << 8));
+    SkASSERT(flags < (1 << 10));
+    SkASSERT(static_cast<int>(origin) < (1 << 8));
+
+    builder[0] = desc.fWidth | (desc.fHeight << 16);
+    builder[1] = desc.fConfig | (desc.fSampleCnt << 6) | (flags << 14) | (origin << 24);
 }

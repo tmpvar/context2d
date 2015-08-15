@@ -5,30 +5,19 @@
  * found in the LICENSE file.
  */
 
-/** Tests for ARGBImageEncoder. */
+#include "SkImageEncoder.h"
 
-#include "Test.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
-#include "SkImageEncoder.h"
 #include "SkStream.h"
+#include "Test.h"
 
-namespace skiatest {
-
-class BitmapTransformerTestClass : public Test {
-public:
-    static Test* Factory(void*) { return SkNEW(BitmapTransformerTestClass); }
-protected:
-    virtual void onGetName(SkString* name) SK_OVERRIDE { name->set("ARGBImageEncoder"); }
-    virtual void onRun(Reporter* reporter) SK_OVERRIDE;
+static SkColorType gColorTypes[] = {
+    kRGB_565_SkColorType,
+    kN32_SkColorType,
 };
 
-static SkBitmap::Config configs[] = {
-        SkBitmap::kRGB_565_Config,
-        SkBitmap::kARGB_8888_Config,
-};
-
-void BitmapTransformerTestClass::onRun(Reporter* reporter) {
+DEF_TEST(ARGBImageEncoder, reporter) {
     // Bytes we expect to get:
     const int kWidth = 3;
     const int kHeight = 5;
@@ -42,13 +31,12 @@ void BitmapTransformerTestClass::onRun(Reporter* reporter) {
     };
 
     SkAutoTDelete<SkImageEncoder> enc(CreateARGBImageEncoder());
-    for (size_t configIndex = 0; configIndex < SK_ARRAY_COUNT(configs); ++configIndex) {
+    for (size_t ctIndex = 0; ctIndex < SK_ARRAY_COUNT(gColorTypes); ++ctIndex) {
         // A bitmap that should generate the above bytes:
         SkBitmap bitmap;
         {
-            bitmap.setConfig(configs[configIndex], kWidth, kHeight);
-            REPORTER_ASSERT(reporter, bitmap.allocPixels());
-            bitmap.setIsOpaque(true);
+            bitmap.allocPixels(SkImageInfo::Make(kWidth, kHeight, gColorTypes[ctIndex],
+                                                 kOpaque_SkAlphaType));
             bitmap.eraseColor(SK_ColorBLUE);
             // Change rows [0,1] from blue to [red,green].
             SkCanvas canvas(bitmap);
@@ -70,8 +58,4 @@ void BitmapTransformerTestClass::onRun(Reporter* reporter) {
         REPORTER_ASSERT(reporter, bufferSize == sizeof(comparisonBuffer));
         REPORTER_ASSERT(reporter, memcmp(pixelBuffer, comparisonBuffer, bufferSize) == 0);
     }
-}
-
-static TestRegistry gReg(BitmapTransformerTestClass::Factory);
-
 }

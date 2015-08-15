@@ -55,16 +55,15 @@ static void testLineIntersect(skiatest::Reporter* reporter, const SkDQuad& quad,
     bool found = false;
     for (int index = 0; index < result; ++index) {
         double quadT = intersections[0][index];
-        SkDPoint quadXY = quad.xyAtT(quadT);
+        SkDPoint quadXY = quad.ptAtT(quadT);
         double lineT = intersections[1][index];
-        SkDPoint lineXY = line.xyAtT(lineT);
+        SkDPoint lineXY = line.ptAtT(lineT);
         if (quadXY.approximatelyEqual(lineXY)) {
             found = true;
         }
     }
     REPORTER_ASSERT(reporter, found);
 }
-
 
 // find a point on a quad by choosing a t from 0 to 1
 // create a vertical span above and below the point
@@ -84,12 +83,12 @@ static void testQuadLineIntersectMain(PathOpsThreadState* data)
     SkDQuad quad = {{{(double) ax, (double) ay}, {(double) bx, (double) by},
             {(double) cx, (double) cy}}};
     SkReduceOrder reducer;
-    int order = reducer.reduce(quad, SkReduceOrder::kFill_Style);
+    int order = reducer.reduce(quad);
     if (order < 3) {
         return;
     }
     for (int tIndex = 0; tIndex <= 4; ++tIndex) {
-        SkDPoint xy = quad.xyAtT(tIndex / 4.0);
+        SkDPoint xy = quad.ptAtT(tIndex / 4.0);
         for (int h = -2; h <= 2; ++h) {
             for (int v = -2; v <= 2; ++v) {
                 if (h == v && abs(h) != 1) {
@@ -111,10 +110,9 @@ static void testQuadLineIntersectMain(PathOpsThreadState* data)
     }
 }
 
-static void PathOpsQuadLineIntersectionThreadedTest(skiatest::Reporter* reporter)
-{
-    int threadCount = initializeTests(reporter, "testQuadLineIntersect");
-    PathOpsThreadedTestRunner testRunner(reporter, threadCount);
+DEF_TEST(PathOpsQuadLineIntersectionThreaded, reporter) {
+    initializeTests(reporter, "testQuadLineIntersect");
+    PathOpsThreadedTestRunner testRunner(reporter);
     for (int a = 0; a < 16; ++a) {
         for (int b = 0 ; b < 16; ++b) {
             for (int c = 0 ; c < 16; ++c) {
@@ -127,6 +125,3 @@ static void PathOpsQuadLineIntersectionThreadedTest(skiatest::Reporter* reporter
 finish:
     testRunner.render();
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsQuadLineIntersectionThreadedTest)

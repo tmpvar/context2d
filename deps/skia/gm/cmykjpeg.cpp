@@ -6,6 +6,8 @@
  */
 
 #include "gm.h"
+
+#include "Resources.h"
 #include "SkCanvas.h"
 #include "SkImageDecoder.h"
 #include "SkStream.h"
@@ -20,20 +22,12 @@ public:
     CMYKJpegGM() {}
 
 protected:
-    virtual void onOnceBeforeDraw() SK_OVERRIDE {
-
+    void onOnceBeforeDraw() override {
         // parameters to the "decode" call
         bool dither = false;
-        SkBitmap::Config prefConfig = SkBitmap::kARGB_8888_Config;
 
-        SkString filename(INHERITED::gResourcePath);
-        if (!filename.endsWith("/") && !filename.endsWith("\\")) {
-            filename.append("/");
-        }
-
-        filename.append("CMYK.jpg");
-
-        SkFILEStream stream(filename.c_str());
+        SkString jpgFilename = GetResourcePath("CMYK.jpg");
+        SkFILEStream stream(jpgFilename.c_str());
         if (!stream.isValid()) {
             SkDebugf("Could not find CMYK.jpg, please set --resourcePath correctly.\n");
             return;
@@ -43,21 +37,20 @@ protected:
         if (codec) {
             stream.rewind();
             codec->setDitherImage(dither);
-            codec->decode(&stream, &fBitmap, prefConfig,
-                          SkImageDecoder::kDecodePixels_Mode);
+            codec->decode(&stream, &fBitmap, kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
             SkDELETE(codec);
         }
     }
 
-    virtual SkString onShortName() {
+    virtual SkString onShortName() override {
         return SkString("cmykjpeg");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(640, 480);
+    virtual SkISize onISize() override {
+        return SkISize::Make(640, 480);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    virtual void onDraw(SkCanvas* canvas) override {
 
         canvas->translate(20*SK_Scalar1, 20*SK_Scalar1);
         canvas->drawBitmap(fBitmap, 0, 0);

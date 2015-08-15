@@ -35,9 +35,9 @@ public:
         SkScalar r = luminance.toLuma(gamma, SkIntToScalar(SkColorGetR(c)) / 255);
         SkScalar g = luminance.toLuma(gamma, SkIntToScalar(SkColorGetG(c)) / 255);
         SkScalar b = luminance.toLuma(gamma, SkIntToScalar(SkColorGetB(c)) / 255);
-        SkScalar luma = r * SkFloatToScalar(SK_LUM_COEFF_R) +
-                        g * SkFloatToScalar(SK_LUM_COEFF_G) +
-                        b * SkFloatToScalar(SK_LUM_COEFF_B);
+        SkScalar luma = r * SK_LUM_COEFF_R +
+                        g * SK_LUM_COEFF_G +
+                        b * SK_LUM_COEFF_B;
         SkASSERT(luma <= SK_Scalar1);
         return SkScalarRoundToInt(luminance.fromLuma(gamma, luma) * 255);
     }
@@ -92,8 +92,8 @@ void SkTMaskGamma_build_correcting_lut(uint8_t table[256], U8CPU srcI, SkScalar 
  * @param B The number of luminance bits to use [1, 8] from the blue channel.
  */
 template <int R_LUM_BITS, int G_LUM_BITS, int B_LUM_BITS> class SkTMaskGamma : public SkRefCnt {
+    
 public:
-    SK_DECLARE_INST_COUNT_TEMPLATE(SkTMaskGamma)
 
     /** Creates a linear SkTMaskGamma. */
     SkTMaskGamma() : fIsLinear(true) { }
@@ -136,6 +136,22 @@ public:
      */
     PreBlend preBlend(SkColor color) const;
 
+    /**
+     * Get dimensions for the full table set, so it can be allocated as a block.
+     */
+    void getGammaTableDimensions(int* tableWidth, int* numTables) const {
+        *tableWidth = 256;
+        *numTables = (1 << MAX_LUM_BITS);
+    }
+
+    /**
+     * Provides direct access to the full table set, so it can be uploaded
+     * into a texture.
+     */
+    const uint8_t* getGammaTables() const {
+        return (const uint8_t*) fGammaTables;
+    }
+    
 private:
     static const int MAX_LUM_BITS =
           B_LUM_BITS > (R_LUM_BITS > G_LUM_BITS ? R_LUM_BITS : G_LUM_BITS)
@@ -146,11 +162,6 @@ private:
     typedef SkRefCnt INHERITED;
 };
 
-
-#define MacroComma ,
-SK_DEFINE_INST_COUNT_TEMPLATE(
-    template <int R_LUM_BITS MacroComma int G_LUM_BITS MacroComma int B_LUM_BITS>,
-    SkTMaskGamma<R_LUM_BITS MacroComma G_LUM_BITS MacroComma B_LUM_BITS>);
 
 /**
  * SkTMaskPreBlend is a tear-off of SkTMaskGamma. It provides the tables to
@@ -183,9 +194,7 @@ public:
     ~SkTMaskPreBlend() { }
 
     /** True if this PreBlend should be applied. When false, fR, fG, and fB are NULL. */
-    bool isApplicable() const {
-        return NULL != this->fG;
-    }
+    bool isApplicable() const { return SkToBool(this->fG); }
 
     const uint8_t* fR;
     const uint8_t* fG;

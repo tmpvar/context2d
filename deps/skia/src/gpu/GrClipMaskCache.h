@@ -8,9 +8,9 @@
 #ifndef GrClipMaskCache_DEFINED
 #define GrClipMaskCache_DEFINED
 
-#include "GrContext.h"
-#include "GrNoncopyable.h"
+#include "GrResourceProvider.h"
 #include "SkClipStack.h"
+#include "SkTypes.h"
 
 class GrTexture;
 
@@ -18,12 +18,11 @@ class GrTexture;
  * The stencil buffer stores the last clip path - providing a single entry
  * "cache". This class provides similar functionality for AA clip paths
  */
-class GrClipMaskCache : public GrNoncopyable {
+class GrClipMaskCache : SkNoncopyable {
 public:
-    GrClipMaskCache();
+    GrClipMaskCache(GrResourceProvider*);
 
     ~GrClipMaskCache() {
-
         while (!fStack.empty()) {
             GrClipStackFrame* temp = (GrClipStackFrame*) fStack.back();
             temp->~GrClipStackFrame();
@@ -36,15 +35,12 @@ public:
         SkASSERT(clipGenID != SkClipStack::kWideOpenGenID);
         SkASSERT(clipGenID != SkClipStack::kEmptyGenID);
 
-        if (SkClipStack::kInvalidGenID == clipGenID) {
-            return false;
-        }
-
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
         // We could reuse the mask if bounds is a subset of last bounds. We'd have to communicate
         // an offset to the caller.
-        if (back->fLastMask.texture() &&
+        if (back->fLastMask &&
+            !back->fLastMask->wasDestroyed() &&
             back->fLastBound == bounds &&
             back->fLastClipGenID == clipGenID) {
             return true;
@@ -55,7 +51,7 @@ public:
 
     void reset() {
         if (fStack.empty()) {
-//            GrAssert(false);
+//            SkASSERT(false);
             return;
         }
 
@@ -73,7 +69,7 @@ public:
     void push();
 
     void pop() {
-        //GrAssert(!fStack.empty());
+        //SkASSERT(!fStack.empty());
 
         if (!fStack.empty()) {
             GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
@@ -95,77 +91,77 @@ public:
     GrTexture* getLastMask() {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             return NULL;
         }
 
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
-        return back->fLastMask.texture();
+        return back->fLastMask;
     }
 
     const GrTexture* getLastMask() const {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             return NULL;
         }
 
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
-        return back->fLastMask.texture();
+        return back->fLastMask;
     }
 
     void acquireMask(int32_t clipGenID,
-                     const GrTextureDesc& desc,
-                     const GrIRect& bound) {
+                     const GrSurfaceDesc& desc,
+                     const SkIRect& bound) {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             return;
         }
 
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
-        back->acquireMask(fContext, clipGenID, desc, bound);
+        back->acquireMask(fResourceProvider, clipGenID, desc, bound);
     }
 
     int getLastMaskWidth() const {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             return -1;
         }
 
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
-        if (NULL == back->fLastMask.texture()) {
+        if (NULL == back->fLastMask) {
             return -1;
         }
 
-        return back->fLastMask.texture()->width();
+        return back->fLastMask->width();
     }
 
     int getLastMaskHeight() const {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             return -1;
         }
 
         GrClipStackFrame* back = (GrClipStackFrame*) fStack.back();
 
-        if (NULL == back->fLastMask.texture()) {
+        if (NULL == back->fLastMask) {
             return -1;
         }
 
-        return back->fLastMask.texture()->height();
+        return back->fLastMask->height();
     }
 
-    void getLastBound(GrIRect* bound) const {
+    void getLastBound(SkIRect* bound) const {
 
         if (fStack.empty()) {
-            GrAssert(false);
+            SkASSERT(false);
             bound->setEmpty();
             return;
         }
@@ -175,16 +171,8 @@ public:
         *bound = back->fLastBound;
     }
 
-    void setContext(GrContext* context) {
-        fContext = context;
-    }
-
-    GrContext* getContext() {
-        return fContext;
-    }
-
-    void releaseResources() {
-
+    //  TODO: Remove this when we hold cache keys instead of refs to textures.
+    void purgeResources() {
         SkDeque::F2BIter iter(fStack);
         for (GrClipStackFrame* frame = (GrClipStackFrame*) iter.next();
                 frame != NULL;
@@ -200,14 +188,17 @@ private:
             this->reset();
         }
 
-        void acquireMask(GrContext* context,
+        void acquireMask(GrResourceProvider* resourceProvider,
                          int32_t clipGenID,
-                         const GrTextureDesc& desc,
-                         const GrIRect& bound) {
+                         const GrSurfaceDesc& desc,
+                         const SkIRect& bound) {
 
             fLastClipGenID = clipGenID;
 
-            fLastMask.set(context, desc);
+            // TODO: Determine if we really need the NoPendingIO flag anymore.
+            // (http://skbug.com/4156)
+            static const uint32_t kFlags = GrResourceProvider::kNoPendingIO_Flag;
+            fLastMask.reset(resourceProvider->createApproxTexture(desc, kFlags));
 
             fLastBound = bound;
         }
@@ -215,25 +206,26 @@ private:
         void reset () {
             fLastClipGenID = SkClipStack::kInvalidGenID;
 
-            GrTextureDesc desc;
+            GrSurfaceDesc desc;
 
-            fLastMask.set(NULL, desc);
+            fLastMask.reset(NULL);
             fLastBound.setEmpty();
         }
 
         int32_t                 fLastClipGenID;
         // The mask's width & height values are used by GrClipMaskManager to correctly scale the
-        // texture coords for the geometry drawn with this mask.
-        GrAutoScratchTexture    fLastMask;
+        // texture coords for the geometry drawn with this mask. TODO: This should be a cache key
+        // and not a hard ref to a texture.
+        SkAutoTUnref<GrTexture> fLastMask;
         // fLastBound stores the bounding box of the clip mask in clip-stack space. This rect is
         // used by GrClipMaskManager to position a rect and compute texture coords for the mask.
-        GrIRect                 fLastBound;
+        SkIRect                 fLastBound;
     };
 
-    GrContext*   fContext;
-    SkDeque      fStack;
+    SkDeque             fStack;
+    GrResourceProvider* fResourceProvider;
 
-    typedef GrNoncopyable INHERITED;
+    typedef SkNoncopyable INHERITED;
 };
 
 #endif // GrClipMaskCache_DEFINED

@@ -17,19 +17,36 @@ public:
     SkFilterShader(SkShader* shader, SkColorFilter* filter);
     virtual ~SkFilterShader();
 
-    virtual uint32_t getFlags() SK_OVERRIDE;
-    virtual bool setContext(const SkBitmap&, const SkPaint&,
-                            const SkMatrix&) SK_OVERRIDE;
-    virtual void endContext() SK_OVERRIDE;
-    virtual void shadeSpan(int x, int y, SkPMColor[], int count) SK_OVERRIDE;
-    virtual void shadeSpan16(int x, int y, uint16_t[], int count) SK_OVERRIDE;
+    size_t contextSize() const override;
 
-    SK_DEVELOPER_TO_STRING()
+    class FilterShaderContext : public SkShader::Context {
+    public:
+        // Takes ownership of shaderContext and calls its destructor.
+        FilterShaderContext(const SkFilterShader&, SkShader::Context*, const ContextRec&);
+        virtual ~FilterShaderContext();
+
+        uint32_t getFlags() const override;
+
+        void shadeSpan(int x, int y, SkPMColor[], int count) override;
+
+        void set3DMask(const SkMask* mask) override {
+            // forward to our proxy
+            fShaderContext->set3DMask(mask);
+        }
+
+    private:
+        SkShader::Context* fShaderContext;
+
+        typedef SkShader::Context INHERITED;
+    };
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkFilterShader)
 
 protected:
-    SkFilterShader(SkFlattenableReadBuffer& );
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
+    void flatten(SkWriteBuffer&) const override;
+    Context* onCreateContext(const ContextRec&, void* storage) const override;
+
 
 private:
     SkShader*       fShader;

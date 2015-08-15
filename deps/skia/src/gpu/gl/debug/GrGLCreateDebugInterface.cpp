@@ -93,7 +93,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLBufferData(GrGLenum target,
             buffer = GrDebugGL::getInstance()->getElementArrayBuffer();
             break;
         default:
-            GrCrash("Unexpected target to glBufferData");
+            SkFAIL("Unexpected target to glBufferData");
             break;
     }
 
@@ -256,15 +256,15 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLReadPixels(GrGLint x,
 
          for (int i = 0; i < n; ++i) {
 
-             if (NULL != frameBuffer->getColor() &&
+             if (frameBuffer->getColor() &&
                  textures[i] == frameBuffer->getColor()->getID()) {
                  frameBuffer->setColor(NULL);
              }
-             if (NULL != frameBuffer->getDepth() &&
+             if (frameBuffer->getDepth() &&
                  textures[i] == frameBuffer->getDepth()->getID()) {
                  frameBuffer->setDepth(NULL);
              }
-             if (NULL != frameBuffer->getStencil() &&
+             if (frameBuffer->getStencil() &&
                  textures[i] == frameBuffer->getStencil()->getID()) {
                  frameBuffer->setStencil(NULL);
              }
@@ -341,15 +341,15 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLReadPixels(GrGLint x,
 
          for (int i = 0; i < n; ++i) {
 
-             if (NULL != frameBuffer->getColor() &&
+             if (frameBuffer->getColor() &&
                  renderBuffers[i] == frameBuffer->getColor()->getID()) {
                  frameBuffer->setColor(NULL);
              }
-             if (NULL != frameBuffer->getDepth() &&
+             if (frameBuffer->getDepth() &&
                  renderBuffers[i] == frameBuffer->getDepth()->getID()) {
                  frameBuffer->setDepth(NULL);
              }
-             if (NULL != frameBuffer->getStencil() &&
+             if (frameBuffer->getStencil() &&
                  renderBuffers[i] == frameBuffer->getStencil()->getID()) {
                  frameBuffer->setStencil(NULL);
              }
@@ -390,7 +390,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLReadPixels(GrGLint x,
 
      GrFrameBufferObj *framebuffer = GrDebugGL::getInstance()->getFrameBuffer();
      // A render buffer cannot be attached to the default framebuffer
-     GrAlwaysAssert(NULL != framebuffer);
+     GrAlwaysAssert(framebuffer);
 
      // a renderBufferID of 0 is acceptable - it unbinds the current
      // render buffer
@@ -430,7 +430,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLReadPixels(GrGLint x,
 
      GrFrameBufferObj *framebuffer = GrDebugGL::getInstance()->getFrameBuffer();
      // A texture cannot be attached to the default framebuffer
-     GrAlwaysAssert(NULL != framebuffer);
+     GrAlwaysAssert(framebuffer);
 
      // A textureID of 0 is allowed - it unbinds the currently bound texture
      GrTextureObj *texture = GR_FIND(textureID, GrTextureObj,
@@ -523,6 +523,9 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLGenBuffers(GrGLsizei n, GrGLuint* ids) {
     debugGenObjs(GrDebugGL::kBuffer_ObjTypes, n, ids);
 }
 
+GrGLvoid GR_GL_FUNCTION_TYPE debugGLGenerateMipmap(GrGLenum level) {
+}
+
 GrGLvoid GR_GL_FUNCTION_TYPE debugGLGenFramebuffers(GrGLsizei n,
                                                     GrGLuint* ids) {
     debugGenObjs(GrDebugGL::kFrameBuffer_ObjTypes, n, ids);
@@ -563,7 +566,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLDeleteVertexArrays(GrGLsizei n, const GrGLui
 
 GrGLvoid GR_GL_FUNCTION_TYPE debugGLBindVertexArray(GrGLuint id) {
     GrVertexArrayObj* array = GR_FIND(id, GrVertexArrayObj, GrDebugGL::kVertexArray_ObjTypes);
-    GrAlwaysAssert((0 == id) || NULL != array);
+    GrAlwaysAssert((0 == id) || array);
     GrDebugGL::getInstance()->setVertexArray(array);
 }
 
@@ -583,7 +586,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLBindBuffer(GrGLenum target, GrGLuint bufferI
             GrDebugGL::getInstance()->setElementArrayBuffer(buffer);
             break;
         default:
-            GrCrash("Unexpected target to glBindBuffer");
+            SkFAIL("Unexpected target to glBindBuffer");
             break;
     }
 }
@@ -619,11 +622,40 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLDeleteBuffers(GrGLsizei n, const GrGLuint* i
 }
 
 // map a buffer to the caller's address space
-GrGLvoid* GR_GL_FUNCTION_TYPE debugGLMapBuffer(GrGLenum target, GrGLenum access) {
-
+GrGLvoid* GR_GL_FUNCTION_TYPE debugGLMapBufferRange(GrGLenum target, GrGLintptr offset,
+                                                    GrGLsizeiptr length, GrGLbitfield access) {
     GrAlwaysAssert(GR_GL_ARRAY_BUFFER == target ||
                    GR_GL_ELEMENT_ARRAY_BUFFER == target);
-    // GR_GL_READ_ONLY == access ||  || GR_GL_READ_WRIT == access);
+
+    // We only expect read access and we expect that the buffer or range is always invalidated.
+    GrAlwaysAssert(!SkToBool(GR_GL_MAP_READ_BIT & access));
+    GrAlwaysAssert((GR_GL_MAP_INVALIDATE_BUFFER_BIT | GR_GL_MAP_INVALIDATE_RANGE_BIT) & access);
+
+    GrBufferObj *buffer = NULL;
+    switch (target) {
+        case GR_GL_ARRAY_BUFFER:
+            buffer = GrDebugGL::getInstance()->getArrayBuffer();
+            break;
+        case GR_GL_ELEMENT_ARRAY_BUFFER:
+            buffer = GrDebugGL::getInstance()->getElementArrayBuffer();
+            break;
+        default:
+            SkFAIL("Unexpected target to glMapBufferRange");
+            break;
+    }
+
+    if (buffer) {
+        GrAlwaysAssert(offset >= 0 && offset + length <= buffer->getSize());
+        GrAlwaysAssert(!buffer->getMapped());
+        buffer->setMapped(offset, length);
+        return buffer->getDataPtr() + offset;
+    }
+
+    GrAlwaysAssert(false);
+    return NULL;        // no buffer bound to the target
+}
+
+GrGLvoid* GR_GL_FUNCTION_TYPE debugGLMapBuffer(GrGLenum target, GrGLenum access) {
     GrAlwaysAssert(GR_GL_WRITE_ONLY == access);
 
     GrBufferObj *buffer = NULL;
@@ -635,18 +667,12 @@ GrGLvoid* GR_GL_FUNCTION_TYPE debugGLMapBuffer(GrGLenum target, GrGLenum access)
             buffer = GrDebugGL::getInstance()->getElementArrayBuffer();
             break;
         default:
-            GrCrash("Unexpected target to glMapBuffer");
+            SkFAIL("Unexpected target to glMapBuffer");
             break;
     }
 
-    if (buffer) {
-        GrAlwaysAssert(!buffer->getMapped());
-        buffer->setMapped();
-        return buffer->getDataPtr();
-    }
-
-    GrAlwaysAssert(false);
-    return NULL;        // no buffer bound to the target
+    return debugGLMapBufferRange(target, 0, buffer->getSize(),
+                                 GR_GL_MAP_WRITE_BIT | GR_GL_MAP_INVALIDATE_BUFFER_BIT);
 }
 
 // remove a buffer from the caller's address space
@@ -665,7 +691,7 @@ GrGLboolean GR_GL_FUNCTION_TYPE debugGLUnmapBuffer(GrGLenum target) {
             buffer = GrDebugGL::getInstance()->getElementArrayBuffer();
             break;
         default:
-            GrCrash("Unexpected target to glUnmapBuffer");
+            SkFAIL("Unexpected target to glUnmapBuffer");
             break;
     }
 
@@ -678,6 +704,34 @@ GrGLboolean GR_GL_FUNCTION_TYPE debugGLUnmapBuffer(GrGLenum target) {
     GrAlwaysAssert(false);
     return GR_GL_FALSE; // GR_GL_INVALID_OPERATION;
 }
+
+GrGLvoid GR_GL_FUNCTION_TYPE debugGLFlushMappedBufferRange(GrGLenum target,
+                                                           GrGLintptr offset,
+                                                           GrGLsizeiptr length) {
+    GrAlwaysAssert(GR_GL_ARRAY_BUFFER == target ||
+                   GR_GL_ELEMENT_ARRAY_BUFFER == target);
+
+    GrBufferObj *buffer = NULL;
+    switch (target) {
+        case GR_GL_ARRAY_BUFFER:
+            buffer = GrDebugGL::getInstance()->getArrayBuffer();
+            break;
+        case GR_GL_ELEMENT_ARRAY_BUFFER:
+            buffer = GrDebugGL::getInstance()->getElementArrayBuffer();
+            break;
+        default:
+            SkFAIL("Unexpected target to glUnmapBuffer");
+            break;
+    }
+
+    if (buffer) {
+        GrAlwaysAssert(buffer->getMapped());
+        GrAlwaysAssert(offset >= 0 && (offset + length) <= buffer->getMappedLength());
+    } else {
+        GrAlwaysAssert(false);
+    }
+}
+
 
 GrGLvoid GR_GL_FUNCTION_TYPE debugGLGetBufferParameteriv(GrGLenum target,
                                                          GrGLenum value,
@@ -709,7 +763,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLGetBufferParameteriv(GrGLenum target,
         case GR_GL_BUFFER_SIZE:
             *params = 0;
             if (buffer)
-                *params = buffer->getSize();
+                *params = SkToInt(buffer->getSize());
             break;
         case GR_GL_BUFFER_USAGE:
             *params = GR_GL_STATIC_DRAW;
@@ -717,7 +771,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLGetBufferParameteriv(GrGLenum target,
                 *params = buffer->getUsage();
             break;
         default:
-            GrCrash("Unexpected value to glGetBufferParamateriv");
+            SkFAIL("Unexpected value to glGetBufferParamateriv");
             break;
     }
 };
@@ -727,7 +781,7 @@ GrGLvoid GR_GL_FUNCTION_TYPE debugGLGetBufferParameteriv(GrGLenum target,
 struct GrDebugGLInterface : public GrGLInterface {
 
 public:
-    SK_DECLARE_INST_COUNT(GrDebugGLInterface)
+    
 
     GrDebugGLInterface()
         : fWrapped(NULL) {
@@ -740,6 +794,10 @@ public:
 
     void setWrapped(GrGLInterface *interface) {
         fWrapped.reset(interface);
+    }
+
+    void abandon() const override {
+        GrDebugGL::abandon();
     }
 
     // TODO: there are some issues w/ wrapping another GL interface inside the
@@ -761,7 +819,7 @@ public:
     //      The solution to this is probably to alter SkDebugGlContext's
     //      "makeCurrent" method to make a call like "makeCurrent(this)" to
     //      the debug GL interface (assuming that the application will create
-    //      multiple SkGLContextHelper's) to let it switch between the active
+    //      multiple SkGLContext's) to let it switch between the active
     //      context. Everything in the GrDebugGL object would then need to be
     //      moved to a GrContextObj and the GrDebugGL object would just switch
     //      between them. Note that this approach would also require that
@@ -776,139 +834,156 @@ private:
     typedef GrGLInterface INHERITED;
 };
 
-SK_DEFINE_INST_COUNT(GrDebugGLInterface)
-
 ////////////////////////////////////////////////////////////////////////////////
 const GrGLInterface* GrGLCreateDebugInterface() {
     GrGLInterface* interface = SkNEW(GrDebugGLInterface);
 
-    interface->fBindingsExported = kDesktop_GrGLBinding;
-    interface->fActiveTexture = debugGLActiveTexture;
-    interface->fAttachShader = debugGLAttachShader;
-    interface->fBeginQuery = debugGLBeginQuery;
-    interface->fBindAttribLocation = debugGLBindAttribLocation;
-    interface->fBindBuffer = debugGLBindBuffer;
-    interface->fBindFragDataLocation = noOpGLBindFragDataLocation;
-    interface->fBindTexture = debugGLBindTexture;
-    interface->fBindVertexArray = debugGLBindVertexArray;
-    interface->fBlendColor = noOpGLBlendColor;
-    interface->fBlendFunc = noOpGLBlendFunc;
-    interface->fBufferData = debugGLBufferData;
-    interface->fBufferSubData = noOpGLBufferSubData;
-    interface->fClear = noOpGLClear;
-    interface->fClearColor = noOpGLClearColor;
-    interface->fClearStencil = noOpGLClearStencil;
-    interface->fColorMask = noOpGLColorMask;
-    interface->fCompileShader = noOpGLCompileShader;
-    interface->fCompressedTexImage2D = noOpGLCompressedTexImage2D;
-    interface->fCopyTexSubImage2D = noOpGLCopyTexSubImage2D;
-    interface->fCreateProgram = debugGLCreateProgram;
-    interface->fCreateShader = debugGLCreateShader;
-    interface->fCullFace = noOpGLCullFace;
-    interface->fDeleteBuffers = debugGLDeleteBuffers;
-    interface->fDeleteProgram = debugGLDeleteProgram;
-    interface->fDeleteQueries = noOpGLDeleteIds;
-    interface->fDeleteShader = debugGLDeleteShader;
-    interface->fDeleteTextures = debugGLDeleteTextures;
-    interface->fDeleteVertexArrays = debugGLDeleteVertexArrays;
-    interface->fDepthMask = noOpGLDepthMask;
-    interface->fDisable = noOpGLDisable;
-    interface->fDisableVertexAttribArray = noOpGLDisableVertexAttribArray;
-    interface->fDrawArrays = noOpGLDrawArrays;
-    interface->fDrawBuffer = noOpGLDrawBuffer;
-    interface->fDrawBuffers = noOpGLDrawBuffers;
-    interface->fDrawElements = noOpGLDrawElements;
-    interface->fEnable = noOpGLEnable;
-    interface->fEnableVertexAttribArray = noOpGLEnableVertexAttribArray;
-    interface->fEndQuery = noOpGLEndQuery;
-    interface->fFinish = noOpGLFinish;
-    interface->fFlush = noOpGLFlush;
-    interface->fFrontFace = noOpGLFrontFace;
-    interface->fGenBuffers = debugGLGenBuffers;
-    interface->fGenQueries = noOpGLGenIds;
-    interface->fGenTextures = debugGLGenTextures;
-    interface->fGetBufferParameteriv = debugGLGetBufferParameteriv;
-    interface->fGetError = noOpGLGetError;
-    interface->fGetIntegerv = noOpGLGetIntegerv;
-    interface->fGetQueryObjecti64v = noOpGLGetQueryObjecti64v;
-    interface->fGetQueryObjectiv = noOpGLGetQueryObjectiv;
-    interface->fGetQueryObjectui64v = noOpGLGetQueryObjectui64v;
-    interface->fGetQueryObjectuiv = noOpGLGetQueryObjectuiv;
-    interface->fGetQueryiv = noOpGLGetQueryiv;
-    interface->fGetProgramInfoLog = noOpGLGetInfoLog;
-    interface->fGetProgramiv = noOpGLGetShaderOrProgramiv;
-    interface->fGetShaderInfoLog = noOpGLGetInfoLog;
-    interface->fGetShaderiv = noOpGLGetShaderOrProgramiv;
-    interface->fGetString = noOpGLGetString;
-    interface->fGetStringi = noOpGLGetStringi;
-    interface->fGetTexLevelParameteriv = noOpGLGetTexLevelParameteriv;
-    interface->fGetUniformLocation = noOpGLGetUniformLocation;
-    interface->fGenVertexArrays = debugGLGenVertexArrays;
-    interface->fLineWidth = noOpGLLineWidth;
-    interface->fLinkProgram = noOpGLLinkProgram;
-    interface->fPixelStorei = debugGLPixelStorei;
-    interface->fQueryCounter = noOpGLQueryCounter;
-    interface->fReadBuffer = noOpGLReadBuffer;
-    interface->fReadPixels = debugGLReadPixels;
-    interface->fScissor = noOpGLScissor;
-    interface->fShaderSource = noOpGLShaderSource;
-    interface->fStencilFunc = noOpGLStencilFunc;
-    interface->fStencilFuncSeparate = noOpGLStencilFuncSeparate;
-    interface->fStencilMask = noOpGLStencilMask;
-    interface->fStencilMaskSeparate = noOpGLStencilMaskSeparate;
-    interface->fStencilOp = noOpGLStencilOp;
-    interface->fStencilOpSeparate = noOpGLStencilOpSeparate;
-    interface->fTexImage2D = noOpGLTexImage2D;
-    interface->fTexParameteri = noOpGLTexParameteri;
-    interface->fTexParameteriv = noOpGLTexParameteriv;
-    interface->fTexSubImage2D = noOpGLTexSubImage2D;
-    interface->fTexStorage2D = noOpGLTexStorage2D;
-    interface->fDiscardFramebuffer = noOpGLDiscardFramebuffer;
-    interface->fUniform1f = noOpGLUniform1f;
-    interface->fUniform1i = noOpGLUniform1i;
-    interface->fUniform1fv = noOpGLUniform1fv;
-    interface->fUniform1iv = noOpGLUniform1iv;
-    interface->fUniform2f = noOpGLUniform2f;
-    interface->fUniform2i = noOpGLUniform2i;
-    interface->fUniform2fv = noOpGLUniform2fv;
-    interface->fUniform2iv = noOpGLUniform2iv;
-    interface->fUniform3f = noOpGLUniform3f;
-    interface->fUniform3i = noOpGLUniform3i;
-    interface->fUniform3fv = noOpGLUniform3fv;
-    interface->fUniform3iv = noOpGLUniform3iv;
-    interface->fUniform4f = noOpGLUniform4f;
-    interface->fUniform4i = noOpGLUniform4i;
-    interface->fUniform4fv = noOpGLUniform4fv;
-    interface->fUniform4iv = noOpGLUniform4iv;
-    interface->fUniformMatrix2fv = noOpGLUniformMatrix2fv;
-    interface->fUniformMatrix3fv = noOpGLUniformMatrix3fv;
-    interface->fUniformMatrix4fv = noOpGLUniformMatrix4fv;
-    interface->fUseProgram = debugGLUseProgram;
-    interface->fVertexAttrib4fv = noOpGLVertexAttrib4fv;
-    interface->fVertexAttribPointer = noOpGLVertexAttribPointer;
-    interface->fViewport = noOpGLViewport;
-    interface->fBindFramebuffer = debugGLBindFramebuffer;
-    interface->fBindRenderbuffer = debugGLBindRenderbuffer;
-    interface->fCheckFramebufferStatus = noOpGLCheckFramebufferStatus;
-    interface->fDeleteFramebuffers = debugGLDeleteFramebuffers;
-    interface->fDeleteRenderbuffers = debugGLDeleteRenderbuffers;
-    interface->fFramebufferRenderbuffer = debugGLFramebufferRenderbuffer;
-    interface->fFramebufferTexture2D = debugGLFramebufferTexture2D;
-    interface->fGenFramebuffers = debugGLGenFramebuffers;
-    interface->fGenRenderbuffers = debugGLGenRenderbuffers;
-    interface->fGetFramebufferAttachmentParameteriv =
+    interface->fStandard = kGL_GrGLStandard;
+
+    GrGLInterface::Functions* functions = &interface->fFunctions;
+    functions->fActiveTexture = debugGLActiveTexture;
+    functions->fAttachShader = debugGLAttachShader;
+    functions->fBeginQuery = debugGLBeginQuery;
+    functions->fBindAttribLocation = debugGLBindAttribLocation;
+    functions->fBindBuffer = debugGLBindBuffer;
+    functions->fBindFragDataLocation = noOpGLBindFragDataLocation;
+    functions->fBindTexture = debugGLBindTexture;
+    functions->fBindVertexArray = debugGLBindVertexArray;
+    functions->fBlendColor = noOpGLBlendColor;
+    functions->fBlendEquation = noOpGLBlendEquation;
+    functions->fBlendFunc = noOpGLBlendFunc;
+    functions->fBufferData = debugGLBufferData;
+    functions->fBufferSubData = noOpGLBufferSubData;
+    functions->fClear = noOpGLClear;
+    functions->fClearColor = noOpGLClearColor;
+    functions->fClearStencil = noOpGLClearStencil;
+    functions->fColorMask = noOpGLColorMask;
+    functions->fCompileShader = noOpGLCompileShader;
+    functions->fCompressedTexImage2D = noOpGLCompressedTexImage2D;
+    functions->fCompressedTexSubImage2D = noOpGLCompressedTexSubImage2D;
+    functions->fCopyTexSubImage2D = noOpGLCopyTexSubImage2D;
+    functions->fCreateProgram = debugGLCreateProgram;
+    functions->fCreateShader = debugGLCreateShader;
+    functions->fCullFace = noOpGLCullFace;
+    functions->fDeleteBuffers = debugGLDeleteBuffers;
+    functions->fDeleteProgram = debugGLDeleteProgram;
+    functions->fDeleteQueries = noOpGLDeleteIds;
+    functions->fDeleteShader = debugGLDeleteShader;
+    functions->fDeleteTextures = debugGLDeleteTextures;
+    functions->fDeleteVertexArrays = debugGLDeleteVertexArrays;
+    functions->fDepthMask = noOpGLDepthMask;
+    functions->fDisable = noOpGLDisable;
+    functions->fDisableVertexAttribArray = noOpGLDisableVertexAttribArray;
+    functions->fDrawArrays = noOpGLDrawArrays;
+    functions->fDrawArraysInstanced = noOpGLDrawArraysInstanced;
+    functions->fDrawBuffer = noOpGLDrawBuffer;
+    functions->fDrawBuffers = noOpGLDrawBuffers;
+    functions->fDrawElements = noOpGLDrawElements;
+    functions->fDrawElementsInstanced = noOpGLDrawElementsInstanced;
+    functions->fEnable = noOpGLEnable;
+    functions->fEnableVertexAttribArray = noOpGLEnableVertexAttribArray;
+    functions->fEndQuery = noOpGLEndQuery;
+    functions->fFinish = noOpGLFinish;
+    functions->fFlush = noOpGLFlush;
+    functions->fFlushMappedBufferRange = debugGLFlushMappedBufferRange;
+    functions->fFrontFace = noOpGLFrontFace;
+    functions->fGenerateMipmap = debugGLGenerateMipmap;
+    functions->fGenBuffers = debugGLGenBuffers;
+    functions->fGenQueries = noOpGLGenIds;
+    functions->fGenTextures = debugGLGenTextures;
+    functions->fGetBufferParameteriv = debugGLGetBufferParameteriv;
+    functions->fGetError = noOpGLGetError;
+    functions->fGetIntegerv = noOpGLGetIntegerv;
+    functions->fGetQueryObjecti64v = noOpGLGetQueryObjecti64v;
+    functions->fGetQueryObjectiv = noOpGLGetQueryObjectiv;
+    functions->fGetQueryObjectui64v = noOpGLGetQueryObjectui64v;
+    functions->fGetQueryObjectuiv = noOpGLGetQueryObjectuiv;
+    functions->fGetQueryiv = noOpGLGetQueryiv;
+    functions->fGetProgramInfoLog = noOpGLGetInfoLog;
+    functions->fGetProgramiv = noOpGLGetShaderOrProgramiv;
+    functions->fGetShaderInfoLog = noOpGLGetInfoLog;
+    functions->fGetShaderiv = noOpGLGetShaderOrProgramiv;
+    functions->fGetString = noOpGLGetString;
+    functions->fGetStringi = noOpGLGetStringi;
+    functions->fGetTexLevelParameteriv = noOpGLGetTexLevelParameteriv;
+    functions->fGetUniformLocation = noOpGLGetUniformLocation;
+    functions->fGenVertexArrays = debugGLGenVertexArrays;
+    functions->fLineWidth = noOpGLLineWidth;
+    functions->fLinkProgram = noOpGLLinkProgram;
+    functions->fMapBuffer = debugGLMapBuffer;
+    functions->fMapBufferRange = debugGLMapBufferRange;
+    functions->fPixelStorei = debugGLPixelStorei;
+    functions->fQueryCounter = noOpGLQueryCounter;
+    functions->fReadBuffer = noOpGLReadBuffer;
+    functions->fReadPixels = debugGLReadPixels;
+    functions->fScissor = noOpGLScissor;
+    functions->fShaderSource = noOpGLShaderSource;
+    functions->fStencilFunc = noOpGLStencilFunc;
+    functions->fStencilFuncSeparate = noOpGLStencilFuncSeparate;
+    functions->fStencilMask = noOpGLStencilMask;
+    functions->fStencilMaskSeparate = noOpGLStencilMaskSeparate;
+    functions->fStencilOp = noOpGLStencilOp;
+    functions->fStencilOpSeparate = noOpGLStencilOpSeparate;
+    functions->fTexImage2D = noOpGLTexImage2D;
+    functions->fTexParameteri = noOpGLTexParameteri;
+    functions->fTexParameteriv = noOpGLTexParameteriv;
+    functions->fTexSubImage2D = noOpGLTexSubImage2D;
+    functions->fTexStorage2D = noOpGLTexStorage2D;
+    functions->fDiscardFramebuffer = noOpGLDiscardFramebuffer;
+    functions->fUniform1f = noOpGLUniform1f;
+    functions->fUniform1i = noOpGLUniform1i;
+    functions->fUniform1fv = noOpGLUniform1fv;
+    functions->fUniform1iv = noOpGLUniform1iv;
+    functions->fUniform2f = noOpGLUniform2f;
+    functions->fUniform2i = noOpGLUniform2i;
+    functions->fUniform2fv = noOpGLUniform2fv;
+    functions->fUniform2iv = noOpGLUniform2iv;
+    functions->fUniform3f = noOpGLUniform3f;
+    functions->fUniform3i = noOpGLUniform3i;
+    functions->fUniform3fv = noOpGLUniform3fv;
+    functions->fUniform3iv = noOpGLUniform3iv;
+    functions->fUniform4f = noOpGLUniform4f;
+    functions->fUniform4i = noOpGLUniform4i;
+    functions->fUniform4fv = noOpGLUniform4fv;
+    functions->fUniform4iv = noOpGLUniform4iv;
+    functions->fUniformMatrix2fv = noOpGLUniformMatrix2fv;
+    functions->fUniformMatrix3fv = noOpGLUniformMatrix3fv;
+    functions->fUniformMatrix4fv = noOpGLUniformMatrix4fv;
+    functions->fUnmapBuffer = debugGLUnmapBuffer;
+    functions->fUseProgram = debugGLUseProgram;
+    functions->fVertexAttrib1f = noOpGLVertexAttrib1f;
+    functions->fVertexAttrib2fv = noOpGLVertexAttrib2fv;
+    functions->fVertexAttrib3fv = noOpGLVertexAttrib3fv;
+    functions->fVertexAttrib4fv = noOpGLVertexAttrib4fv;
+    functions->fVertexAttribPointer = noOpGLVertexAttribPointer;
+    functions->fVertexAttribDivisor = noOpGLVertexAttribDivisor;
+    functions->fViewport = noOpGLViewport;
+    functions->fBindFramebuffer = debugGLBindFramebuffer;
+    functions->fBindRenderbuffer = debugGLBindRenderbuffer;
+    functions->fCheckFramebufferStatus = noOpGLCheckFramebufferStatus;
+    functions->fDeleteFramebuffers = debugGLDeleteFramebuffers;
+    functions->fDeleteRenderbuffers = debugGLDeleteRenderbuffers;
+    functions->fFramebufferRenderbuffer = debugGLFramebufferRenderbuffer;
+    functions->fFramebufferTexture2D = debugGLFramebufferTexture2D;
+    functions->fGenFramebuffers = debugGLGenFramebuffers;
+    functions->fGenRenderbuffers = debugGLGenRenderbuffers;
+    functions->fGetFramebufferAttachmentParameteriv =
                                     noOpGLGetFramebufferAttachmentParameteriv;
-    interface->fGetRenderbufferParameteriv = noOpGLGetRenderbufferParameteriv;
-    interface->fRenderbufferStorage = noOpGLRenderbufferStorage;
-    interface->fRenderbufferStorageMultisample =
+    functions->fGetRenderbufferParameteriv = noOpGLGetRenderbufferParameteriv;
+    functions->fRenderbufferStorage = noOpGLRenderbufferStorage;
+    functions->fRenderbufferStorageMultisample =
                                     noOpGLRenderbufferStorageMultisample;
-    interface->fBlitFramebuffer = noOpGLBlitFramebuffer;
-    interface->fResolveMultisampleFramebuffer =
+    functions->fBlitFramebuffer = noOpGLBlitFramebuffer;
+    functions->fResolveMultisampleFramebuffer =
                                     noOpGLResolveMultisampleFramebuffer;
-    interface->fMapBuffer = debugGLMapBuffer;
-    interface->fUnmapBuffer = debugGLUnmapBuffer;
-    interface->fBindFragDataLocationIndexed =
+    functions->fMatrixLoadf = noOpGLMatrixLoadf;
+    functions->fMatrixLoadIdentity = noOpGLMatrixLoadIdentity;
+
+    functions->fBindFragDataLocationIndexed =
                                     noOpGLBindFragDataLocationIndexed;
+
+    interface->fExtensions.init(kGL_GrGLStandard, functions->fGetString, functions->fGetStringi,
+                                functions->fGetIntegerv);
 
     return interface;
 }

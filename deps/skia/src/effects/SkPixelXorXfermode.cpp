@@ -9,7 +9,8 @@
 
 #include "SkPixelXorXfermode.h"
 #include "SkColorPriv.h"
-#include "SkFlattenableBuffers.h"
+#include "SkReadBuffer.h"
+#include "SkWriteBuffer.h"
 #include "SkString.h"
 
 // we always return an opaque color, 'cause I don't know what to do with
@@ -20,17 +21,15 @@ SkPMColor SkPixelXorXfermode::xferColor(SkPMColor src, SkPMColor dst) const {
     return res;
 }
 
-void SkPixelXorXfermode::flatten(SkFlattenableWriteBuffer& wb) const {
-    this->INHERITED::flatten(wb);
+void SkPixelXorXfermode::flatten(SkWriteBuffer& wb) const {
     wb.writeColor(fOpColor);
 }
 
-SkPixelXorXfermode::SkPixelXorXfermode(SkFlattenableReadBuffer& rb)
-        : INHERITED(rb) {
-    fOpColor = rb.readColor();
+SkFlattenable* SkPixelXorXfermode::CreateProc(SkReadBuffer& buffer) {
+    return Create(buffer.readColor());
 }
 
-#ifdef SK_DEVELOPER
+#ifndef SK_IGNORE_TO_STRING
 void SkPixelXorXfermode::toString(SkString* str) const {
     str->append("SkPixelXorXfermode: ");
     str->appendHex(fOpColor);

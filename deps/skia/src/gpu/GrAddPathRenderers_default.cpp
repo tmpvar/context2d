@@ -10,25 +10,25 @@
 #include "GrStencilAndCoverPathRenderer.h"
 #include "GrAAHairLinePathRenderer.h"
 #include "GrAAConvexPathRenderer.h"
-#if GR_STROKE_PATH_RENDERING
-#include "../../experimental/StrokePathRenderer/GrStrokePathRenderer.h"
-#endif
-#if GR_ANDROID_PATH_RENDERING
-#include "../../experimental/AndroidPathRenderer/GrAndroidPathRenderer.h"
-#endif
+#include "GrAALinearizingConvexPathRenderer.h"
+#include "GrAADistanceFieldPathRenderer.h"
+#include "GrContext.h"
+#include "GrDashLinePathRenderer.h"
+#include "GrGpu.h"
+#include "GrTessellatingPathRenderer.h"
 
 void GrPathRenderer::AddPathRenderers(GrContext* ctx, GrPathRendererChain* chain) {
-#if GR_STROKE_PATH_RENDERING
-    chain->addPathRenderer(SkNEW(GrStrokePathRenderer))->unref();
-#endif
-#if GR_ANDROID_PATH_RENDERING
-    chain->addPathRenderer(SkNEW(GrAndroidPathRenderer))->unref();
-#endif
-    if (GrPathRenderer* pr = GrStencilAndCoverPathRenderer::Create(ctx)) {
+    chain->addPathRenderer(SkNEW(GrDashLinePathRenderer))->unref();
+
+    if (GrPathRenderer* pr = GrStencilAndCoverPathRenderer::Create(ctx->resourceProvider(),
+                                                                   *ctx->caps())) {
         chain->addPathRenderer(pr)->unref();
     }
-    if (GrPathRenderer* pr = GrAAHairLinePathRenderer::Create(ctx)) {
+    chain->addPathRenderer(SkNEW(GrTessellatingPathRenderer))->unref();
+    if (GrPathRenderer* pr = GrAAHairLinePathRenderer::Create()) {
         chain->addPathRenderer(pr)->unref();
     }
     chain->addPathRenderer(SkNEW(GrAAConvexPathRenderer))->unref();
+    chain->addPathRenderer(SkNEW(GrAALinearizingConvexPathRenderer))->unref();
+    chain->addPathRenderer(SkNEW(GrAADistanceFieldPathRenderer))->unref();
 }

@@ -5,12 +5,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Test.h"
 #include "SkAnnotation.h"
-#include "SkData.h"
 #include "SkCanvas.h"
-#include "SkPDFDevice.h"
-#include "SkPDFDocument.h"
+#include "SkData.h"
+#include "SkDocument.h"
+#include "SkStream.h"
+#include "Test.h"
 
 /** Returns true if data (may contain null characters) contains needle (null
  *  terminated). */
@@ -24,10 +24,9 @@ static bool ContainsString(const char* data, size_t dataSize, const char* needle
     return false;
 }
 
-static void test_nodraw(skiatest::Reporter* reporter) {
+DEF_TEST(Annotation_NoDraw, reporter) {
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-    bm.allocPixels();
+    bm.allocN32Pixels(10, 10);
     bm.eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas canvas(bm);
@@ -40,66 +39,40 @@ static void test_nodraw(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 0 == *bm.getAddr32(0, 0));
 }
 
-struct testCase {
-    SkPDFDocument::Flags flags;
-    bool expectAnnotations;
-};
-
-static void test_pdf_link_annotations(skiatest::Reporter* reporter) {
-    SkISize size = SkISize::Make(612, 792);
-    SkMatrix initialTransform;
-    initialTransform.reset();
-    SkPDFDevice device(size, size, initialTransform);
-    SkCanvas canvas(&device);
+DEF_TEST(Annotation_PdfLink, reporter) {
+    REQUIRE_PDF_DOCUMENT(Annotation_PdfLink, reporter);
+    SkDynamicMemoryWStream outStream;
+    SkAutoTUnref<SkDocument> doc(SkDocument::CreatePDF(&outStream));
+    SkCanvas* canvas = doc->beginPage(612.0f, 792.0f);
+    REPORTER_ASSERT(reporter, canvas);
 
     SkRect r = SkRect::MakeXYWH(SkIntToScalar(72), SkIntToScalar(72),
                                 SkIntToScalar(288), SkIntToScalar(72));
     SkAutoDataUnref data(SkData::NewWithCString("http://www.gooogle.com"));
-    SkAnnotateRectWithURL(&canvas, r, data.get());
+    SkAnnotateRectWithURL(canvas, r, data.get());
 
-    testCase tests[] = {{(SkPDFDocument::Flags)0, true},
-                        {SkPDFDocument::kNoLinks_Flags, false}};
-    for (size_t testNum = 0; testNum < SK_ARRAY_COUNT(tests); testNum++) {
-        SkPDFDocument doc(tests[testNum].flags);
-        doc.appendPage(&device);
-        SkDynamicMemoryWStream outStream;
-        doc.emitPDF(&outStream);
-        SkAutoDataUnref out(outStream.copyToData());
-        const char* rawOutput = (const char*)out->data();
+    REPORTER_ASSERT(reporter, doc->close());
+    SkAutoDataUnref out(outStream.copyToData());
+    const char* rawOutput = (const char*)out->data();
 
-        REPORTER_ASSERT(reporter,
-            ContainsString(rawOutput, out->size(), "/Annots ")
-            == tests[testNum].expectAnnotations);
-    }
+    REPORTER_ASSERT(reporter, ContainsString(rawOutput, out->size(), "/Annots "));
 }
 
-static void test_named_destination_annotations(skiatest::Reporter* reporter) {
-    SkISize size = SkISize::Make(612, 792);
-    SkMatrix initialTransform;
-    initialTransform.reset();
-    SkPDFDevice device(size, size, initialTransform);
-    SkCanvas canvas(&device);
+DEF_TEST(Annotation_NamedDestination, reporter) {
+    REQUIRE_PDF_DOCUMENT(Annotation_NamedDestination, reporter);
+    SkDynamicMemoryWStream outStream;
+    SkAutoTUnref<SkDocument> doc(SkDocument::CreatePDF(&outStream));
+    SkCanvas* canvas = doc->beginPage(612.0f, 792.0f);
+    REPORTER_ASSERT(reporter, canvas);
 
     SkPoint p = SkPoint::Make(SkIntToScalar(72), SkIntToScalar(72));
     SkAutoDataUnref data(SkData::NewWithCString("example"));
-    SkAnnotateNamedDestination(&canvas, p, data.get());
+    SkAnnotateNamedDestination(canvas, p, data.get());
 
-    SkPDFDocument doc;
-    doc.appendPage(&device);
-    SkDynamicMemoryWStream outStream;
-    doc.emitPDF(&outStream);
+    REPORTER_ASSERT(reporter, doc->close());
     SkAutoDataUnref out(outStream.copyToData());
     const char* rawOutput = (const char*)out->data();
 
     REPORTER_ASSERT(reporter,
         ContainsString(rawOutput, out->size(), "/example "));
 }
-
-static void TestAnnotation(skiatest::Reporter* reporter) {
-    test_nodraw(reporter);
-    test_pdf_link_annotations(reporter);
-    test_named_destination_annotations(reporter);
-}
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("Annotation", AnnotationClass, TestAnnotation)

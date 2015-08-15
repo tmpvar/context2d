@@ -19,25 +19,24 @@ public:
     }
 
 protected:
-    virtual void onOnceBeforeDraw() SK_OVERRIDE {
-        const unsigned oneColor = 0xFF8080FF;
+    void onOnceBeforeDraw() override {
+        const unsigned oneColor = sk_tool_utils::color_to_565(0xFF8080FF);
         const unsigned twoColor = 0x807F1f1f;
         SkColor blendColor = blend(oneColor, twoColor);
         makePaint(&fOnePaint, oneColor);
         makePaint(&fTwoPaint, twoColor);
-        makePaint(&fOpPaint[kDifference_PathOp], oneColor);
-        makePaint(&fOpPaint[kIntersect_PathOp], blendColor);
-        makePaint(&fOpPaint[kUnion_PathOp], 0xFFc0FFc0);
-        makePaint(&fOpPaint[kReverseDifference_PathOp], twoColor);
-        makePaint(&fOpPaint[kXOR_PathOp], 0xFFa0FFe0);
+        makePaint(&fOpPaint[kDifference_SkPathOp], oneColor);
+        makePaint(&fOpPaint[kIntersect_SkPathOp], blendColor);
+        makePaint(&fOpPaint[kUnion_SkPathOp], sk_tool_utils::color_to_565(0xFFc0FFc0));
+        makePaint(&fOpPaint[kReverseDifference_SkPathOp], twoColor);
+        makePaint(&fOpPaint[kXOR_SkPathOp], sk_tool_utils::color_to_565(0xFFa0FFe0));
         makePaint(&fOutlinePaint, 0xFF000000);
         fOutlinePaint.setStyle(SkPaint::kStroke_Style);
     }
 
     SkColor blend(SkColor one, SkColor two) {
         SkBitmap temp;
-        temp.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-        temp.allocPixels();
+        temp.allocN32Pixels(1, 1);
         SkCanvas canvas(temp);
         canvas.drawColor(one);
         canvas.drawColor(two);
@@ -51,15 +50,15 @@ protected:
         paint->setColor(color);
     }
 
-    virtual SkString onShortName() SK_OVERRIDE {
+    SkString onShortName() override {
         return SkString("pathopsinverse");
     }
 
-    virtual SkISize onISize() SK_OVERRIDE {
-        return make_isize(1200, 900);
+    SkISize onISize() override {
+        return SkISize::Make(1200, 900);
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(SkCanvas* canvas) override {
         SkPath one, two;
         int yPos = 0;
         for (int oneFill = 0; oneFill <= 1; ++oneFill) {
@@ -83,7 +82,7 @@ protected:
                 canvas->drawPath(two, fOutlinePaint);
                 canvas->restore();
                 int xPos = 150;
-                for (int op = kDifference_PathOp; op <= kReverseDifference_PathOp; ++op) {
+                for (int op = kDifference_SkPathOp; op <= kReverseDifference_SkPathOp; ++op) {
                     SkPath result;
                     Op(one, two, (SkPathOp) op, &result);
                     canvas->save();
@@ -103,7 +102,7 @@ private:
     SkPaint fOnePaint;
     SkPaint fTwoPaint;
     SkPaint fOutlinePaint;
-    SkPaint fOpPaint[kReverseDifference_PathOp - kDifference_PathOp + 1];
+    SkPaint fOpPaint[kReverseDifference_SkPathOp - kDifference_SkPathOp + 1];
     typedef GM INHERITED;
 };
 

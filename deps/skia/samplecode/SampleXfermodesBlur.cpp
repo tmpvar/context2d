@@ -1,19 +1,18 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
 #include "SkView.h"
+#include "SkBlurMask.h"
 #include "SkCanvas.h"
-#include "Sk64.h"
 #include "SkCornerPathEffect.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
-#include "SkKernel33MaskFilter.h"
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkRegion.h"
@@ -46,7 +45,9 @@ class XfermodesBlurView : public SampleView {
     void draw_mode(SkCanvas* canvas, SkXfermode* mode, int alpha,
                    SkScalar x, SkScalar y) {
         SkPaint p;
-        SkMaskFilter* mf = SkBlurMaskFilter::Create(5, SkBlurMaskFilter::kNormal_BlurStyle, 0);
+        SkMaskFilter* mf = SkBlurMaskFilter::Create(kNormal_SkBlurStyle,
+                                       SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(5)),
+                                       SkBlurMaskFilter::kNone_BlurFlag);
         p.setMaskFilter(mf)->unref();
 
         SkScalar ww = SkIntToScalar(W);
@@ -74,9 +75,8 @@ public:
     const static int W = 64;
     const static int H = 64;
     XfermodesBlurView() {
-        fBG.setConfig(SkBitmap::kARGB_4444_Config, 2, 2, 4);
-        fBG.setPixels(gBG);
-        fBG.setIsOpaque(true);
+        fBG.installPixels(SkImageInfo::Make(2, 2, kARGB_4444_SkColorType, kPremul_SkAlphaType),
+                          gBG, 4);
     }
 
 protected:
@@ -149,12 +149,12 @@ protected:
 
         const SkScalar w = SkIntToScalar(W);
         const SkScalar h = SkIntToScalar(H);
-        SkShader* s = SkShader::CreateBitmapShader(fBG,
-                                                   SkShader::kRepeat_TileMode,
-                                                   SkShader::kRepeat_TileMode);
         SkMatrix m;
         m.setScale(SkIntToScalar(6), SkIntToScalar(6));
-        s->setLocalMatrix(m);
+        SkShader* s = SkShader::CreateBitmapShader(fBG,
+                                                   SkShader::kRepeat_TileMode,
+                                                   SkShader::kRepeat_TileMode,
+                                                   &m);
 
         SkPaint labelP;
         labelP.setAntiAlias(true);
@@ -178,7 +178,7 @@ protected:
                 p.setShader(s);
                 canvas->drawRect(r, p);
 
-                canvas->saveLayer(&r, NULL, SkCanvas::kARGB_ClipLayer_SaveFlag);
+                canvas->saveLayer(&r, NULL);
                 draw_mode(canvas, mode, twice ? 0x88 : 0xFF, r.fLeft, r.fTop);
                 canvas->restore();
 

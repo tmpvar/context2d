@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "sk_tool_utils.h"
 #include "SampleCode.h"
 #include "SkView.h"
 #include "SkCanvas.h"
@@ -20,38 +21,32 @@
 #define WIRE_FRAME_COLOR    0xFFFF0000  /*0xFF00FFFF*/
 #define WIRE_FRAME_SIZE     1.5f
 
+static SkScalar apply_grid(SkScalar x) {
+    const SkScalar grid = 2;
+    return SkScalarRoundToScalar(x * grid) / grid;
+}
+
+static void apply_grid(SkPoint pts[], int count) {
+    for (int i = 0; i < count; ++i) {
+        pts[i].set(apply_grid(pts[i].fX), apply_grid(pts[i].fY));
+    }
+}
+
 static void erase(SkSurface* surface) {
     surface->getCanvas()->clear(SK_ColorTRANSPARENT);
 }
 
-static SkShader* createChecker() {
-//    SkColor colors[] = { 0xFFFDFDFD, 0xFFF4F4F4 };
-    SkColor colors[] = { 0xFFFFFFFF, 0xFFFFFFFF };
-    SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-    bm.allocPixels();
-    bm.lockPixels();
-    *bm.getAddr32(0, 0) = *bm.getAddr32(1, 1) = SkPreMultiplyColor(colors[0]);
-    *bm.getAddr32(0, 1) = *bm.getAddr32(1, 0) = SkPreMultiplyColor(colors[1]);
-    SkShader* s = SkShader::CreateBitmapShader(bm, SkShader::kRepeat_TileMode,
-                                               SkShader::kRepeat_TileMode);
-
-    SkMatrix m;
-    m.setScale(12, 12);
-    s->setLocalMatrix(m);
-    return s;
-}
-
 class FatBits {
 public:
-    FatBits() : fShader(createChecker()) {
+    FatBits() {
         fAA = false;
         fStyle = kHair_Style;
-        fGrid = true;
+        fGrid = false;
         fShowSkeleton = true;
         fUseGPU = false;
         fUseClip = false;
         fRectAsOval = false;
+        fUseTriangle = false;
 
         fClipRect.set(2, 2, 11, 8 );
     }
@@ -69,6 +64,9 @@ public:
 
     bool getUseGPU() const { return fUseGPU; }
     void setUseGPU(bool ug) { fUseGPU = ug; }
+
+    bool getTriangle() const { return fUseTriangle; }
+    void setTriangle(bool ut) { fUseTriangle = ut; }
 
     void toggleRectAsOval() { fRectAsOval = !fRectAsOval; }
 
@@ -89,14 +87,12 @@ public:
         fBounds.set(0, 0, SkIntToScalar(width * zoom), SkIntToScalar(height * zoom));
         fMatrix.setScale(SkIntToScalar(zoom), SkIntToScalar(zoom));
         fInverse.setScale(SK_Scalar1 / zoom, SK_Scalar1 / zoom);
-        fShader->setLocalMatrix(fMatrix);
+        fShader.reset(sk_tool_utils::create_checkerboard_shader(
+                              0xFFCCCCCC, 0xFFFFFFFF, zoom));
 
-        SkImage::Info info = {
-            width, height, SkImage::kPMColor_ColorType, SkImage::kPremul_AlphaType
-        };
+        SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
         fMinSurface.reset(SkSurface::NewRaster(info));
-        info.fWidth *= zoom;
-        info.fHeight *= zoom;
+        info = info.makeWH(width * zoom, height * zoom);
         fMaxSurface.reset(SkSurface::NewRaster(info));
     }
 
@@ -104,9 +100,10 @@ public:
     void drawFG(SkCanvas*);
     void drawLine(SkCanvas*, SkPoint pts[2]);
     void drawRect(SkCanvas* canvas, SkPoint pts[2]);
+    void drawTriangle(SkCanvas* canvas, SkPoint pts[3]);
 
 private:
-    bool fAA, fGrid, fShowSkeleton, fUseGPU, fUseClip, fRectAsOval;
+    bool fAA, fGrid, fShowSkeleton, fUseGPU, fUseClip, fRectAsOval, fUseTriangle;
     Style fStyle;
     int fW, fH, fZoom;
     SkMatrix fMatrix, fInverse;
@@ -135,6 +132,7 @@ private:
         paint->setAntiAlias(true);
     }
 
+    void drawTriangleSkeleton(SkCanvas* max, const SkPoint pts[]);
     void drawLineSkeleton(SkCanvas* max, const SkPoint pts[]);
     void drawRectSkeleton(SkCanvas* max, const SkRect& r) {
         SkPaint paint;
@@ -267,11 +265,7 @@ void FatBits::drawLine(SkCanvas* canvas, SkPoint pts[]) {
     fInverse.mapPoints(pts, 2);
 
     if (fGrid) {
-        SkScalar dd = 0;//SK_Scalar1 / 50;
-        pts[0].set(SkScalarRoundToScalar(pts[0].fX) + dd,
-                   SkScalarRoundToScalar(pts[0].fY) + dd);
-        pts[1].set(SkScalarRoundToScalar(pts[1].fX) + dd,
-                   SkScalarRoundToScalar(pts[1].fY) + dd);
+        apply_grid(pts, 2);
     }
 
     erase(fMinSurface);
@@ -303,8 +297,7 @@ void FatBits::drawRect(SkCanvas* canvas, SkPoint pts[2]) {
     fInverse.mapPoints(pts, 2);
 
     if (fGrid) {
-        pts[0].set(SkScalarRoundToScalar(pts[0].fX), SkScalarRoundToScalar(pts[0].fY));
-        pts[1].set(SkScalarRoundToScalar(pts[1].fX), SkScalarRoundToScalar(pts[1].fY));
+        apply_grid(pts, 2);
     }
 
     SkRect r;
@@ -328,6 +321,48 @@ void FatBits::drawRect(SkCanvas* canvas, SkPoint pts[2]) {
     fMaxSurface->draw(canvas, 0, 0, NULL);
 }
 
+void FatBits::drawTriangleSkeleton(SkCanvas* max, const SkPoint pts[]) {
+    SkPaint paint;
+    this->setupSkeletonPaint(&paint);
+
+    SkPath path;
+    path.moveTo(pts[0]);
+    path.lineTo(pts[1]);
+    path.lineTo(pts[2]);
+    path.close();
+
+    max->drawPath(path, paint);
+}
+
+void FatBits::drawTriangle(SkCanvas* canvas, SkPoint pts[3]) {
+    SkPaint paint;
+
+    fInverse.mapPoints(pts, 3);
+
+    if (fGrid) {
+        apply_grid(pts, 3);
+    }
+
+    SkPath path;
+    path.moveTo(pts[0]);
+    path.lineTo(pts[1]);
+    path.lineTo(pts[2]);
+    path.close();
+
+    erase(fMinSurface);
+    this->setupPaint(&paint);
+    paint.setColor(FAT_PIXEL_COLOR);
+    fMinSurface->getCanvas()->drawPath(path, paint);
+    this->copyMinToMax();
+
+    SkCanvas* max = fMaxSurface->getCanvas();
+
+    fMatrix.mapPoints(pts, 3);
+    this->drawTriangleSkeleton(max, pts);
+
+    fMaxSurface->draw(canvas, 0, 0, NULL);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 class IndexClick : public SkView::Click {
@@ -341,14 +376,20 @@ public:
 };
 
 class DrawLineView : public SampleView {
+    enum {
+        kZoom = 96
+    };
+
     FatBits fFB;
-    SkPoint fPts[2];
+    SkPoint fPts[3];
     bool    fIsRect;
 public:
     DrawLineView() {
-        fFB.setWHZ(24, 16, 48);
-        fPts[0].set(48, 48);
-        fPts[1].set(48 * 5, 48 * 4);
+        fFB.setWHZ(24, 16, kZoom);
+        fPts[0].set(1, 1);
+        fPts[1].set(5, 4);
+        fPts[2].set(2, 6);
+        SkMatrix::MakeScale(kZoom, kZoom).mapPoints(fPts, 3);
         fIsRect = false;
     }
 
@@ -358,7 +399,7 @@ public:
     }
 
 protected:
-    virtual bool onQuery(SkEvent* evt) SK_OVERRIDE {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "FatBits");
             return true;
@@ -401,14 +442,21 @@ protected:
                     fFB.setUseGPU(!fFB.getUseGPU());
                     this->inval(NULL);
                     return true;
+                case 't':
+                    fFB.setTriangle(!fFB.getTriangle());
+                    this->inval(NULL);
+                    return true;
             }
         }
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         fFB.drawBG(canvas);
-        if (fIsRect) {
+        if (fFB.getTriangle()) {
+            fFB.drawTriangle(canvas, fPts);
+        }
+        else if (fIsRect) {
             fFB.drawRect(canvas, fPts);
         } else {
             fFB.drawLine(canvas, fPts);
@@ -430,28 +478,31 @@ protected:
         }
     }
 
-    virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y,
-                                              unsigned modi) SK_OVERRIDE {
+    SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
         SkPoint pt = { x, y };
         int index = -1;
+        int count = fFB.getTriangle() ? 3 : 2;
         SkScalar tol = 12;
-        if (fPts[0].equalsWithinTolerance(pt, tol)) {
-            index = 0;
-        } else if (fPts[1].equalsWithinTolerance(pt, tol)) {
-            index = 1;
+
+        for (int i = 0; i < count; ++i) {
+            if (fPts[i].equalsWithinTolerance(pt, tol)) {
+                index = i;
+                break;
+            }
         }
         return new IndexClick(this, index);
     }
 
-    virtual bool onClick(Click* click) SK_OVERRIDE {
+    bool onClick(Click* click) override {
         int index = IndexClick::GetIndex(click);
-        if (index >= 0 && index <= 1) {
+        if (index >= 0 && index <= 2) {
             fPts[index] = click->fCurr;
         } else {
             SkScalar dx = click->fCurr.fX - click->fPrev.fX;
             SkScalar dy = click->fCurr.fY - click->fPrev.fY;
             fPts[0].offset(dx, dy);
             fPts[1].offset(dx, dy);
+            fPts[2].offset(dx, dy);
         }
         this->inval(NULL);
         return true;

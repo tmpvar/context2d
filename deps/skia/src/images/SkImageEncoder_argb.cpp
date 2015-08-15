@@ -13,7 +13,7 @@
 
 class SkARGBImageEncoder : public SkImageEncoder {
 protected:
-    virtual bool onEncode(SkWStream* stream, const SkBitmap& bm, int quality) SK_OVERRIDE;
+    bool onEncode(SkWStream* stream, const SkBitmap& bm, int quality) override;
 
 private:
     typedef SkImageEncoder INHERITED;
@@ -71,15 +71,15 @@ static void Index8_To_ARGB(const uint8_t* in, uint8_t* argb, int width,
   }
 }
 
-static ScanlineImporter ChooseImporter(const SkBitmap::Config& config) {
-    switch (config) {
-        case SkBitmap::kARGB_8888_Config:
+static ScanlineImporter ChooseImporter(SkColorType ct) {
+    switch (ct) {
+        case kN32_SkColorType:
             return ARGB_8888_To_ARGB;
-        case SkBitmap::kRGB_565_Config:
+        case kRGB_565_SkColorType:
             return RGB_565_To_ARGB;
-        case SkBitmap::kARGB_4444_Config:
+        case kARGB_4444_SkColorType:
             return ARGB_4444_To_ARGB;
-        case SkBitmap::kIndex8_Config:
+        case kIndex_8_SkColorType:
             return Index8_To_ARGB;
         default:
             return NULL;
@@ -87,8 +87,7 @@ static ScanlineImporter ChooseImporter(const SkBitmap::Config& config) {
 }
 
 bool SkARGBImageEncoder::onEncode(SkWStream* stream, const SkBitmap& bitmap, int) {
-    const SkBitmap::Config config = bitmap.getConfig();
-    const ScanlineImporter scanline_import = ChooseImporter(config);
+    const ScanlineImporter scanline_import = ChooseImporter(bitmap.colorType());
     if (NULL == scanline_import) {
         return false;
     }
@@ -99,8 +98,7 @@ bool SkARGBImageEncoder::onEncode(SkWStream* stream, const SkBitmap& bitmap, int
         return false;
     }
 
-    SkAutoLockColors ctLocker;
-    const SkPMColor* colors = ctLocker.lockColors(bitmap);
+    const SkPMColor* colors = bitmap.getColorTable() ? bitmap.getColorTable()->readColors() : NULL;
 
     const int argbStride = bitmap.width() * 4;
     SkAutoTDeleteArray<uint8_t> ada(new uint8_t[argbStride]);

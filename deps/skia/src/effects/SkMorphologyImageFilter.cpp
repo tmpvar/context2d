@@ -8,234 +8,188 @@
 #include "SkMorphologyImageFilter.h"
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
-#include "SkFlattenableBuffers.h"
+#include "SkOpts.h"
+#include "SkReadBuffer.h"
 #include "SkRect.h"
+#include "SkWriteBuffer.h"
 #if SK_SUPPORT_GPU
 #include "GrContext.h"
+#include "GrDrawContext.h"
+#include "GrInvariantOutput.h"
 #include "GrTexture.h"
-#include "GrTBackendEffectFactory.h"
-#include "gl/GrGLEffect.h"
-#include "gl/GrGLEffectMatrix.h"
 #include "effects/Gr1DKernelEffect.h"
-#include "SkImageFilterUtils.h"
+#include "gl/GrGLFragmentProcessor.h"
+#include "gl/builders/GrGLProgramBuilder.h"
 #endif
 
-SkMorphologyImageFilter::SkMorphologyImageFilter(SkFlattenableReadBuffer& buffer)
-  : INHERITED(buffer) {
-    fRadius.fWidth = buffer.readInt();
-    fRadius.fHeight = buffer.readInt();
+SkMorphologyImageFilter::SkMorphologyImageFilter(int radiusX,
+                                                 int radiusY,
+                                                 SkImageFilter* input,
+                                                 const CropRect* cropRect)
+    : INHERITED(1, &input, cropRect), fRadius(SkISize::Make(radiusX, radiusY)) {
 }
 
-SkMorphologyImageFilter::SkMorphologyImageFilter(int radiusX, int radiusY, SkImageFilter* input)
-    : INHERITED(input), fRadius(SkISize::Make(radiusX, radiusY)) {
-}
-
-
-void SkMorphologyImageFilter::flatten(SkFlattenableWriteBuffer& buffer) const {
+void SkMorphologyImageFilter::flatten(SkWriteBuffer& buffer) const {
     this->INHERITED::flatten(buffer);
     buffer.writeInt(fRadius.fWidth);
     buffer.writeInt(fRadius.fHeight);
 }
 
-static void erode(const SkPMColor* src, SkPMColor* dst,
-                  int radius, int width, int height,
-                  int srcStrideX, int srcStrideY,
-                  int dstStrideX, int dstStrideY)
+static void callProcX(SkMorphologyImageFilter::Proc procX, const SkBitmap& src, SkBitmap* dst, int radiusX, const SkIRect& bounds)
 {
-    radius = SkMin32(radius, width - 1);
-    const SkPMColor* upperSrc = src + radius * srcStrideX;
-    for (int x = 0; x < width; ++x) {
-        const SkPMColor* lp = src;
-        const SkPMColor* up = upperSrc;
-        SkPMColor* dptr = dst;
-        for (int y = 0; y < height; ++y) {
-            int minB = 255, minG = 255, minR = 255, minA = 255;
-            for (const SkPMColor* p = lp; p <= up; p += srcStrideX) {
-                int b = SkGetPackedB32(*p);
-                int g = SkGetPackedG32(*p);
-                int r = SkGetPackedR32(*p);
-                int a = SkGetPackedA32(*p);
-                if (b < minB) minB = b;
-                if (g < minG) minG = g;
-                if (r < minR) minR = r;
-                if (a < minA) minA = a;
-            }
-            *dptr = SkPackARGB32(minA, minR, minG, minB);
-            dptr += dstStrideY;
-            lp += srcStrideY;
-            up += srcStrideY;
-        }
-        if (x >= radius) src += srcStrideX;
-        if (x + radius < width - 1) upperSrc += srcStrideX;
-        dst += dstStrideX;
+    procX(src.getAddr32(bounds.left(), bounds.top()), dst->getAddr32(0, 0),
+          radiusX, bounds.width(), bounds.height(),
+          src.rowBytesAsPixels(), dst->rowBytesAsPixels());
+}
+
+static void callProcY(SkMorphologyImageFilter::Proc procY, const SkBitmap& src, SkBitmap* dst, int radiusY, const SkIRect& bounds)
+{
+    procY(src.getAddr32(bounds.left(), bounds.top()), dst->getAddr32(0, 0),
+          radiusY, bounds.height(), bounds.width(),
+          src.rowBytesAsPixels(), dst->rowBytesAsPixels());
+}
+
+bool SkMorphologyImageFilter::filterImageGeneric(SkMorphologyImageFilter::Proc procX,
+                                                 SkMorphologyImageFilter::Proc procY,
+                                                 Proxy* proxy,
+                                                 const SkBitmap& source,
+                                                 const Context& ctx,
+                                                 SkBitmap* dst,
+                                                 SkIPoint* offset) const {
+    SkBitmap src = source;
+    SkIPoint srcOffset = SkIPoint::Make(0, 0);
+    if (this->getInput(0) &&
+        !this->getInput(0)->filterImage(proxy, source, ctx, &src, &srcOffset)) {
+        return false;
     }
-}
 
-static void erodeX(const SkBitmap& src, SkBitmap* dst, int radiusX)
-{
-    erode(src.getAddr32(0, 0), dst->getAddr32(0, 0),
-          radiusX, src.width(), src.height(),
-          1, src.rowBytesAsPixels(), 1, dst->rowBytesAsPixels());
-}
-
-static void erodeY(const SkBitmap& src, SkBitmap* dst, int radiusY)
-{
-    erode(src.getAddr32(0, 0), dst->getAddr32(0, 0),
-          radiusY, src.height(), src.width(),
-          src.rowBytesAsPixels(), 1, dst->rowBytesAsPixels(), 1);
-}
-
-static void dilate(const SkPMColor* src, SkPMColor* dst,
-                   int radius, int width, int height,
-                   int srcStrideX, int srcStrideY,
-                   int dstStrideX, int dstStrideY)
-{
-    radius = SkMin32(radius, width - 1);
-    const SkPMColor* upperSrc = src + radius * srcStrideX;
-    for (int x = 0; x < width; ++x) {
-        const SkPMColor* lp = src;
-        const SkPMColor* up = upperSrc;
-        SkPMColor* dptr = dst;
-        for (int y = 0; y < height; ++y) {
-            int maxB = 0, maxG = 0, maxR = 0, maxA = 0;
-            for (const SkPMColor* p = lp; p <= up; p += srcStrideX) {
-                int b = SkGetPackedB32(*p);
-                int g = SkGetPackedG32(*p);
-                int r = SkGetPackedR32(*p);
-                int a = SkGetPackedA32(*p);
-                if (b > maxB) maxB = b;
-                if (g > maxG) maxG = g;
-                if (r > maxR) maxR = r;
-                if (a > maxA) maxA = a;
-            }
-            *dptr = SkPackARGB32(maxA, maxR, maxG, maxB);
-            dptr += dstStrideY;
-            lp += srcStrideY;
-            up += srcStrideY;
-        }
-        if (x >= radius) src += srcStrideX;
-        if (x + radius < width - 1) upperSrc += srcStrideX;
-        dst += dstStrideX;
+    if (src.colorType() != kN32_SkColorType) {
+        return false;
     }
-}
 
-static void dilateX(const SkBitmap& src, SkBitmap* dst, int radiusX)
-{
-    dilate(src.getAddr32(0, 0), dst->getAddr32(0, 0),
-           radiusX, src.width(), src.height(),
-           1, src.rowBytesAsPixels(), 1, dst->rowBytesAsPixels());
-}
+    SkIRect bounds;
+    if (!this->applyCropRect(ctx, proxy, src, &srcOffset, &bounds, &src)) {
+        return false;
+    }
 
-static void dilateY(const SkBitmap& src, SkBitmap* dst, int radiusY)
-{
-    dilate(src.getAddr32(0, 0), dst->getAddr32(0, 0),
-           radiusY, src.height(), src.width(),
-           src.rowBytesAsPixels(), 1, dst->rowBytesAsPixels(), 1);
+    SkAutoLockPixels alp(src);
+    if (!src.getPixels()) {
+        return false;
+    }
+
+    if (!dst->tryAllocPixels(src.info().makeWH(bounds.width(), bounds.height()))) {
+        return false;
+    }
+
+    SkVector radius = SkVector::Make(SkIntToScalar(this->radius().width()),
+                                     SkIntToScalar(this->radius().height()));
+    ctx.ctm().mapVectors(&radius, 1);
+    int width = SkScalarFloorToInt(radius.fX);
+    int height = SkScalarFloorToInt(radius.fY);
+
+    if (width < 0 || height < 0) {
+        return false;
+    }
+
+    SkIRect srcBounds = bounds;
+    srcBounds.offset(-srcOffset);
+
+    if (width == 0 && height == 0) {
+        src.extractSubset(dst, srcBounds);
+        offset->fX = bounds.left();
+        offset->fY = bounds.top();
+        return true;
+    }
+
+    SkBitmap temp;
+    if (!temp.tryAllocPixels(dst->info())) {
+        return false;
+    }
+
+    if (width > 0 && height > 0) {
+        callProcX(procX, src, &temp, width, srcBounds);
+        SkIRect tmpBounds = SkIRect::MakeWH(srcBounds.width(), srcBounds.height());
+        callProcY(procY, temp, dst, height, tmpBounds);
+    } else if (width > 0) {
+        callProcX(procX, src, dst, width, srcBounds);
+    } else if (height > 0) {
+        callProcY(procY, src, dst, height, srcBounds);
+    }
+    offset->fX = bounds.left();
+    offset->fY = bounds.top();
+    return true;
 }
 
 bool SkErodeImageFilter::onFilterImage(Proxy* proxy,
-                                       const SkBitmap& source, const SkMatrix& ctm,
-                                       SkBitmap* dst, SkIPoint* offset) {
-    SkBitmap src = source;
-    if (getInput(0) && !getInput(0)->filterImage(proxy, source, ctm, &src, offset)) {
-        return false;
-    }
-
-    if (src.config() != SkBitmap::kARGB_8888_Config) {
-        return false;
-    }
-
-    SkAutoLockPixels alp(src);
-    if (!src.getPixels()) {
-        return false;
-    }
-
-    dst->setConfig(src.config(), src.width(), src.height());
-    dst->allocPixels();
-
-    int width = radius().width();
-    int height = radius().height();
-
-    if (width < 0 || height < 0) {
-        return false;
-    }
-
-    if (width == 0 && height == 0) {
-        src.copyTo(dst, dst->config());
-        return true;
-    }
-
-    SkBitmap temp;
-    temp.setConfig(dst->config(), dst->width(), dst->height());
-    if (!temp.allocPixels()) {
-        return false;
-    }
-
-    if (width > 0 && height > 0) {
-        erodeX(src, &temp, width);
-        erodeY(temp, dst, height);
-    } else if (width > 0) {
-        erodeX(src, dst, width);
-    } else if (height > 0) {
-        erodeY(src, dst, height);
-    }
-    return true;
+                                       const SkBitmap& source, const Context& ctx,
+                                       SkBitmap* dst, SkIPoint* offset) const {
+    return this->filterImageGeneric(SkOpts::erode_x, SkOpts::erode_y,
+                                    proxy, source, ctx, dst, offset);
 }
 
 bool SkDilateImageFilter::onFilterImage(Proxy* proxy,
-                                        const SkBitmap& source, const SkMatrix& ctm,
-                                        SkBitmap* dst, SkIPoint* offset) {
-    SkBitmap src = source;
-    if (getInput(0) && !getInput(0)->filterImage(proxy, source, ctm, &src, offset)) {
+                                        const SkBitmap& source, const Context& ctx,
+                                        SkBitmap* dst, SkIPoint* offset) const {
+    return this->filterImageGeneric(SkOpts::dilate_x, SkOpts::dilate_y,
+                                    proxy, source, ctx, dst, offset);
+}
+
+void SkMorphologyImageFilter::computeFastBounds(const SkRect& src, SkRect* dst) const {
+    if (this->getInput(0)) {
+        this->getInput(0)->computeFastBounds(src, dst);
+    } else {
+        *dst = src;
+    }
+    dst->outset(SkIntToScalar(fRadius.width()), SkIntToScalar(fRadius.height()));
+}
+
+bool SkMorphologyImageFilter::onFilterBounds(const SkIRect& src, const SkMatrix& ctm,
+                                             SkIRect* dst) const {
+    SkIRect bounds = src;
+    SkVector radius = SkVector::Make(SkIntToScalar(this->radius().width()),
+                                     SkIntToScalar(this->radius().height()));
+    ctm.mapVectors(&radius, 1);
+    bounds.outset(SkScalarCeilToInt(radius.x()), SkScalarCeilToInt(radius.y()));
+    if (this->getInput(0) && !this->getInput(0)->filterBounds(bounds, ctm, &bounds)) {
         return false;
     }
-    if (src.config() != SkBitmap::kARGB_8888_Config) {
-        return false;
-    }
-
-    SkAutoLockPixels alp(src);
-    if (!src.getPixels()) {
-        return false;
-    }
-
-    dst->setConfig(src.config(), src.width(), src.height());
-    dst->allocPixels();
-
-    int width = radius().width();
-    int height = radius().height();
-
-    if (width < 0 || height < 0) {
-        return false;
-    }
-
-    if (width == 0 && height == 0) {
-        src.copyTo(dst, dst->config());
-        return true;
-    }
-
-    SkBitmap temp;
-    temp.setConfig(dst->config(), dst->width(), dst->height());
-    if (!temp.allocPixels()) {
-        return false;
-    }
-
-    if (width > 0 && height > 0) {
-        dilateX(src, &temp, width);
-        dilateY(temp, dst, height);
-    } else if (width > 0) {
-        dilateX(src, dst, width);
-    } else if (height > 0) {
-        dilateY(src, dst, height);
-    }
+    *dst = bounds;
     return true;
 }
+
+SkFlattenable* SkErodeImageFilter::CreateProc(SkReadBuffer& buffer) {
+    SK_IMAGEFILTER_UNFLATTEN_COMMON(common, 1);
+    const int width = buffer.readInt();
+    const int height = buffer.readInt();
+    return Create(width, height, common.getInput(0), &common.cropRect());
+}
+
+SkFlattenable* SkDilateImageFilter::CreateProc(SkReadBuffer& buffer) {
+    SK_IMAGEFILTER_UNFLATTEN_COMMON(common, 1);
+    const int width = buffer.readInt();
+    const int height = buffer.readInt();
+    return Create(width, height, common.getInput(0), &common.cropRect());
+}
+
+#ifndef SK_IGNORE_TO_STRING
+void SkErodeImageFilter::toString(SkString* str) const {
+    str->appendf("SkErodeImageFilter: (");
+    str->appendf("radius: (%d,%d)", this->radius().fWidth, this->radius().fHeight);
+    str->append(")");
+}
+#endif
+
+#ifndef SK_IGNORE_TO_STRING
+void SkDilateImageFilter::toString(SkString* str) const {
+    str->appendf("SkDilateImageFilter: (");
+    str->appendf("radius: (%d,%d)", this->radius().fWidth, this->radius().fHeight);
+    str->append(")");
+}
+#endif
 
 #if SK_SUPPORT_GPU
 
 ///////////////////////////////////////////////////////////////////////////////
-
-class GrGLMorphologyEffect;
-
 /**
  * Morphology effects. Depending upon the type of morphology, either the
  * component-wise min (Erode_Type) or max (Dilate_Type) of all pixels in the
@@ -251,281 +205,466 @@ public:
         kDilate_MorphologyType,
     };
 
-    static GrEffectRef* Create(GrTexture* tex, Direction dir, int radius, MorphologyType type) {
-        AutoEffectUnref effect(SkNEW_ARGS(GrMorphologyEffect, (tex, dir, radius, type)));
-        return CreateEffectRef(effect);
+    static GrFragmentProcessor* Create(GrProcessorDataManager* procDataManager, GrTexture* tex,
+                                       Direction dir, int radius, MorphologyType type) {
+        return SkNEW_ARGS(GrMorphologyEffect, (procDataManager, tex, dir, radius, type));
+    }
+
+    static GrFragmentProcessor* Create(GrProcessorDataManager* procDataManager, GrTexture* tex,
+                                       Direction dir, int radius, MorphologyType type,
+                                       float bounds[2]) {
+        return SkNEW_ARGS(GrMorphologyEffect, (procDataManager, tex, dir, radius, type, bounds));
     }
 
     virtual ~GrMorphologyEffect();
 
     MorphologyType type() const { return fType; }
+    bool useRange() const { return fUseRange; }
+    const float* range() const { return fRange; }
 
-    static const char* Name() { return "Morphology"; }
+    const char* name() const override { return "Morphology"; }
 
-    typedef GrGLMorphologyEffect GLEffect;
-
-    virtual const GrBackendEffectFactory& getFactory() const SK_OVERRIDE;
-    virtual void getConstantColorComponents(GrColor* color, uint32_t* validFlags) const SK_OVERRIDE;
+    GrGLFragmentProcessor* createGLInstance() const override;
 
 protected:
 
     MorphologyType fType;
+    bool fUseRange;
+    float fRange[2];
 
 private:
-    virtual bool onIsEqual(const GrEffect&) const SK_OVERRIDE;
+    void onGetGLProcessorKey(const GrGLSLCaps&, GrProcessorKeyBuilder*) const override;
 
-    GrMorphologyEffect(GrTexture*, Direction, int radius, MorphologyType);
+    bool onIsEqual(const GrFragmentProcessor&) const override;
 
-    GR_DECLARE_EFFECT_TEST;
+    void onComputeInvariantOutput(GrInvariantOutput* inout) const override;
+
+    GrMorphologyEffect(GrProcessorDataManager*, GrTexture*, Direction, int radius, MorphologyType);
+    GrMorphologyEffect(GrProcessorDataManager*, GrTexture*, Direction, int radius, MorphologyType,
+                       float bounds[2]);
+
+    GR_DECLARE_FRAGMENT_PROCESSOR_TEST;
 
     typedef Gr1DKernelEffect INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class GrGLMorphologyEffect : public GrGLEffect {
+class GrGLMorphologyEffect : public GrGLFragmentProcessor {
 public:
-    GrGLMorphologyEffect (const GrBackendEffectFactory&, const GrDrawEffect&);
+    GrGLMorphologyEffect(const GrProcessor&);
 
-    virtual void emitCode(GrGLShaderBuilder*,
-                          const GrDrawEffect&,
-                          EffectKey,
-                          const char* outputColor,
-                          const char* inputColor,
-                          const TextureSamplerArray&) SK_OVERRIDE;
+    virtual void emitCode(EmitArgs&) override;
 
-    static inline EffectKey GenKey(const GrDrawEffect&, const GrGLCaps&);
+    static inline void GenKey(const GrProcessor&, const GrGLSLCaps&, GrProcessorKeyBuilder* b);
 
-    virtual void setData(const GrGLUniformManager&, const GrDrawEffect&) SK_OVERRIDE;
+    void setData(const GrGLProgramDataManager&, const GrProcessor&) override;
 
 private:
     int width() const { return GrMorphologyEffect::WidthFromRadius(fRadius); }
 
-    int                                 fRadius;
-    GrMorphologyEffect::MorphologyType  fType;
-    GrGLUniformManager::UniformHandle   fImageIncrementUni;
-    GrGLEffectMatrix                    fEffectMatrix;
+    int                                   fRadius;
+    Gr1DKernelEffect::Direction           fDirection;
+    bool                                  fUseRange;
+    GrMorphologyEffect::MorphologyType    fType;
+    GrGLProgramDataManager::UniformHandle fPixelSizeUni;
+    GrGLProgramDataManager::UniformHandle fRangeUni;
 
-    typedef GrGLEffect INHERITED;
+    typedef GrGLFragmentProcessor INHERITED;
 };
 
-GrGLMorphologyEffect::GrGLMorphologyEffect(const GrBackendEffectFactory& factory,
-                                           const GrDrawEffect& drawEffect)
-    : INHERITED(factory)
-    , fImageIncrementUni(GrGLUniformManager::kInvalidUniformHandle)
-    , fEffectMatrix(drawEffect.castEffect<GrMorphologyEffect>().coordsType()) {
-    const GrMorphologyEffect& m = drawEffect.castEffect<GrMorphologyEffect>();
+GrGLMorphologyEffect::GrGLMorphologyEffect(const GrProcessor& proc) {
+    const GrMorphologyEffect& m = proc.cast<GrMorphologyEffect>();
     fRadius = m.radius();
+    fDirection = m.direction();
+    fUseRange = m.useRange();
     fType = m.type();
 }
 
-void GrGLMorphologyEffect::emitCode(GrGLShaderBuilder* builder,
-                                    const GrDrawEffect&,
-                                    EffectKey key,
-                                    const char* outputColor,
-                                    const char* inputColor,
-                                    const TextureSamplerArray& samplers) {
-    const char* coords;
-    fEffectMatrix.emitCodeMakeFSCoords2D(builder, key, &coords);
-    fImageIncrementUni = builder->addUniform(GrGLShaderBuilder::kFragment_ShaderType,
-                                             kVec2f_GrSLType, "ImageIncrement");
+void GrGLMorphologyEffect::emitCode(EmitArgs& args) {
+    fPixelSizeUni = args.fBuilder->addUniform(GrGLProgramBuilder::kFragment_Visibility,
+                                            kFloat_GrSLType, kDefault_GrSLPrecision,
+                                            "PixelSize");
+    const char* pixelSizeInc = args.fBuilder->getUniformCStr(fPixelSizeUni);
+    fRangeUni = args.fBuilder->addUniform(GrGLProgramBuilder::kFragment_Visibility,
+                                            kVec2f_GrSLType, kDefault_GrSLPrecision,
+                                            "Range");
+    const char* range = args.fBuilder->getUniformCStr(fRangeUni);
 
+    GrGLFragmentBuilder* fsBuilder = args.fBuilder->getFragmentShaderBuilder();
+    SkString coords2D = fsBuilder->ensureFSCoords2D(args.fCoords, 0);
     const char* func;
     switch (fType) {
         case GrMorphologyEffect::kErode_MorphologyType:
-            builder->fsCodeAppendf("\t\t%s = vec4(1, 1, 1, 1);\n", outputColor);
+            fsBuilder->codeAppendf("\t\t%s = vec4(1, 1, 1, 1);\n", args.fOutputColor);
             func = "min";
             break;
         case GrMorphologyEffect::kDilate_MorphologyType:
-            builder->fsCodeAppendf("\t\t%s = vec4(0, 0, 0, 0);\n", outputColor);
+            fsBuilder->codeAppendf("\t\t%s = vec4(0, 0, 0, 0);\n", args.fOutputColor);
             func = "max";
             break;
         default:
-            GrCrash("Unexpected type");
+            SkFAIL("Unexpected type");
             func = ""; // suppress warning
             break;
     }
-    const char* imgInc = builder->getUniformCStr(fImageIncrementUni);
 
-    builder->fsCodeAppendf("\t\tvec2 coord = %s - %d.0 * %s;\n", coords, fRadius, imgInc);
-    builder->fsCodeAppendf("\t\tfor (int i = 0; i < %d; i++) {\n", this->width());
-    builder->fsCodeAppendf("\t\t\t%s = %s(%s, ", outputColor, func, outputColor);
-    builder->appendTextureLookup(GrGLShaderBuilder::kFragment_ShaderType, samplers[0], "coord");
-    builder->fsCodeAppend(");\n");
-    builder->fsCodeAppendf("\t\t\tcoord += %s;\n", imgInc);
-    builder->fsCodeAppend("\t\t}\n");
-    SkString modulate;
-    GrGLSLMulVarBy4f(&modulate, 2, outputColor, inputColor);
-    builder->fsCodeAppend(modulate.c_str());
-}
-
-GrGLEffect::EffectKey GrGLMorphologyEffect::GenKey(const GrDrawEffect& drawEffect,
-                                                   const GrGLCaps&) {
-    const GrMorphologyEffect& m = drawEffect.castEffect<GrMorphologyEffect>();
-    EffectKey key = static_cast<EffectKey>(m.radius());
-    key |= (m.type() << 8);
-    key <<= GrGLEffectMatrix::kKeyBits;
-    EffectKey matrixKey = GrGLEffectMatrix::GenKey(m.getMatrix(),
-                                                   drawEffect,
-                                                   m.coordsType(),
-                                                   m.texture(0));
-    return key | matrixKey;
-}
-
-void GrGLMorphologyEffect::setData(const GrGLUniformManager& uman,
-                                   const GrDrawEffect& drawEffect) {
-    const Gr1DKernelEffect& kern = drawEffect.castEffect<Gr1DKernelEffect>();
-    GrTexture& texture = *kern.texture(0);
-    // the code we generated was for a specific kernel radius
-    GrAssert(kern.radius() == fRadius);
-    float imageIncrement[2] = { 0 };
-    switch (kern.direction()) {
+    const char* dir;
+    switch (fDirection) {
         case Gr1DKernelEffect::kX_Direction:
-            imageIncrement[0] = 1.0f / texture.width();
+            dir = "x";
             break;
         case Gr1DKernelEffect::kY_Direction:
-            imageIncrement[1] = 1.0f / texture.height();
+            dir = "y";
             break;
         default:
-            GrCrash("Unknown filter direction.");
+            SkFAIL("Unknown filter direction.");
+            dir = ""; // suppress warning
     }
-    uman.set2fv(fImageIncrementUni, 0, 1, imageIncrement);
-    fEffectMatrix.setData(uman, kern.getMatrix(), drawEffect, kern.texture(0));
+
+    // vec2 coord = coord2D;
+    fsBuilder->codeAppendf("\t\tvec2 coord = %s;\n", coords2D.c_str());
+    // coord.x -= radius * pixelSize;
+    fsBuilder->codeAppendf("\t\tcoord.%s -= %d.0 * %s; \n", dir, fRadius, pixelSizeInc);
+    if (fUseRange) {
+        // highBound = min(highBound, coord.x + (width-1) * pixelSize);
+        fsBuilder->codeAppendf("\t\tfloat highBound = min(%s.y, coord.%s + %f * %s);",
+                               range, dir, float(width() - 1), pixelSizeInc);
+        // coord.x = max(lowBound, coord.x);
+        fsBuilder->codeAppendf("\t\tcoord.%s = max(%s.x, coord.%s);", dir, range, dir);
+    }
+    fsBuilder->codeAppendf("\t\tfor (int i = 0; i < %d; i++) {\n", width());
+    fsBuilder->codeAppendf("\t\t\t%s = %s(%s, ", args.fOutputColor, func, args.fOutputColor);
+    fsBuilder->appendTextureLookup(args.fSamplers[0], "coord");
+    fsBuilder->codeAppend(");\n");
+    // coord.x += pixelSize;
+    fsBuilder->codeAppendf("\t\t\tcoord.%s += %s;\n", dir, pixelSizeInc);
+    if (fUseRange) {
+        // coord.x = min(highBound, coord.x);
+        fsBuilder->codeAppendf("\t\t\tcoord.%s = min(highBound, coord.%s);", dir, dir);
+    }
+    fsBuilder->codeAppend("\t\t}\n");
+    SkString modulate;
+    GrGLSLMulVarBy4f(&modulate, args.fOutputColor, args.fInputColor);
+    fsBuilder->codeAppend(modulate.c_str());
+}
+
+void GrGLMorphologyEffect::GenKey(const GrProcessor& proc,
+                                  const GrGLSLCaps&, GrProcessorKeyBuilder* b) {
+    const GrMorphologyEffect& m = proc.cast<GrMorphologyEffect>();
+    uint32_t key = static_cast<uint32_t>(m.radius());
+    key |= (m.type() << 8);
+    key |= (m.direction() << 9);
+    if (m.useRange()) key |= 1 << 10;
+    b->add32(key);
+}
+
+void GrGLMorphologyEffect::setData(const GrGLProgramDataManager& pdman,
+                                   const GrProcessor& proc) {
+    const GrMorphologyEffect& m = proc.cast<GrMorphologyEffect>();
+    GrTexture& texture = *m.texture(0);
+    // the code we generated was for a specific kernel radius, direction and bound usage
+    SkASSERT(m.radius() == fRadius);
+    SkASSERT(m.direction() == fDirection);
+    SkASSERT(m.useRange() == fUseRange);
+
+    float pixelSize = 0.0f;
+    switch (fDirection) {
+        case Gr1DKernelEffect::kX_Direction:
+            pixelSize = 1.0f / texture.width();
+            break;
+        case Gr1DKernelEffect::kY_Direction:
+            pixelSize = 1.0f / texture.height();
+            break;
+        default:
+            SkFAIL("Unknown filter direction.");
+    }
+    pdman.set1f(fPixelSizeUni, pixelSize);
+
+    if (fUseRange) {
+        const float* range = m.range();
+        if (fDirection && texture.origin() == kBottomLeft_GrSurfaceOrigin) {
+            pdman.set2f(fRangeUni, 1.0f - range[1], 1.0f - range[0]);
+        } else {
+            pdman.set2f(fRangeUni, range[0], range[1]);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GrMorphologyEffect::GrMorphologyEffect(GrTexture* texture,
+GrMorphologyEffect::GrMorphologyEffect(GrProcessorDataManager* procDataManager,
+                                       GrTexture* texture,
                                        Direction direction,
                                        int radius,
                                        MorphologyType type)
-    : Gr1DKernelEffect(texture, direction, radius)
-    , fType(type) {
+    : INHERITED(procDataManager, texture, direction, radius)
+    , fType(type), fUseRange(false) {
+    this->initClassID<GrMorphologyEffect>();
+}
+
+GrMorphologyEffect::GrMorphologyEffect(GrProcessorDataManager* procDataManager,
+                                       GrTexture* texture,
+                                       Direction direction,
+                                       int radius,
+                                       MorphologyType type,
+                                       float range[2])
+    : INHERITED(procDataManager, texture, direction, radius)
+    , fType(type), fUseRange(true) {
+    this->initClassID<GrMorphologyEffect>();
+    fRange[0] = range[0];
+    fRange[1] = range[1];
 }
 
 GrMorphologyEffect::~GrMorphologyEffect() {
 }
 
-const GrBackendEffectFactory& GrMorphologyEffect::getFactory() const {
-    return GrTBackendEffectFactory<GrMorphologyEffect>::getInstance();
+void GrMorphologyEffect::onGetGLProcessorKey(const GrGLSLCaps& caps, GrProcessorKeyBuilder* b) const {
+    GrGLMorphologyEffect::GenKey(*this, caps, b);
 }
 
-bool GrMorphologyEffect::onIsEqual(const GrEffect& sBase) const {
-    const GrMorphologyEffect& s = CastEffect<GrMorphologyEffect>(sBase);
-    return (this->texture(0) == s.texture(0) &&
-            this->radius() == s.radius() &&
+GrGLFragmentProcessor* GrMorphologyEffect::createGLInstance() const {
+    return SkNEW_ARGS(GrGLMorphologyEffect, (*this));
+}
+bool GrMorphologyEffect::onIsEqual(const GrFragmentProcessor& sBase) const {
+    const GrMorphologyEffect& s = sBase.cast<GrMorphologyEffect>();
+    return (this->radius() == s.radius() &&
             this->direction() == s.direction() &&
+            this->useRange() == s.useRange() &&
             this->type() == s.type());
 }
 
-void GrMorphologyEffect::getConstantColorComponents(GrColor* color, uint32_t* validFlags) const {
+void GrMorphologyEffect::onComputeInvariantOutput(GrInvariantOutput* inout) const {
     // This is valid because the color components of the result of the kernel all come
     // exactly from existing values in the source texture.
-    this->updateConstantColorComponentsForModulation(color, validFlags);
+    this->updateInvariantOutputForModulation(inout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GR_DEFINE_EFFECT_TEST(GrMorphologyEffect);
+GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrMorphologyEffect);
 
-GrEffectRef* GrMorphologyEffect::TestCreate(SkMWCRandom* random,
-                                            GrContext*,
-                                            const GrDrawTargetCaps&,
-                                            GrTexture* textures[]) {
-    int texIdx = random->nextBool() ? GrEffectUnitTest::kSkiaPMTextureIdx :
-                                      GrEffectUnitTest::kAlphaTextureIdx;
-    Direction dir = random->nextBool() ? kX_Direction : kY_Direction;
+GrFragmentProcessor* GrMorphologyEffect::TestCreate(GrProcessorTestData* d) {
+    int texIdx = d->fRandom->nextBool() ? GrProcessorUnitTest::kSkiaPMTextureIdx :
+                                      GrProcessorUnitTest::kAlphaTextureIdx;
+    Direction dir = d->fRandom->nextBool() ? kX_Direction : kY_Direction;
     static const int kMaxRadius = 10;
-    int radius = random->nextRangeU(1, kMaxRadius);
-    MorphologyType type = random->nextBool() ? GrMorphologyEffect::kErode_MorphologyType :
+    int radius = d->fRandom->nextRangeU(1, kMaxRadius);
+    MorphologyType type = d->fRandom->nextBool() ? GrMorphologyEffect::kErode_MorphologyType :
                                                GrMorphologyEffect::kDilate_MorphologyType;
 
-    return GrMorphologyEffect::Create(textures[texIdx], dir, radius, type);
+    return GrMorphologyEffect::Create(d->fProcDataManager, d->fTextures[texIdx], dir, radius, type);
 }
 
 namespace {
 
-void apply_morphology_pass(GrContext* context,
+
+void apply_morphology_rect(GrDrawContext* drawContext,
+                           GrRenderTarget* rt,
+                           const GrClip& clip,
                            GrTexture* texture,
-                           const SkIRect& rect,
+                           const SkIRect& srcRect,
+                           const SkIRect& dstRect,
+                           int radius,
+                           GrMorphologyEffect::MorphologyType morphType,
+                           float bounds[2],
+                           Gr1DKernelEffect::Direction direction) {
+    GrPaint paint;
+    paint.addColorProcessor(GrMorphologyEffect::Create(paint.getProcessorDataManager(),
+                                                       texture,
+                                                       direction,
+                                                       radius,
+                                                       morphType,
+                                                       bounds))->unref();
+    drawContext->drawNonAARectToRect(rt, clip, paint, SkMatrix::I(), SkRect::Make(dstRect),
+                                     SkRect::Make(srcRect));
+}
+
+void apply_morphology_rect_no_bounds(GrDrawContext* drawContext,
+                                     GrRenderTarget* rt,
+                                     const GrClip& clip,
+                                     GrTexture* texture,
+                                     const SkIRect& srcRect,
+                                     const SkIRect& dstRect,
+                                     int radius,
+                                     GrMorphologyEffect::MorphologyType morphType,
+                                     Gr1DKernelEffect::Direction direction) {
+    GrPaint paint;
+    paint.addColorProcessor(GrMorphologyEffect::Create(paint.getProcessorDataManager(),
+                                                       texture,
+                                                       direction,
+                                                       radius,
+                                                       morphType))->unref();
+    drawContext->drawNonAARectToRect(rt, clip, paint, SkMatrix::I(), SkRect::Make(dstRect),
+                                     SkRect::Make(srcRect));
+}
+
+void apply_morphology_pass(GrDrawContext* drawContext,
+                           GrRenderTarget* rt,
+                           const GrClip& clip,
+                           GrTexture* texture,
+                           const SkIRect& srcRect,
+                           const SkIRect& dstRect,
                            int radius,
                            GrMorphologyEffect::MorphologyType morphType,
                            Gr1DKernelEffect::Direction direction) {
-    GrPaint paint;
-    paint.colorStage(0)->setEffect(GrMorphologyEffect::Create(texture,
-                                                              direction,
-                                                              radius,
-                                                              morphType))->unref();
-    context->drawRect(paint, SkRect::MakeFromIRect(rect));
+    float bounds[2] = { 0.0f, 1.0f };
+    SkIRect lowerSrcRect = srcRect, lowerDstRect = dstRect;
+    SkIRect middleSrcRect = srcRect, middleDstRect = dstRect;
+    SkIRect upperSrcRect = srcRect, upperDstRect = dstRect;
+    if (direction == Gr1DKernelEffect::kX_Direction) {
+        bounds[0] = (SkIntToScalar(srcRect.left()) + 0.5f) / texture->width();
+        bounds[1] = (SkIntToScalar(srcRect.right()) - 0.5f) / texture->width();
+        lowerSrcRect.fRight = srcRect.left() + radius;
+        lowerDstRect.fRight = dstRect.left() + radius;
+        upperSrcRect.fLeft = srcRect.right() - radius;
+        upperDstRect.fLeft = dstRect.right() - radius;
+        middleSrcRect.inset(radius, 0);
+        middleDstRect.inset(radius, 0);
+    } else {
+        bounds[0] = (SkIntToScalar(srcRect.top()) + 0.5f) / texture->height();
+        bounds[1] = (SkIntToScalar(srcRect.bottom()) - 0.5f) / texture->height();
+        lowerSrcRect.fBottom = srcRect.top() + radius;
+        lowerDstRect.fBottom = dstRect.top() + radius;
+        upperSrcRect.fTop = srcRect.bottom() - radius;
+        upperDstRect.fTop = dstRect.bottom() - radius;
+        middleSrcRect.inset(0, radius);
+        middleDstRect.inset(0, radius);
+    }
+    if (middleSrcRect.fLeft - middleSrcRect.fRight >= 0) {
+        // radius covers srcRect; use bounds over entire draw
+        apply_morphology_rect(drawContext, rt, clip, texture, srcRect, dstRect, radius,
+                              morphType, bounds, direction);
+    } else {
+        // Draw upper and lower margins with bounds; middle without.
+        apply_morphology_rect(drawContext, rt, clip, texture, lowerSrcRect, lowerDstRect, radius,
+                              morphType, bounds, direction);
+        apply_morphology_rect(drawContext, rt, clip, texture, upperSrcRect, upperDstRect, radius,
+                              morphType, bounds, direction);
+        apply_morphology_rect_no_bounds(drawContext, rt, clip, texture, middleSrcRect, middleDstRect,
+                                        radius, morphType, direction);
+    }
 }
 
-GrTexture* apply_morphology(GrTexture* srcTexture,
-                            const SkIRect& rect,
-                            GrMorphologyEffect::MorphologyType morphType,
-                            SkISize radius) {
+bool apply_morphology(const SkBitmap& input,
+                      const SkIRect& rect,
+                      GrMorphologyEffect::MorphologyType morphType,
+                      SkISize radius,
+                      SkBitmap* dst) {
+    SkAutoTUnref<GrTexture> srcTexture(SkRef(input.getTexture()));
+    SkASSERT(srcTexture);
     GrContext* context = srcTexture->getContext();
-    srcTexture->ref();
 
-    GrContext::AutoMatrix am;
-    am.setIdentity(context);
+    // setup new clip
+    GrClip clip(SkRect::MakeWH(SkIntToScalar(srcTexture->width()),
+                               SkIntToScalar(srcTexture->height())));
 
-    GrContext::AutoClip acs(context, GrRect::MakeWH(SkIntToScalar(srcTexture->width()),
-                                                    SkIntToScalar(srcTexture->height())));
-
-    GrTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+    SkIRect dstRect = SkIRect::MakeWH(rect.width(), rect.height());
+    GrSurfaceDesc desc;
+    desc.fFlags = kRenderTarget_GrSurfaceFlag;
     desc.fWidth = rect.width();
     desc.fHeight = rect.height();
     desc.fConfig = kSkia8888_GrPixelConfig;
+    SkIRect srcRect = rect;
 
     if (radius.fWidth > 0) {
-        GrAutoScratchTexture ast(context, desc);
-        GrContext::AutoRenderTarget art(context, ast.texture()->asRenderTarget());
-        apply_morphology_pass(context, srcTexture, rect, radius.fWidth,
-                              morphType, Gr1DKernelEffect::kX_Direction);
-        SkIRect clearRect = SkIRect::MakeXYWH(rect.fLeft, rect.fBottom,
-                                              rect.width(), radius.fHeight);
-        context->clear(&clearRect, 0x0);
-        srcTexture->unref();
-        srcTexture = ast.detach();
+        GrTexture* scratch = context->textureProvider()->createApproxTexture(desc);
+        if (NULL == scratch) {
+            return false;
+        }
+        GrDrawContext* dstDrawContext = context->drawContext();
+        if (!dstDrawContext) {
+            return false;
+        }
+
+        apply_morphology_pass(dstDrawContext, scratch->asRenderTarget(), clip, srcTexture,
+                              srcRect, dstRect, radius.fWidth, morphType,
+                              Gr1DKernelEffect::kX_Direction);
+        SkIRect clearRect = SkIRect::MakeXYWH(dstRect.fLeft, dstRect.fBottom,
+                                              dstRect.width(), radius.fHeight);
+        GrColor clearColor = GrMorphologyEffect::kErode_MorphologyType == morphType ?
+                                SK_ColorWHITE :
+                                SK_ColorTRANSPARENT;
+        dstDrawContext->clear(scratch->asRenderTarget(), &clearRect, clearColor, false);
+
+        srcTexture.reset(scratch);
+        srcRect = dstRect;
     }
     if (radius.fHeight > 0) {
-        GrAutoScratchTexture ast(context, desc);
-        GrContext::AutoRenderTarget art(context, ast.texture()->asRenderTarget());
-        apply_morphology_pass(context, srcTexture, rect, radius.fHeight,
-                              morphType, Gr1DKernelEffect::kY_Direction);
-        srcTexture->unref();
-        srcTexture = ast.detach();
+        GrTexture* scratch = context->textureProvider()->createApproxTexture(desc);
+        if (NULL == scratch) {
+            return false;
+        }
+        GrDrawContext* dstDrawContext = context->drawContext();
+        if (!dstDrawContext) {
+            return false;
+        }
+
+        apply_morphology_pass(dstDrawContext, scratch->asRenderTarget(), clip, srcTexture,
+                              srcRect, dstRect, radius.fHeight, morphType,
+                              Gr1DKernelEffect::kY_Direction);
+
+        srcTexture.reset(scratch);
     }
-    return srcTexture;
+    SkImageFilter::WrapTexture(srcTexture, rect.width(), rect.height(), dst);
+    return true;
 }
 
 };
 
-bool SkDilateImageFilter::filterImageGPU(Proxy* proxy, const SkBitmap& src, SkBitmap* result) {
-    SkBitmap inputBM;
-    if (!SkImageFilterUtils::GetInputResultGPU(getInput(0), proxy, src, &inputBM)) {
+bool SkMorphologyImageFilter::filterImageGPUGeneric(bool dilate,
+                                                    Proxy* proxy,
+                                                    const SkBitmap& src,
+                                                    const Context& ctx,
+                                                    SkBitmap* result,
+                                                    SkIPoint* offset) const {
+    SkBitmap input = src;
+    SkIPoint srcOffset = SkIPoint::Make(0, 0);
+    if (this->getInput(0) &&
+        !this->getInput(0)->getInputResultGPU(proxy, src, ctx, &input, &srcOffset)) {
         return false;
     }
-    GrTexture* input = inputBM.getTexture();
     SkIRect bounds;
-    src.getBounds(&bounds);
-    SkAutoTUnref<GrTexture> resultTex(apply_morphology(input, bounds,
-        GrMorphologyEffect::kDilate_MorphologyType, radius()));
-    return SkImageFilterUtils::WrapTexture(resultTex, src.width(), src.height(), result);
+    if (!this->applyCropRect(ctx, proxy, input, &srcOffset, &bounds, &input)) {
+        return false;
+    }
+    SkVector radius = SkVector::Make(SkIntToScalar(this->radius().width()),
+                                     SkIntToScalar(this->radius().height()));
+    ctx.ctm().mapVectors(&radius, 1);
+    int width = SkScalarFloorToInt(radius.fX);
+    int height = SkScalarFloorToInt(radius.fY);
+
+    if (width < 0 || height < 0) {
+        return false;
+    }
+
+    SkIRect srcBounds = bounds;
+    srcBounds.offset(-srcOffset);
+    if (width == 0 && height == 0) {
+        input.extractSubset(result, srcBounds);
+        offset->fX = bounds.left();
+        offset->fY = bounds.top();
+        return true;
+    }
+
+    GrMorphologyEffect::MorphologyType type = dilate ? GrMorphologyEffect::kDilate_MorphologyType
+                                                     : GrMorphologyEffect::kErode_MorphologyType;
+    if (!apply_morphology(input, srcBounds, type, SkISize::Make(width, height), result)) {
+        return false;
+    }
+    offset->fX = bounds.left();
+    offset->fY = bounds.top();
+    return true;
 }
 
-bool SkErodeImageFilter::filterImageGPU(Proxy* proxy, const SkBitmap& src, SkBitmap* result) {
-    SkBitmap inputBM;
-    if (!SkImageFilterUtils::GetInputResultGPU(getInput(0), proxy, src, &inputBM)) {
-        return false;
-    }
-    GrTexture* input = inputBM.getTexture();
-    SkIRect bounds;
-    src.getBounds(&bounds);
-    SkAutoTUnref<GrTexture> resultTex(apply_morphology(input, bounds,
-        GrMorphologyEffect::kErode_MorphologyType, radius()));
-    return SkImageFilterUtils::WrapTexture(resultTex, src.width(), src.height(), result);
+bool SkDilateImageFilter::filterImageGPU(Proxy* proxy, const SkBitmap& src, const Context& ctx,
+                                         SkBitmap* result, SkIPoint* offset) const {
+    return this->filterImageGPUGeneric(true, proxy, src, ctx, result, offset);
+}
+
+bool SkErodeImageFilter::filterImageGPU(Proxy* proxy, const SkBitmap& src, const Context& ctx,
+                                        SkBitmap* result, SkIPoint* offset) const {
+    return this->filterImageGPUGeneric(false, proxy, src, ctx, result, offset);
 }
 
 #endif

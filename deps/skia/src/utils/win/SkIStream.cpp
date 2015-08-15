@@ -8,7 +8,7 @@
 
 
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #include <ole2.h>
 #include "SkIStream.h"
 #include "SkStream.h"
@@ -103,32 +103,35 @@ HRESULT STDMETHODCALLTYPE SkBaseIStream::Stat(STATSTG* pStatstg
 /**
  * SkIStream
  */
-SkIStream::SkIStream(SkStream* stream, bool unrefOnRelease)
+SkIStream::SkIStream(SkStream* stream, bool deleteOnRelease)
     : SkBaseIStream()
     , fSkStream(stream)
-    , fUnrefOnRelease(unrefOnRelease)
+    , fDeleteOnRelease(deleteOnRelease)
     , fLocation()
 {
     this->fSkStream->rewind();
 }
 
 SkIStream::~SkIStream() {
-    if (NULL != this->fSkStream && fUnrefOnRelease) {
-        this->fSkStream->unref();
+    if (fDeleteOnRelease) {
+        delete this->fSkStream;
     }
 }
 
 HRESULT SkIStream::CreateFromSkStream(SkStream* stream
-                                    , bool unrefOnRelease
+                                    , bool deleteOnRelease
                                     , IStream ** ppStream)
 {
-    *ppStream = new SkIStream(stream, unrefOnRelease);
+    if (NULL == stream) {
+        return E_INVALIDARG;
+    }
+    *ppStream = new SkIStream(stream, deleteOnRelease);
     return S_OK;
 }
 
 // ISequentialStream Interface
 HRESULT STDMETHODCALLTYPE SkIStream::Read(void* pv, ULONG cb, ULONG* pcbRead) {
-    *pcbRead = this->fSkStream->read(pv, cb);
+    *pcbRead = static_cast<ULONG>(this->fSkStream->read(pv, cb));
     this->fLocation.QuadPart += *pcbRead;
     return (*pcbRead == cb) ? S_OK : S_FALSE;
 }
@@ -176,6 +179,8 @@ HRESULT STDMETHODCALLTYPE SkIStream::Seek(LARGE_INTEGER liDistanceToMove
         if (!this->fSkStream->rewind()) {
             hr = E_FAIL;
         } else {
+            // FIXME: Should not depend on getLength.
+            // See https://code.google.com/p/skia/issues/detail?id=1570
             LONGLONG skip = this->fSkStream->getLength()
                           + liDistanceToMove.QuadPart;
             size_t skipped = this->fSkStream->skip(static_cast<size_t>(skip));
@@ -191,7 +196,7 @@ HRESULT STDMETHODCALLTYPE SkIStream::Seek(LARGE_INTEGER liDistanceToMove
         break;
     }
 
-    if (NULL != lpNewFilePointer) {
+    if (lpNewFilePointer) {
         lpNewFilePointer->QuadPart = this->fLocation.QuadPart;
     }
     return hr;
@@ -204,6 +209,8 @@ HRESULT STDMETHODCALLTYPE SkIStream::Stat(STATSTG* pStatstg
         return STG_E_INVALIDFLAG;
     }
     pStatstg->pwcsName = NULL;
+    // FIXME: Should not depend on getLength
+    // See https://code.google.com/p/skia/issues/detail?id=1570
     pStatstg->cbSize.QuadPart = this->fSkStream->getLength();
     pStatstg->clsid = CLSID_NULL;
     pStatstg->type = STGTY_STREAM;
@@ -221,7 +228,7 @@ SkWIStream::SkWIStream(SkWStream* stream)
 { }
 
 SkWIStream::~SkWIStream() {
-    if (NULL != this->fSkWStream) {
+    if (this->fSkWStream) {
         this->fSkWStream->flush();
     }
 }

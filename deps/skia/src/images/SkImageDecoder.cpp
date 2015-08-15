@@ -14,40 +14,35 @@
 #include "SkTemplates.h"
 #include "SkCanvas.h"
 
-SK_DEFINE_INST_COUNT(SkImageDecoder::Peeker)
-SK_DEFINE_INST_COUNT(SkImageDecoder::Chooser)
-SK_DEFINE_INST_COUNT(SkImageDecoderFactory)
-
-static SkBitmap::Config gDeviceConfig = SkBitmap::kNo_Config;
-
-SkBitmap::Config SkImageDecoder::GetDeviceConfig()
-{
-    return gDeviceConfig;
-}
-
-void SkImageDecoder::SetDeviceConfig(SkBitmap::Config config)
-{
-    gDeviceConfig = config;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 SkImageDecoder::SkImageDecoder()
     : fPeeker(NULL)
-    , fChooser(NULL)
     , fAllocator(NULL)
     , fSampleSize(1)
-    , fDefaultPref(SkBitmap::kNo_Config)
+    , fDefaultPref(kUnknown_SkColorType)
+    , fPreserveSrcDepth(false)
     , fDitherImage(true)
-    , fUsePrefTable(false)
+    , fSkipWritingZeroes(false)
     , fPreferQualityOverSpeed(false)
     , fRequireUnpremultipliedColors(false) {
 }
 
 SkImageDecoder::~SkImageDecoder() {
     SkSafeUnref(fPeeker);
-    SkSafeUnref(fChooser);
     SkSafeUnref(fAllocator);
+}
+
+void SkImageDecoder::copyFieldsToOther(SkImageDecoder* other) {
+    if (NULL == other) {
+        return;
+    }
+    other->setPeeker(fPeeker);
+    other->setAllocator(fAllocator);
+    other->setSampleSize(fSampleSize);
+    other->setPreserveSrcDepth(fPreserveSrcDepth);
+    other->setDitherImage(fDitherImage);
+    other->setSkipWritingZeroes(fSkipWritingZeroes);
+    other->setPreferQualityOverSpeed(fPreferQualityOverSpeed);
+    other->setRequireUnpremultipliedColors(fRequireUnpremultipliedColors);
 }
 
 SkImageDecoder::Format SkImageDecoder::getFormat() const {
@@ -68,6 +63,12 @@ const char* SkImageDecoder::GetFormatName(Format format) {
             return "GIF";
         case kICO_Format:
             return "ICO";
+        case kPKM_Format:
+            return "PKM";
+        case kKTX_Format:
+            return "KTX";
+        case kASTC_Format:
+            return "ASTC";
         case kJPEG_Format:
             return "JPEG";
         case kPNG_Format:
@@ -77,7 +78,7 @@ const char* SkImageDecoder::GetFormatName(Format format) {
         case kWEBP_Format:
             return "WEBP";
         default:
-            SkASSERT(!"Invalid format type!");
+            SkDEBUGFAIL("Invalid format type!");
     }
     return "Unknown Format";
 }
@@ -85,11 +86,6 @@ const char* SkImageDecoder::GetFormatName(Format format) {
 SkImageDecoder::Peeker* SkImageDecoder::setPeeker(Peeker* peeker) {
     SkRefCnt_SafeAssign(fPeeker, peeker);
     return peeker;
-}
-
-SkImageDecoder::Chooser* SkImageDecoder::setChooser(Chooser* chooser) {
-    SkRefCnt_SafeAssign(fChooser, chooser);
-    return chooser;
 }
 
 SkBitmap::Allocator* SkImageDecoder::setAllocator(SkBitmap::Allocator* alloc) {
@@ -104,113 +100,77 @@ void SkImageDecoder::setSampleSize(int size) {
     fSampleSize = size;
 }
 
-bool SkImageDecoder::chooseFromOneChoice(SkBitmap::Config config, int width,
-                                         int height) const {
-    Chooser* chooser = fChooser;
-
-    if (NULL == chooser) {    // no chooser, we just say YES to decoding :)
-        return true;
-    }
-    chooser->begin(1);
-    chooser->inspect(0, config, width, height);
-    return chooser->choose() == 0;
-}
-
 bool SkImageDecoder::allocPixelRef(SkBitmap* bitmap,
                                    SkColorTable* ctable) const {
-    return bitmap->allocPixels(fAllocator, ctable);
+    return bitmap->tryAllocPixels(fAllocator, ctable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void SkImageDecoder::setPrefConfigTable(const SkBitmap::Config pref[6]) {
-    if (NULL == pref) {
-        fUsePrefTable = false;
-    } else {
-        fUsePrefTable = true;
-        memcpy(fPrefTable, pref, sizeof(fPrefTable));
-    }
-}
-
-SkBitmap::Config SkImageDecoder::getPrefConfig(SrcDepth srcDepth,
-                                               bool srcHasAlpha) const {
-    SkBitmap::Config config;
-
-    if (fUsePrefTable) {
-        int index = 0;
+SkColorType SkImageDecoder::getPrefColorType(SrcDepth srcDepth, bool srcHasAlpha) const {
+    SkColorType ct = fDefaultPref;
+    if (fPreserveSrcDepth) {
         switch (srcDepth) {
             case kIndex_SrcDepth:
-                index = 0;
+                ct = kIndex_8_SkColorType;
                 break;
-            case k16Bit_SrcDepth:
-                index = 2;
+            case k8BitGray_SrcDepth:
+                ct = kN32_SkColorType;
                 break;
             case k32Bit_SrcDepth:
-                index = 4;
+                ct = kN32_SkColorType;
                 break;
         }
-        if (srcHasAlpha) {
-            index += 1;
-        }
-        config = fPrefTable[index];
-    } else {
-        config = fDefaultPref;
     }
-
-    if (SkBitmap::kNo_Config == config) {
-        config = SkImageDecoder::GetDeviceConfig();
-    }
-    return config;
+    return ct;
 }
 
-bool SkImageDecoder::decode(SkStream* stream, SkBitmap* bm,
-                            SkBitmap::Config pref, Mode mode, bool reuseBitmap) {
+SkImageDecoder::Result SkImageDecoder::decode(SkStream* stream, SkBitmap* bm, SkColorType pref,
+                                              Mode mode) {
     // we reset this to false before calling onDecode
     fShouldCancelDecode = false;
-    // assign this, for use by getPrefConfig(), in case fUsePrefTable is false
+    // assign this, for use by getPrefColorType(), in case fUsePrefTable is false
     fDefaultPref = pref;
-
-    if (reuseBitmap) {
-        SkAutoLockPixels alp(*bm);
-        if (NULL != bm->getPixels()) {
-            return this->onDecode(stream, bm, mode);
-        }
-    }
 
     // pass a temporary bitmap, so that if we return false, we are assured of
     // leaving the caller's bitmap untouched.
-    SkBitmap    tmp;
-    if (!this->onDecode(stream, &tmp, mode)) {
-        return false;
+    SkBitmap tmp;
+    const Result result = this->onDecode(stream, &tmp, mode);
+    if (kFailure != result) {
+        bm->swap(tmp);
     }
-    bm->swap(tmp);
-    return true;
+    return result;
 }
 
-bool SkImageDecoder::decodeSubset(SkBitmap* bm, const SkIRect& rect,
-                                  SkBitmap::Config pref) {
+bool SkImageDecoder::decodeSubset(SkBitmap* bm, const SkIRect& rect, SkColorType pref) {
     // we reset this to false before calling onDecodeSubset
     fShouldCancelDecode = false;
-    // assign this, for use by getPrefConfig(), in case fUsePrefTable is false
+    // assign this, for use by getPrefColorType(), in case fUsePrefTable is false
     fDefaultPref = pref;
 
     return this->onDecodeSubset(bm, rect);
 }
 
-bool SkImageDecoder::buildTileIndex(SkStream* stream,
-                                int *width, int *height) {
+bool SkImageDecoder::buildTileIndex(SkStreamRewindable* stream, int *width, int *height) {
     // we reset this to false before calling onBuildTileIndex
     fShouldCancelDecode = false;
 
     return this->onBuildTileIndex(stream, width, height);
 }
 
+bool SkImageDecoder::onBuildTileIndex(SkStreamRewindable* stream, int* /*width*/,
+                                      int* /*height*/) {
+    SkDELETE(stream);
+    return false;
+}
+
+
 bool SkImageDecoder::cropBitmap(SkBitmap *dst, SkBitmap *src, int sampleSize,
                                 int dstX, int dstY, int width, int height,
                                 int srcX, int srcY) {
     int w = width / sampleSize;
     int h = height / sampleSize;
-    if (src->getConfig() == SkBitmap::kIndex8_Config) {
+    if (src->colorType() == kIndex_8_SkColorType) {
         // kIndex8 does not allow drawing via an SkCanvas, as is done below.
         // Instead, use extractSubset. Note that this shares the SkPixelRef and
         // SkColorTable.
@@ -226,8 +186,7 @@ bool SkImageDecoder::cropBitmap(SkBitmap *dst, SkBitmap *src, int sampleSize,
     }
     // if the destination has no pixels then we must allocate them.
     if (dst->isNull()) {
-        dst->setConfig(src->getConfig(), w, h);
-        dst->setIsOpaque(src->isOpaque());
+        dst->setInfo(src->info().makeWH(w, h));
 
         if (!this->allocPixelRef(dst, NULL)) {
             SkDEBUGF(("failed to allocate pixels needed to crop the bitmap"));
@@ -255,23 +214,25 @@ bool SkImageDecoder::cropBitmap(SkBitmap *dst, SkBitmap *src, int sampleSize,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool SkImageDecoder::DecodeFile(const char file[], SkBitmap* bm,
-                            SkBitmap::Config pref,  Mode mode, Format* format) {
+bool SkImageDecoder::DecodeFile(const char file[], SkBitmap* bm, SkColorType pref,  Mode mode,
+                                Format* format) {
     SkASSERT(file);
     SkASSERT(bm);
 
-    SkAutoTUnref<SkStream> stream(SkStream::NewFromFile(file));
+    SkAutoTDelete<SkStreamRewindable> stream(SkStream::NewFromFile(file));
     if (stream.get()) {
         if (SkImageDecoder::DecodeStream(stream, bm, pref, mode, format)) {
-            bm->pixelRef()->setURI(file);
+            if (SkPixelRef* pr = bm->pixelRef()) {
+                pr->setURI(file);
+            }
             return true;
         }
     }
     return false;
 }
 
-bool SkImageDecoder::DecodeMemory(const void* buffer, size_t size, SkBitmap* bm,
-                          SkBitmap::Config pref, Mode mode, Format* format) {
+bool SkImageDecoder::DecodeMemory(const void* buffer, size_t size, SkBitmap* bm, SkColorType pref,
+                                  Mode mode, Format* format) {
     if (0 == size) {
         return false;
     }
@@ -281,164 +242,16 @@ bool SkImageDecoder::DecodeMemory(const void* buffer, size_t size, SkBitmap* bm,
     return SkImageDecoder::DecodeStream(&stream, bm, pref, mode, format);
 }
 
-/**
- *  Special allocator used by DecodeMemoryToTarget. Uses preallocated memory
- *  provided if the bm is 8888. Otherwise, uses a heap allocator. The same
- *  allocator will be used again for a copy to 8888, when the preallocated
- *  memory will be used.
- */
-class TargetAllocator : public SkBitmap::HeapAllocator {
-
-public:
-    TargetAllocator(void* target)
-        : fTarget(target) {}
-
-    virtual bool allocPixelRef(SkBitmap* bm, SkColorTable* ct) SK_OVERRIDE {
-        // If the config is not 8888, allocate a pixelref using the heap.
-        // fTarget will be used to store the final pixels when copied to
-        // 8888.
-        if (bm->config() != SkBitmap::kARGB_8888_Config) {
-            return INHERITED::allocPixelRef(bm, ct);
-        }
-        // In kARGB_8888_Config, there is no colortable.
-        SkASSERT(NULL == ct);
-        bm->setPixels(fTarget);
-        return true;
-    }
-
-private:
-    void* fTarget;
-    typedef SkBitmap::HeapAllocator INHERITED;
-};
-
-/**
- *  Helper function for DecodeMemoryToTarget. DecodeMemoryToTarget wants
- *  8888, so set the config to it. All parameters must not be null.
- *  @param decoder Decoder appropriate for this stream.
- *  @param stream Rewound stream to the encoded data.
- *  @param bitmap On success, will have its bounds set to the bounds of the
- *      encoded data, and its config set to 8888.
- *  @return True if the bounds were decoded and the bitmap is 8888 or can be
- *      copied to 8888.
- */
-static bool decode_bounds_to_8888(SkImageDecoder* decoder, SkStream* stream,
-                                  SkBitmap* bitmap) {
-    SkASSERT(decoder != NULL);
-    SkASSERT(stream != NULL);
-    SkASSERT(bitmap != NULL);
-
-    if (!decoder->decode(stream, bitmap, SkImageDecoder::kDecodeBounds_Mode)) {
-        return false;
-    }
-
-    if (bitmap->config() == SkBitmap::kARGB_8888_Config) {
-        return true;
-    }
-
-    if (!bitmap->canCopyTo(SkBitmap::kARGB_8888_Config)) {
-        return false;
-    }
-
-    bitmap->setConfig(SkBitmap::kARGB_8888_Config, bitmap->width(), bitmap->height());
-    return true;
-}
-
-/**
- *  Helper function for DecodeMemoryToTarget. Decodes the stream into bitmap, and if
- *  the bitmap is not 8888, then it is copied to 8888. Either way, the end result has
- *  its pixels stored in target. All parameters must not be null.
- *  @param decoder Decoder appropriate for this stream.
- *  @param stream Rewound stream to the encoded data.
- *  @param bitmap On success, will contain the decoded image, with its pixels stored
- *      at target.
- *  @param target Preallocated memory for storing pixels.
- *  @return bool Whether the decode (and copy, if necessary) succeeded.
- */
-static bool decode_pixels_to_8888(SkImageDecoder* decoder, SkStream* stream,
-                                  SkBitmap* bitmap, void* target) {
-    SkASSERT(decoder != NULL);
-    SkASSERT(stream != NULL);
-    SkASSERT(bitmap != NULL);
-    SkASSERT(target != NULL);
-
-    TargetAllocator allocator(target);
-    decoder->setAllocator(&allocator);
-
-    bool success = decoder->decode(stream, bitmap, SkImageDecoder::kDecodePixels_Mode);
-    decoder->setAllocator(NULL);
-
-    if (!success) {
-        return false;
-    }
-
-    if (bitmap->config() == SkBitmap::kARGB_8888_Config) {
-        return true;
-    }
-
-    SkBitmap bm8888;
-    if (!bitmap->copyTo(&bm8888, SkBitmap::kARGB_8888_Config, &allocator)) {
-        return false;
-    }
-
-    bitmap->swap(bm8888);
-    return true;
-}
-
-bool SkImageDecoder::DecodeMemoryToTarget(const void* buffer, size_t size,
-                                          SkImage::Info* info,
-                                          const SkBitmapFactory::Target* target) {
-    if (NULL == info) {
-        return false;
-    }
-
-    // FIXME: Just to get this working, implement in terms of existing
-    // ImageDecoder calls.
-    SkBitmap bm;
-    SkMemoryStream stream(buffer, size);
-    SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(&stream));
-    if (NULL == decoder.get()) {
-        return false;
-    }
-
-    if (!decode_bounds_to_8888(decoder.get(), &stream, &bm)) {
-        return false;
-    }
-
-    SkASSERT(bm.config() == SkBitmap::kARGB_8888_Config);
-
-    // Now set info properly.
-    // Since Config is SkBitmap::kARGB_8888_Config, SkBitmapToImageInfo
-    // will always succeed.
-    SkAssertResult(SkBitmapToImageInfo(bm, info));
-
-    if (NULL == target) {
-        return true;
-    }
-
-    if (target->fRowBytes != SkToU32(bm.rowBytes())) {
-        if (target->fRowBytes < SkImageMinRowBytes(*info)) {
-            SkASSERT(!"Desired row bytes is too small");
-            return false;
-        }
-        bm.setConfig(bm.config(), bm.width(), bm.height(), target->fRowBytes);
-    }
-
-    // SkMemoryStream.rewind() will always return true.
-    SkAssertResult(stream.rewind());
-    return decode_pixels_to_8888(decoder.get(), &stream, &bm, target->fAddr);
-}
-
-
-bool SkImageDecoder::DecodeStream(SkStream* stream, SkBitmap* bm,
-                          SkBitmap::Config pref, Mode mode, Format* format) {
+bool SkImageDecoder::DecodeStream(SkStreamRewindable* stream, SkBitmap* bm, SkColorType pref,
+                                  Mode mode, Format* format) {
     SkASSERT(stream);
     SkASSERT(bm);
 
     bool success = false;
     SkImageDecoder* codec = SkImageDecoder::Factory(stream);
 
-    if (NULL != codec) {
-        success = codec->decode(stream, bm, pref, mode);
+    if (codec) {
+        success = codec->decode(stream, bm, pref, mode) != kFailure;
         if (success && format) {
             *format = codec->getFormat();
             if (kUnknown_Format == *format) {
@@ -450,4 +263,12 @@ bool SkImageDecoder::DecodeStream(SkStream* stream, SkBitmap* bm,
         delete codec;
     }
     return success;
+}
+
+bool SkImageDecoder::decodeYUV8Planes(SkStream* stream, SkISize componentSizes[3], void* planes[3],
+                                      size_t rowBytes[3], SkYUVColorSpace* colorSpace) {
+    // we reset this to false before calling onDecodeYUV8Planes
+    fShouldCancelDecode = false;
+
+    return this->onDecodeYUV8Planes(stream, componentSizes, planes, rowBytes, colorSpace);
 }

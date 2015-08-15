@@ -10,13 +10,12 @@
 #ifndef SkRefCnt_DEFINED
 #define SkRefCnt_DEFINED
 
-#include "SkThread.h"
-#include "SkInstCnt.h"
+#include "SkAtomics.h"
 #include "SkTemplates.h"
 
-/** \class SkRefCnt
+/** \class SkRefCntBase
 
-    SkRefCnt is the base class for objects that may be shared by multiple
+    SkRefCntBase is the base class for objects that may be shared by multiple
     objects. When an existing owner wants to share a reference, it calls ref().
     When an owner wants to release its reference, it calls unref(). When the
     shared object's reference count goes to zero as the result of an unref()
@@ -24,32 +23,44 @@
     destructor to be called explicitly (or via the object going out of scope on
     the stack or calling delete) if getRefCnt() > 1.
 */
-class SK_API SkRefCnt : SkNoncopyable {
+class SK_API SkRefCntBase : SkNoncopyable {
 public:
-    SK_DECLARE_INST_COUNT_ROOT(SkRefCnt)
-
     /** Default construct, initializing the reference count to 1.
     */
-    SkRefCnt() : fRefCnt(1) {}
+    SkRefCntBase() : fRefCnt(1) {}
 
     /** Destruct, asserting that the reference count is 1.
     */
-    virtual ~SkRefCnt() {
+    virtual ~SkRefCntBase() {
 #ifdef SK_DEBUG
-        SkASSERT(fRefCnt == 1);
+        SkASSERTF(fRefCnt == 1, "fRefCnt was %d", fRefCnt);
         fRefCnt = 0;    // illegal value, to catch us if we reuse after delete
 #endif
     }
 
-    /** Return the reference count.
-    */
+#ifdef SK_DEBUG
+    /** Return the reference count. Use only for debugging. */
     int32_t getRefCnt() const { return fRefCnt; }
+#endif
+
+    /** May return true if the caller is the only owner.
+     *  Ensures that all previous owner's actions are complete.
+     */
+    bool unique() const {
+        if (1 == sk_atomic_load(&fRefCnt, sk_memory_order_acquire)) {
+            // The acquire barrier is only really needed if we return true.  It
+            // prevents code conditioned on the result of unique() from running
+            // until previous owners are all totally done calling unref().
+            return true;
+        }
+        return false;
+    }
 
     /** Increment the reference count. Must be balanced by a call to unref().
     */
     void ref() const {
         SkASSERT(fRefCnt > 0);
-        sk_atomic_inc(&fRefCnt);  // No barrier required.
+        (void)sk_atomic_fetch_add(&fRefCnt, +1, sk_memory_order_relaxed);  // No barrier required.
     }
 
     /** Decrement the reference count. If the reference count is 1 before the
@@ -58,33 +69,19 @@ public:
     */
     void unref() const {
         SkASSERT(fRefCnt > 0);
-        // Release barrier (SL/S), if not provided below.
-        if (sk_atomic_dec(&fRefCnt) == 1) {
-            // Aquire barrier (L/SL), if not provided above.
-            // Prevents code in dispose from happening before the decrement.
-            sk_membar_aquire__after_atomic_dec();
-            internal_dispose();
+        // A release here acts in place of all releases we "should" have been doing in ref().
+        if (1 == sk_atomic_fetch_add(&fRefCnt, -1, sk_memory_order_acq_rel)) {
+            // Like unique(), the acquire is only needed on success, to make sure
+            // code in internal_dispose() doesn't happen before the decrement.
+            this->internal_dispose();
         }
     }
 
+#ifdef SK_DEBUG
     void validate() const {
         SkASSERT(fRefCnt > 0);
     }
-
-    /**
-     *  Alias for ref(), for compatibility with scoped_refptr.
-     */
-    void AddRef() { this->ref(); }
-
-    /**
-     *  Alias for unref(), for compatibility with scoped_refptr.
-     */
-    void Release() { this->unref(); }
-
-    /**
-     * Alias for unref(), for compatibility with WTF::RefPtr.
-     */
-    void deref() { this->unref(); }
+#endif
 
 protected:
     /**
@@ -109,14 +106,22 @@ private:
         SkDELETE(this);
     }
 
+    // The following friends are those which override internal_dispose()
+    // and conditionally call SkRefCnt::internal_dispose().
     friend class SkWeakRefCnt;
-    friend class GrTexture;     // to allow GrTexture's internal_dispose to
-                                // call SkRefCnt's & directly set fRefCnt (to 1)
 
     mutable int32_t fRefCnt;
 
     typedef SkNoncopyable INHERITED;
 };
+
+#ifdef SK_REF_CNT_MIXIN_INCLUDE
+// It is the responsibility of the following include to define the type SkRefCnt.
+// This SkRefCnt should normally derive from SkRefCntBase.
+#include SK_REF_CNT_MIXIN_INCLUDE
+#else
+class SK_API SkRefCnt : public SkRefCntBase { };
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -157,6 +162,13 @@ template <typename T> static inline void SkSafeUnref(T* obj) {
     }
 }
 
+template<typename T> static inline void SkSafeSetNull(T*& obj) {
+    if (obj) {
+        obj->unref();
+        obj = NULL;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -193,79 +205,45 @@ public:
         return obj;
     }
 
-    /**
-     *  BlockRef<B> is a type which inherits from B, cannot be created,
-     *  cannot be deleted, and makes ref and unref private.
-     */
-    template<typename B> class BlockRef : public B {
-    private:
-        BlockRef();
-        ~BlockRef();
-        void ref() const;
-        void unref() const;
-    };
-
-    /** If T is const, the type returned from operator-> will also be const. */
-    typedef typename SkTConstType<BlockRef<T>, SkTIsConst<T>::value>::type BlockRefType;
-
-    /**
-     *  SkAutoTUnref assumes ownership of the ref. As a result, it is an error
-     *  for the user to ref or unref through SkAutoTUnref. Therefore
-     *  SkAutoTUnref::operator-> returns BlockRef<T>*. This prevents use of
-     *  skAutoTUnrefInstance->ref() and skAutoTUnrefInstance->unref().
-     */
-    BlockRefType *operator->() const {
-        return static_cast<BlockRefType*>(fObj);
-    }
-    operator T*() { return fObj; }
+    T* operator->() const { return fObj; }
+    operator T*() const { return fObj; }
 
 private:
     T*  fObj;
 };
+// Can't use the #define trick below to guard a bare SkAutoTUnref(...) because it's templated. :(
 
 class SkAutoUnref : public SkAutoTUnref<SkRefCnt> {
 public:
     SkAutoUnref(SkRefCnt* obj) : SkAutoTUnref<SkRefCnt>(obj) {}
 };
+#define SkAutoUnref(...) SK_REQUIRE_LOCAL_VAR(SkAutoUnref)
 
-class SkAutoRef : SkNoncopyable {
+// This is a variant of SkRefCnt that's Not Virtual, so weighs 4 bytes instead of 8 or 16.
+// There's only benefit to using this if the deriving class does not otherwise need a vtable.
+template <typename Derived>
+class SkNVRefCnt : SkNoncopyable {
 public:
-    SkAutoRef(SkRefCnt* obj) : fObj(obj) { SkSafeRef(obj); }
-    ~SkAutoRef() { SkSafeUnref(fObj); }
-private:
-    SkRefCnt* fObj;
-};
+    SkNVRefCnt() : fRefCnt(1) {}
+    ~SkNVRefCnt() { SkASSERTF(1 == fRefCnt, "NVRefCnt was %d", fRefCnt); }
 
-/** Wrapper class for SkRefCnt pointers. This manages ref/unref of a pointer to
-    a SkRefCnt (or subclass) object.
- */
-template <typename T> class SkRefPtr {
-public:
-    SkRefPtr() : fObj(NULL) {}
-    SkRefPtr(T* obj) : fObj(obj) { SkSafeRef(fObj); }
-    SkRefPtr(const SkRefPtr& o) : fObj(o.fObj) { SkSafeRef(fObj); }
-    ~SkRefPtr() { SkSafeUnref(fObj); }
+    // Implementation is pretty much the same as SkRefCntBase. All required barriers are the same:
+    //   - unique() needs acquire when it returns true, and no barrier if it returns false;
+    //   - ref() doesn't need any barrier;
+    //   - unref() needs a release barrier, and an acquire if it's going to call delete.
 
-    SkRefPtr& operator=(const SkRefPtr& rp) {
-        SkRefCnt_SafeAssign(fObj, rp.fObj);
-        return *this;
+    bool unique() const { return 1 == sk_atomic_load(&fRefCnt, sk_memory_order_acquire); }
+    void    ref() const { (void)sk_atomic_fetch_add(&fRefCnt, +1, sk_memory_order_relaxed); }
+    void  unref() const {
+        if (1 == sk_atomic_fetch_add(&fRefCnt, -1, sk_memory_order_acq_rel)) {
+            SkDEBUGCODE(fRefCnt = 1;)   // restore the 1 for our destructor's assert
+            SkDELETE((const Derived*)this);
+        }
     }
-    SkRefPtr& operator=(T* obj) {
-        SkRefCnt_SafeAssign(fObj, obj);
-        return *this;
-    }
-
-    T* get() const { return fObj; }
-    T& operator*() const { return *fObj; }
-    T* operator->() const { return fObj; }
-
-    typedef T* SkRefPtr::*unspecified_bool_type;
-    operator unspecified_bool_type() const {
-        return fObj ? &SkRefPtr::fObj : NULL;
-    }
+    void  deref() const { this->unref(); }
 
 private:
-    T* fObj;
+    mutable int32_t fRefCnt;
 };
 
 #endif

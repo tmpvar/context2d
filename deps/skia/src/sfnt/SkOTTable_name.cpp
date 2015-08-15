@@ -68,7 +68,8 @@ static uint16_t UnicodeFromMacRoman[0x80] = {
 static void SkStringFromMacRoman(const uint8_t* macRoman, size_t length, SkString& utf8) {
     utf8.reset();
     for (size_t i = 0; i < length; ++i) {
-        utf8.appendUnichar(macRoman[i] < 0x80 ? macRoman[i] : UnicodeFromMacRoman[macRoman[i]]);
+        utf8.appendUnichar(macRoman[i] < 0x80 ? macRoman[i]
+                                              : UnicodeFromMacRoman[macRoman[i] - 0x80]);
     }
 }
 
@@ -451,6 +452,8 @@ bool SkOTTableName::Iterator::next(SkOTTableName::Iterator::Record& record) {
         ++fIndex;
     } while (fType != -1 && nameRecord->nameID.fontSpecific != fType);
 
+    record.type = nameRecord->nameID.fontSpecific;
+
     const uint16_t stringTableOffset = SkEndian_SwapBE16(fName.stringOffset);
     const char* stringTable = SkTAddOffset<const char>(&fName, stringTableOffset);
 
@@ -460,20 +463,29 @@ bool SkOTTableName::Iterator::next(SkOTTableName::Iterator::Record& record) {
     const char* nameString = SkTAddOffset<const char>(stringTable, nameOffset);
     switch (nameRecord->platformID.value) {
         case SkOTTableName::Record::PlatformID::Windows:
-            SkASSERT(SkOTTableName::Record::EncodingID::Windows::UnicodeBMPUCS2
-                  == nameRecord->encodingID.windows.value
-                  || SkOTTableName::Record::EncodingID::Windows::UnicodeUCS4
-                  == nameRecord->encodingID.windows.value
-                  || SkOTTableName::Record::EncodingID::Windows::Symbol
-                  == nameRecord->encodingID.windows.value);
+            if (SkOTTableName::Record::EncodingID::Windows::UnicodeBMPUCS2
+                   != nameRecord->encodingID.windows.value
+                && SkOTTableName::Record::EncodingID::Windows::UnicodeUCS4
+                   != nameRecord->encodingID.windows.value
+                && SkOTTableName::Record::EncodingID::Windows::Symbol
+                   != nameRecord->encodingID.windows.value)
+            {
+                record.name.reset();
+                break;
+            }
         case SkOTTableName::Record::PlatformID::Unicode:
         case SkOTTableName::Record::PlatformID::ISO:
             SkStringFromUTF16BE((const uint16_t*)nameString, nameLength, record.name);
             break;
 
         case SkOTTableName::Record::PlatformID::Macintosh:
-            SkASSERT(SkOTTableName::Record::EncodingID::Macintosh::Roman
-                  == nameRecord->encodingID.macintosh.value);
+            // TODO: need better decoding, especially on Mac.
+            if (SkOTTableName::Record::EncodingID::Macintosh::Roman
+                != nameRecord->encodingID.macintosh.value)
+            {
+                record.name.reset();
+                break;
+            }
             SkStringFromMacRoman((const uint8_t*)nameString, nameLength, record.name);
             break;
 
@@ -495,7 +507,7 @@ bool SkOTTableName::Iterator::next(SkOTTableName::Iterator::Record& record) {
         const SkOTTableName::Format1Ext* format1ext =
             SkTAfter<const SkOTTableName::Format1Ext>(nameRecords, nameRecordsCount);
 
-        if (languageTagRecordIndex < format1ext->langTagCount) {
+        if (languageTagRecordIndex < SkEndian_SwapBE16(format1ext->langTagCount)) {
             const SkOTTableName::Format1Ext::LangTagRecord* languageTagRecord =
                 SkTAfter<const SkOTTableName::Format1Ext::LangTagRecord>(format1ext);
 
@@ -517,7 +529,6 @@ bool SkOTTableName::Iterator::next(SkOTTableName::Iterator::Record& record) {
     }
 
     // Unknown language, return the BCP 47 code 'und' for 'undetermined'.
-    SkASSERT(false);
     record.language = "und";
     return true;
 }

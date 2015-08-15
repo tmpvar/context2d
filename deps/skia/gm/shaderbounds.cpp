@@ -9,7 +9,8 @@
 
 namespace skiagm {
 
-static SkShader* MakeLinear(SkScalar width, SkScalar height, bool alternate) {
+static SkShader* MakeLinear(SkScalar width, SkScalar height, bool alternate,
+                            const SkMatrix& localMatrix) {
   SkPoint pts[2] = { {0, 0}, {width, height}};
   SkColor colors[2] = {SK_ColorRED, SK_ColorGREEN};
   if (alternate) {
@@ -18,7 +19,7 @@ static SkShader* MakeLinear(SkScalar width, SkScalar height, bool alternate) {
     colors[1] = SK_ColorYELLOW;
   }
   return SkGradientShader::CreateLinear(pts, colors, NULL, 2,
-                                        SkShader::kClamp_TileMode, NULL);
+                                        SkShader::kClamp_TileMode, 0, &localMatrix);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,35 +27,36 @@ static SkShader* MakeLinear(SkScalar width, SkScalar height, bool alternate) {
 class ShaderBoundsGM : public GM {
 public:
     typedef SkShader* (*ShaderGenFunc)(SkScalar width, SkScalar height,
-                                       bool alternate);
+                                       bool alternate, const SkMatrix& localMatrix);
     ShaderBoundsGM(ShaderGenFunc maker, const SkString& name)
         : fShaderMaker(maker),
           fName(name) {
     }
 
 protected:
-    SkString onShortName() {
+
+    SkString onShortName() override {
         return fName;
     }
 
-    virtual SkISize onISize() { return make_isize(320, 240); }
+    SkISize onISize() override { return SkISize::Make(320, 240); }
 
-    virtual SkMatrix onGetInitialTransform() const SK_OVERRIDE {
+    SkMatrix onGetInitialTransform() const override {
         SkMatrix result;
-        SkScalar scale = SkFloatToScalar(0.8f);
+        SkScalar scale = 0.8f;
         result.setScale(scale, scale);
         result.postTranslate(SkIntToScalar(7), SkIntToScalar(23));
         return result;
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         // The PDF device has already clipped to the content area, but we
         // do it again here so that the raster and pdf results are consistent.
         canvas->clipRect(SkRect::MakeWH(SkIntToScalar(320),
                                         SkIntToScalar(240)));
 
         SkMatrix canvasScale;
-        SkScalar scale = SkFloatToScalar(0.7f);
+        SkScalar scale = 0.7f;
         canvasScale.setScale(scale, scale);
         canvas->concat(canvasScale);
 
@@ -74,16 +76,14 @@ protected:
     }
 
     SkShader* MakeShader(int width, int height, bool background) {
-        SkScalar scale = SkFloatToScalar(0.5f);
+        SkScalar scale = 0.5f;
         if (background) {
-            scale = SkFloatToScalar(0.6f);
+            scale = 0.6f;
         }
-        SkScalar shaderWidth = SkScalarDiv(SkIntToScalar(width), scale);
-        SkScalar shaderHeight = SkScalarDiv(SkIntToScalar(height), scale);
-        SkShader* shader = fShaderMaker(shaderWidth, shaderHeight, background);
-        SkMatrix shaderScale;
-        shaderScale.setScale(scale, scale);
-        shader->setLocalMatrix(shaderScale);
+        SkScalar shaderWidth = width / scale;
+        SkScalar shaderHeight = height / scale;
+        SkMatrix shaderScale = SkMatrix::MakeScale(scale);
+        SkShader* shader = fShaderMaker(shaderWidth, shaderHeight, background, shaderScale);
         return shader;
     }
 

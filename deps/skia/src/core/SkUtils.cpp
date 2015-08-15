@@ -9,123 +9,6 @@
 
 #include "SkUtils.h"
 
-#if 0
-#define assign_16_longs(dst, value)             \
-    do {                                        \
-        (dst)[0] = value;   (dst)[1] = value;   \
-        (dst)[2] = value;   (dst)[3] = value;   \
-        (dst)[4] = value;   (dst)[5] = value;   \
-        (dst)[6] = value;   (dst)[7] = value;   \
-        (dst)[8] = value;   (dst)[9] = value;   \
-        (dst)[10] = value;  (dst)[11] = value;  \
-        (dst)[12] = value;  (dst)[13] = value;  \
-        (dst)[14] = value;  (dst)[15] = value;  \
-    } while (0)
-#else
-#define assign_16_longs(dst, value)             \
-    do {                                        \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-        *(dst)++ = value;   *(dst)++ = value;   \
-    } while (0)
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-
-void sk_memset16_portable(uint16_t dst[], uint16_t value, int count) {
-    SkASSERT(dst != NULL && count >= 0);
-
-    if (count <= 0) {
-        return;
-    }
-
-    // not sure if this helps to short-circuit on small values of count
-    if (count < 8) {
-        do {
-            *dst++ = (uint16_t)value;
-        } while (--count != 0);
-        return;
-    }
-
-    // ensure we're on a long boundary
-    if ((size_t)dst & 2) {
-        *dst++ = (uint16_t)value;
-        count -= 1;
-    }
-
-    uint32_t value32 = ((uint32_t)value << 16) | value;
-
-    // handle the bulk with our unrolled macro
-    {
-        int sixteenlongs = count >> 5;
-        if (sixteenlongs) {
-            uint32_t* dst32 = (uint32_t*)dst;
-            do {
-                assign_16_longs(dst32, value32);
-            } while (--sixteenlongs != 0);
-            dst = (uint16_t*)dst32;
-            count &= 31;
-        }
-    }
-
-    // handle (most) of the rest
-    {
-        int longs = count >> 1;
-        if (longs) {
-            do {
-                *(uint32_t*)dst = value32;
-                dst += 2;
-            } while (--longs != 0);
-        }
-    }
-
-    // cleanup a possible trailing short
-    if (count & 1) {
-        *dst = (uint16_t)value;
-    }
-}
-
-void sk_memset32_portable(uint32_t dst[], uint32_t value, int count) {
-    SkASSERT(dst != NULL && count >= 0);
-
-    int sixteenlongs = count >> 4;
-    if (sixteenlongs) {
-        do {
-            assign_16_longs(dst, value);
-        } while (--sixteenlongs != 0);
-        count &= 15;
-    }
-
-    if (count) {
-        do {
-            *dst++ = value;
-        } while (--count != 0);
-    }
-}
-
-static void sk_memset16_stub(uint16_t dst[], uint16_t value, int count) {
-    SkMemset16Proc proc = SkMemset16GetPlatformProc();
-    sk_memset16 = proc ? proc : sk_memset16_portable;
-    sk_memset16(dst, value, count);
-}
-
-SkMemset16Proc sk_memset16 = sk_memset16_stub;
-
-static void sk_memset32_stub(uint32_t dst[], uint32_t value, int count) {
-    SkMemset32Proc proc = SkMemset32GetPlatformProc();
-    sk_memset32 = proc ? proc : sk_memset32_portable;
-    sk_memset32(dst, value, count);
-}
-
-SkMemset32Proc sk_memset32 = sk_memset32_stub;
-
-///////////////////////////////////////////////////////////////////////////////
-
 /*  0xxxxxxx    1 total
     10xxxxxx    // never a leading byte
     110xxxxx    2 total
@@ -168,7 +51,7 @@ int SkUTF8_CountUnichars(const char utf8[]) {
 }
 
 int SkUTF8_CountUnichars(const char utf8[], size_t byteLength) {
-    SkASSERT(NULL != utf8 || 0 == byteLength);
+    SkASSERT(utf8 || 0 == byteLength);
 
     int         count = 0;
     const char* stop = utf8 + byteLength;
@@ -181,7 +64,7 @@ int SkUTF8_CountUnichars(const char utf8[], size_t byteLength) {
 }
 
 SkUnichar SkUTF8_ToUnichar(const char utf8[]) {
-    SkASSERT(NULL != utf8);
+    SkASSERT(utf8);
 
     const uint8_t*  p = (const uint8_t*)utf8;
     int             c = *p;
@@ -202,7 +85,7 @@ SkUnichar SkUTF8_ToUnichar(const char utf8[]) {
 }
 
 SkUnichar SkUTF8_NextUnichar(const char** ptr) {
-    SkASSERT(NULL != ptr && NULL != *ptr);
+    SkASSERT(ptr && *ptr);
 
     const uint8_t*  p = (const uint8_t*)*ptr;
     int             c = *p;
@@ -224,7 +107,7 @@ SkUnichar SkUTF8_NextUnichar(const char** ptr) {
 }
 
 SkUnichar SkUTF8_PrevUnichar(const char** ptr) {
-    SkASSERT(NULL != ptr && NULL != *ptr);
+    SkASSERT(ptr && *ptr);
 
     const char* p = *ptr;
 

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -9,8 +8,8 @@
 #ifndef GrFakeRefObj_DEFINED
 #define GrFakeRefObj_DEFINED
 
+#include "SkTypes.h"
 #include "gl/GrGLInterface.h"
-#include "GrNoncopyable.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // This object is used to track the OpenGL objects. We don't use real
@@ -19,11 +18,10 @@
 // are tracking in this class are actually OpenGL's references to the objects
 // not "ours"
 // Each object also gets a unique globally identifying ID
-class GrFakeRefObj : public GrNoncopyable {
+class GrFakeRefObj : SkNoncopyable {
 public:
     GrFakeRefObj()
         : fRef(0)
-        , fHighRefCount(0)
         , fMarkedForDeletion(false)
         , fDeleted(false) {
 
@@ -36,9 +34,6 @@ public:
 
     void ref() {
         fRef++;
-        if (fHighRefCount < fRef) {
-            fHighRefCount = fRef;
-        }
     }
     void unref() {
         fRef--;
@@ -52,7 +47,6 @@ public:
         }
     }
     int getRefCount() const             { return fRef; }
-    int getHighRefCount() const         { return fHighRefCount; }
 
     GrGLuint getID() const              { return fID; }
 
@@ -70,7 +64,6 @@ public:
 protected:
 private:
     int         fRef;               // ref count
-    int         fHighRefCount;      // high water mark of the ref count
     GrGLuint    fID;                // globally unique ID
     bool        fMarkedForDeletion;
     // The deleted flag is only set when OpenGL thinks the object is deleted

@@ -8,11 +8,7 @@
 #ifndef picture_utils_DEFINED
 #define picture_utils_DEFINED
 
-#include "SkTypes.h"
-
 class SkBitmap;
-class SkFILEStream;
-class SkPicture;
 class SkString;
 
 namespace sk_tools {
@@ -24,15 +20,10 @@ namespace sk_tools {
     // not be on the GPU.
     void force_all_opaque(const SkBitmap& bitmap);
 
-    // Creates a posix style filepath by concatenating name onto dir with a
-    // forward slash into path.
-    void make_filepath(SkString* path, const SkString&, const SkString& name);
-
-    // Returns the last part of the path (file name or leaf directory name)
-    //
-    // This basically just looks for a foward slash or backslash (windows
-    // only).
-    void get_basename(SkString* basename, const SkString& path);
+    /**
+     * Replaces all instances of oldChar with newChar in str.
+     */
+    void replace_char(SkString* str, const char oldChar, const char newChar);
 
     // Returns true if the string ends with %
     bool is_percentage(const char* const string);
@@ -42,6 +33,20 @@ namespace sk_tools {
     // Specifically, it configures the bitmap, allocates pixels and then
     // erases the pixels to transparent black.
     void setup_bitmap(SkBitmap* bitmap, int width, int height);
-}
+
+    /**
+     * Write a bitmap file to disk.
+     *
+     * @param bm the bitmap to record
+     * @param dirPath directory within which to write the image file
+     * @param subdirOrNull subdirectory within dirPath, or NULL to just write into dirPath
+     * @param baseName last part of the filename
+     *
+     * @return true if written out successfully
+     */
+    bool write_bitmap_to_disk(const SkBitmap& bm, const SkString& dirPath,
+                              const char *subdirOrNull, const SkString& baseName);
+
+} // namespace sk_tools
 
 #endif  // picture_utils_DEFINED

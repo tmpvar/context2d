@@ -9,11 +9,14 @@
 #include "SkCommandLineFlags.h"
 #include "SkData.h"
 #include "SkDocument.h"
+#include "SkForceLinking.h"
 #include "SkGraphics.h"
 #include "SkSurface.h"
 #include "SkImage.h"
 #include "SkStream.h"
 #include "SkString.h"
+
+__SK_FORCE_IMAGE_DECODER_LINKING;
 
 DEFINE_string2(outFile, o, "skhello", "The filename to write the image.");
 DEFINE_string2(text, t, "Hello", "The string to write.");
@@ -30,10 +33,8 @@ static void doDraw(SkCanvas* canvas, const SkPaint& paint, const char text[]) {
 
 static bool do_surface(int w, int h, const char path[], const char text[],
                        const SkPaint& paint) {
-    SkImage::Info info = {
-        w, h, SkImage::kPMColor_ColorType, SkImage::kPremul_AlphaType
-    };
-    SkAutoTUnref<SkSurface> surface(SkSurface::NewRaster(info));
+    SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
+    SkAutoTUnref<SkSurface> surface(SkSurface::NewRasterN32Premul(w, h, &props));
     doDraw(surface->getCanvas(), paint, text);
 
     SkAutoTUnref<SkImage> image(surface->newImageSnapshot());
@@ -81,8 +82,8 @@ int tool_main(int argc, char** argv) {
     SkScalar width = paint.measureText(text.c_str(), text.size());
     SkScalar spacing = paint.getFontSpacing();
 
-    int w = SkScalarRound(width) + 30;
-    int h = SkScalarRound(spacing) + 30;
+    int w = SkScalarRoundToInt(width) + 30;
+    int h = SkScalarRoundToInt(spacing) + 30;
 
     static const struct {
         bool (*fProc)(int w, int h, const char path[], const char text[],

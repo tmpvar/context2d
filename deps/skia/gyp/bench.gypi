@@ -1,83 +1,33 @@
-# sources and conditions used in skia's bench.gyp and chromium's skia.gyp
+# Copyright 2015 Google Inc.
 #
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 {
-  'sources': [
-    '../bench/benchmain.cpp',
-    '../bench/SkBenchmark.h',
-    '../bench/SkBenchmark.cpp',
+  'include_dirs': [
+    '../bench/subset',
+    '../bench',
+    '../include/private',
+    '../src/core',
+    '../src/effects',
+    '../src/gpu',
+    '../src/utils',
+    '../tools',
+  ],
+  'sources': [ '<!@(python find.py ../bench "*.cpp")' ],
 
-    '../bench/AAClipBench.cpp',
-    '../bench/BicubicBench.cpp',
-    '../bench/BitmapBench.cpp',
-    '../bench/BitmapRectBench.cpp',
-    '../bench/BlendBench.cpp',
-    '../bench/BlurBench.cpp',
-    '../bench/BlurImageFilterBench.cpp',
-    '../bench/BlurRectBench.cpp',
-    '../bench/ChecksumBench.cpp',
-    '../bench/ChartBench.cpp',
-    '../bench/ChromeBench.cpp',
-    '../bench/CmapBench.cpp',
-    '../bench/ColorFilterBench.cpp',
-    '../bench/DashBench.cpp',
-    '../bench/DecodeBench.cpp',
-    '../bench/DeferredCanvasBench.cpp',
-    '../bench/DeferredSurfaceCopyBench.cpp',
-    '../bench/DisplacementBench.cpp',
-    '../bench/FontCacheBench.cpp',
-    '../bench/FontScalerBench.cpp',
-    '../bench/GameBench.cpp',
-    '../bench/GradientBench.cpp',
-    '../bench/GrMemoryPoolBench.cpp',
-    '../bench/ImageDecodeBench.cpp',
-    '../bench/InterpBench.cpp',
-    '../bench/LineBench.cpp',
-    '../bench/LightingBench.cpp',
-    '../bench/MagnifierBench.cpp',
-    '../bench/MathBench.cpp',
-    '../bench/Matrix44Bench.cpp',
-    '../bench/MatrixBench.cpp',
-    '../bench/MatrixConvolutionBench.cpp',
-    '../bench/MemoryBench.cpp',
-    '../bench/MemsetBench.cpp',
-    '../bench/MergeBench.cpp',
-    '../bench/MorphologyBench.cpp',
-    '../bench/MutexBench.cpp',
-    '../bench/PathBench.cpp',
-    '../bench/PathIterBench.cpp',
-    '../bench/PathUtilsBench.cpp',
-    '../bench/PerlinNoiseBench.cpp',
-    '../bench/PicturePlaybackBench.cpp',
-    '../bench/PictureRecordBench.cpp',
-    '../bench/ReadPixBench.cpp',
-    '../bench/PremulAndUnpremulAlphaOpsBench.cpp',
-    '../bench/RectBench.cpp',
-    '../bench/RectoriBench.cpp',
-    '../bench/RefCntBench.cpp',
-    '../bench/RegionBench.cpp',
-    '../bench/RegionContainBench.cpp',
-    '../bench/RepeatTileBench.cpp',
-    '../bench/RTreeBench.cpp',
-    '../bench/ScalarBench.cpp',
-    '../bench/ShaderMaskBench.cpp',
-    '../bench/SortBench.cpp',
-    '../bench/StrokeBench.cpp',
-    '../bench/TableBench.cpp',
-    '../bench/TextBench.cpp',
-    '../bench/TileBench.cpp',
-    '../bench/VertBench.cpp',
-    '../bench/WriterBench.cpp',
-    '../bench/XfermodeBench.cpp',
-
-    '../bench/SkBenchLogger.h',
-    '../bench/SkBenchLogger.cpp',
-    '../bench/TimerData.h',
-    '../bench/TimerData.cpp',
+  'dependencies': [
+    'etc1.gyp:libetc1',
+    'skia_lib.gyp:skia_lib',
+    'tools.gyp:resources',
+    'tools.gyp:sk_tool_utils',
+  ],
+  'conditions': [
+    ['skia_gpu == 1', {
+      'include_dirs': [ '../src/gpu' ],
+      'dependencies': [ 'gputest.gyp:skgputest' ],
+    }],
+    ['not skia_android_framework', {
+        'sources!': [ '../bench/nanobenchAndroid.cpp' ],
+    }],
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

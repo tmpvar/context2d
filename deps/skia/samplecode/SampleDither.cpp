@@ -55,7 +55,7 @@ static void draw_sweep(SkCanvas* c, int width, int height, SkScalar angle) {
         SkScalar y = r.centerY();
         SkScalar radius = r.width() / 2;
         SkScalar thickness = p.getStrokeWidth();
-        SkScalar sweep = SkFloatToScalar(360.0f);
+        SkScalar sweep = 360.0f;
         SkPath path;
 
         path.moveTo(x + radius, y);
@@ -70,14 +70,8 @@ static void draw_sweep(SkCanvas* c, int width, int height, SkScalar angle) {
 }
 
 static void make_bm(SkBitmap* bm) {
-    bm->setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
-    bm->allocPixels();
-#if 0
-    bm->eraseColor(SK_ColorBLUE);
-    return;
-#else
+    bm->allocN32Pixels(100, 100);
     bm->eraseColor(SK_ColorTRANSPARENT);
-#endif
 
     SkCanvas c(*bm);
     draw_sweep(&c, bm->width(), bm->height(), 0);
@@ -124,7 +118,7 @@ public:
         make_bm(&fBM);
         make_bm(&fBMPreDither);
         pre_dither(fBMPreDither);
-        fBM.copyTo(&fBM16, SkBitmap::kARGB_4444_Config);
+        fBM.copyTo(&fBM16, kARGB_4444_SkColorType);
 
         fAngle = 0;
 

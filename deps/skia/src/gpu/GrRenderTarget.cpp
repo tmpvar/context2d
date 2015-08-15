@@ -10,69 +10,25 @@
 #include "GrRenderTarget.h"
 
 #include "GrContext.h"
+#include "GrDrawContext.h"
 #include "GrGpu.h"
-#include "GrStencilBuffer.h"
+#include "GrRenderTargetPriv.h"
+#include "GrStencilAttachment.h"
 
-SK_DEFINE_INST_COUNT(GrRenderTarget)
-
-bool GrRenderTarget::readPixels(int left, int top, int width, int height,
-                                GrPixelConfig config,
-                                void* buffer,
-                                size_t rowBytes,
-                                uint32_t pixelOpsFlags) {
+void GrRenderTarget::discard() {
     // go through context so that all necessary flushing occurs
     GrContext* context = this->getContext();
-    if (NULL == context) {
-        return false;
-    }
-    return context->readRenderTargetPixels(this,
-                                           left, top, width, height,
-                                           config, buffer, rowBytes,
-                                           pixelOpsFlags);
-}
-
-void GrRenderTarget::writePixels(int left, int top, int width, int height,
-                                 GrPixelConfig config,
-                                 const void* buffer,
-                                 size_t rowBytes,
-                                 uint32_t pixelOpsFlags) {
-    // go through context so that all necessary flushing occurs
-    GrContext* context = this->getContext();
-    if (NULL == context) {
+    GrDrawContext* drawContext = context ? context->drawContext() : NULL;
+    if (!drawContext) {
         return;
     }
-    context->writeRenderTargetPixels(this,
-                                     left, top, width, height,
-                                     config, buffer, rowBytes,
-                                     pixelOpsFlags);
+
+    drawContext->discard(this);
 }
 
-void GrRenderTarget::resolve() {
-    // go through context so that all necessary flushing occurs
-    GrContext* context = this->getContext();
-    if (NULL == context) {
-        return;
-    }
-    context->resolveRenderTarget(this);
-}
-
-size_t GrRenderTarget::sizeInBytes() const {
-    int colorBits;
-    if (kUnknown_GrPixelConfig == fDesc.fConfig) {
-        colorBits = 32; // don't know, make a guess
-    } else {
-        colorBits = GrBytesPerPixel(fDesc.fConfig);
-    }
-    uint64_t size = fDesc.fWidth;
-    size *= fDesc.fHeight;
-    size *= colorBits;
-    size *= GrMax(1, fDesc.fSampleCnt);
-    return (size_t)(size / 8);
-}
-
-void GrRenderTarget::flagAsNeedingResolve(const GrIRect* rect) {
+void GrRenderTarget::flagAsNeedingResolve(const SkIRect* rect) {
     if (kCanResolve_ResolveType == getResolveType()) {
-        if (NULL != rect) {
+        if (rect) {
             fResolveRect.join(*rect);
             if (!fResolveRect.intersect(0, 0, this->width(), this->height())) {
                 fResolveRect.setEmpty();
@@ -83,7 +39,7 @@ void GrRenderTarget::flagAsNeedingResolve(const GrIRect* rect) {
     }
 }
 
-void GrRenderTarget::overrideResolveRect(const GrIRect rect) {
+void GrRenderTarget::overrideResolveRect(const SkIRect rect) {
     fResolveRect = rect;
     if (fResolveRect.isEmpty()) {
         fResolveRect.setLargestInverted();
@@ -94,18 +50,30 @@ void GrRenderTarget::overrideResolveRect(const GrIRect rect) {
     }
 }
 
-void GrRenderTarget::setStencilBuffer(GrStencilBuffer* stencilBuffer) {
-    SkRefCnt_SafeAssign(fStencilBuffer, stencilBuffer);
-}
-
 void GrRenderTarget::onRelease() {
-    this->setStencilBuffer(NULL);
+    this->renderTargetPriv().didAttachStencilAttachment(NULL);
 
     INHERITED::onRelease();
 }
 
 void GrRenderTarget::onAbandon() {
-    this->setStencilBuffer(NULL);
+    this->renderTargetPriv().didAttachStencilAttachment(NULL);
 
     INHERITED::onAbandon();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void GrRenderTargetPriv::didAttachStencilAttachment(GrStencilAttachment* stencilAttachment) {
+    SkRefCnt_SafeAssign(fRenderTarget->fStencilAttachment, stencilAttachment);
+}
+
+GrStencilAttachment* GrRenderTargetPriv::attachStencilAttachment() const {
+    if (fRenderTarget->fStencilAttachment) {
+        return fRenderTarget->fStencilAttachment;
+    }
+    if (!fRenderTarget->wasDestroyed() && fRenderTarget->canAttemptStencilAttachment()) {
+        fRenderTarget->getGpu()->attachStencilAttachmentToRenderTarget(fRenderTarget);
+    }
+    return fRenderTarget->fStencilAttachment;
 }

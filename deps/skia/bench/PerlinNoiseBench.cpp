@@ -4,26 +4,26 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkPerlinNoiseShader.h"
 
-class PerlinNoiseBench : public SkBenchmark {
+class PerlinNoiseBench : public Benchmark {
     SkISize fSize;
 
 public:
-    PerlinNoiseBench(void* param) : INHERITED(param) {
+    PerlinNoiseBench()  {
         fSize = SkISize::Make(80, 80);
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return "perlinnoise";
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
-        this->test(canvas, 0, 0, SkPerlinNoiseShader::kFractalNoise_Type,
-             0.1f, 0.1f, 3, 0, false);
+    void onDraw(const int loops, SkCanvas* canvas) override {
+        this->test(loops, canvas, 0, 0, SkPerlinNoiseShader::kFractalNoise_Type,
+                   0.1f, 0.1f, 3, 0, false);
     }
 
 private:
@@ -38,22 +38,25 @@ private:
         canvas->restore();
     }
 
-    void test(SkCanvas* canvas, int x, int y, SkPerlinNoiseShader::Type type,
+    void test(const int loops, SkCanvas* canvas, int x, int y, SkPerlinNoiseShader::Type type,
               float baseFrequencyX, float baseFrequencyY, int numOctaves, float seed,
               bool stitchTiles) {
         SkShader* shader = (type == SkPerlinNoiseShader::kFractalNoise_Type) ?
             SkPerlinNoiseShader::CreateFractalNoise(baseFrequencyX, baseFrequencyY, numOctaves,
                                                     seed, stitchTiles ? &fSize : NULL) :
-            SkPerlinNoiseShader::CreateTubulence(baseFrequencyX, baseFrequencyY, numOctaves,
+            SkPerlinNoiseShader::CreateTurbulence(baseFrequencyX, baseFrequencyY, numOctaves,
                                                  seed, stitchTiles ? &fSize : NULL);
         SkPaint paint;
         paint.setShader(shader)->unref();
-        this->drawClippedRect(canvas, x, y, paint);
+
+        for (int i = 0; i < loops; i++) {
+            this->drawClippedRect(canvas, x, y, paint);
+        }
     }
 
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DEF_BENCH( return new PerlinNoiseBench(p); )
+DEF_BENCH( return new PerlinNoiseBench(); )

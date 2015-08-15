@@ -52,10 +52,17 @@ protected:
 
 #ifdef SK_DEVELOPER
 #define SK_CONF_DECLARE(confType, varName, confName, defaultValue, description) static SkRTConf<confType> varName(confName, defaultValue, description)
-#define SK_CONF_SET(confname, value) skRTConfRegistry().set(confname, value)
+#define SK_CONF_SET(confname, value) \
+    skRTConfRegistry().set(confname, value, true)
+/* SK_CONF_TRY_SET() is like SK_CONF_SET(), but doesn't complain if
+   confname can't be found.  This is useful if the SK_CONF_DECLARE is
+   inside a source file whose linkage is dependent on the system. */
+#define SK_CONF_TRY_SET(confname, value) \
+    skRTConfRegistry().set(confname, value, false)
 #else
-#define SK_CONF_DECLARE(confType, varName, confName, defaultValue, description) static const confType varName = defaultValue
+#define SK_CONF_DECLARE(confType, varName, confName, defaultValue, description) static confType varName = defaultValue
 #define SK_CONF_SET(confname, value) (void) confname, (void) value
+#define SK_CONF_TRY_SET(confname, value) (void) confname, (void) value
 #endif
 
 /** \class SkRTConfRegistry
@@ -67,21 +74,30 @@ protected:
 class SkRTConfRegistry {
 public:
     SkRTConfRegistry();
+    ~SkRTConfRegistry();
     void printAll(const char *fname = NULL) const;
+    bool hasNonDefault() const;
     void printNonDefault(const char *fname = NULL) const;
     const char *configFileLocation() const;
     void possiblyDumpFile() const;
     void validate() const;
-    template <typename T> void set(const char *confname, T value);
+    template <typename T> void set(const char *confname,
+                                   T value,
+                                   bool warnIfNotFound = true);
+
 private:
     template<typename T> friend class SkRTConf;
 
     void registerConf(SkRTConfBase *conf);
+
     template <typename T> bool parse(const char *name, T* value);
 
     SkTDArray<SkString *> fConfigFileKeys, fConfigFileValues;
     typedef SkTDict< SkTDArray<SkRTConfBase *> * > ConfMap;
     ConfMap fConfs;
+
+    template <typename T>
+    friend bool test_rt_conf_parse(SkRTConfRegistry*, const char* name, T* value);
 };
 
 // our singleton registry
@@ -105,14 +121,20 @@ SkRTConf<T>::SkRTConf(const char *name, const T &defaultValue, const char *descr
 template<typename T>
 void SkRTConf<T>::print(SkWStream *o) const {
     char outline[200]; // should be ok because we specify a max. width for everything here.
+    char *outptr;
+    if (strlen(getName()) >= 30) {
+        o->writeText(getName());
+        o->writeText(" ");
+        outptr = &(outline[0]);
+    } else {
+        sprintf(outline, "%-30.30s", getName());
+        outptr = &(outline[30]);
+    }
 
-    sprintf(outline, "%-30.30s", getName());
-    doPrint(&(outline[30]));
-    sprintf(&(outline[60]), " %.128s", fDescription.c_str());
-    if (' ' == outline[strlen(outline)-1]) {
-        for (int i = strlen(outline)-1 ; ' ' == outline[i] ; i--) {
-            outline[i] = '\0';
-        }
+    doPrint(outptr);
+    sprintf(outptr+30, " %.128s", fDescription.c_str());
+    for (size_t i = strlen(outline); i --> 0 && ' ' == outline[i];) {
+        outline[i] = '\0';
     }
     o->writeText(outline);
 }

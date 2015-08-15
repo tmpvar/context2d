@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -17,7 +16,7 @@
 // Ensures that the pipe gracefully handles drawing an invalid bitmap.
 static void testDrawingBadBitmap(SkCanvas* pipeCanvas) {
     SkBitmap badBitmap;
-    badBitmap.setConfig(SkBitmap::kNo_Config, 5, 5);
+    badBitmap.setInfo(SkImageInfo::MakeUnknown(5, 5));
     pipeCanvas->drawBitmap(badBitmap, 0, 0);
 }
 
@@ -30,8 +29,7 @@ static void testDrawingAfterEndRecording(SkCanvas* canvas) {
     writer.endRecording();
 
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-    bm.allocPixels();
+    bm.allocN32Pixels(2, 2);
     bm.eraseColor(SK_ColorTRANSPARENT);
 
     SkShader* shader = SkShader::CreateBitmapShader(bm, SkShader::kClamp_TileMode,
@@ -43,9 +41,9 @@ static void testDrawingAfterEndRecording(SkCanvas* canvas) {
     pipeCanvas->drawBitmap(bm, 0, 0);
 }
 
-static void test_pipeTests(skiatest::Reporter*) {
+DEF_TEST(Pipe, reporter) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 64, 64);
+    bitmap.setInfo(SkImageInfo::MakeN32Premul(64, 64));
     SkCanvas canvas(bitmap);
 
     PipeController pipeController(&canvas);
@@ -56,6 +54,3 @@ static void test_pipeTests(skiatest::Reporter*) {
 
     testDrawingAfterEndRecording(&canvas);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("PipeTest", PipeTestClass, test_pipeTests)

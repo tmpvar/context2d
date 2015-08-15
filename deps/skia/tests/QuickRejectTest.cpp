@@ -7,6 +7,7 @@
 
 #include "SkCanvas.h"
 #include "SkDrawLooper.h"
+#include "SkTypes.h"
 #include "Test.h"
 
 /*
@@ -14,39 +15,49 @@
  */
 class TestLooper : public SkDrawLooper {
 public:
-    bool fOnce;
 
-    virtual void init(SkCanvas*) SK_OVERRIDE {
-        fOnce = true;
+    SkDrawLooper::Context* createContext(SkCanvas*, void* storage) const override {
+        return SkNEW_PLACEMENT(storage, TestDrawLooperContext);
     }
 
-    virtual bool next(SkCanvas* canvas, SkPaint*) SK_OVERRIDE {
-        if (fOnce) {
-            fOnce = false;
-            canvas->translate(SkIntToScalar(10), 0);
-            return true;
-        }
-        return false;
-    }
+    size_t contextSize() const override { return sizeof(TestDrawLooperContext); }
 
-#ifdef SK_DEVELOPER
-    virtual void toString(SkString* str) const SK_OVERRIDE {
+#ifndef SK_IGNORE_TO_STRING
+    void toString(SkString* str) const override {
         str->append("TestLooper:");
     }
 #endif
 
-    SK_DECLARE_UNFLATTENABLE_OBJECT()
+    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestLooper);
+
+private:
+    class TestDrawLooperContext : public SkDrawLooper::Context {
+    public:
+        TestDrawLooperContext() : fOnce(true) {}
+        virtual ~TestDrawLooperContext() {}
+
+        bool next(SkCanvas* canvas, SkPaint*) override {
+            if (fOnce) {
+                fOnce = false;
+                canvas->translate(SkIntToScalar(10), 0);
+                return true;
+            }
+            return false;
+        }
+    private:
+        bool fOnce;
+    };
 };
+
+SkFlattenable* TestLooper::CreateProc(SkReadBuffer&) { return SkNEW(TestLooper); }
 
 static void test_drawBitmap(skiatest::Reporter* reporter) {
     SkBitmap src;
-    src.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-    src.allocPixels();
+    src.allocN32Pixels(10, 10);
     src.eraseColor(SK_ColorWHITE);
 
     SkBitmap dst;
-    dst.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-    dst.allocPixels();
+    dst.allocN32Pixels(10, 10);
     dst.eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas canvas(dst);
@@ -76,9 +87,23 @@ static void test_drawBitmap(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 0xFFFFFFFF == *dst.getAddr32(5, 5));
 }
 
-static void test(skiatest::Reporter* reporter) {
-    test_drawBitmap(reporter);
+static void test_layers(skiatest::Reporter* reporter) {
+    SkCanvas canvas(100, 100);
+
+    SkRect r = SkRect::MakeWH(10, 10);
+    REPORTER_ASSERT(reporter, false == canvas.quickReject(r));
+
+    r.offset(300, 300);
+    REPORTER_ASSERT(reporter, true == canvas.quickReject(r));
+
+    // Test that saveLayer updates quickReject
+    SkRect bounds = SkRect::MakeLTRB(50, 50, 70, 70);
+    canvas.saveLayer(&bounds, NULL);
+    REPORTER_ASSERT(reporter, true == canvas.quickReject(SkRect::MakeWH(10, 10)));
+    REPORTER_ASSERT(reporter, false == canvas.quickReject(SkRect::MakeWH(60, 60)));
 }
 
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("QuickReject", QuickRejectClass, test)
+DEF_TEST(QuickReject, reporter) {
+    test_drawBitmap(reporter);
+    test_layers(reporter);
+}

@@ -9,15 +9,9 @@
 #ifndef SKRASTERWIDGET_H_
 #define SKRASTERWIDGET_H_
 
-#if SK_SUPPORT_GPU
-#include "SkGpuDevice.h"
-#endif
+#include "SkSurface.h"
+class SkDebugger;
 
-#include "SkDevice.h"
-#include "SkDebugger.h"
-
-#include <QApplication>
-#include <QtGui>
 #include <QWidget>
 
 class  SkRasterWidget : public QWidget {
@@ -26,11 +20,7 @@ class  SkRasterWidget : public QWidget {
 public:
     SkRasterWidget(SkDebugger* debugger);
 
-    ~SkRasterWidget();
-
-    void draw() {
-        this->update();
-    }
+    void updateImage();
 
 signals:
     void drawComplete();
@@ -41,10 +31,9 @@ protected:
     void resizeEvent(QResizeEvent* event);
 
 private:
-    SkBitmap fBitmap;
     SkDebugger* fDebugger;
-    SkCanvas* fCanvas;
-    SkDevice* fDevice;
+    SkAutoTUnref<SkSurface> fSurface;
+    bool fNeedImageUpdate;
 };
 
 #endif /* SKRASTERWIDGET_H_ */

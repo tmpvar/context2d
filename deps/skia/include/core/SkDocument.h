@@ -8,11 +8,17 @@
 #ifndef SkDocument_DEFINED
 #define SkDocument_DEFINED
 
+#include "SkBitmap.h"
+#include "SkPicture.h"
 #include "SkRect.h"
 #include "SkRefCnt.h"
 
 class SkCanvas;
 class SkWStream;
+
+/** SK_ScalarDefaultDPI is 72 DPI.
+*/
+#define SK_ScalarDefaultRasterDPI           72.0f
 
 /**
  *  High-level API for creating a document-based canvas. To use..
@@ -24,26 +30,50 @@ class SkWStream;
  *      c. doc->endPage();
  *  3. Close the document with doc->close().
  */
-class SkDocument : public SkRefCnt {
+class SK_API SkDocument : public SkRefCnt {
 public:
     /**
-     *  Create a PDF-backed document, writing the results into a file.
-     *  If there is an error trying to create the doc, returns NULL.
+     *  Create a PDF-backed document, writing the results into a SkWStream.
+     *
+     *  PDF pages are sized in point units. 1 pt == 1/72 inch == 127/360 mm.
+     *
+     *  @param SkWStream* A PDF document will be written to this
+     *         stream.  The document may write to the stream at
+     *         anytime during its lifetime, until either close() is
+     *         called or the document is deleted.
+     *  @param dpi The DPI (pixels-per-inch) at which features without
+     *         native PDF support will be rasterized (e.g. draw image
+     *         with perspective, draw text with perspective, ...)  A
+     *         larger DPI would create a PDF that reflects the
+     *         original intent with better fidelity, but it can make
+     *         for larger PDF files too, which would use more memory
+     *         while rendering, and it would be slower to be processed
+     *         or sent online or to printer.
+     *  @returns NULL if there is an error, otherwise a newly created
+     *           PDF-backed SkDocument.
      */
-    static SkDocument* CreatePDF(const char filename[]);
+    static SkDocument* CreatePDF(SkWStream*,
+                                 SkScalar dpi = SK_ScalarDefaultRasterDPI);
 
     /**
-     *  Create a PDF-backed document, writing the results into a stream.
-     *  If there is an error trying to create the doc, returns NULL.
-     *
-     *  The document may write to the stream at anytime during its lifetime,
-     *  until either close() is called or the document is deleted. Once close()
-     *  has been called, and all of the data has been written to the stream,
-     *  if there is a Done proc provided, it will be called with the stream.
-     *  The proc can delete the stream, or whatever it needs to do.
+     *  Create a PDF-backed document, writing the results into a file.
      */
-    static SkDocument* CreatePDF(SkWStream*, void (*Done)(SkWStream*) = NULL);
+    static SkDocument* CreatePDF(const char outputFilePath[],
+                                 SkScalar dpi = SK_ScalarDefaultRasterDPI);
 
+    /**
+     *  Create a XPS-backed document, writing the results into the stream.
+     *  Returns NULL if XPS is not supported.
+     */
+    static SkDocument* CreateXPS(SkWStream* stream,
+                                 SkScalar dpi = SK_ScalarDefaultRasterDPI);
+
+    /**
+     *  Create a XPS-backed document, writing the results into a file.
+     *  Returns NULL if XPS is not supported.
+     */
+    static SkDocument* CreateXPS(const char path[],
+                                 SkScalar dpi = SK_ScalarDefaultRasterDPI);
     /**
      *  Begin a new page for the document, returning the canvas that will draw
      *  into the page. The document owns this canvas, and it will go out of
@@ -64,11 +94,19 @@ public:
      *  or stream holding the document's contents. After close() the document
      *  can no longer add new pages. Deleting the document will automatically
      *  call close() if need be.
+     *  Returns true on success or false on failure.
      */
-    void close();
+    bool close();
+
+    /**
+     *  Call abort() to stop producing the document immediately.
+     *  The stream output must be ignored, and should not be trusted.
+     */
+    void abort();
 
 protected:
-    SkDocument(SkWStream*, void (*)(SkWStream*));
+    SkDocument(SkWStream*, void (*)(SkWStream*, bool aborted));
+
     // note: subclasses must call close() in their destructor, as the base class
     // cannot do this for them.
     virtual ~SkDocument();
@@ -76,7 +114,11 @@ protected:
     virtual SkCanvas* onBeginPage(SkScalar width, SkScalar height,
                                   const SkRect& content) = 0;
     virtual void onEndPage() = 0;
-    virtual void onClose(SkWStream*) = 0;
+    virtual bool onClose(SkWStream*) = 0;
+    virtual void onAbort() = 0;
+
+    // Allows subclasses to write to the stream as pages are written.
+    SkWStream* getStream() { return fStream; }
 
     enum State {
         kBetweenPages_State,
@@ -87,8 +129,10 @@ protected:
 
 private:
     SkWStream* fStream;
-    void       (*fDoneProc)(SkWStream*);
+    void       (*fDoneProc)(SkWStream*, bool aborted);
     State      fState;
+
+    typedef SkRefCnt INHERITED;
 };
 
 #endif

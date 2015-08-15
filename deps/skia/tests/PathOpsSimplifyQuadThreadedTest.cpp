@@ -12,7 +12,10 @@ static void testSimplifyQuadsMain(PathOpsThreadState* data)
     SkASSERT(data);
     PathOpsThreadState& state = *data;
     char pathStr[1024];
-    sk_bzero(pathStr, sizeof(pathStr));
+    bool progress = state.fReporter->verbose(); // FIXME: break out into its own parameter?
+    if (progress) {
+        sk_bzero(pathStr, sizeof(pathStr));
+    }
     int ax = state.fA & 0x03;
     int ay = state.fA >> 2;
     int bx = state.fB & 0x03;
@@ -45,20 +48,29 @@ static void testSimplifyQuadsMain(PathOpsThreadState* data)
                     path.quadTo(SkIntToScalar(gx), SkIntToScalar(gy),
                             SkIntToScalar(hx), SkIntToScalar(hy));
                     path.close();
-                    // gdb: set print elements 400
-                    char* str = pathStr;
-                    str += sprintf(str, "    path.moveTo(%d, %d);\n", ax, ay);
-                    str += sprintf(str, "    path.quadTo(%d, %d, %d, %d);\n", bx, by, cx, cy);
-                    str += sprintf(str, "    path.lineTo(%d, %d);\n", dx, dy);
-                    str += sprintf(str, "    path.close();\n");
-                    str += sprintf(str, "    path.moveTo(%d, %d);\n", ex, ey);
-                    str += sprintf(str, "    path.lineTo(%d, %d);\n", fx, fy);
-                    str += sprintf(str, "    path.quadTo(%d, %d, %d, %d);\n", gx, gy, hx, hy);
-                    str += sprintf(str, "    path.close();\n");
-                    outputProgress(state.fPathStr, pathStr, SkPath::kWinding_FillType);
+                    if (progress) {
+                        static int quadTest = 66;
+                        char* str = pathStr;
+                        str += sprintf(str, "static void testQuads%d(skiatest::Reporter* reporter,"
+                                "const char* filename) {\n", quadTest);
+                        str += sprintf(str, "    SkPath path;\n");
+                        str += sprintf(str, "    path.moveTo(%d, %d);\n", ax, ay);
+                        str += sprintf(str, "    path.quadTo(%d, %d, %d, %d);\n", bx, by, cx, cy);
+                        str += sprintf(str, "    path.lineTo(%d, %d);\n", dx, dy);
+                        str += sprintf(str, "    path.close();\n");
+                        str += sprintf(str, "    path.moveTo(%d, %d);\n", ex, ey);
+                        str += sprintf(str, "    path.lineTo(%d, %d);\n", fx, fy);
+                        str += sprintf(str, "    path.quadTo(%d, %d, %d, %d);\n", gx, gy, hx, hy);
+                        str += sprintf(str, "    path.close();\n");
+                        str += sprintf(str, "    testSimplify(reporter, path, filename);\n");
+                        str += sprintf(str, "}\n");
+                        outputProgress(state.fPathStr, pathStr, SkPath::kWinding_FillType);
+                    }
                     testSimplify(path, false, out, state, pathStr);
                     path.setFillType(SkPath::kEvenOdd_FillType);
-                    outputProgress(state.fPathStr, pathStr, SkPath::kEvenOdd_FillType);
+                    if (progress) {
+                        outputProgress(state.fPathStr, pathStr, SkPath::kEvenOdd_FillType);
+                    }
                     testSimplify(path, true, out, state, pathStr);
                 }
             }
@@ -66,10 +78,9 @@ static void testSimplifyQuadsMain(PathOpsThreadState* data)
     }
 }
 
-static void PathOpsSimplifyQuadsThreadedTest(skiatest::Reporter* reporter)
-{
-    int threadCount = initializeTests(reporter, "testQuads");
-    PathOpsThreadedTestRunner testRunner(reporter, threadCount);
+DEF_TEST(PathOpsSimplifyQuadsThreaded, reporter) {
+    initializeTests(reporter, "testQuads");
+    PathOpsThreadedTestRunner testRunner(reporter);
     int a = 0;
     for (; a < 16; ++a) {
         for (int b = a ; b < 16; ++b) {
@@ -84,7 +95,5 @@ static void PathOpsSimplifyQuadsThreadedTest(skiatest::Reporter* reporter)
     }
 finish:
     testRunner.render();
+    ShowTestArray("testQuads");
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsSimplifyQuadsThreadedTest)

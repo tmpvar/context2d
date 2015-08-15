@@ -6,24 +6,26 @@
  * found in the LICENSE file.
  */
 #include "SampleCode.h"
+#include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
+#include "SkCanvas.h"
 #include "SkColorPriv.h"
 #include "SkGradientShader.h"
-#include "SkView.h"
-#include "SkCanvas.h"
 #include "SkUtils.h"
+#include "SkView.h"
 
 static SkBitmap make_bitmap() {
-    SkBitmap bm;
-    SkColorTable* ctable = new SkColorTable(256);
-
-    SkPMColor* c = ctable->lockColors();
+    SkPMColor c[256];
     for (int i = 0; i < 256; i++) {
         c[i] = SkPackARGB32(255 - i, 0, 0, 0);
     }
-    ctable->unlockColors(true);
-    bm.setConfig(SkBitmap::kIndex8_Config, 256, 256);
-    bm.allocPixels(ctable);
+
+    SkBitmap bm;
+    SkColorTable* ctable = new SkColorTable(c, 256);
+
+    bm.allocPixels(SkImageInfo::Make(256, 256, kIndex_8_SkColorType,
+                                     kPremul_SkAlphaType),
+                   NULL, ctable);
     ctable->unref();
 
     bm.lockPixels();
@@ -74,16 +76,16 @@ protected:
     virtual void onDrawContent(SkCanvas* canvas) {
         drawBG(canvas);
 
-        SkBlurMaskFilter::BlurStyle NONE = SkBlurMaskFilter::BlurStyle(-999);
+        SkBlurStyle NONE = SkBlurStyle(-999);
         static const struct {
-            SkBlurMaskFilter::BlurStyle fStyle;
-            int                         fCx, fCy;
+            SkBlurStyle fStyle;
+            int         fCx, fCy;
         } gRecs[] = {
             { NONE,                                 0,  0 },
-            { SkBlurMaskFilter::kInner_BlurStyle,  -1,  0 },
-            { SkBlurMaskFilter::kNormal_BlurStyle,  0,  1 },
-            { SkBlurMaskFilter::kSolid_BlurStyle,   0, -1 },
-            { SkBlurMaskFilter::kOuter_BlurStyle,   1,  0 },
+            { kInner_SkBlurStyle,  -1,  0 },
+            { kNormal_SkBlurStyle,  0,  1 },
+            { kSolid_SkBlurStyle,   0, -1 },
+            { kOuter_SkBlurStyle,   1,  0 },
         };
 
         SkPaint paint;
@@ -97,9 +99,9 @@ protected:
             paint.setColor(SK_ColorBLUE);
             for (size_t i = 0; i < SK_ARRAY_COUNT(gRecs); i++) {
                 if (gRecs[i].fStyle != NONE) {
-                    SkMaskFilter* mf = SkBlurMaskFilter::Create(20,
-                                                                gRecs[i].fStyle,
-                                                                flags);
+                    SkMaskFilter* mf = SkBlurMaskFilter::Create(gRecs[i].fStyle,
+                                      SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(20)),
+                                      flags);
                     paint.setMaskFilter(mf)->unref();
                 } else {
                     paint.setMaskFilter(NULL);
@@ -109,9 +111,9 @@ protected:
             }
             // draw text
             {
-                SkMaskFilter* mf = SkBlurMaskFilter::Create(4,
-                                                            SkBlurMaskFilter::kNormal_BlurStyle,
-                                                            flags);
+                SkMaskFilter* mf = SkBlurMaskFilter::Create(kNormal_SkBlurStyle,
+                                      SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(4)),
+                                      flags);
                 paint.setMaskFilter(mf)->unref();
                 SkScalar x = SkIntToScalar(70);
                 SkScalar y = SkIntToScalar(400);

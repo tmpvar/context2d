@@ -7,6 +7,7 @@
 #include "gm.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
+#include "SkPath.h"
 #include "SkRandom.h"
 
 namespace skiagm {
@@ -26,7 +27,7 @@ protected:
         return SkString("degeneratesegments");
     }
 
-    SkISize onISize() { return make_isize(896, 930); }
+    SkISize onISize() { return SkISize::Make(896, 930); }
 
     typedef SkPoint (*AddSegmentFunc)(SkPath&, SkPoint&);
 
@@ -287,7 +288,7 @@ protected:
         SkPaint titlePaint;
         titlePaint.setColor(SK_ColorBLACK);
         titlePaint.setAntiAlias(true);
-        titlePaint.setLCDRenderText(true);
+        sk_tool_utils::set_portable_typeface(&titlePaint);
         titlePaint.setTextSize(15 * SK_Scalar1);
         const char title[] = "Random Paths Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, "
@@ -316,7 +317,7 @@ protected:
                     canvas->translate(rect.width() + 4*SK_Scalar1, 0);
                 }
 
-                SkColor color = 0xff007000;
+                SkColor color = sk_tool_utils::color_to_565(0xff007000);
                 StyleAndName style = gStyles[(rand.nextU() >> 16) % numStyles];
                 CapAndName cap = gCaps[(rand.nextU() >> 16) % numCaps];
                 FillAndName fill = gFills[(rand.nextU() >> 16) % numFills];
@@ -347,7 +348,7 @@ protected:
                 SkPaint labelPaint;
                 labelPaint.setColor(color);
                 labelPaint.setAntiAlias(true);
-                labelPaint.setLCDRenderText(true);
+                sk_tool_utils::set_portable_typeface(&labelPaint);
                 labelPaint.setTextSize(10 * SK_Scalar1);
                 canvas->drawText(style.fName,
                                  strlen(style.fName),

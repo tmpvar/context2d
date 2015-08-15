@@ -7,156 +7,156 @@
 
 #include "GrConfigConversionEffect.h"
 #include "GrContext.h"
-#include "GrTBackendEffectFactory.h"
+#include "GrDrawContext.h"
+#include "GrInvariantOutput.h"
 #include "GrSimpleTextureEffect.h"
-#include "gl/GrGLEffect.h"
-#include "gl/GrGLEffectMatrix.h"
 #include "SkMatrix.h"
+#include "gl/GrGLFragmentProcessor.h"
+#include "gl/builders/GrGLProgramBuilder.h"
 
-class GrGLConfigConversionEffect : public GrGLEffect {
+class GrGLConfigConversionEffect : public GrGLFragmentProcessor {
 public:
-    GrGLConfigConversionEffect(const GrBackendEffectFactory& factory,
-                               const GrDrawEffect& drawEffect)
-    : INHERITED (factory)
-    , fEffectMatrix(drawEffect.castEffect<GrConfigConversionEffect>().coordsType()) {
-        const GrConfigConversionEffect& effect = drawEffect.castEffect<GrConfigConversionEffect>();
-        fSwapRedAndBlue = effect.swapsRedAndBlue();
-        fPMConversion = effect.pmConversion();
+    GrGLConfigConversionEffect(const GrProcessor& processor) {
+        const GrConfigConversionEffect& configConversionEffect =
+                processor.cast<GrConfigConversionEffect>();
+        fSwapRedAndBlue = configConversionEffect.swapsRedAndBlue();
+        fPMConversion = configConversionEffect.pmConversion();
     }
 
-    virtual void emitCode(GrGLShaderBuilder* builder,
-                          const GrDrawEffect&,
-                          EffectKey key,
-                          const char* outputColor,
-                          const char* inputColor,
-                          const TextureSamplerArray& samplers) SK_OVERRIDE {
-        const char* coords;
-        GrSLType coordsType = fEffectMatrix.emitCode(builder, key, &coords);
-        builder->fsCodeAppendf("\t\t%s = ", outputColor);
-        builder->appendTextureLookup(GrGLShaderBuilder::kFragment_ShaderType,
-                                     samplers[0],
-                                     coords,
-                                     coordsType);
-        builder->fsCodeAppend(";\n");
+    virtual void emitCode(EmitArgs& args) override {
+        // Using highp for GLES here in order to avoid some precision issues on specific GPUs.
+        GrGLShaderVar tmpVar("tmpColor", kVec4f_GrSLType, 0, kHigh_GrSLPrecision);
+        SkString tmpDecl;
+        tmpVar.appendDecl(args.fBuilder->ctxInfo(), &tmpDecl);
+
+        GrGLFragmentBuilder* fsBuilder = args.fBuilder->getFragmentShaderBuilder();
+
+        fsBuilder->codeAppendf("%s;", tmpDecl.c_str());
+
+        fsBuilder->codeAppendf("%s = ", tmpVar.c_str());
+        fsBuilder->appendTextureLookup(args.fSamplers[0], args.fCoords[0].c_str(),
+                                       args.fCoords[0].getType());
+        fsBuilder->codeAppend(";");
+
         if (GrConfigConversionEffect::kNone_PMConversion == fPMConversion) {
-            GrAssert(fSwapRedAndBlue);
-            builder->fsCodeAppendf("\t%s = %s.bgra;\n", outputColor, outputColor);
+            SkASSERT(fSwapRedAndBlue);
+            fsBuilder->codeAppendf("%s = %s.bgra;", args.fOutputColor, tmpVar.c_str());
         } else {
             const char* swiz = fSwapRedAndBlue ? "bgr" : "rgb";
             switch (fPMConversion) {
                 case GrConfigConversionEffect::kMulByAlpha_RoundUp_PMConversion:
-                    builder->fsCodeAppendf(
-                        "\t\t%s = vec4(ceil(%s.%s * %s.a * 255.0) / 255.0, %s.a);\n",
-                        outputColor, outputColor, swiz, outputColor, outputColor);
+                    fsBuilder->codeAppendf(
+                        "%s = vec4(ceil(%s.%s * %s.a * 255.0) / 255.0, %s.a);",
+                        tmpVar.c_str(), tmpVar.c_str(), swiz, tmpVar.c_str(), tmpVar.c_str());
                     break;
                 case GrConfigConversionEffect::kMulByAlpha_RoundDown_PMConversion:
                     // Add a compensation(0.001) here to avoid the side effect of the floor operation.
                     // In Intel GPUs, the integer value converted from floor(%s.r * 255.0) / 255.0
                     // is less than the integer value converted from  %s.r by 1 when the %s.r is
                     // converted from the integer value 2^n, such as 1, 2, 4, 8, etc.
-                    builder->fsCodeAppendf(
-                        "\t\t%s = vec4(floor(%s.%s * %s.a * 255.0 + 0.001) / 255.0, %s.a);\n",
-                        outputColor, outputColor, swiz, outputColor, outputColor);
+                    fsBuilder->codeAppendf(
+                        "%s = vec4(floor(%s.%s * %s.a * 255.0 + 0.001) / 255.0, %s.a);",
+                        tmpVar.c_str(), tmpVar.c_str(), swiz, tmpVar.c_str(), tmpVar.c_str());
                     break;
                 case GrConfigConversionEffect::kDivByAlpha_RoundUp_PMConversion:
-                    builder->fsCodeAppendf("\t\t%s = %s.a <= 0.0 ? vec4(0,0,0,0) : vec4(ceil(%s.%s / %s.a * 255.0) / 255.0, %s.a);\n",
-                        outputColor, outputColor, outputColor, swiz, outputColor, outputColor);
+                    fsBuilder->codeAppendf(
+                        "%s = %s.a <= 0.0 ? vec4(0,0,0,0) : vec4(ceil(%s.%s / %s.a * 255.0) / 255.0, %s.a);",
+                        tmpVar.c_str(), tmpVar.c_str(), tmpVar.c_str(), swiz, tmpVar.c_str(), tmpVar.c_str());
                     break;
                 case GrConfigConversionEffect::kDivByAlpha_RoundDown_PMConversion:
-                    builder->fsCodeAppendf("\t\t%s = %s.a <= 0.0 ? vec4(0,0,0,0) : vec4(floor(%s.%s / %s.a * 255.0) / 255.0, %s.a);\n",
-                        outputColor, outputColor, outputColor, swiz, outputColor, outputColor);
+                    fsBuilder->codeAppendf(
+                        "%s = %s.a <= 0.0 ? vec4(0,0,0,0) : vec4(floor(%s.%s / %s.a * 255.0) / 255.0, %s.a);",
+                        tmpVar.c_str(), tmpVar.c_str(), tmpVar.c_str(), swiz, tmpVar.c_str(), tmpVar.c_str());
                     break;
                 default:
-                    GrCrash("Unknown conversion op.");
+                    SkFAIL("Unknown conversion op.");
                     break;
             }
+            fsBuilder->codeAppendf("%s = %s;", args.fOutputColor, tmpVar.c_str());
         }
         SkString modulate;
-        GrGLSLMulVarBy4f(&modulate, 2, outputColor, inputColor);
-        builder->fsCodeAppend(modulate.c_str());
+        GrGLSLMulVarBy4f(&modulate, args.fOutputColor, args.fInputColor);
+        fsBuilder->codeAppend(modulate.c_str());
     }
 
-    void setData(const GrGLUniformManager& uman, const GrDrawEffect& drawEffect) {
-        const GrConfigConversionEffect& conv = drawEffect.castEffect<GrConfigConversionEffect>();
-        fEffectMatrix.setData(uman, conv.getMatrix(), drawEffect, conv.texture(0));
-    }
-
-    static inline EffectKey GenKey(const GrDrawEffect& drawEffect, const GrGLCaps&) {
-        const GrConfigConversionEffect& conv = drawEffect.castEffect<GrConfigConversionEffect>();
-        EffectKey key = static_cast<EffectKey>(conv.swapsRedAndBlue()) | (conv.pmConversion() << 1);
-        key <<= GrGLEffectMatrix::kKeyBits;
-        EffectKey matrixKey =  GrGLEffectMatrix::GenKey(conv.getMatrix(),
-                                                        drawEffect,
-                                                        conv.coordsType(),
-                                                        conv.texture(0));
-        GrAssert(!(matrixKey & key));
-        return matrixKey | key;
+    static inline void GenKey(const GrProcessor& processor, const GrGLSLCaps&,
+                              GrProcessorKeyBuilder* b) {
+        const GrConfigConversionEffect& conv = processor.cast<GrConfigConversionEffect>();
+        uint32_t key = (conv.swapsRedAndBlue() ? 0 : 1) | (conv.pmConversion() << 1);
+        b->add32(key);
     }
 
 private:
     bool                                    fSwapRedAndBlue;
     GrConfigConversionEffect::PMConversion  fPMConversion;
-    GrGLEffectMatrix                        fEffectMatrix;
 
-    typedef GrGLEffect INHERITED;
+    typedef GrGLFragmentProcessor INHERITED;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GrConfigConversionEffect::GrConfigConversionEffect(GrTexture* texture,
+GrConfigConversionEffect::GrConfigConversionEffect(GrProcessorDataManager* procDataManager,
+                                                   GrTexture* texture,
                                                    bool swapRedAndBlue,
                                                    PMConversion pmConversion,
                                                    const SkMatrix& matrix)
-    : GrSingleTextureEffect(texture, matrix)
+    : INHERITED(procDataManager, texture, matrix)
     , fSwapRedAndBlue(swapRedAndBlue)
     , fPMConversion(pmConversion) {
-    GrAssert(kRGBA_8888_GrPixelConfig == texture->config() ||
-             kBGRA_8888_GrPixelConfig == texture->config());
+    this->initClassID<GrConfigConversionEffect>();
+    // We expect to get here with non-BGRA/RGBA only if we're doing not doing a premul/unpremul
+    // conversion.
+    SkASSERT((kRGBA_8888_GrPixelConfig == texture->config() ||
+              kBGRA_8888_GrPixelConfig == texture->config()) ||
+              kNone_PMConversion == pmConversion);
     // Why did we pollute our texture cache instead of using a GrSingleTextureEffect?
-    GrAssert(swapRedAndBlue || kNone_PMConversion != pmConversion);
+    SkASSERT(swapRedAndBlue || kNone_PMConversion != pmConversion);
 }
 
-const GrBackendEffectFactory& GrConfigConversionEffect::getFactory() const {
-    return GrTBackendEffectFactory<GrConfigConversionEffect>::getInstance();
-}
-
-bool GrConfigConversionEffect::onIsEqual(const GrEffect& s) const {
-    const GrConfigConversionEffect& other = CastEffect<GrConfigConversionEffect>(s);
-    return this->texture(0) == s.texture(0) &&
-           other.fSwapRedAndBlue == fSwapRedAndBlue &&
+bool GrConfigConversionEffect::onIsEqual(const GrFragmentProcessor& s) const {
+    const GrConfigConversionEffect& other = s.cast<GrConfigConversionEffect>();
+    return other.fSwapRedAndBlue == fSwapRedAndBlue &&
            other.fPMConversion == fPMConversion;
 }
 
-void GrConfigConversionEffect::getConstantColorComponents(GrColor* color,
-                                                          uint32_t* validFlags) const {
-    this->updateConstantColorComponentsForModulation(color, validFlags);
+void GrConfigConversionEffect::onComputeInvariantOutput(GrInvariantOutput* inout) const {
+    this->updateInvariantOutputForModulation(inout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-GR_DEFINE_EFFECT_TEST(GrConfigConversionEffect);
+GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrConfigConversionEffect);
 
-GrEffectRef* GrConfigConversionEffect::TestCreate(SkMWCRandom* random,
-                                                  GrContext*,
-                                                  const GrDrawTargetCaps&,
-                                                  GrTexture* textures[]) {
-    PMConversion pmConv = static_cast<PMConversion>(random->nextULessThan(kPMConversionCnt));
+GrFragmentProcessor* GrConfigConversionEffect::TestCreate(GrProcessorTestData* d) {
+    PMConversion pmConv = static_cast<PMConversion>(d->fRandom->nextULessThan(kPMConversionCnt));
     bool swapRB;
     if (kNone_PMConversion == pmConv) {
         swapRB = true;
     } else {
-        swapRB = random->nextBool();
+        swapRB = d->fRandom->nextBool();
     }
-    AutoEffectUnref effect(SkNEW_ARGS(GrConfigConversionEffect,
-                                      (textures[GrEffectUnitTest::kSkiaPMTextureIdx],
+    return SkNEW_ARGS(GrConfigConversionEffect,
+                                      (d->fProcDataManager,
+                                       d->fTextures[GrProcessorUnitTest::kSkiaPMTextureIdx],
                                        swapRB,
                                        pmConv,
-                                       GrEffectUnitTest::TestMatrix(random))));
-    return CreateEffectRef(effect);
+                                       GrTest::TestMatrix(d->fRandom)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void GrConfigConversionEffect::onGetGLProcessorKey(const GrGLSLCaps& caps,
+                                                 GrProcessorKeyBuilder* b) const {
+    GrGLConfigConversionEffect::GenKey(*this, caps, b);
+}
+
+GrGLFragmentProcessor* GrConfigConversionEffect::createGLInstance() const {
+    return SkNEW_ARGS(GrGLConfigConversionEffect, (*this));
+}
+
+
+
 void GrConfigConversionEffect::TestForPreservingPMConversions(GrContext* context,
                                                               PMConversion* pmToUPMRule,
                                                               PMConversion* upmToPMRule) {
@@ -173,29 +173,28 @@ void GrConfigConversionEffect::TestForPreservingPMConversions(GrContext* context
         for (int x = 0; x < 256; ++x) {
             uint8_t* color = reinterpret_cast<uint8_t*>(&srcData[256*y + x]);
             color[3] = y;
-            color[2] = GrMin(x, y);
-            color[1] = GrMin(x, y);
-            color[0] = GrMin(x, y);
+            color[2] = SkTMin(x, y);
+            color[1] = SkTMin(x, y);
+            color[0] = SkTMin(x, y);
         }
     }
 
-    GrTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrTextureFlagBit |
-                  kNoStencil_GrTextureFlagBit;
+    GrSurfaceDesc desc;
+    desc.fFlags = kRenderTarget_GrSurfaceFlag;
     desc.fWidth = 256;
     desc.fHeight = 256;
     desc.fConfig = kRGBA_8888_GrPixelConfig;
 
-    SkAutoTUnref<GrTexture> readTex(context->createUncachedTexture(desc, NULL, 0));
+    SkAutoTUnref<GrTexture> readTex(context->textureProvider()->createTexture(desc, true, NULL, 0));
     if (!readTex.get()) {
         return;
     }
-    SkAutoTUnref<GrTexture> tempTex(context->createUncachedTexture(desc, NULL, 0));
+    SkAutoTUnref<GrTexture> tempTex(context->textureProvider()->createTexture(desc, true, NULL, 0));
     if (!tempTex.get()) {
         return;
     }
-    desc.fFlags = kNone_GrTextureFlags;
-    SkAutoTUnref<GrTexture> dataTex(context->createUncachedTexture(desc, data, 0));
+    desc.fFlags = kNone_GrSurfaceFlags;
+    SkAutoTUnref<GrTexture> dataTex(context->textureProvider()->createTexture(desc, true, data, 0));
     if (!dataTex.get()) {
         return;
     }
@@ -205,50 +204,80 @@ void GrConfigConversionEffect::TestForPreservingPMConversions(GrContext* context
         {kDivByAlpha_RoundUp_PMConversion, kMulByAlpha_RoundDown_PMConversion},
     };
 
-    GrContext::AutoWideOpenIdentityDraw awoid(context, NULL);
-
     bool failed = true;
 
-    for (size_t i = 0; i < GR_ARRAY_COUNT(kConversionRules) && failed; ++i) {
+    for (size_t i = 0; i < SK_ARRAY_COUNT(kConversionRules) && failed; ++i) {
         *pmToUPMRule = kConversionRules[i][0];
         *upmToPMRule = kConversionRules[i][1];
 
-        static const GrRect kDstRect = GrRect::MakeWH(SkIntToScalar(256), SkIntToScalar(256));
-        static const GrRect kSrcRect = GrRect::MakeWH(SK_Scalar1, SK_Scalar1);
+        static const SkRect kDstRect = SkRect::MakeWH(SkIntToScalar(256), SkIntToScalar(256));
+        static const SkRect kSrcRect = SkRect::MakeWH(SK_Scalar1, SK_Scalar1);
         // We do a PM->UPM draw from dataTex to readTex and read the data. Then we do a UPM->PM draw
         // from readTex to tempTex followed by a PM->UPM draw to readTex and finally read the data.
         // We then verify that two reads produced the same values.
 
-        GrPaint paint;
-        AutoEffectUnref pmToUPM1(SkNEW_ARGS(GrConfigConversionEffect, (dataTex,
-                                                                       false,
-                                                                       *pmToUPMRule,
-                                                                       SkMatrix::I())));
-        AutoEffectUnref upmToPM(SkNEW_ARGS(GrConfigConversionEffect, (readTex,
-                                                                      false,
-                                                                      *upmToPMRule,
-                                                                      SkMatrix::I())));
-        AutoEffectUnref pmToUPM2(SkNEW_ARGS(GrConfigConversionEffect, (tempTex,
-                                                                       false,
-                                                                       *pmToUPMRule,
-                                                                       SkMatrix::I())));
+        GrPaint paint1;
+        GrPaint paint2;
+        GrPaint paint3;
+        SkAutoTUnref<GrFragmentProcessor> pmToUPM1(
+                SkNEW_ARGS(GrConfigConversionEffect,
+                           (paint1.getProcessorDataManager(), dataTex, false, *pmToUPMRule,
+                            SkMatrix::I())));
+        SkAutoTUnref<GrFragmentProcessor> upmToPM(
+                SkNEW_ARGS(GrConfigConversionEffect,
+                           (paint2.getProcessorDataManager(), readTex, false, *upmToPMRule,
+                            SkMatrix::I())));
+        SkAutoTUnref<GrFragmentProcessor> pmToUPM2(
+                SkNEW_ARGS(GrConfigConversionEffect,
+                           (paint3.getProcessorDataManager(), tempTex, false, *pmToUPMRule,
+                            SkMatrix::I())));
 
-        SkAutoTUnref<GrEffectRef> pmToUPMEffect1(CreateEffectRef(pmToUPM1));
-        SkAutoTUnref<GrEffectRef> upmToPMEffect(CreateEffectRef(upmToPM));
-        SkAutoTUnref<GrEffectRef> pmToUPMEffect2(CreateEffectRef(pmToUPM2));
+        paint1.addColorProcessor(pmToUPM1);
 
-        context->setRenderTarget(readTex->asRenderTarget());
-        paint.colorStage(0)->setEffect(pmToUPMEffect1);
-        context->drawRectToRect(paint, kDstRect, kSrcRect);
+
+        GrDrawContext* readDrawContext = context->drawContext();
+        if (!readDrawContext) {
+            failed = true;
+            break;
+        }
+
+        readDrawContext->drawNonAARectToRect(readTex->asRenderTarget(),
+                                             GrClip::WideOpen(),
+                                             paint1,
+                                             SkMatrix::I(),
+                                             kDstRect,
+                                             kSrcRect);
 
         readTex->readPixels(0, 0, 256, 256, kRGBA_8888_GrPixelConfig, firstRead);
 
-        context->setRenderTarget(tempTex->asRenderTarget());
-        paint.colorStage(0)->setEffect(upmToPMEffect);
-        context->drawRectToRect(paint, kDstRect, kSrcRect);
-        context->setRenderTarget(readTex->asRenderTarget());
-        paint.colorStage(0)->setEffect(pmToUPMEffect2);
-        context->drawRectToRect(paint, kDstRect, kSrcRect);
+        paint2.addColorProcessor(upmToPM);
+
+        GrDrawContext* tempDrawContext = context->drawContext();
+        if (!tempDrawContext) {
+            failed = true;
+            break;
+        }
+        tempDrawContext->drawNonAARectToRect(tempTex->asRenderTarget(),
+                                             GrClip::WideOpen(),
+                                             paint2,
+                                             SkMatrix::I(),
+                                             kDstRect,
+                                             kSrcRect);
+
+        paint3.addColorProcessor(pmToUPM2);
+
+        readDrawContext = context->drawContext();
+        if (!readDrawContext) {
+            failed = true;
+            break;
+        }
+
+        readDrawContext->drawNonAARectToRect(readTex->asRenderTarget(),
+                                             GrClip::WideOpen(),
+                                             paint3,
+                                             SkMatrix::I(),
+                                             kDstRect,
+                                             kSrcRect);
 
         readTex->readPixels(0, 0, 256, 256, kRGBA_8888_GrPixelConfig, secondRead);
 
@@ -268,15 +297,16 @@ void GrConfigConversionEffect::TestForPreservingPMConversions(GrContext* context
     }
 }
 
-const GrEffectRef* GrConfigConversionEffect::Create(GrTexture* texture,
-                                                    bool swapRedAndBlue,
-                                                    PMConversion pmConversion,
-                                                    const SkMatrix& matrix) {
+const GrFragmentProcessor* GrConfigConversionEffect::Create(GrProcessorDataManager* procDataManager,
+                                                            GrTexture* texture,
+                                                            bool swapRedAndBlue,
+                                                            PMConversion pmConversion,
+                                                            const SkMatrix& matrix) {
     if (!swapRedAndBlue && kNone_PMConversion == pmConversion) {
         // If we returned a GrConfigConversionEffect that was equivalent to a GrSimpleTextureEffect
         // then we may pollute our texture cache with redundant shaders. So in the case that no
         // conversions were requested we instead return a GrSimpleTextureEffect.
-        return GrSimpleTextureEffect::Create(texture, matrix);
+        return GrSimpleTextureEffect::Create(procDataManager, texture, matrix);
     } else {
         if (kRGBA_8888_GrPixelConfig != texture->config() &&
             kBGRA_8888_GrPixelConfig != texture->config() &&
@@ -284,10 +314,10 @@ const GrEffectRef* GrConfigConversionEffect::Create(GrTexture* texture,
             // The PM conversions assume colors are 0..255
             return NULL;
         }
-        AutoEffectUnref effect(SkNEW_ARGS(GrConfigConversionEffect, (texture,
-                                                                     swapRedAndBlue,
-                                                                     pmConversion,
-                                                                     matrix)));
-        return CreateEffectRef(effect);
+        return SkNEW_ARGS(GrConfigConversionEffect, (procDataManager,
+                                                     texture,
+                                                     swapRedAndBlue,
+                                                     pmConversion,
+                                                     matrix));
     }
 }

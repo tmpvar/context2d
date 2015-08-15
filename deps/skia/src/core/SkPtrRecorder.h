@@ -22,7 +22,7 @@
  */
 class SkPtrSet : public SkRefCnt {
 public:
-    SK_DECLARE_INST_COUNT(SkPtrSet)
+    
 
     /**
      *  Search for the specified ptr in the set. If it is found, return its
@@ -57,6 +57,27 @@ public:
      *  to 0.
      */
     void reset();
+
+    /**
+     * Set iterator.
+     */
+    class Iter {
+    public:
+        Iter(const SkPtrSet& set)
+            : fSet(set)
+            , fIndex(0) {}
+
+        /**
+         * Return the next ptr in the set or null if the end was reached.
+         */
+        void* next() {
+            return fIndex < fSet.fList.count() ? fSet.fList[fIndex++].fPtr : NULL;
+        }
+
+    private:
+        const SkPtrSet& fSet;
+        int             fIndex;
+    };
 
 protected:
     virtual void incPtr(void*) {}
@@ -123,7 +144,7 @@ class SkFactorySet : public SkTPtrSet<SkFlattenable::Factory> {};
  */
 class SkNamedFactorySet : public SkRefCnt {
 public:
-    SK_DECLARE_INST_COUNT(SkNamedFactorySet)
+    
 
     SkNamedFactorySet();
 

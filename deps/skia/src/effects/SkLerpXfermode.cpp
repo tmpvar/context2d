@@ -7,7 +7,8 @@
 
 #include "SkLerpXfermode.h"
 #include "SkColorPriv.h"
-#include "SkFlattenableBuffers.h"
+#include "SkReadBuffer.h"
+#include "SkWriteBuffer.h"
 #include "SkString.h"
 
 SkXfermode* SkLerpXfermode::Create(SkScalar scale) {
@@ -22,14 +23,12 @@ SkXfermode* SkLerpXfermode::Create(SkScalar scale) {
 
 SkLerpXfermode::SkLerpXfermode(unsigned scale256) : fScale256(scale256) {}
 
-SkLerpXfermode::SkLerpXfermode(SkFlattenableReadBuffer& buffer)
-    : INHERITED(buffer) {
-    fScale256 = buffer.readUInt();
+void SkLerpXfermode::flatten(SkWriteBuffer& buffer) const {
+    buffer.writeUInt(fScale256);
 }
 
-void SkLerpXfermode::flatten(SkFlattenableWriteBuffer& buffer) const {
-    this->INHERITED::flatten(buffer);
-    buffer.writeUInt(fScale256);
+SkFlattenable* SkLerpXfermode::CreateProc(SkReadBuffer& buffer) {
+    return SkNEW_ARGS(SkLerpXfermode, (buffer.readUInt()));
 }
 
 void SkLerpXfermode::xfer32(SkPMColor dst[], const SkPMColor src[], int count,
@@ -103,7 +102,7 @@ void SkLerpXfermode::xferA8(SkAlpha dst[], const SkPMColor src[], int count,
     }
 }
 
-#ifdef SK_DEVELOPER
+#ifndef SK_IGNORE_TO_STRING
 void SkLerpXfermode::toString(SkString* str) const {
     str->printf("SkLerpXfermode: scale: %g", fScale256 / 256.0);
 }

@@ -17,7 +17,7 @@ static void draw_path(SkCanvas* canvas, const SkPath& path, const SkRect& rect,
     paint.setAntiAlias(true);
     paint.setStyle(doFill ? SkPaint::kStrokeAndFill_Style : SkPaint::kStroke_Style);
 
-    paint.setColor(SK_ColorGRAY);
+    paint.setColor(sk_tool_utils::color_to_565(SK_ColorGRAY));
     paint.setStrokeWidth(STROKE_WIDTH);
     paint.setStrokeJoin(join);
     canvas->drawRect(rect, paint);
@@ -46,15 +46,16 @@ public:
     StrokeRectGM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("strokerect");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(1024, 740);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         canvas->drawColor(SK_ColorWHITE);
         canvas->translate(STROKE_WIDTH*3/2, STROKE_WIDTH*3/2);
 

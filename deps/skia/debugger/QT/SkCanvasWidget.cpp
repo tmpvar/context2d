@@ -8,6 +8,7 @@
 
 
 #include "SkCanvasWidget.h"
+#include <QtGui>
 
 SkCanvasWidget::SkCanvasWidget(QWidget* parent,
         SkDebugger* debugger) : QWidget(parent)
@@ -40,17 +41,19 @@ SkCanvasWidget::SkCanvasWidget(QWidget* parent,
 #if SK_SUPPORT_GPU
     setWidgetVisibility(kGPU_WidgetType, true);
 #endif
-    connect(&fRasterWidget, SIGNAL(drawComplete()),
-            this->parentWidget(), SLOT(drawComplete()));
+    connect(&fRasterWidget, SIGNAL(drawComplete()), this->parentWidget(), SLOT(drawComplete()));
+#if SK_SUPPORT_GPU
+    connect(&fGLWidget, SIGNAL(drawComplete()), this->parentWidget(), SLOT(drawComplete()));
+#endif
 }
 
 SkCanvasWidget::~SkCanvasWidget() {}
 
 void SkCanvasWidget::drawTo(int index) {
     fDebugger->setIndex(index);
-    fRasterWidget.draw();
+    fRasterWidget.updateImage();
 #if SK_SUPPORT_GPU
-    fGLWidget.draw();
+    fGLWidget.updateImage();
 #endif
     emit commandChanged(fDebugger->index());
 }
@@ -128,6 +131,13 @@ void SkCanvasWidget::setWidgetVisibility(WidgetType type, bool isHidden) {
     }
 #endif
 }
+
+#if SK_SUPPORT_GPU
+void SkCanvasWidget::setGLSampleCount(int sampleCount)
+{
+    fGLWidget.setSampleCount(sampleCount);
+}
+#endif
 
 void SkCanvasWidget::zoom(float scale, int px, int py) {
     fUserMatrix.postScale(scale, scale, px, py);

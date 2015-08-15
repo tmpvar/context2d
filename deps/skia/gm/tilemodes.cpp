@@ -10,18 +10,14 @@
 #include "SkRegion.h"
 #include "SkShader.h"
 #include "SkUtils.h"
-#include "SkColorPriv.h"
 #include "SkColorFilter.h"
-#include "SkTypeface.h"
 
 // effects
 #include "SkGradientShader.h"
-#include "SkUnitMappers.h"
 #include "SkBlurDrawLooper.h"
 
-static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
-    bm->setConfig(config, w, h);
-    bm->allocPixels();
+static void makebm(SkBitmap* bm, SkColorType ct, int w, int h) {
+    bm->allocPixels(SkImageInfo::Make(w, h, ct, kPremul_SkAlphaType));
     bm->eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas    canvas(*bm);
@@ -30,16 +26,9 @@ static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
     SkScalar    pos[] = { 0, SK_Scalar1/2, SK_Scalar1 };
     SkPaint     paint;
 
-    SkUnitMapper*   um = NULL;
-
-    um = new SkCosineMapper;
-//    um = new SkDiscreteMapper(12);
-
-    SkAutoUnref au(um);
-
     paint.setDither(true);
     paint.setShader(SkGradientShader::CreateLinear(pts, colors, pos,
-                SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode, um))->unref();
+                SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode))->unref();
     canvas.drawPaint(paint);
 }
 
@@ -47,42 +36,51 @@ static void setup(SkPaint* paint, const SkBitmap& bm, bool filter,
                   SkShader::TileMode tmx, SkShader::TileMode tmy) {
     SkShader* shader = SkShader::CreateBitmapShader(bm, tmx, tmy);
     paint->setShader(shader)->unref();
-    paint->setFilterBitmap(filter);
+    paint->setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
 }
 
-static const SkBitmap::Config gConfigs[] = {
-    SkBitmap::kARGB_8888_Config,
-    SkBitmap::kRGB_565_Config,
+static const SkColorType gColorTypes[] = {
+    kN32_SkColorType,
+    kRGB_565_SkColorType,
 };
-static const int gWidth = 32;
-static const int gHeight = 32;
 
 class TilingGM : public skiagm::GM {
-    SkBlurDrawLooper    fLooper;
 public:
-    TilingGM()
-            : fLooper(SkIntToScalar(1), SkIntToScalar(2), SkIntToScalar(2),
-                      0x88000000) {
+    TilingGM(bool powerOfTwoSize)
+            : fPowerOfTwoSize(powerOfTwoSize) {
     }
 
-    SkBitmap    fTexture[SK_ARRAY_COUNT(gConfigs)];
+    SkBitmap    fTexture[SK_ARRAY_COUNT(gColorTypes)];
 
 protected:
-    SkString onShortName() {
-        return SkString("tilemodes");
+
+    enum {
+        kPOTSize = 32,
+        kNPOTSize = 21,
+    };
+
+    SkString onShortName() override {
+        SkString name("tilemodes");
+        if (!fPowerOfTwoSize) {
+            name.append("_npot");
+        }
+        return name;
     }
 
-    SkISize onISize() { return SkISize::Make(880, 560); }
+    SkISize onISize() override { return SkISize::Make(880, 560); }
 
-    virtual void onOnceBeforeDraw() SK_OVERRIDE {
-        for (size_t i = 0; i < SK_ARRAY_COUNT(gConfigs); i++) {
-            makebm(&fTexture[i], gConfigs[i], gWidth, gHeight);
+    void onOnceBeforeDraw() override {
+        int size = fPowerOfTwoSize ? kPOTSize : kNPOTSize;
+        for (size_t i = 0; i < SK_ARRAY_COUNT(gColorTypes); i++) {
+            makebm(&fTexture[i], gColorTypes[i], size, size);
         }
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(SkCanvas* canvas) override {
 
-        SkRect r = { 0, 0, SkIntToScalar(gWidth*2), SkIntToScalar(gHeight*2) };
+        int size = fPowerOfTwoSize ? kPOTSize : kNPOTSize;
+
+        SkRect r = { 0, 0, SkIntToScalar(size*2), SkIntToScalar(size*2) };
 
         static const char* gConfigNames[] = { "8888", "565", "4444" };
 
@@ -100,8 +98,8 @@ protected:
                 SkPaint p;
                 SkString str;
                 p.setAntiAlias(true);
+                sk_tool_utils::set_portable_typeface(&p);
                 p.setDither(true);
-                p.setLooper(&fLooper);
                 str.printf("[%s,%s]", gModeNames[kx], gModeNames[ky]);
 
                 p.setTextAlign(SkPaint::kCenter_Align);
@@ -113,12 +111,18 @@ protected:
 
         y += SkIntToScalar(16);
 
-        for (size_t i = 0; i < SK_ARRAY_COUNT(gConfigs); i++) {
+        for (size_t i = 0; i < SK_ARRAY_COUNT(gColorTypes); i++) {
             for (size_t j = 0; j < SK_ARRAY_COUNT(gFilters); j++) {
                 x = SkIntToScalar(10);
                 for (size_t kx = 0; kx < SK_ARRAY_COUNT(gModes); kx++) {
                     for (size_t ky = 0; ky < SK_ARRAY_COUNT(gModes); ky++) {
                         SkPaint paint;
+#if 1 // Temporary change to regen bitmap before each draw. This may help tracking down an issue
+      // on SGX where resizing NPOT textures to POT textures exhibits a driver bug.
+                        if (!fPowerOfTwoSize) {
+                            makebm(&fTexture[i], gColorTypes[i], size, size);
+                        }
+#endif
                         setup(&paint, fTexture[i], gFilters[j], gModes[kx], gModes[ky]);
                         paint.setDither(true);
 
@@ -134,7 +138,7 @@ protected:
                     SkPaint p;
                     SkString str;
                     p.setAntiAlias(true);
-                    p.setLooper(&fLooper);
+                    sk_tool_utils::set_portable_typeface(&p);
                     str.printf("%s, %s", gConfigNames[i], gFilterNames[j]);
                     canvas->drawText(str.c_str(), str.size(), x, y + r.height() * 2 / 3, p);
                 }
@@ -145,12 +149,16 @@ protected:
     }
 
 private:
+    bool fPowerOfTwoSize;
     typedef skiagm::GM INHERITED;
 };
 
+static const int gWidth = 32;
+static const int gHeight = 32;
+
 static SkShader* make_bm(SkShader::TileMode tx, SkShader::TileMode ty) {
     SkBitmap bm;
-    makebm(&bm, SkBitmap::kARGB_8888_Config, gWidth, gHeight);
+    makebm(&bm, kN32_SkColorType, gWidth, gHeight);
     return SkShader::CreateBitmapShader(bm, tx, ty);
 }
 
@@ -158,7 +166,7 @@ static SkShader* make_grad(SkShader::TileMode tx, SkShader::TileMode ty) {
     SkPoint pts[] = { { 0, 0 }, { SkIntToScalar(gWidth), SkIntToScalar(gHeight)} };
     SkPoint center = { SkIntToScalar(gWidth)/2, SkIntToScalar(gHeight)/2 };
     SkScalar rad = SkIntToScalar(gWidth)/2;
-    SkColor colors[] = { 0xFFFF0000, 0xFF0044FF };
+    SkColor colors[] = { 0xFFFF0000, sk_tool_utils::color_to_565(0xFF0044FF) };
 
     int index = (int)ty;
     switch (index % 3) {
@@ -184,13 +192,14 @@ public:
     }
 
 protected:
-    SkString onShortName() {
+
+    SkString onShortName() override {
         return fName;
     }
 
-    SkISize onISize() { return SkISize::Make(880, 560); }
+    SkISize onISize() override { return SkISize::Make(880, 560); }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         canvas->scale(SkIntToScalar(3)/2, SkIntToScalar(3)/2);
 
         const SkScalar w = SkIntToScalar(gWidth);
@@ -209,6 +218,7 @@ protected:
 
         SkPaint p;
         p.setAntiAlias(true);
+        sk_tool_utils::set_portable_typeface(&p);
         p.setTextAlign(SkPaint::kCenter_Align);
 
         for (size_t kx = 0; kx < SK_ARRAY_COUNT(gModes); kx++) {
@@ -248,6 +258,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-DEF_GM( return new TilingGM; )
+DEF_GM( return new TilingGM(true); )
+DEF_GM( return new TilingGM(false); )
 DEF_GM( return new Tiling2GM(make_bm, "bitmap"); )
 DEF_GM( return new Tiling2GM(make_grad, "gradient"); )

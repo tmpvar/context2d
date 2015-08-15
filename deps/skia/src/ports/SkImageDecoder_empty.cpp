@@ -7,47 +7,54 @@
  */
 
 #include "SkBitmap.h"
-#include "SkBitmapFactory.h"
 #include "SkImage.h"
 #include "SkImageDecoder.h"
 #include "SkImageEncoder.h"
 #include "SkMovie.h"
+#include "SkStream.h"
 
 class SkColorTable;
-class SkStream;
 
 // Empty implementations for SkImageDecoder.
 
-SkImageDecoder* SkImageDecoder::Factory(SkStream*) {
+SkImageDecoder::SkImageDecoder() {}
+
+SkImageDecoder::~SkImageDecoder() {}
+
+SkImageDecoder* SkImageDecoder::Factory(SkStreamRewindable*) {
     return NULL;
 }
 
-bool SkImageDecoder::DecodeFile(const char[], SkBitmap*, SkBitmap::Config,
-                                SkImageDecoder::Mode, SkImageDecoder::Format*) {
+void SkImageDecoder::copyFieldsToOther(SkImageDecoder* ) {}
+
+bool SkImageDecoder::DecodeFile(const char[], SkBitmap*, SkColorType, Mode, Format*) {
     return false;
 }
 
-bool SkImageDecoder::decode(SkStream*, SkBitmap*, SkBitmap::Config, Mode, bool) {
+SkImageDecoder::Result SkImageDecoder::decode(SkStream*, SkBitmap*, SkColorType, Mode) {
+    return kFailure;
+}
+
+bool SkImageDecoder::DecodeStream(SkStreamRewindable*, SkBitmap*, SkColorType, Mode, Format*) {
     return false;
 }
 
-bool SkImageDecoder::DecodeStream(SkStream*, SkBitmap*, SkBitmap::Config,
-                                  SkImageDecoder::Mode,
-                                  SkImageDecoder::Format*) {
+bool SkImageDecoder::DecodeMemory(const void*, size_t, SkBitmap*, SkColorType, Mode, Format*) {
     return false;
 }
 
-bool SkImageDecoder::DecodeMemory(const void*, size_t, SkBitmap*,
-                                  SkBitmap::Config, SkImageDecoder::Mode,
-                                  SkImageDecoder::Format*) {
+bool SkImageDecoder::buildTileIndex(SkStreamRewindable*, int *width, int *height) {
     return false;
 }
 
-bool SkImageDecoder::buildTileIndex(SkStream*, int *width, int *height) {
+bool SkImageDecoder::onBuildTileIndex(SkStreamRewindable* stream,
+                                      int* /*width*/, int* /*height*/) {
+    SkDELETE(stream);
     return false;
 }
 
-bool SkImageDecoder::decodeSubset(SkBitmap*, const SkIRect&, SkBitmap::Config) {
+
+bool SkImageDecoder::decodeSubset(SkBitmap*, const SkIRect&, SkColorType) {
     return false;
 }
 
@@ -55,7 +62,7 @@ SkImageDecoder::Format SkImageDecoder::getFormat() const {
     return kUnknown_Format;
 }
 
-SkImageDecoder::Format SkImageDecoder::GetStreamFormat(SkStream*) {
+SkImageDecoder::Format SkImageDecoder::GetStreamFormat(SkStreamRewindable*) {
     return kUnknown_Format;
 }
 
@@ -67,33 +74,14 @@ SkImageDecoder::Peeker* SkImageDecoder::setPeeker(Peeker*) {
     return NULL;
 }
 
-SkImageDecoder::Chooser* SkImageDecoder::setChooser(Chooser*) {
-    return NULL;
-}
-
 SkBitmap::Allocator* SkImageDecoder::setAllocator(SkBitmap::Allocator*) {
     return NULL;
 }
 
 void SkImageDecoder::setSampleSize(int) {}
 
-bool SkImageDecoder::DecodeMemoryToTarget(const void*, size_t, SkImage::Info*,
-                                          const SkBitmapFactory::Target*) {
-    return false;
-}
-
-SkBitmap::Config SkImageDecoder::GetDeviceConfig() {
-    return SkBitmap::kNo_Config;
-}
-
-void SkImageDecoder::SetDeviceConfig(SkBitmap::Config) {}
-
 bool SkImageDecoder::cropBitmap(SkBitmap*, SkBitmap*, int, int, int, int, int,
                     int, int) {
-    return false;
-}
-
-bool SkImageDecoder::chooseFromOneChoice(SkBitmap::Config, int, int) const {
     return false;
 }
 
@@ -101,16 +89,11 @@ bool SkImageDecoder::allocPixelRef(SkBitmap*, SkColorTable*) const {
     return false;
 }
 
-SkBitmap::Config SkImageDecoder::getPrefConfig(SrcDepth, bool) const {
-    return SkBitmap::kNo_Config;
-}
-
-
 /////////////////////////////////////////////////////////////////////////
 
 // Empty implementation for SkMovie.
 
-SkMovie* SkMovie::DecodeStream(SkStream* stream) {
+SkMovie* SkMovie::DecodeStream(SkStreamRewindable* stream) {
     return NULL;
 }
 
@@ -146,9 +129,3 @@ bool SkImageEncoder::encodeFile(const char file[], const SkBitmap& bm, int quali
     return false;
 }
 /////////////////////////////////////////////////////////////////////////
-
-// Empty implementation for SkImages.
-
-#include "SkImages.h"
-
-void SkImages::InitializeFlattenables() {}

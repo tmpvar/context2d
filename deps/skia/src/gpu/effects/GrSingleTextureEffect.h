@@ -8,7 +8,9 @@
 #ifndef GrSingleTextureEffect_DEFINED
 #define GrSingleTextureEffect_DEFINED
 
-#include "GrEffect.h"
+#include "GrFragmentProcessor.h"
+#include "GrCoordTransform.h"
+#include "GrInvariantOutput.h"
 #include "SkMatrix.h"
 
 class GrTexture;
@@ -17,57 +19,44 @@ class GrTexture;
  * A base class for effects that draw a single texture with a texture matrix. This effect has no
  * backend implementations. One must be provided by the subclass.
  */
-class GrSingleTextureEffect : public GrEffect {
+class GrSingleTextureEffect : public GrFragmentProcessor {
 public:
     virtual ~GrSingleTextureEffect();
 
-    const SkMatrix& getMatrix() const { return fMatrix; }
-
-    /** Indicates whether the matrix operates on local coords or positions */
-    CoordsType coordsType() const { return fCoordsType; }
-
 protected:
     /** unfiltered, clamp mode */
-    GrSingleTextureEffect(GrTexture*, const SkMatrix&, CoordsType = kLocal_CoordsType);
+    GrSingleTextureEffect(GrProcessorDataManager*, GrTexture*, const SkMatrix&,
+                          GrCoordSet = kLocal_GrCoordSet);
     /** clamp mode */
-    GrSingleTextureEffect(GrTexture*, const SkMatrix&, bool bilerp, CoordsType = kLocal_CoordsType);
-    GrSingleTextureEffect(GrTexture*,
+    GrSingleTextureEffect(GrProcessorDataManager*, GrTexture*, const SkMatrix&,
+                          GrTextureParams::FilterMode filterMode,
+                          GrCoordSet = kLocal_GrCoordSet);
+    GrSingleTextureEffect(GrProcessorDataManager*,
+                          GrTexture*,
                           const SkMatrix&,
                           const GrTextureParams&,
-                          CoordsType = kLocal_CoordsType);
+                          GrCoordSet = kLocal_GrCoordSet);
 
     /**
-     * Helper for subclass onIsEqual() functions.
-     */
-    bool hasSameTextureParamsMatrixAndCoordsType(const GrSingleTextureEffect& other) const {
-        const GrTextureAccess& otherAccess = other.fTextureAccess;
-        // We don't have to check the accesses' swizzles because they are inferred from the texture.
-        return fTextureAccess.getTexture() == otherAccess.getTexture() &&
-               fTextureAccess.getParams() == otherAccess.getParams() &&
-               this->getMatrix().cheapEqualTo(other.getMatrix()) &&
-               fCoordsType == other.fCoordsType;
-    }
-
-    /**
-     * Can be used as a helper to implement subclass getConstantColorComponents(). It assumes that
+     * Can be used as a helper to implement subclass onComputeInvariantOutput(). It assumes that
      * the subclass output color will be a modulation of the input color with a value read from the
      * texture.
      */
-    void updateConstantColorComponentsForModulation(GrColor* color, uint32_t* validFlags) const {
-        if ((*validFlags & kA_GrColorComponentFlag) && 0xFF == GrColorUnpackA(*color) &&
-            GrPixelConfigIsOpaque(this->texture(0)->config())) {
-            *validFlags = kA_GrColorComponentFlag;
+    void updateInvariantOutputForModulation(GrInvariantOutput* inout) const {
+        if (GrPixelConfigIsAlphaOnly(this->texture(0)->config())) {
+            inout->mulByUnknownSingleComponent();
+        } else if (GrPixelConfigIsOpaque(this->texture(0)->config())) {
+            inout->mulByUnknownOpaqueFourComponents();
         } else {
-            *validFlags = 0;
+            inout->mulByUnknownFourComponents();
         }
     }
 
 private:
-    GrTextureAccess fTextureAccess;
-    SkMatrix        fMatrix;
-    CoordsType      fCoordsType;
+    GrCoordTransform fCoordTransform;
+    GrTextureAccess  fTextureAccess;
 
-    typedef GrEffect INHERITED;
+    typedef GrFragmentProcessor INHERITED;
 };
 
 #endif

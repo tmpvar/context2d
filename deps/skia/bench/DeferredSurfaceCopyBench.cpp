@@ -6,62 +6,48 @@
  * found in the LICENSE file.
  */
 
-#if SK_SUPPORT_GPU
-#include "GrRenderTarget.h"
-#endif
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkDeferredCanvas.h"
 #include "SkDevice.h"
 #include "SkImage.h"
 #include "SkSurface.h"
+#if SK_SUPPORT_GPU
+#include "GrRenderTarget.h"
+#endif
 
-class DeferredSurfaceCopyBench : public SkBenchmark {
+class DeferredSurfaceCopyBench : public Benchmark {
     enum {
-        N = SkBENCHLOOP(5),
         kSurfaceWidth = 1000,
         kSurfaceHeight = 1000,
     };
 public:
-    DeferredSurfaceCopyBench(void* param, bool discardableContents) : SkBenchmark(param) {
+    DeferredSurfaceCopyBench(bool discardableContents) {
         fDiscardableContents = discardableContents;
     }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return fDiscardableContents ? "DeferredSurfaceCopy_discardable" :
             "DeferredSurfaceCopy_nonDiscardable";
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas* canvas) override {
         // The canvas is not actually used for this test except to provide
         // configuration information: gpu, multisampling, size, etc?
-        SkImage::Info info;
-        info.fWidth = kSurfaceWidth;
-        info.fHeight = kSurfaceHeight;
-        info.fColorType = SkImage::kPMColor_ColorType;
-        info.fAlphaType = SkImage::kPremul_AlphaType;
+        SkImageInfo info = SkImageInfo::MakeN32Premul(kSurfaceWidth, kSurfaceHeight);
         const SkRect fullCanvasRect = SkRect::MakeWH(
             SkIntToScalar(kSurfaceWidth), SkIntToScalar(kSurfaceHeight));
-        SkSurface* surface;
-#if SK_SUPPORT_GPU
-        GrRenderTarget* rt = reinterpret_cast<GrRenderTarget*>(
-            canvas->getDevice()->accessRenderTarget());
-        if (NULL != rt) {
-            surface = SkSurface::NewRenderTarget(rt->getContext(), info, rt->numSamples());
-        } else
-#endif
-        {
-            surface = SkSurface::NewRaster(info);
-        }
-        SkAutoTUnref<SkDeferredCanvas> drawingCanvas(
-#if SK_DEFERRED_CANVAS_USES_FACTORIES
-            SkDeferredCanvas::Create(surface));
-#else
-            SkNEW_ARGS(SkDeferredCanvas, (surface)));
-#endif
-        surface->unref();
+        SkAutoTUnref<SkSurface> surface(canvas->newSurface(info));
 
-        for (int iteration = 0; iteration < N; iteration++) {
+        // newSurface() can return NULL for several reasons, so we need to check
+        if (NULL == surface.get()) {
+            SkDebugf("DeferredSurfaceCopyBench newSurface failed, bench results are meaningless\n");
+            return; // should we signal the caller that we hit an error?
+        }
+
+        SkAutoTUnref<SkDeferredCanvas> drawingCanvas(SkDeferredCanvas::Create(surface));
+
+        for (int iteration = 0; iteration < loops; iteration++) {
             drawingCanvas->clear(0);
             SkAutoTUnref<SkImage> image(drawingCanvas->newImageSnapshot());
             SkPaint paint;
@@ -79,13 +65,10 @@ protected:
 private:
     bool fDiscardableContents;
 
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* Fact0(void* p) { return new DeferredSurfaceCopyBench(p, false); }
-static SkBenchmark* Fact1(void* p) { return new DeferredSurfaceCopyBench(p, true); }
-
-static BenchRegistry gReg0(Fact0);
-static BenchRegistry gReg1(Fact1);
+DEF_BENCH( return new DeferredSurfaceCopyBench(false); )
+DEF_BENCH( return new DeferredSurfaceCopyBench(true); )

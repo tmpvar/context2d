@@ -4,6 +4,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "PathOpsTestCommon.h"
 #include "SkPathOpsPoint.h"
 #include "Test.h"
 
@@ -19,9 +20,10 @@ static const SkDPoint tests[] = {
 
 static const size_t tests_count = SK_ARRAY_COUNT(tests);
 
-static void PathOpsDPointTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsDPoint, reporter) {
     for (size_t index = 0; index < tests_count; ++index) {
         const SkDPoint& pt = tests[index];
+        SkASSERT(ValidPoint(pt));
         SkDPoint p = pt;
         REPORTER_ASSERT(reporter, p == pt);
         REPORTER_ASSERT(reporter, !(pt != pt));
@@ -36,7 +38,6 @@ static void PathOpsDPointTest(skiatest::Reporter* reporter) {
         REPORTER_ASSERT(reporter, p == pt);
         REPORTER_ASSERT(reporter, p.approximatelyEqual(sPt));
         REPORTER_ASSERT(reporter, p.roughlyEqual(pt));
-        REPORTER_ASSERT(reporter, p.moreRoughlyEqual(pt));
         p.fX = p.fY = 0;
         REPORTER_ASSERT(reporter, p.fX == 0 && p.fY == 0);
         REPORTER_ASSERT(reporter, p.approximatelyZero());
@@ -45,6 +46,3 @@ static void PathOpsDPointTest(skiatest::Reporter* reporter) {
                 sqrt(pt.fX * pt.fX + pt.fY * pt.fY)));
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsDPointTest)

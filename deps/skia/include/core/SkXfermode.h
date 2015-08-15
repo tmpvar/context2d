@@ -13,25 +13,25 @@
 #include "SkFlattenable.h"
 #include "SkColor.h"
 
-class GrContext;
-class GrEffectRef;
+class GrFragmentProcessor;
+class GrProcessorDataManager;
 class GrTexture;
+class GrXPFactory;
 class SkString;
 
 /** \class SkXfermode
-
-    SkXfermode is the base class for objects that are called to implement custom
-    "transfer-modes" in the drawing pipeline. The static function Create(Modes)
-    can be called to return an instance of any of the predefined subclasses as
-    specified in the Modes enum. When an SkXfermode is assigned to an SkPaint,
-    then objects drawn with that paint have the xfermode applied.
-*/
+ *
+ *  SkXfermode is the base class for objects that are called to implement custom
+ *  "transfer-modes" in the drawing pipeline. The static function Create(Modes)
+ *  can be called to return an instance of any of the predefined subclasses as
+ *  specified in the Modes enum. When an SkXfermode is assigned to an SkPaint,
+ *  then objects drawn with that paint have the xfermode applied.
+ *
+ *  All subclasses are required to be reentrant-safe : it must be legal to share
+ *  the same instance between several threads.
+ */
 class SK_API SkXfermode : public SkFlattenable {
 public:
-    SK_DECLARE_INST_COUNT(SkXfermode)
-
-    SkXfermode() {}
-
     virtual void xfer32(SkPMColor dst[], const SkPMColor src[], int count,
                         const SkAlpha aa[]) const;
     virtual void xfer16(uint16_t dst[], const SkPMColor src[], int count,
@@ -55,29 +55,6 @@ public:
 
         kCoeffCount
     };
-
-    /** If the xfermode can be expressed as an equation using the coefficients
-        in Coeff, then asCoeff() returns true, and sets (if not null) src and
-        dst accordingly.
-
-            result = src_coeff * src_color + dst_coeff * dst_color;
-
-        As examples, here are some of the porterduff coefficients
-
-        MODE        SRC_COEFF       DST_COEFF
-        clear       zero            zero
-        src         one             zero
-        dst         zero            one
-        srcover     one             isa
-        dstover     ida             one
-     */
-    virtual bool asCoeff(Coeff* src, Coeff* dst) const;
-
-    /**
-     *  The same as calling xfermode->asCoeff(..), except that this also checks
-     *  if the xfermode is NULL, and if so, treats it as kSrcOver_Mode.
-     */
-    static bool AsCoeff(const SkXfermode*, Coeff* src, Coeff* dst);
 
     /** List of predefined xfermodes.
         The algebra for the modes uses the following symbols:
@@ -169,13 +146,6 @@ public:
      */
     static SkXfermodeProc GetProc(Mode mode);
 
-    /** Return a function pointer to a routine that applies the specified
-        porter-duff transfer mode and srcColor to a 16bit device color. Note,
-        if the mode+srcColor might return a non-opaque color, then there is not
-        16bit proc, and this will return NULL.
-      */
-    static SkXfermodeProc16 GetProc16(Mode mode, SkColor srcColor);
-
     /**
      *  If the specified mode can be represented by a pair of Coeff, then return
      *  true and set (if not NULL) the corresponding coeffs. If the mode is
@@ -184,45 +154,76 @@ public:
      */
     static bool ModeAsCoeff(Mode mode, Coeff* src, Coeff* dst);
 
-    // DEPRECATED: call AsMode(...)
+    SK_ATTR_DEPRECATED("use AsMode(...)")
     static bool IsMode(const SkXfermode* xfer, Mode* mode) {
         return AsMode(xfer, mode);
     }
 
-    /** A subclass may implement this factory function to work with the GPU backend. It is legal
-        to call this with all but the context param NULL to simply test the return value. effect,
-        src, and dst must all be NULL or all non-NULL. If effect is non-NULL then the xfermode may
-        optionally allocate an effect to return and the caller as *effect. The caller will install
-        it and own a ref to it. Since the xfermode may or may not assign *effect, the caller should
-        set *effect to NULL beforehand. If the function returns true and *effect is NULL then the
-        src and dst coeffs will be applied to the draw. When *effect is non-NULL the coeffs are
-        ignored. background specifies the texture to use as the background for compositing, and
-        should be accessed in the effect's fragment shader. If NULL, the effect should request
-        access to destination color (setWillReadDstColor()), and use that in the fragment shader
-        (builder->dstColor()).
+    /**
+     * Returns whether or not the xfer mode can support treating coverage as alpha
      */
-    virtual bool asNewEffectOrCoeff(GrContext*,
-                                    GrEffectRef** effect,
-                                    Coeff* src,
-                                    Coeff* dst,
-                                    GrTexture* background = NULL) const;
+    virtual bool supportsCoverageAsAlpha() const;
 
     /**
-     *  The same as calling xfermode->asNewEffect(...), except that this also checks if the xfermode
-     *  is NULL, and if so, treats it as kSrcOver_Mode.
+     *  The same as calling xfermode->supportsCoverageAsAlpha(), except that this also checks if
+     *  the xfermode is NULL, and if so, treats it as kSrcOver_Mode.
      */
-    static bool AsNewEffectOrCoeff(SkXfermode*,
-                                   GrContext*,
-                                   GrEffectRef** effect,
-                                   Coeff* src,
-                                   Coeff* dst,
-                                   GrTexture* background = NULL);
+    static bool SupportsCoverageAsAlpha(const SkXfermode* xfer);
 
-    SkDEVCODE(virtual void toString(SkString* str) const = 0;)
+    enum SrcColorOpacity {
+        // The src color is known to be opaque (alpha == 255)
+        kOpaque_SrcColorOpacity = 0,
+        // The src color is known to be fully transparent (color == 0)
+        kTransparentBlack_SrcColorOpacity = 1,
+        // The src alpha is known to be fully transparent (alpha == 0)
+        kTransparentAlpha_SrcColorOpacity = 2,
+        // The src color opacity is unknown
+        kUnknown_SrcColorOpacity = 3
+    };
+
+    /**
+     * Returns whether or not the result of the draw with the xfer mode will be opaque or not. The
+     * input to this call is an enum describing known information about the opacity of the src color
+     * that will be given to the xfer mode.
+     */
+    virtual bool isOpaque(SrcColorOpacity opacityType) const;
+
+    /**
+     *  The same as calling xfermode->isOpaque(...), except that this also checks if
+     *  the xfermode is NULL, and if so, treats it as kSrcOver_Mode.
+     */
+    static bool IsOpaque(const SkXfermode* xfer, SrcColorOpacity opacityType);
+
+    /** Implemented by a subclass to support use as an image filter in the GPU backend. When used as
+        an image filter the xfer mode blends the source color against a background texture rather
+        than the destination. It is implemented as a fragment processor. This can be called with
+        both params set to NULL to query whether it would succeed. Otherwise, both params are
+        required. Upon success the function returns true and the caller owns a ref to the fragment
+        parameter. Upon failure false is returned and the processor param is not written to.
+     */
+    virtual bool asFragmentProcessor(GrFragmentProcessor**, GrProcessorDataManager*,
+                                     GrTexture* background) const;
+
+    /** A subclass may implement this factory function to work with the GPU backend. It is legal
+        to call this with xpf NULL to simply test the return value. If xpf is non-NULL then the
+        xfermode may optionally allocate a factory to return to the caller as *xpf. The caller
+        will install it and own a ref to it. Since the xfermode may or may not assign *xpf, the
+        caller should set *xpf to NULL beforehand. XferProcessors cannot use a background texture.
+     */
+    virtual bool asXPFactory(GrXPFactory** xpf) const;
+
+    /** Returns true if the xfermode can be expressed as an xfer processor factory (xpFactory).
+        This helper calls the asXPFactory() virtual. If the xfermode is NULL, it is treated as
+        kSrcOver_Mode. It is legal to call this with xpf param NULL to simply test the return value.
+     */
+    static bool AsXPFactory(SkXfermode*, GrXPFactory**);
+
+    SK_TO_STRING_PUREVIRT()
     SK_DECLARE_FLATTENABLE_REGISTRAR_GROUP()
-protected:
-    SkXfermode(SkFlattenableReadBuffer& rb) : SkFlattenable(rb) {}
+    SK_DEFINE_FLATTENABLE_TYPE(SkXfermode)
 
+protected:
+    SkXfermode() {}
     /** The default implementation of xfer32/xfer16/xferA8 in turn call this
         method, 1 color at a time (upscaled to a SkPMColor). The default
         implmentation of this method just returns dst. If performance is
@@ -237,44 +238,8 @@ private:
     enum {
         kModeCount = kLastMode + 1
     };
+
     typedef SkFlattenable INHERITED;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-/** \class SkProcXfermode
-
-    SkProcXfermode is a xfermode that applies the specified proc to its colors.
-    This class is not exported to java.
-*/
-class SkProcXfermode : public SkXfermode {
-public:
-    SkProcXfermode(SkXfermodeProc proc) : fProc(proc) {}
-
-    // overrides from SkXfermode
-    virtual void xfer32(SkPMColor dst[], const SkPMColor src[], int count,
-                        const SkAlpha aa[]) const SK_OVERRIDE;
-    virtual void xfer16(uint16_t dst[], const SkPMColor src[], int count,
-                        const SkAlpha aa[]) const SK_OVERRIDE;
-    virtual void xferA8(SkAlpha dst[], const SkPMColor src[], int count,
-                        const SkAlpha aa[]) const SK_OVERRIDE;
-
-    SK_DEVELOPER_TO_STRING()
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkProcXfermode)
-
-protected:
-    SkProcXfermode(SkFlattenableReadBuffer&);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
-
-    // allow subclasses to update this after we unflatten
-    void setProc(SkXfermodeProc proc) {
-        fProc = proc;
-    }
-
-private:
-    SkXfermodeProc  fProc;
-
-    typedef SkXfermode INHERITED;
 };
 
 #endif

@@ -4,6 +4,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "PathOpsTestCommon.h"
 #include "SkLineParameters.h"
 #include "Test.h"
 
@@ -36,10 +37,11 @@ static const double answers[][2] = {
 
 static const size_t tests_count = SK_ARRAY_COUNT(tests);
 
-static void PathOpsLineParametersTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsLineParameters, reporter) {
     for (size_t index = 0; index < tests_count; ++index) {
         SkLineParameters lineParameters;
         const SkDCubic& cubic = tests[index];
+        SkASSERT(ValidCubic(cubic));
         lineParameters.cubicEndPoints(cubic, 0, 3);
         double denormalizedDistance[2];
         denormalizedDistance[0] = lineParameters.controlPtDistance(cubic, 1);
@@ -68,13 +70,10 @@ static void PathOpsLineParametersTest(skiatest::Reporter* reporter) {
             if (AlmostEqualUlps(fabs(normalizedDistance[inner]), answers[index][inner])) {
                 continue;
             }
-            SkDebugf("%s [%d,%d] normalizedDistance:%1.10g != answer:%g\n",
+            SkDebugf("%s [%d,%d] normalizedDistance:%1.9g != answer:%g\n",
                     __FUNCTION__, static_cast<int>(index), (int)inner,
                     normalizedDistance[inner], answers[index][inner]);
             REPORTER_ASSERT(reporter, 0);
         }
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsLineParametersTest)

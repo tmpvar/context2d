@@ -8,6 +8,7 @@
 #include "gm.h"
 #include "SkCanvas.h"
 #include "SkColorPriv.h"
+#include "SkPath.h"
 #include "SkShader.h"
 
 static void test4(SkCanvas* canvas) {
@@ -108,19 +109,17 @@ static SkScalar drawCell(SkCanvas* canvas, SkXfermode* mode,
 
 static SkShader* make_bg_shader() {
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-    bm.allocPixels();
+    bm.allocN32Pixels(2, 2);
     *bm.getAddr32(0, 0) = *bm.getAddr32(1, 1) = 0xFFFFFFFF;
-    *bm.getAddr32(1, 0) = *bm.getAddr32(0, 1) = SkPackARGB32(0xFF, 0xCC,
-                                                             0xCC, 0xCC);
+    *bm.getAddr32(1, 0) = *bm.getAddr32(0, 1) = SkPackARGB32(0xFF, 0xCE,
+                                                             0xCF, 0xCE);
 
+    const SkMatrix m = SkMatrix::MakeScale(SkIntToScalar(6), SkIntToScalar(6));
     SkShader* s = SkShader::CreateBitmapShader(bm,
                                                SkShader::kRepeat_TileMode,
-                                               SkShader::kRepeat_TileMode);
+                                               SkShader::kRepeat_TileMode,
+                                               &m);
 
-    SkMatrix m;
-    m.setScale(SkIntToScalar(6), SkIntToScalar(6));
-    s->setLocalMatrix(m);
     return s;
 }
 
@@ -135,13 +134,13 @@ namespace skiagm {
 
     protected:
 
-        virtual SkString onShortName() {
+        SkString onShortName() override {
             return SkString("aarectmodes");
         }
 
-        virtual SkISize onISize() { return make_isize(640, 480); }
+        SkISize onISize() override { return SkISize::Make(640, 480); }
 
-        virtual void onDraw(SkCanvas* canvas) {
+        void onDraw(SkCanvas* canvas) override {
             if (false) { // avoid bit rot, suppress warning
                 test4(canvas);
             }

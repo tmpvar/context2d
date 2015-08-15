@@ -5,208 +5,132 @@
  * found in the LICENSE file.
  */
 
-#include "SkCommandLineFlags.h"
+#include "CrashHandler.h"
+#include "OverwriteLine.h"
+#include "Resources.h"
+#include "SkAtomics.h"
+#include "SkCommonFlags.h"
 #include "SkGraphics.h"
 #include "SkOSFile.h"
 #include "SkRunnable.h"
 #include "SkTArray.h"
+#include "SkTaskGroup.h"
 #include "SkTemplates.h"
-#include "SkThreadPool.h"
 #include "SkTime.h"
 #include "Test.h"
 
 #if SK_SUPPORT_GPU
 #include "GrContext.h"
+#include "GrContextFactory.h"
 #endif
 
 using namespace skiatest;
 
+DEFINE_bool2(extendedTest, x, false, "run extended tests for pathOps.");
+
 // need to explicitly declare this, or we get some weird infinite loop llist
 template TestRegistry* TestRegistry::gHead;
 
-class Iter {
+// The threads report back to this object when they are done.
+class Status {
 public:
-    Iter(Reporter* r) : fReporter(r) {
-        r->ref();
-        this->reset();
-    }
-
-    void reset() {
-        fReg = TestRegistry::Head();
-    }
-
-    ~Iter() {
-        fReporter->unref();
-    }
-
-    Test* next() {
-        if (fReg) {
-            TestRegistry::Factory fact = fReg->factory();
-            fReg = fReg->next();
-            Test* test = fact(NULL);
-            test->setReporter(fReporter);
-            return test;
+    explicit Status(int total)
+        : fDone(0), fTestCount(0), fFailCount(0), fTotal(total) {}
+    // Threadsafe.
+    void endTest(const char* testName,
+                 bool success,
+                 SkMSec elapsed,
+                 int testCount) {
+        const int done = 1 + sk_atomic_inc(&fDone);
+        for (int i = 0; i < testCount; ++i) {
+            sk_atomic_inc(&fTestCount);
         }
-        return NULL;
+        if (!success) {
+            SkDebugf("\n---- %s FAILED", testName);
+        }
+
+        SkString prefix(kSkOverwriteLine);
+        SkString time;
+        if (FLAGS_verbose) {
+            prefix.printf("\n");
+            time.printf("%5dms ", elapsed);
+        }
+        SkDebugf("%s[%3d/%3d] %s%s", prefix.c_str(), done, fTotal, time.c_str(),
+                 testName);
     }
+
+    void reportFailure() { sk_atomic_inc(&fFailCount); }
+
+    int32_t testCount() { return fTestCount; }
+    int32_t failCount() { return fFailCount; }
 
 private:
-    Reporter* fReporter;
-    const TestRegistry* fReg;
+    int32_t fDone;  // atomic
+    int32_t fTestCount;  // atomic
+    int32_t fFailCount;  // atomic
+    const int fTotal;
 };
-
-class DebugfReporter : public Reporter {
-public:
-    DebugfReporter(bool allowExtendedTest, bool allowThreaded, bool verbose)
-        : fNextIndex(0)
-        , fPending(0)
-        , fTotal(0)
-        , fAllowExtendedTest(allowExtendedTest)
-        , fAllowThreaded(allowThreaded)
-        , fVerbose(verbose) {
-    }
-
-    void setTotal(int total) {
-        fTotal = total;
-    }
-
-    virtual bool allowExtendedTest() const SK_OVERRIDE {
-        return fAllowExtendedTest;
-    }
-
-    virtual bool allowThreaded() const SK_OVERRIDE {
-        return fAllowThreaded;
-    }
-
-    virtual bool verbose() const SK_OVERRIDE {
-        return fVerbose;
-    }
-
-protected:
-    virtual void onStart(Test* test) {
-        const int index = sk_atomic_inc(&fNextIndex);
-        sk_atomic_inc(&fPending);
-        SkDebugf("[%3d/%3d] (%d) %s\n", index+1, fTotal, fPending, test->getName());
-    }
-    virtual void onReportFailed(const SkString& desc) {
-        SkDebugf("\tFAILED: %s\n", desc.c_str());
-    }
-
-    virtual void onEnd(Test* test) {
-        if (!test->passed()) {
-            SkDebugf("---- %s FAILED\n", test->getName());
-        }
-
-        sk_atomic_dec(&fPending);
-        if (fNextIndex == fTotal) {
-            // Just waiting on straggler tests.  Shame them by printing their name and runtime.
-            SkDebugf("          (%d) %5.1fs %s\n",
-                     fPending, test->elapsedMs() / 1e3, test->getName());
-        }
-    }
-
-private:
-    int32_t fNextIndex;
-    int32_t fPending;
-    int fTotal;
-    bool fAllowExtendedTest;
-    bool fAllowThreaded;
-    bool fVerbose;
-};
-
-DEFINE_string2(match, m, NULL, "[~][^]substring[$] [...] of test name to run.\n" \
-                               "Multiple matches may be separated by spaces.\n" \
-                               "~ causes a matching test to always be skipped\n" \
-                               "^ requires the start of the test to match\n" \
-                               "$ requires the end of the test to match\n" \
-                               "^ and $ requires an exact match\n" \
-                               "If a test does not match any list entry,\n" \
-                               "it is skipped unless some list entry starts with ~");
-DEFINE_string2(tmpDir, t, NULL, "tmp directory for tests to use.");
-DEFINE_string2(resourcePath, i, NULL, "directory for test resources.");
-DEFINE_bool2(extendedTest, x, false, "run extended tests for pathOps.");
-DEFINE_bool2(threaded, z, false, "allow tests to use multiple threads internally.");
-DEFINE_bool2(verbose, v, false, "enable verbose output.");
-DEFINE_int32(threads, SkThreadPool::kThreadPerCore,
-             "Run threadsafe tests on a threadpool with this many threads.");
-
-SkString Test::GetTmpDir() {
-    const char* tmpDir = FLAGS_tmpDir.isEmpty() ? NULL : FLAGS_tmpDir[0];
-    return SkString(tmpDir);
-}
-
-SkString Test::GetResourcePath() {
-    const char* resourcePath = FLAGS_resourcePath.isEmpty() ? NULL : FLAGS_resourcePath[0];
-    return SkString(resourcePath);
-}
 
 // Deletes self when run.
 class SkTestRunnable : public SkRunnable {
 public:
-  // Takes ownership of test.
-  SkTestRunnable(Test* test, int32_t* failCount) : fTest(test), fFailCount(failCount) {}
+    SkTestRunnable(const Test& test,
+                   Status* status,
+                   GrContextFactory* grContextFactory = NULL)
+        : fTest(test), fStatus(status), fGrContextFactory(grContextFactory) {}
 
   virtual void run() {
-      fTest->run();
-      if(!fTest->passed()) {
-          sk_atomic_inc(fFailCount);
+      struct TestReporter : public skiatest::Reporter {
+      public:
+          TestReporter() : fError(false), fTestCount(0) {}
+          void bumpTestCount() override { ++fTestCount; }
+          bool allowExtendedTest() const override {
+              return FLAGS_extendedTest;
+          }
+          bool verbose() const override { return FLAGS_veryVerbose; }
+          void reportFailed(const skiatest::Failure& failure) override {
+              SkDebugf("\nFAILED: %s", failure.toString().c_str());
+              fError = true;
+          }
+          bool fError;
+          int fTestCount;
+      } reporter;
+
+      const SkMSec start = SkTime::GetMSecs();
+      fTest.proc(&reporter, fGrContextFactory);
+      SkMSec elapsed = SkTime::GetMSecs() - start;
+      if (reporter.fError) {
+          fStatus->reportFailure();
       }
+      fStatus->endTest(fTest.name, !reporter.fError, elapsed,
+                       reporter.fTestCount);
       SkDELETE(this);
   }
 
 private:
-    SkAutoTDelete<Test> fTest;
-    int32_t* fFailCount;
+    Test fTest;
+    Status* fStatus;
+    GrContextFactory* fGrContextFactory;
 };
 
-/* Takes a list of the form [~][^]match[$]
-   ~ causes a matching test to always be skipped
-   ^ requires the start of the test to match
-   $ requires the end of the test to match
-   ^ and $ requires an exact match
-   If a test does not match any list entry, it is skipped unless some list entry starts with ~
- */
-static bool shouldSkip(const char* testName) {
-    int count = FLAGS_match.count();
-    size_t testLen = strlen(testName);
-    bool anyExclude = count == 0;
-    for (int index = 0; index < count; ++index) {
-        const char* matchName = FLAGS_match[index];
-        size_t matchLen = strlen(matchName);
-        bool matchExclude, matchStart, matchEnd;
-        if ((matchExclude = matchName[0] == '~')) {
-            anyExclude = true;
-            matchName++;
-            matchLen--;
-        }
-        if ((matchStart = matchName[0] == '^')) {
-            matchName++;
-            matchLen--;
-        }
-        if ((matchEnd = matchName[matchLen - 1] == '$')) {
-            matchLen--;
-        }
-        if (matchStart ? (!matchEnd || matchLen == testLen)
-                && strncmp(testName, matchName, matchLen) == 0
-                : matchEnd ? matchLen <= testLen
-                && strncmp(testName + testLen - matchLen, matchName, matchLen) == 0
-                : strstr(testName, matchName) != 0) {
-            return matchExclude;
-        }
+static bool should_run(const char* testName, bool isGPUTest) {
+    if (SkCommandLineFlags::ShouldSkip(FLAGS_match, testName)) {
+        return false;
     }
-    return !anyExclude;
+    if (!FLAGS_cpu && !isGPUTest) {
+        return false;
+    }
+    if (!FLAGS_gpu && isGPUTest) {
+        return false;
+    }
+    return true;
 }
 
-int tool_main(int argc, char** argv);
-int tool_main(int argc, char** argv) {
-    SkCommandLineFlags::SetUsage("");
-    SkCommandLineFlags::Parse(argc, argv);
+int test_main();
+int test_main() {
+    SetupCrashHandler();
 
-#if SK_ENABLE_INST_COUNT
-    gPrintInstCount = true;
-#endif
-
-    SkGraphics::Init();
+    SkAutoGraphics ag;
 
     {
         SkString header("Skia UnitTests:");
@@ -216,11 +140,11 @@ int tool_main(int argc, char** argv) {
                 header.appendf(" %s", FLAGS_match[index]);
             }
         }
-        SkString tmpDir = Test::GetTmpDir();
+        SkString tmpDir = skiatest::GetTmpDir();
         if (!tmpDir.isEmpty()) {
             header.appendf(" --tmpDir %s", tmpDir.c_str());
         }
-        SkString resourcePath = Test::GetResourcePath();
+        SkString resourcePath = GetResourcePath();
         if (!resourcePath.isEmpty()) {
             header.appendf(" --resourcePath %s", resourcePath.c_str());
         }
@@ -229,80 +153,77 @@ int tool_main(int argc, char** argv) {
 #else
         header.append(" SK_RELEASE");
 #endif
-#ifdef SK_SCALAR_IS_FIXED
-        header.append(" SK_SCALAR_IS_FIXED");
-#else
-        header.append(" SK_SCALAR_IS_FLOAT");
-#endif
-        SkDebugf("%s\n", header.c_str());
+        if (FLAGS_veryVerbose) {
+            header.appendf("\n");
+        }
+        SkDebugf("%s", header.c_str());
     }
 
-    DebugfReporter reporter(FLAGS_extendedTest, FLAGS_threaded, FLAGS_verbose);
-    Iter iter(&reporter);
 
     // Count tests first.
     int total = 0;
     int toRun = 0;
-    Test* test;
-    while ((test = iter.next()) != NULL) {
-        SkAutoTDelete<Test> owned(test);
-        if(!shouldSkip(test->getName())) {
+
+    for (const TestRegistry* iter = TestRegistry::Head(); iter;
+         iter = iter->next()) {
+        const Test& test = iter->factory();
+        if (should_run(test.name, test.needsGpu)) {
             toRun++;
         }
         total++;
     }
-    reporter.setTotal(toRun);
 
     // Now run them.
-    iter.reset();
-    int32_t failCount = 0;
     int skipCount = 0;
 
-    SkAutoTDelete<SkThreadPool> threadpool(SkNEW_ARGS(SkThreadPool, (FLAGS_threads)));
-    SkTArray<Test*> unsafeTests;  // Always passes ownership to an SkTestRunnable
-    for (int i = 0; i < total; i++) {
-        SkAutoTDelete<Test> test(iter.next());
-        if (shouldSkip(test->getName())) {
+    SkTaskGroup::Enabler enabled(FLAGS_threads);
+    SkTaskGroup cpuTests;
+    SkTArray<const Test*> gpuTests;
+
+    Status status(toRun);
+    for (const TestRegistry* iter = TestRegistry::Head(); iter;
+         iter = iter->next()) {
+        const Test& test = iter->factory();
+        if (!should_run(test.name, test.needsGpu)) {
             ++skipCount;
-        } else if (!test->isThreadsafe()) {
-            unsafeTests.push_back() = test.detach();
+        } else if (test.needsGpu) {
+            gpuTests.push_back(&test);
         } else {
-            threadpool->add(SkNEW_ARGS(SkTestRunnable, (test.detach(), &failCount)));
+            cpuTests.add(SkNEW_ARGS(SkTestRunnable, (test, &status)));
         }
     }
 
-    // Run the tests that aren't threadsafe.
-    for (int i = 0; i < unsafeTests.count(); i++) {
-        SkNEW_ARGS(SkTestRunnable, (unsafeTests[i], &failCount))->run();
-    }
-
-    // Blocks until threaded tests finish.
-    threadpool.free();
-
-    SkDebugf("Finished %d tests, %d failures, %d skipped.\n",
-             toRun, failCount, skipCount);
-    const int testCount = reporter.countTests();
-    if (FLAGS_verbose && testCount > 0) {
-        SkDebugf("Ran %d Internal tests.\n", testCount);
-    }
+    GrContextFactory* grContextFactoryPtr = NULL;
 #if SK_SUPPORT_GPU
-
-#if GR_CACHE_STATS
-    GrContext *gr = GpuTest::GetContext();
-
-    gr->printCacheStats();
-#endif
+    // Give GPU tests a context factory if that makes sense on this machine.
+    GrContextFactory grContextFactory;
+    grContextFactoryPtr = &grContextFactory;
 
 #endif
 
-    SkGraphics::Term();
-    GpuTest::DestroyContexts();
+    // Run GPU tests on this thread.
+    for (int i = 0; i < gpuTests.count(); i++) {
+        SkNEW_ARGS(SkTestRunnable, (*gpuTests[i], &status, grContextFactoryPtr))
+                ->run();
+    }
 
-    return (failCount == 0) ? 0 : 1;
+    // Block until threaded tests finish.
+    cpuTests.wait();
+
+    if (FLAGS_verbose) {
+        SkDebugf(
+                "\nFinished %d tests, %d failures, %d skipped. "
+                "(%d internal tests)",
+                toRun, status.failCount(), skipCount, status.testCount());
+    }
+
+    SkDebugf("\n");
+    return (status.failCount() == 0) ? 0 : 1;
 }
 
-#if !defined(SK_BUILD_FOR_IOS) && !defined(SK_BUILD_FOR_NACL)
-int main(int argc, char * const argv[]) {
-    return tool_main(argc, (char**) argv);
+#if !defined(SK_BUILD_FOR_IOS)
+int main(int argc, char** argv) {
+    SkCommandLineFlags::Parse(argc, argv);
+    return test_main();
 }
 #endif

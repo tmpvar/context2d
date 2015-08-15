@@ -13,18 +13,34 @@
 
 class SK_API SkBitmapSource : public SkImageFilter {
 public:
-    explicit SkBitmapSource(const SkBitmap& bitmap);
+    static SkBitmapSource* Create(const SkBitmap& bitmap) {
+        return SkNEW_ARGS(SkBitmapSource, (bitmap));
+    }
+    static SkBitmapSource* Create(const SkBitmap& bitmap,
+                                  const SkRect& srcRect, const SkRect& dstRect,
+                                  SkFilterQuality filterQuality = kHigh_SkFilterQuality) {
+        return SkNEW_ARGS(SkBitmapSource, (bitmap, srcRect, dstRect, filterQuality));
+    }
+    void computeFastBounds(const SkRect& src, SkRect* dst) const override;
 
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkBitmapSource)
 
 protected:
-    explicit SkBitmapSource(SkFlattenableReadBuffer& buffer);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
-    virtual bool onFilterImage(Proxy*, const SkBitmap& src, const SkMatrix&,
-                               SkBitmap* result, SkIPoint* offset) SK_OVERRIDE;
+    explicit SkBitmapSource(const SkBitmap& bitmap);
+    SkBitmapSource(const SkBitmap& bitmap,
+                   const SkRect& srcRect, const SkRect& dstRect,
+                   SkFilterQuality filterQuality);
+    void flatten(SkWriteBuffer&) const override;
+
+    bool onFilterImage(Proxy*, const SkBitmap& src, const Context&,
+                       SkBitmap* result, SkIPoint* offset) const override;
 
 private:
     SkBitmap fBitmap;
+    SkRect   fSrcRect, fDstRect;
+    SkFilterQuality fFilterQuality;
+
     typedef SkImageFilter INHERITED;
 };
 

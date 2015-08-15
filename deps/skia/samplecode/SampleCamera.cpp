@@ -1,11 +1,12 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
+#include "SkAnimTimer.h"
 #include "SkView.h"
 #include "SkCanvas.h"
 #include "SkCamera.h"
@@ -33,15 +34,15 @@ public:
             str.printf("/skimages/elephant%d.jpeg", i);
             SkBitmap bm;
             if (SkImageDecoder::DecodeFile(str.c_str(), &bm)) {
-                SkShader* s = SkShader::CreateBitmapShader(bm,
-                                                           SkShader::kClamp_TileMode,
-                                                           SkShader::kClamp_TileMode);
-
                 SkRect src = { 0, 0, SkIntToScalar(bm.width()), SkIntToScalar(bm.height()) };
                 SkRect dst = { -150, -150, 150, 150 };
                 SkMatrix matrix;
                 matrix.setRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
-                s->setLocalMatrix(matrix);
+
+                SkShader* s = SkShader::CreateBitmapShader(bm,
+                                                           SkShader::kClamp_TileMode,
+                                                           SkShader::kClamp_TileMode,
+                                                           &matrix);
                 *fShaders.append() = s;
             } else {
                 break;
@@ -56,16 +57,15 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
-        if (SampleCode::TitleQ(*evt))
-        {
+    bool onQuery(SkEvent* evt) override {
+        if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Camera");
             return true;
         }
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         canvas->translate(this->width()/2, this->height()/2);
 
         Sk3DView    view;
@@ -83,15 +83,19 @@ protected:
 
             paint.setAntiAlias(true);
             paint.setShader(fShaders[fShaderIndex]);
+            paint.setFilterQuality(kLow_SkFilterQuality);
             SkRect r = { -150, -150, 150, 150 };
             canvas->drawRoundRect(r, 30, 30, paint);
         }
+    }
 
-        fRY += SampleCode::GetAnimSecondsDelta() * 90;
-        if (fRY >= SkIntToScalar(360)) {
+    bool onAnimate(const SkAnimTimer& timer) override {
+        if (timer.isStopped()) {
             fRY = 0;
+        } else {
+            fRY = timer.scaled(90, 360);
         }
-        this->inval(NULL);
+        return true;
     }
 
 private:

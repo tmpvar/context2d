@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "LazyDecodeBitmap.h"
 #include "SkLua.h"
 #include "SkLuaCanvas.h"
 #include "SkPicture.h"
@@ -15,9 +16,6 @@
 #include "picture_utils.h"
 #include "SkOSFile.h"
 #include "SkImageDecoder.h"
-#include "SkForceLinking.h"
-
-__SK_FORCE_IMAGE_DECODER_LINKING;
 
 extern "C" {
     #include "lua.h"
@@ -30,9 +28,6 @@ static const char gEndCanvasFunc[] = "sk_scrape_endcanvas";
 static const char gAccumulateFunc[] = "sk_scrape_accumulate";
 static const char gSummarizeFunc[] = "sk_scrape_summarize";
 
-// PictureRenderingFlags.cpp
-extern bool lazy_decode_bitmap(const void* buffer, size_t size, SkBitmap*);
-
 // Example usage for the modulo flag:
 // for i in {0..5}; do lua_pictures --skpPath SKP_PATH -l YOUR_SCRIPT --modulo $i 6 &; done
 DEFINE_string(modulo, "", "[--modulo <remainder> <divisor>]: only run tests for which "
@@ -41,25 +36,15 @@ DEFINE_string2(skpPath, r, "", "Read this .skp file or .skp files from this dir"
 DEFINE_string2(luaFile, l, "", "File containing lua script to run");
 DEFINE_string2(headCode, s, "", "Optional lua code to call at beginning");
 DEFINE_string2(tailFunc, s, "", "Optional lua function to call at end");
+DEFINE_bool2(quiet, q, false, "Silence all non-error related output");
 
 static SkPicture* load_picture(const char path[]) {
-    SkAutoTUnref<SkStream> stream(SkStream::NewFromFile(path));
+    SkAutoTDelete<SkStream> stream(SkStream::NewFromFile(path));
     SkPicture* pic = NULL;
     if (stream.get()) {
-        pic = SkPicture::CreateFromStream(stream.get(), &lazy_decode_bitmap);
+        pic = SkPicture::CreateFromStream(stream.get(), &sk_tools::LazyDecodeBitmap);
     }
     return pic;
-}
-
-static SkData* read_into_data(const char file[]) {
-    SkAutoTUnref<SkStream> stream(SkStream::NewFromFile(file));
-    if (!stream.get()) {
-        return SkData::NewEmpty();
-    }
-    size_t len = stream->getLength();
-    void* buffer = sk_malloc_throw(len);
-    stream->read(buffer, len);
-    return SkData::NewFromMalloc(buffer, len);
 }
 
 static void call_canvas(lua_State* L, SkLuaCanvas* canvas,
@@ -101,8 +86,13 @@ int tool_main(int argc, char** argv) {
     SkLua L(summary);
 
     for (int i = 0; i < FLAGS_luaFile.count(); ++i) {
-        SkAutoDataUnref data(read_into_data(FLAGS_luaFile[i]));
-        SkDebugf("loading %s...\n", FLAGS_luaFile[i]);
+        SkAutoDataUnref data(SkData::NewFromFileName(FLAGS_luaFile[i]));
+        if (NULL == data.get()) {
+            data.reset(SkData::NewEmpty());
+        }
+        if (!FLAGS_quiet) {
+            SkDebugf("loading %s...\n", FLAGS_luaFile[i]);
+        }
         if (!L.runCode(data->data(), data->size())) {
             SkDebugf("failed to load luaFile %s\n", FLAGS_luaFile[i]);
             exit(-1);
@@ -134,7 +124,7 @@ int tool_main(int argc, char** argv) {
             SkString filename;
             SkOSFile::Iter iter(FLAGS_skpPath[i], "skp");
             while(iter.next(&filename)) {
-                sk_tools::make_filepath(&paths.push_back(), directory, filename);
+                paths.push_back() = SkOSPath::Join(directory.c_str(), filename.c_str());
             }
         } else {
             // Add this as an .skp itself.
@@ -149,16 +139,19 @@ int tool_main(int argc, char** argv) {
                 moduloStr.printf("[%d.%d] ", i, moduloDivisor);
             }
             const char* path = paths[i].c_str();
-            SkDebugf("scraping %s %s\n", path, moduloStr.c_str());
+            if (!FLAGS_quiet) {
+                SkDebugf("scraping %s %s\n", path, moduloStr.c_str());
+            }
 
             SkAutoTUnref<SkPicture> pic(load_picture(path));
             if (pic.get()) {
                 SkAutoTUnref<SkLuaCanvas> canvas(
-                                    new SkLuaCanvas(pic->width(), pic->height(),
+                                    new SkLuaCanvas(SkScalarCeilToInt(pic->cullRect().width()), 
+                                                    SkScalarCeilToInt(pic->cullRect().height()),
                                                     L.get(), gAccumulateFunc));
 
                 call_canvas(L.get(), canvas.get(), path, gStartCanvasFunc);
-                canvas->drawPicture(*pic);
+                canvas->drawPicture(pic);
                 call_canvas(L.get(), canvas.get(), path, gEndCanvasFunc);
 
             } else {

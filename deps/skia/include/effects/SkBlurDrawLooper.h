@@ -35,25 +35,32 @@ public:
         kAll_BlurFlag               = 0x07
     };
 
-    SkBlurDrawLooper(SkScalar radius, SkScalar dx, SkScalar dy, SkColor color,
-                     uint32_t flags = kNone_BlurFlag);
+    static SkBlurDrawLooper* Create(SkColor color, SkScalar sigma, SkScalar dx, SkScalar dy,
+                                    uint32_t flags = kNone_BlurFlag) {
+        return SkNEW_ARGS(SkBlurDrawLooper, (color, sigma, dx, dy, flags));
+    }
+
     virtual ~SkBlurDrawLooper();
 
-    // overrides from SkDrawLooper
-    virtual void init(SkCanvas*);
-    virtual bool next(SkCanvas*, SkPaint* paint);
+    SkDrawLooper::Context* createContext(SkCanvas*, void* storage) const override;
 
-    SK_DEVELOPER_TO_STRING()
+    size_t contextSize() const override { return sizeof(BlurDrawLooperContext); }
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkBlurDrawLooper)
 
 protected:
-    SkBlurDrawLooper(SkFlattenableReadBuffer&);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
+    SkBlurDrawLooper(SkColor color, SkScalar sigma, SkScalar dx, SkScalar dy,
+                     uint32_t flags);
+
+    void flatten(SkWriteBuffer&) const override;
+
+    bool asABlurShadow(BlurShadowRec*) const override;
 
 private:
     SkMaskFilter*   fBlur;
     SkColorFilter*  fColorFilter;
-    SkScalar        fDx, fDy;
+    SkScalar        fDx, fDy, fSigma;
     SkColor         fBlurColor;
     uint32_t        fBlurFlags;
 
@@ -62,7 +69,20 @@ private:
         kAfterEdge,
         kDone
     };
-    State   fState;
+
+    class BlurDrawLooperContext : public SkDrawLooper::Context {
+    public:
+        explicit BlurDrawLooperContext(const SkBlurDrawLooper* looper);
+
+        bool next(SkCanvas* canvas, SkPaint* paint) override;
+
+    private:
+        const SkBlurDrawLooper* fLooper;
+        State fState;
+    };
+
+    void init(SkScalar sigma, SkScalar dx, SkScalar dy, SkColor color, uint32_t flags);
+    void initEffects();
 
     typedef SkDrawLooper INHERITED;
 };

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -10,38 +9,43 @@
 #include "SkBitmapHeap.h"
 #include "SkColor.h"
 #include "SkFlattenable.h"
-#include "SkOrderedWriteBuffer.h"
+#include "SkWriteBuffer.h"
 #include "SkPictureFlat.h"
 #include "SkRefCnt.h"
 #include "SkShader.h"
 #include "Test.h"
 
-class FlatDictionary : public SkFlatDictionary<SkShader> {
-
-public:
-    FlatDictionary(SkFlatController* controller)
-    : SkFlatDictionary<SkShader>(controller) {
-        fFlattenProc = &flattenFlattenableProc;
-        // No need for an unflattenProc
+struct SimpleFlatController : public SkFlatController {
+    SimpleFlatController() : SkFlatController() {}
+    ~SimpleFlatController() { fAllocations.freeAll(); }
+    void* allocThrow(size_t bytes) override {
+        fAllocations.push(sk_malloc_throw(bytes));
+        return fAllocations.top();
     }
-    static void flattenFlattenableProc(SkOrderedWriteBuffer& buffer, const void* obj) {
-        buffer.writeFlattenable((SkFlattenable*)obj);
-    }
+    void unalloc(void*) override { }
+    void setBitmapStorage(SkBitmapHeap* h) { this->setBitmapHeap(h); }
+private:
+    SkTDArray<void*> fAllocations;
 };
 
-class SkBitmapHeapTester {
+struct SkShaderTraits {
+    static void Flatten(SkWriteBuffer& buffer, const SkShader& shader) {
+        buffer.writeFlattenable(&shader);
+    }
+};
+typedef SkFlatDictionary<SkShader, SkShaderTraits> FlatDictionary;
 
+class SkBitmapHeapTester {
 public:
     static int32_t GetRefCount(const SkBitmapHeapEntry* entry) {
         return entry->fRefCount;
     }
 };
 
-static void TestBitmapHeap(skiatest::Reporter* reporter) {
+DEF_TEST(BitmapHeap, reporter) {
     // Create a bitmap shader.
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
-    bm.allocPixels();
+    bm.allocN32Pixels(2, 2);
     bm.eraseColor(SK_ColorRED);
     uint32_t* pixel = bm.getAddr32(1,0);
     *pixel = SK_ColorBLUE;
@@ -52,7 +56,7 @@ static void TestBitmapHeap(skiatest::Reporter* reporter) {
 
     // Flatten, storing it in the bitmap heap.
     SkBitmapHeap heap(1, 1);
-    SkChunkFlatController controller(1024);
+    SimpleFlatController controller;
     controller.setBitmapStorage(&heap);
     FlatDictionary dictionary(&controller);
 
@@ -91,6 +95,3 @@ static void TestBitmapHeap(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, heap.count() == 1);
     REPORTER_ASSERT(reporter, SkBitmapHeapTester::GetRefCount(heap.getEntry(0)) == 0);
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("BitmapHeap", TestBitmapHeapClass, TestBitmapHeap)

@@ -6,20 +6,19 @@
  */
 
 #include "GrGLVertexArray.h"
-#include "GrGpuGL.h"
+#include "GrGLGpu.h"
 
-#define GPUGL static_cast<GrGpuGL*>(this->getGpu())
-#define GL_CALL(X) GR_GL_CALL(GPUGL->glInterface(), X);
 
-void GrGLAttribArrayState::set(const GrGpuGL* gpu,
+
+void GrGLAttribArrayState::set(GrGLGpu* gpu,
                                int index,
-                               GrGLVertexBuffer* buffer,
+                               GrGLuint vertexBufferID,
                                GrGLint size,
                                GrGLenum type,
                                GrGLboolean normalized,
                                GrGLsizei stride,
                                GrGLvoid* offset) {
-    GrAssert(index >= 0 && index < fAttribArrayStates.count());
+    SkASSERT(index >= 0 && index < fAttribArrayStates.count());
     AttribArrayState* array = &fAttribArrayStates[index];
     if (!array->fEnableIsValid || !array->fEnabled) {
         GR_GL_CALL(gpu->glInterface(), EnableVertexAttribArray(index));
@@ -27,13 +26,13 @@ void GrGLAttribArrayState::set(const GrGpuGL* gpu,
         array->fEnabled = true;
     }
     if (!array->fAttribPointerIsValid ||
-        array->fVertexBufferID != buffer->bufferID() ||
+        array->fVertexBufferID != vertexBufferID ||
         array->fSize != size ||
         array->fNormalized != normalized ||
         array->fStride != stride ||
         array->fOffset != offset) {
 
-        buffer->bind();
+        gpu->bindVertexBuffer(vertexBufferID);
         GR_GL_CALL(gpu->glInterface(), VertexAttribPointer(index,
                                                            size,
                                                            type,
@@ -41,7 +40,7 @@ void GrGLAttribArrayState::set(const GrGpuGL* gpu,
                                                            stride,
                                                            offset));
         array->fAttribPointerIsValid = true;
-        array->fVertexBufferID = buffer->bufferID();
+        array->fVertexBufferID = vertexBufferID;
         array->fSize = size;
         array->fNormalized = normalized;
         array->fStride = stride;
@@ -49,7 +48,7 @@ void GrGLAttribArrayState::set(const GrGpuGL* gpu,
     }
 }
 
-void GrGLAttribArrayState::disableUnusedAttribArrays(const GrGpuGL* gpu, uint64_t usedMask) {
+void GrGLAttribArrayState::disableUnusedArrays(const GrGLGpu* gpu, uint64_t usedMask) {
     int count = fAttribArrayStates.count();
     for (int i = 0; i < count; ++i) {
         if (!(usedMask & 0x1)) {
@@ -58,6 +57,8 @@ void GrGLAttribArrayState::disableUnusedAttribArrays(const GrGpuGL* gpu, uint64_
                 fAttribArrayStates[i].fEnableIsValid = true;
                 fAttribArrayStates[i].fEnabled = false;
             }
+        } else {
+            SkASSERT(fAttribArrayStates[i].fEnableIsValid && fAttribArrayStates[i].fEnabled);
         }
         // if the count is greater than 64 then this will become 0 and we will disable arrays 64+.
         usedMask >>= 1;
@@ -66,43 +67,27 @@ void GrGLAttribArrayState::disableUnusedAttribArrays(const GrGpuGL* gpu, uint64_
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-GrGLVertexArray::GrGLVertexArray(GrGpuGL* gpu, GrGLint id, int attribCount)
-    : GrResource(gpu, false)
-    , fID(id)
+GrGLVertexArray::GrGLVertexArray(GrGLint id, int attribCount)
+    : fID(id)
     , fAttribArrays(attribCount)
     , fIndexBufferIDIsValid(false) {
 }
 
-void GrGLVertexArray::onAbandon() {
-    fID = 0;
-    INHERITED::onAbandon();
-}
-
-void GrGLVertexArray::onRelease() {
-    if (0 != fID) {
-        GL_CALL(DeleteVertexArrays(1, &fID));
-        GPUGL->notifyVertexArrayDelete(fID);
-        fID = 0;
-    }
-    INHERITED::onRelease();
-}
-
-GrGLAttribArrayState* GrGLVertexArray::bind() {
+GrGLAttribArrayState* GrGLVertexArray::bind(GrGLGpu* gpu) {
     if (0 == fID) {
         return NULL;
     }
-    GPUGL->bindVertexArray(fID);
+    gpu->bindVertexArray(fID);
     return &fAttribArrays;
 }
 
-GrGLAttribArrayState* GrGLVertexArray::bindWithIndexBuffer(const GrGLIndexBuffer* buffer) {
-    GrGLAttribArrayState* state = this->bind();
-    if (NULL != state && NULL != buffer) {
-        GrGLuint bufferID = buffer->bufferID();
-        if (!fIndexBufferIDIsValid || bufferID != fIndexBufferID) {
-            GL_CALL(BindBuffer(GR_GL_ELEMENT_ARRAY_BUFFER, bufferID));
+GrGLAttribArrayState* GrGLVertexArray::bindWithIndexBuffer(GrGLGpu* gpu, GrGLuint ibufferID) {
+    GrGLAttribArrayState* state = this->bind(gpu);
+    if (state) {
+        if (!fIndexBufferIDIsValid || ibufferID != fIndexBufferID) {            
+            GR_GL_CALL(gpu->glInterface(), BindBuffer(GR_GL_ELEMENT_ARRAY_BUFFER, ibufferID));
             fIndexBufferIDIsValid = true;
-            fIndexBufferID = bufferID;
+            fIndexBufferID = ibufferID;
         }
     }
     return state;
@@ -115,9 +100,6 @@ void GrGLVertexArray::notifyIndexBufferDelete(GrGLuint bufferID) {
  }
 
 void GrGLVertexArray::invalidateCachedState() {
-    int count = fAttribArrays.count();
-    for (int i = 0; i < count; ++i) {
-        fAttribArrays.invalidate();
-    }
+    fAttribArrays.invalidate();
     fIndexBufferIDIsValid = false;
 }

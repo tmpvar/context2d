@@ -8,9 +8,6 @@
 #include "SkView.h"
 #include "SkCanvas.h"
 
-SK_DEFINE_INST_COUNT(SkView::Artist)
-SK_DEFINE_INST_COUNT(SkView::Layout)
-
 ////////////////////////////////////////////////////////////////////////
 
 SkView::SkView(uint32_t flags) : fFlags(SkToU8(flags))
@@ -640,7 +637,7 @@ bool SkView::globalToLocal(SkScalar x, SkScalar y, SkPoint* local) const
 {
     SkASSERT(this);
 
-    if (NULL != local) {
+    if (local) {
         SkMatrix m;
         this->localToGlobal(&m);
         if (!m.invert(&m)) {

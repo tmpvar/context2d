@@ -17,7 +17,6 @@
 #include "SkTDArray.h"
 #include "SkTemplates.h"
 #include "SkTSearch.h"
-#include "SkTypes.h"
 
 __SK_FORCE_IMAGE_DECODER_LINKING;
 
@@ -37,6 +36,30 @@ __SK_FORCE_IMAGE_DECODER_LINKING;
 
 typedef SkTDArray<SkString*> StringArray;
 typedef StringArray FileArray;
+
+static void add_unique_basename(StringArray* array, const SkString& filename) {
+    // trim off dirs
+    const char* src = filename.c_str();
+    const char* trimmed = strrchr(src, SkPATH_SEPARATOR);
+    if (trimmed) {
+        trimmed += 1;   // skip the separator
+    } else {
+        trimmed = src;
+    }
+    const char* end = strrchr(trimmed, '.');
+    if (!end) {
+        end = trimmed + strlen(trimmed);
+    }
+    SkString result(trimmed, end - trimmed);
+
+    // only add unique entries
+    for (int i = 0; i < array->count(); ++i) {
+        if (*array->getAt(i) == result) {
+            return;
+        }
+    }
+    *array->append() = new SkString(result);
+}
 
 struct DiffSummary {
     DiffSummary ()
@@ -63,6 +86,8 @@ struct DiffSummary {
 
     FileArray fResultsOfType[DiffRecord::kResultCount];
     FileArray fStatusOfType[DiffResource::kStatusCount][DiffResource::kStatusCount];
+
+    StringArray fFailedBaseNames[DiffRecord::kResultCount];
 
     void printContents(const FileArray& fileArray,
                        const char* baseStatus, const char* comparisonStatus,
@@ -142,6 +167,19 @@ struct DiffSummary {
         }
     }
 
+    void printfFailingBaseNames(const char separator[]) {
+        for (int resultInt = 0; resultInt < DiffRecord::kResultCount; ++resultInt) {
+            const StringArray& array = fFailedBaseNames[resultInt];
+            if (array.count()) {
+                printf("%s [%d]%s", DiffRecord::ResultNames[resultInt], array.count(), separator);
+                for (int j = 0; j < array.count(); ++j) {
+                    printf("%s%s", array[j]->c_str(), separator);
+                }
+                printf("\n");
+            }
+        }
+    }
+
     void add (DiffRecord* drp) {
         uint32_t mismatchValue;
 
@@ -187,6 +225,15 @@ struct DiffSummary {
           default:
             SkDEBUGFAIL("adding DiffRecord with unhandled fResult value");
             break;
+        }
+
+        switch (drp->fResult) {
+            case DiffRecord::kEqualBits_Result:
+            case DiffRecord::kEqualPixels_Result:
+                break;
+            default:
+                add_unique_basename(&fFailedBaseNames[drp->fResult], drp->fBase.fFilename);
+                break;
         }
     }
 };
@@ -311,6 +358,20 @@ static void get_bounds(DiffRecord& drp) {
     get_bounds(drp.fComparison, "comparison");
 }
 
+#ifdef SK_OS_WIN
+#define ANSI_COLOR_RED     ""
+#define ANSI_COLOR_GREEN   ""
+#define ANSI_COLOR_YELLOW  ""
+#define ANSI_COLOR_RESET   ""
+#else
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+#endif
+
+#define VERBOSE_STATUS(status,color,filename) if (verbose) printf( "[ " color " %10s " ANSI_COLOR_RESET " ] %s\n", status, filename->c_str())
+
 /// Creates difference images, returns the number that have a 0 metric.
 /// If outputDir.isEmpty(), don't write out diff files.
 static void create_diff_images (DiffMetricProc dmp,
@@ -323,6 +384,7 @@ static void create_diff_images (DiffMetricProc dmp,
                                 const StringArray& nomatchSubstrings,
                                 bool recurseIntoSubdirs,
                                 bool getBounds,
+                                bool verbose,
                                 DiffSummary* summary) {
     SkASSERT(!baseDir.isEmpty());
     SkASSERT(!comparisonDir.isEmpty());
@@ -370,6 +432,8 @@ static void create_diff_images (DiffMetricProc dmp,
             drp->fComparison.fFullPath = comparisonPath;
             drp->fComparison.fStatus = DiffResource::kDoesNotExist_Status;
 
+            VERBOSE_STATUS("MISSING", ANSI_COLOR_YELLOW, baseFiles[i]);
+
             ++i;
         } else if (v > 0) {
             // in comparisonDir, but not in baseDir
@@ -385,6 +449,8 @@ static void create_diff_images (DiffMetricProc dmp,
             drp->fComparison.fFilename = *comparisonFiles[j];
             drp->fComparison.fFullPath = comparisonPath;
             drp->fComparison.fStatus = DiffResource::kExists_Status;
+
+            VERBOSE_STATUS("MISSING", ANSI_COLOR_YELLOW, comparisonFiles[j]);
 
             ++j;
         } else {
@@ -403,30 +469,33 @@ static void create_diff_images (DiffMetricProc dmp,
             drp->fComparison.fStatus = DiffResource::kExists_Status;
 
             SkAutoDataUnref baseFileBits(read_file(drp->fBase.fFullPath.c_str()));
-            if (NULL != baseFileBits) {
+            if (baseFileBits) {
                 drp->fBase.fStatus = DiffResource::kRead_Status;
             }
             SkAutoDataUnref comparisonFileBits(read_file(drp->fComparison.fFullPath.c_str()));
-            if (NULL != comparisonFileBits) {
+            if (comparisonFileBits) {
                 drp->fComparison.fStatus = DiffResource::kRead_Status;
             }
             if (NULL == baseFileBits || NULL == comparisonFileBits) {
                 if (NULL == baseFileBits) {
                     drp->fBase.fStatus = DiffResource::kCouldNotRead_Status;
+                    VERBOSE_STATUS("READ FAIL", ANSI_COLOR_RED, baseFiles[i]);
                 }
                 if (NULL == comparisonFileBits) {
                     drp->fComparison.fStatus = DiffResource::kCouldNotRead_Status;
+                    VERBOSE_STATUS("READ FAIL", ANSI_COLOR_RED, comparisonFiles[j]);
                 }
                 drp->fResult = DiffRecord::kCouldNotCompare_Result;
 
             } else if (are_buffers_equal(baseFileBits, comparisonFileBits)) {
                 drp->fResult = DiffRecord::kEqualBits_Result;
-
+                VERBOSE_STATUS("MATCH", ANSI_COLOR_GREEN, baseFiles[i]);
             } else {
                 AutoReleasePixels arp(drp);
                 get_bitmap(baseFileBits, drp->fBase, SkImageDecoder::kDecodePixels_Mode);
                 get_bitmap(comparisonFileBits, drp->fComparison,
                            SkImageDecoder::kDecodePixels_Mode);
+                VERBOSE_STATUS("DIFFERENT", ANSI_COLOR_RED, baseFiles[i]);
                 if (DiffResource::kDecoded_Status == drp->fBase.fStatus &&
                     DiffResource::kDecoded_Status == drp->fComparison.fStatus) {
                     create_and_write_diff_image(drp, dmp, colorThreshold,
@@ -558,6 +627,8 @@ int tool_main(int argc, char** argv) {
     bool listFilenames = false;
     bool printDirNames = true;
     bool recurseIntoSubdirs = true;
+    bool verbose = false;
+    bool listFailingBase = false;
 
     RecordArray differences;
     DiffSummary summary;
@@ -625,6 +696,10 @@ int tool_main(int argc, char** argv) {
             listFilenames = true;
             continue;
         }
+        if (!strcmp(argv[i], "--verbose")) {
+            verbose = true;
+            continue;
+        }
         if (!strcmp(argv[i], "--match")) {
             matchSubstrings.push(new SkString(argv[++i]));
             continue;
@@ -678,6 +753,10 @@ int tool_main(int argc, char** argv) {
                     return kGenericError;
             }
         }
+        if (!strcmp(argv[i], "--listFailingBase")) {
+            listFailingBase = true;
+            continue;
+        }
 
         SkDebugf("Unrecognized argument <%s>\n", argv[i]);
         usage(argv[0]);
@@ -728,8 +807,12 @@ int tool_main(int argc, char** argv) {
     create_diff_images(diffProc, colorThreshold, &differences,
                        baseDir, comparisonDir, outputDir,
                        matchSubstrings, nomatchSubstrings, recurseIntoSubdirs, generateDiffs,
-                       &summary);
+                       verbose, &summary);
     summary.print(listFilenames, failOnResultType, failOnStatusType);
+
+    if (listFailingBase) {
+        summary.printfFailingBaseNames("\n");
+    }
 
     if (differences.count()) {
         qsort(differences.begin(), differences.count(),

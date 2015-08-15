@@ -6,14 +6,15 @@
  */
 
 #include "gm.h"
+#include "SkBlurMaskFilter.h"
 #include "SkCanvas.h"
+#include "SkPath.h"
 #include "SkShader.h"
-#include "SkStippleMaskFilter.h"
 
 namespace skiagm {
 
 /**
- * Stress test the samplers by rendering a textured glyph with a mask and
+ * Stress test the GPU samplers by rendering a textured glyph with a mask and
  * an AA clip
  */
 class SamplerStressGM : public GM {
@@ -28,12 +29,13 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() {
-        return SkString("samplerstress");
+
+    SkString onShortName() override {
+        return SkString("gpusamplerstress");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(640, 480);
+    SkISize onISize() override {
+        return SkISize::Make(640, 480);
     }
 
     /**
@@ -47,13 +49,7 @@ protected:
         static const int xSize = 16;
         static const int ySize = 16;
 
-        fTexture.setConfig(SkBitmap::kARGB_8888_Config,
-                           xSize,
-                           ySize,
-                           xSize*sizeof(SkColor));
-
-        fTexture.allocPixels();
-        fTexture.lockPixels();
+        fTexture.allocN32Pixels(xSize, ySize);
         SkPMColor* addr = fTexture.getAddr32(0, 0);
 
         for (int y = 0; y < ySize; ++y) {
@@ -69,13 +65,11 @@ protected:
             }
         }
 
-        fTexture.unlockPixels();
-
         fTextureCreated = true;
     }
 
     void createShader() {
-        if (NULL != fShader.get()) {
+        if (fShader.get()) {
             return;
         }
 
@@ -87,15 +81,15 @@ protected:
     }
 
     void createMaskFilter() {
-        if (NULL != fMaskFilter.get()) {
+        if (fMaskFilter.get()) {
             return;
         }
 
-        fMaskFilter.reset(SkNEW(SkStippleMaskFilter));
+        const SkScalar sigma = 1;
+        fMaskFilter.reset(SkBlurMaskFilter::Create(kNormal_SkBlurStyle, sigma));
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
-
+    void onDraw(SkCanvas* canvas) override {
         createShader();
         createMaskFilter();
 
@@ -108,6 +102,7 @@ protected:
         paint.setTextSize(72);
         paint.setShader(fShader.get());
         paint.setMaskFilter(fMaskFilter.get());
+        sk_tool_utils::set_portable_typeface(&paint);
 
         SkRect temp;
         temp.set(SkIntToScalar(115),
@@ -134,11 +129,12 @@ protected:
         paint2.setTextSize(72);
         paint2.setStyle(SkPaint::kStroke_Style);
         paint2.setStrokeWidth(1);
+        sk_tool_utils::set_portable_typeface(&paint2);
         canvas->drawText("M", 1,
                          SkIntToScalar(100), SkIntToScalar(100),
                          paint2);
 
-        paint2.setColor(SK_ColorGRAY);
+        paint2.setColor(sk_tool_utils::color_to_565(SK_ColorGRAY));
 
         canvas->drawPath(path, paint2);
     }

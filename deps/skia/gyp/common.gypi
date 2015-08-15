@@ -12,8 +12,10 @@
 
   'target_defaults': {
     'defines': [
+      'SK_INTERNAL',
       'SK_GAMMA_SRGB',
       'SK_GAMMA_APPLY_TO_A8',
+      # 'SK_USE_DISCARDABLE_SCALEDIMAGECACHE',  # TODO(reed): Re-enable when tests don't crash with this.
     ],
 
     # Validate the 'skia_os' setting against 'OS', because only certain
@@ -22,7 +24,6 @@
     'variables': {
       'conditions': [
         [ 'skia_os != OS and not ((skia_os == "ios" and OS == "mac") or \
-                                  (skia_os == "nacl" and OS == "linux") or \
                                   (skia_os == "chromeos" and OS == "linux"))', {
           'error': '<!(Cannot build with skia_os=<(skia_os) on OS=<(OS))',
         }],
@@ -31,12 +32,6 @@
         }],
         [ 'skia_angle and not skia_os == "win"', {
           'error': '<!(skia_angle=1 only supported with skia_os="win".)',
-        }],
-        [ 'skia_arch_width != 32 and skia_arch_width != 64', {
-          'error': '<!(skia_arch_width can only be 32 or 64 bits not <(skia_arch_width) bits)',
-        }],
-        [ 'skia_os == "nacl" and OS != "linux"', {
-          'error': '<!(Skia NaCl build only currently supported on Linux.)',
         }],
         [ 'skia_os == "chromeos" and OS != "linux"', {
           'error': '<!(Skia ChromeOS build is only supported on Linux.)',
@@ -47,19 +42,6 @@
       'common_conditions.gypi',
     ],
     'conditions': [
-      [ 'skia_scalar == "float"',
-        {
-          'defines': [
-            'SK_SCALAR_IS_FLOAT',
-            'SK_CAN_USE_FLOAT',
-          ],
-        }, { # else, skia_scalar != "float"
-          'defines': [
-            'SK_SCALAR_IS_FIXED',
-            'SK_CAN_USE_FLOAT',  # we can still use floats along the way
-          ],
-        }
-      ],
       [ 'skia_mesa', {
         'defines': [
           'SK_MESA',
@@ -80,6 +62,16 @@
           ],
         },
       }],
+      [ 'skia_vulkan', {
+        'defines': [
+          'SK_VULKAN',
+        ],
+        'direct_dependent_settings': {
+          'defines': [
+            'SK_VULKAN',
+          ],
+        },
+      }],
       [ 'skia_win_debuggers_path and skia_os == "win"',
         {
           'defines': [
@@ -87,32 +79,19 @@
           ],
         },
       ],
+      [ 'skia_android_framework==0', {
+        # These defines are not used for skia_android_framework, where we build
+        # one makefile and allow someone to add SK_DEBUG etc for their own
+        # debugging purposes.
+        'configurations': {
+          'Debug':   { 'defines': [ 'SK_DEVELOPER=1' ] },
+          'Release': { 'defines': [ 'NDEBUG' ] },
+          'Release_Developer': {
+            'inherit_from': ['Release'],
+            'defines': [ 'SK_DEVELOPER=1' ],
+          },
+        },
+      }],
     ],
-    'configurations': {
-      'Debug': {
-        'defines': [
-          'SK_DEBUG',
-          'GR_DEBUG=1',
-          'SK_DEVELOPER=1',
-        ],
-      },
-      'Release': {
-        'defines': [
-          'SK_RELEASE',
-          'GR_RELEASE=1',
-        ],
-      },
-      'Release_Developer': {
-        'inherit_from': ['Release'],
-        'defines': [
-          'SK_DEVELOPER=1',
-        ],
-      },
-    },
   }, # end 'target_defaults'
 }
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

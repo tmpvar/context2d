@@ -1,12 +1,13 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "gm.h"
 #include "SkGradientShader.h"
+#include "SkPath.h"
 
 namespace skiagm {
 
@@ -24,17 +25,17 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("filltypespersp");
     }
 
-    virtual SkISize onISize() {
-        return make_isize(835, 840);
+    SkISize onISize() override {
+        return SkISize::Make(835, 840);
     }
 
     void showPath(SkCanvas* canvas, int x, int y, SkPath::FillType ft,
                   SkScalar scale, const SkPaint& paint) {
-
         const SkRect r = { 0, 0, SkIntToScalar(150), SkIntToScalar(150) };
 
         canvas->save();
@@ -50,7 +51,6 @@ protected:
     }
 
     void showFour(SkCanvas* canvas, SkScalar scale, bool aa) {
-
         SkPaint paint;
         SkPoint center = SkPoint::Make(SkIntToScalar(100), SkIntToScalar(100));
         SkColor colors[] = {SK_ColorBLUE, SK_ColorRED, SK_ColorGREEN};
@@ -74,7 +74,7 @@ protected:
                  scale, paint);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         this->makePath();
 
         // do perspective drawPaint as the background;
@@ -96,7 +96,7 @@ protected:
             canvas->translate(SkIntToScalar(100), SkIntToScalar(100));
             SkMatrix mat;
             mat.reset();
-            mat.setPerspY(SkScalarToPersp(SK_Scalar1 / 1000));
+            mat.setPerspY(SK_Scalar1 / 1000);
             canvas->concat(mat);
             canvas->drawPaint(bkgnrd);
         canvas->restore();
@@ -104,8 +104,8 @@ protected:
         // draw the paths in perspective
         SkMatrix persp;
         persp.reset();
-        persp.setPerspX(SkScalarToPersp(-SK_Scalar1 / 1800));
-        persp.setPerspY(SkScalarToPersp(SK_Scalar1 / 500));
+        persp.setPerspX(-SK_Scalar1 / 1800);
+        persp.setPerspY(SK_Scalar1 / 500);
         canvas->concat(persp);
 
         canvas->translate(SkIntToScalar(20), SkIntToScalar(20));

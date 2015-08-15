@@ -5,34 +5,33 @@
  * found in the LICENSE file.
  */
 
-
 #include "Test.h"
 // This is a GR test
 #if SK_SUPPORT_GPU
+#include "GrClipMaskManager.h"
 #include "GrContextFactory.h"
 #include "SkGpuDevice.h"
-#include "../../src/gpu/GrClipMaskManager.h"
 
 static const int X_SIZE = 12;
 static const int Y_SIZE = 12;
 
 ////////////////////////////////////////////////////////////////////////////////
 // note: this is unused
-static GrTexture* createTexture(GrContext* context) {
+static GrTexture* create_texture(GrContext* context) {
     unsigned char textureData[X_SIZE][Y_SIZE][4];
 
     memset(textureData, 0, 4* X_SIZE * Y_SIZE);
 
-    GrTextureDesc desc;
+    GrSurfaceDesc desc;
 
     // let Skia know we will be using this texture as a render target
-    desc.fFlags     = kRenderTarget_GrTextureFlagBit;
+    desc.fFlags     = kRenderTarget_GrSurfaceFlag;
     desc.fConfig    = kSkia8888_GrPixelConfig;
     desc.fWidth     = X_SIZE;
     desc.fHeight    = Y_SIZE;
 
     // We are initializing the texture with zeros here
-    GrTexture* texture = context->createUncachedTexture(desc, textureData, 0);
+    GrTexture* texture = context->textureProvider()->createTexture(desc, false, textureData, 0);
     if (!texture) {
         return NULL;
     }
@@ -47,18 +46,18 @@ static void test_clip_bounds(skiatest::Reporter* reporter, GrContext* context) {
     static const int kXSize = 100;
     static const int kYSize = 100;
 
-    GrTextureDesc desc;
-    desc.fFlags     = kRenderTarget_GrTextureFlagBit;
+    GrSurfaceDesc desc;
+    desc.fFlags     = kRenderTarget_GrSurfaceFlag;
     desc.fConfig    = kAlpha_8_GrPixelConfig;
     desc.fWidth     = kXSize;
     desc.fHeight    = kYSize;
 
-    GrTexture* texture = context->createUncachedTexture(desc, NULL, 0);
+    GrTexture* texture = context->textureProvider()->createTexture(desc, false, NULL, 0);
     if (!texture) {
         return;
     }
 
-    GrAutoUnref au(texture);
+    SkAutoTUnref<GrTexture> au(texture);
 
     SkIRect intScreen = SkIRect::MakeWH(kXSize, kYSize);
     SkRect screen;
@@ -85,17 +84,17 @@ static void test_clip_bounds(skiatest::Reporter* reporter, GrContext* context) {
     REPORTER_ASSERT(reporter, screen == devStackBounds);
     REPORTER_ASSERT(reporter, isIntersectionOfRects);
 
-    // wrap the SkClipStack in a GrClipData
-    GrClipData clipData;
-    clipData.fClipStack = &stack;
+    // wrap the SkClipStack in a GrClip
+    GrClip clipData;
+    clipData.setClipStack(&stack);
 
-    SkIRect devGrClipDataBound;
+    SkIRect devGrClipBound;
     clipData.getConservativeBounds(texture,
-                                   &devGrClipDataBound,
+                                   &devGrClipBound,
                                    &isIntersectionOfRects);
 
-    // make sure that GrClipData is behaving itself
-    REPORTER_ASSERT(reporter, intScreen == devGrClipDataBound);
+    // make sure that GrClip is behaving itself
+    REPORTER_ASSERT(reporter, intScreen == devGrClipBound);
     REPORTER_ASSERT(reporter, isIntersectionOfRects);
 }
 
@@ -105,15 +104,27 @@ static void check_state(skiatest::Reporter* reporter,
                         const GrClipMaskCache& cache,
                         const SkClipStack& clip,
                         GrTexture* mask,
-                        const GrIRect& bound) {
-    SkClipStack cacheClip;
+                        const SkIRect& bound) {
     REPORTER_ASSERT(reporter, clip.getTopmostGenID() == cache.getLastClipGenID());
 
     REPORTER_ASSERT(reporter, mask == cache.getLastMask());
 
-    GrIRect cacheBound;
+    SkIRect cacheBound;
     cache.getLastBound(&cacheBound);
     REPORTER_ASSERT(reporter, bound == cacheBound);
+}
+
+static void check_empty_state(skiatest::Reporter* reporter,
+                              const GrClipMaskCache& cache) {
+    REPORTER_ASSERT(reporter, SkClipStack::kInvalidGenID == cache.getLastClipGenID());
+    REPORTER_ASSERT(reporter, NULL == cache.getLastMask());
+
+    SkIRect emptyBound;
+    emptyBound.setEmpty();
+
+    SkIRect cacheBound;
+    cache.getLastBound(&cacheBound);
+    REPORTER_ASSERT(reporter, emptyBound == cacheBound);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,29 +133,21 @@ static void check_state(skiatest::Reporter* reporter,
 static void test_cache(skiatest::Reporter* reporter, GrContext* context) {
 
     if (false) { // avoid bit rot, suppress warning
-        createTexture(context);
+        create_texture(context);
     }
-    GrClipMaskCache cache;
-
-    cache.setContext(context);
-
-    SkClipStack emptyClip;
-    emptyClip.reset();
-
-    GrIRect emptyBound;
-    emptyBound.setEmpty();
+    GrClipMaskCache cache(context->resourceProvider());
 
     // check initial state
-    check_state(reporter, cache, emptyClip, NULL, emptyBound);
+    check_empty_state(reporter, cache);
 
     // set the current state
-    GrIRect bound1;
+    SkIRect bound1;
     bound1.set(0, 0, 100, 100);
 
     SkClipStack clip1(bound1);
 
-    GrTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrTextureFlagBit;
+    GrSurfaceDesc desc;
+    desc.fFlags = kRenderTarget_GrSurfaceFlag;
     desc.fWidth = X_SIZE;
     desc.fHeight = Y_SIZE;
     desc.fConfig = kSkia8888_GrPixelConfig;
@@ -159,17 +162,15 @@ static void test_cache(skiatest::Reporter* reporter, GrContext* context) {
 
     // check that the set took
     check_state(reporter, cache, clip1, texture1, bound1);
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
 
     // push the state
     cache.push();
 
     // verify that the pushed state is initially empty
-    check_state(reporter, cache, emptyClip, NULL, emptyBound);
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
+    check_empty_state(reporter, cache);
 
     // modify the new state
-    GrIRect bound2;
+    SkIRect bound2;
     bound2.set(-10, -10, 10, 10);
 
     SkClipStack clip2(bound2);
@@ -184,8 +185,6 @@ static void test_cache(skiatest::Reporter* reporter, GrContext* context) {
 
     // check that the changes took
     check_state(reporter, cache, clip2, texture2, bound2);
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
-    REPORTER_ASSERT(reporter, texture2->getRefCnt());
 
     // check to make sure canReuse works
     REPORTER_ASSERT(reporter, cache.canReuse(clip2.getTopmostGenID(), bound2));
@@ -196,16 +195,12 @@ static void test_cache(skiatest::Reporter* reporter, GrContext* context) {
 
     // verify that the old state is restored
     check_state(reporter, cache, clip1, texture1, bound1);
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
-    REPORTER_ASSERT(reporter, texture2->getRefCnt());
 
     // manually clear the state
     cache.reset();
 
     // verify it is now empty
-    check_state(reporter, cache, emptyClip, NULL, emptyBound);
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
-    REPORTER_ASSERT(reporter, texture2->getRefCnt());
+    check_empty_state(reporter, cache);
 
     // pop again - so there is no state
     cache.pop();
@@ -213,14 +208,11 @@ static void test_cache(skiatest::Reporter* reporter, GrContext* context) {
 #if !defined(SK_DEBUG)
     // verify that the getters don't crash
     // only do in release since it generates asserts in debug
-    check_state(reporter, cache, emptyClip, NULL, emptyBound);
+    check_empty_state(reporter, cache);
 #endif
-    REPORTER_ASSERT(reporter, texture1->getRefCnt());
-    REPORTER_ASSERT(reporter, texture2->getRefCnt());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-static void TestClipCache(skiatest::Reporter* reporter, GrContextFactory* factory) {
+DEF_GPUTEST(ClipCache, reporter, factory) {
     for (int type = 0; type < GrContextFactory::kLastGLContextType; ++type) {
         GrContextFactory::GLContextType glType = static_cast<GrContextFactory::GLContextType>(type);
         if (!GrContextFactory::IsRenderingGLContext(glType)) {
@@ -235,9 +227,5 @@ static void TestClipCache(skiatest::Reporter* reporter, GrContextFactory* factor
         test_clip_bounds(reporter, context);
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-#include "TestClassDef.h"
-DEFINE_GPUTESTCLASS("ClipCache", ClipCacheTestClass, TestClipCache)
 
 #endif

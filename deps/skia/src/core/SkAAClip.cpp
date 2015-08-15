@@ -7,11 +7,11 @@
  */
 
 #include "SkAAClip.h"
+#include "SkAtomics.h"
 #include "SkBlitter.h"
 #include "SkColorPriv.h"
 #include "SkPath.h"
 #include "SkScan.h"
-#include "SkThread.h"
 #include "SkUtils.h"
 
 class AutoAAClipValidate {
@@ -36,9 +36,11 @@ private:
 
 #define kMaxInt32   0x7FFFFFFF
 
+#ifdef SK_DEBUG
 static inline bool x_in_rect(int x, const SkIRect& rect) {
     return (unsigned)(x - rect.fLeft) < (unsigned)rect.width();
 }
+#endif
 
 static inline bool y_in_rect(int y, const SkIRect& rect) {
     return (unsigned)(y - rect.fTop) < (unsigned)rect.height();
@@ -216,6 +218,46 @@ void SkAAClip::validate() const {
     // check the last entry;
     --yoff;
     SkASSERT(yoff->fY == lastY);
+}
+
+static void dump_one_row(const uint8_t* SK_RESTRICT row,
+                         int width, int leading_num) {
+    if (leading_num) {
+        SkDebugf( "%03d ", leading_num );
+    }
+    while (width > 0) {
+        int n = row[0];
+        int val = row[1];
+        char out = '.';
+        if (val == 0xff) {
+            out = '*';
+        } else if (val > 0) {
+            out = '+';
+        }
+        for (int i = 0 ; i < n ; i++) {
+            SkDebugf( "%c", out );
+        }
+        row += 2;
+        width -= n;
+    }
+    SkDebugf( "\n" );
+}
+
+void SkAAClip::debug(bool compress_y) const {
+    Iter iter(*this);
+    const int width = fBounds.width();
+
+    int y = fBounds.fTop;
+    while (!iter.done()) {
+        if (compress_y) {
+            dump_one_row(iter.data(), width, iter.bottom() - iter.top() + 1);
+        } else {
+            do {
+                dump_one_row(iter.data(), width, 0);
+            } while (++y < iter.bottom());
+        }
+        iter.next();
+    }
 }
 #endif
 
@@ -528,7 +570,7 @@ bool SkAAClip::trimTopBottom() {
     do {
         yoff -= 1;
     } while (row_is_all_zeros(base + yoff->fOffset, width));
-    skip = stop - yoff - 1;
+    skip = SkToInt(stop - yoff - 1);
     SkASSERT(skip >= 0 && skip < head->fRowCount);
     if (skip > 0) {
         // removing from the bottom is easier than from the top, as we don't
@@ -680,6 +722,34 @@ bool SkAAClip::setRect(const SkIRect& bounds) {
     SkASSERT(!this->isEmpty());
     return true;
 #endif
+}
+
+bool SkAAClip::isRect() const {
+    if (this->isEmpty()) {
+        return false;
+    }
+
+    const RunHead* head = fRunHead;
+    if (head->fRowCount != 1) {
+        return false;
+    }
+    const YOffset* yoff = head->yoffsets();
+    if (yoff->fY != fBounds.fBottom - 1) {
+        return false;
+    }
+
+    const uint8_t* row = head->data() + yoff->fOffset;
+    int width = fBounds.width();
+    do {
+        if (row[1] != 0xFF) {
+            return false;
+        }
+        int n = row[0];
+        SkASSERT(n <= width);
+        width -= n;
+        row += 2;
+    } while (width > 0);
+    return true;
 }
 
 bool SkAAClip::setRect(const SkRect& r, bool doAA) {
@@ -1031,7 +1101,7 @@ public:
             SkDEBUGCODE(prevY = row->fY);
 
             yoffset->fY = row->fY - adjustY;
-            yoffset->fOffset = data - baseData;
+            yoffset->fOffset = SkToU32(data - baseData);
             yoffset += 1;
 
             size_t n = row->fData->count();
@@ -1203,13 +1273,13 @@ public:
        Instead we'll rely on the runtime asserts to guarantee Y monotonicity;
        any failure cases that misses may have minor artifacts.
     */
-    virtual void blitV(int x, int y, int height, SkAlpha alpha) SK_OVERRIDE {
+    void blitV(int x, int y, int height, SkAlpha alpha) override {
         this->recordMinY(y);
         fBuilder->addColumn(x, y, alpha, height);
         fLastY = y + height - 1;
     }
 
-    virtual void blitRect(int x, int y, int width, int height) SK_OVERRIDE {
+    void blitRect(int x, int y, int width, int height) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         fBuilder->addRectRun(x, y, width, height);
@@ -1217,28 +1287,28 @@ public:
     }
 
     virtual void blitAntiRect(int x, int y, int width, int height,
-                     SkAlpha leftAlpha, SkAlpha rightAlpha) SK_OVERRIDE {
+                     SkAlpha leftAlpha, SkAlpha rightAlpha) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         fBuilder->addAntiRectRun(x, y, width, height, leftAlpha, rightAlpha);
         fLastY = y + height - 1;
     }
 
-    virtual void blitMask(const SkMask&, const SkIRect& clip) SK_OVERRIDE
+    void blitMask(const SkMask&, const SkIRect& clip) override
         { unexpected(); }
 
-    virtual const SkBitmap* justAnOpaqueColor(uint32_t*) SK_OVERRIDE {
+    const SkPixmap* justAnOpaqueColor(uint32_t*) override {
         return NULL;
     }
 
-    virtual void blitH(int x, int y, int width) SK_OVERRIDE {
+    void blitH(int x, int y, int width) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         fBuilder->addRun(x, y, 0xFF, width);
     }
 
     virtual void blitAntiH(int x, int y, const SkAlpha alpha[],
-                           const int16_t runs[]) SK_OVERRIDE {
+                           const int16_t runs[]) override {
         this->recordMinY(y);
         this->checkForYGap(y);
         for (;;) {
@@ -1380,17 +1450,6 @@ static AlphaProc find_alpha_proc(SkRegion::Op op) {
             return sectAlphaProc;
     }
 }
-
-static const uint8_t gEmptyRow[] = {
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-    0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF, 0,
-};
 
 class RowIter {
 public:
@@ -1987,6 +2046,7 @@ static void small_bzero(void* dst, size_t n) {
 static inline uint8_t mergeOne(uint8_t value, unsigned alpha) {
     return SkMulDiv255Round(value, alpha);
 }
+
 static inline uint16_t mergeOne(uint16_t value, unsigned alpha) {
     unsigned r = SkGetPackedR16(value);
     unsigned g = SkGetPackedG16(value);
@@ -1994,16 +2054,6 @@ static inline uint16_t mergeOne(uint16_t value, unsigned alpha) {
     return SkPackRGB16(SkMulDiv255Round(r, alpha),
                        SkMulDiv255Round(g, alpha),
                        SkMulDiv255Round(b, alpha));
-}
-static inline SkPMColor mergeOne(SkPMColor value, unsigned alpha) {
-    unsigned a = SkGetPackedA32(value);
-    unsigned r = SkGetPackedR32(value);
-    unsigned g = SkGetPackedG32(value);
-    unsigned b = SkGetPackedB32(value);
-    return SkPackARGB32(SkMulDiv255Round(a, alpha),
-                        SkMulDiv255Round(r, alpha),
-                        SkMulDiv255Round(g, alpha),
-                        SkMulDiv255Round(b, alpha));
 }
 
 template <typename T> void mergeT(const T* SK_RESTRICT src, int srcN,
@@ -2051,10 +2101,6 @@ static MergeAAProc find_merge_aa_proc(SkMask::Format format) {
         case SkMask::kLCD16_Format: {
             void (*proc16)(const uint16_t*, int, const uint8_t*, int, uint16_t*) = mergeT;
             return (MergeAAProc)proc16;
-        }
-        case SkMask::kLCD32_Format: {
-            void (*proc32)(const SkPMColor*, int, const uint8_t*, int, SkPMColor*) = mergeT;
-            return (MergeAAProc)proc32;
         }
         default:
             SkDEBUGFAIL("unsupported");
@@ -2173,6 +2219,6 @@ void SkAAClipBlitter::blitMask(const SkMask& origMask, const SkIRect& clip) {
     } while (y < stopY);
 }
 
-const SkBitmap* SkAAClipBlitter::justAnOpaqueColor(uint32_t* value) {
+const SkPixmap* SkAAClipBlitter::justAnOpaqueColor(uint32_t* value) {
     return NULL;
 }

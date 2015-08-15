@@ -4,9 +4,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "gm.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
+#include "SkPath.h"
 #include "SkRandom.h"
 
 // skbug.com/1316 shows that this cubic, when slightly clipped, creates big
@@ -16,6 +18,7 @@ public:
     ClippedCubicGM() {}
 
 protected:
+
     SkString onShortName() {
         return SkString("clippedcubic");
     }
@@ -55,6 +58,7 @@ public:
     CubicPathGM() {}
 
 protected:
+
     SkString onShortName() {
         return SkString("cubicpath");
     }
@@ -122,7 +126,7 @@ protected:
         SkPaint titlePaint;
         titlePaint.setColor(SK_ColorBLACK);
         titlePaint.setAntiAlias(true);
-        titlePaint.setLCDRenderText(true);
+        sk_tool_utils::set_portable_typeface(&titlePaint);
         titlePaint.setTextSize(15 * SK_Scalar1);
         const char title[] = "Cubic Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
@@ -166,7 +170,7 @@ protected:
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
                     labelPaint.setAntiAlias(true);
-                    labelPaint.setLCDRenderText(true);
+                    sk_tool_utils::set_portable_typeface(&labelPaint);
                     labelPaint.setTextSize(10 * SK_Scalar1);
                     canvas->drawText(gStyles[style].fName,
                                         strlen(gStyles[style].fName),
@@ -198,6 +202,7 @@ public:
     CubicClosePathGM() {}
 
 protected:
+
     SkString onShortName() {
         return SkString("cubicclosepath");
     }
@@ -266,7 +271,7 @@ protected:
         SkPaint titlePaint;
         titlePaint.setColor(SK_ColorBLACK);
         titlePaint.setAntiAlias(true);
-        titlePaint.setLCDRenderText(true);
+        sk_tool_utils::set_portable_typeface(&titlePaint);
         titlePaint.setTextSize(15 * SK_Scalar1);
         const char title[] = "Cubic Closed Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
@@ -310,7 +315,7 @@ protected:
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
                     labelPaint.setAntiAlias(true);
-                    labelPaint.setLCDRenderText(true);
+                    sk_tool_utils::set_portable_typeface(&labelPaint);
                     labelPaint.setTextSize(10 * SK_Scalar1);
                     canvas->drawText(gStyles[style].fName,
                                         strlen(gStyles[style].fName),

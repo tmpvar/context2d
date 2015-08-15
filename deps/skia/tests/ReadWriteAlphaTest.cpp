@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -6,17 +5,18 @@
  * found in the LICENSE file.
  */
 
+#include "Test.h"
+
 // This test is specific to the GPU backend.
 #if SK_SUPPORT_GPU && !defined(SK_BUILD_FOR_ANDROID)
 
-#include "Test.h"
-#include "SkGpuDevice.h"
 #include "GrContextFactory.h"
+#include "SkGpuDevice.h"
 
 static const int X_SIZE = 12;
 static const int Y_SIZE = 12;
 
-static void ReadWriteAlphaTest(skiatest::Reporter* reporter, GrContextFactory* factory) {
+DEF_GPUTEST(ReadWriteAlpha, reporter, factory) {
     for (int type = 0; type < GrContextFactory::kLastGLContextType; ++type) {
         GrContextFactory::GLContextType glType = static_cast<GrContextFactory::GLContextType>(type);
         if (!GrContextFactory::IsRenderingGLContext(glType)) {
@@ -31,22 +31,22 @@ static void ReadWriteAlphaTest(skiatest::Reporter* reporter, GrContextFactory* f
 
         memset(textureData, 0, X_SIZE * Y_SIZE);
 
-        GrTextureDesc desc;
+        GrSurfaceDesc desc;
 
         // let Skia know we will be using this texture as a render target
-        desc.fFlags     = kRenderTarget_GrTextureFlagBit;
+        desc.fFlags     = kRenderTarget_GrSurfaceFlag;
         // it is a single channel texture
         desc.fConfig    = kAlpha_8_GrPixelConfig;
         desc.fWidth     = X_SIZE;
         desc.fHeight    = Y_SIZE;
 
         // We are initializing the texture with zeros here
-        GrTexture* texture = context->createUncachedTexture(desc, textureData, 0);
+        GrTexture* texture = context->textureProvider()->createTexture(desc, false, textureData, 0);
         if (!texture) {
             return;
         }
 
-        GrAutoUnref au(texture);
+        SkAutoTUnref<GrTexture> au(texture);
 
         // create a distinctive texture
         for (int y = 0; y < Y_SIZE; ++y) {
@@ -82,7 +82,9 @@ static void ReadWriteAlphaTest(skiatest::Reporter* reporter, GrContextFactory* f
         REPORTER_ASSERT(reporter, match);
 
         // Now try writing on the single channel texture
-        SkAutoTUnref<SkDevice> device(new SkGpuDevice(context, texture->asRenderTarget()));
+        SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
+        SkAutoTUnref<SkBaseDevice> device(SkGpuDevice::Create(texture->asRenderTarget(), &props,
+                                                              SkGpuDevice::kUninit_InitContents));
         SkCanvas canvas(device);
 
         SkPaint paint;
@@ -109,8 +111,5 @@ static void ReadWriteAlphaTest(skiatest::Reporter* reporter, GrContextFactory* f
         REPORTER_ASSERT(reporter, match);
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_GPUTESTCLASS("ReadWriteAlpha", ReadWriteAlphaTestClass, ReadWriteAlphaTest)
 
 #endif

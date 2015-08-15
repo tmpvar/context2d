@@ -29,7 +29,20 @@
     static inline double SkMScalarToDouble(double x) {
         return x;
     }
+    static inline double SkMScalarAbs(double x) {
+        return fabs(x);
+    }
     static const SkMScalar SK_MScalarPI = 3.141592653589793;
+
+    #define SkMScalarFloor(x)           sk_double_floor(x)
+    #define SkMScalarCeil(x)            sk_double_ceil(x)
+    #define SkMScalarRound(x)           sk_double_round(x)
+
+    #define SkMScalarFloorToInt(x)      sk_double_floor2int(x)
+    #define SkMScalarCeilToInt(x)       sk_double_ceil2int(x)
+    #define SkMScalarRoundToInt(x)      sk_double_round2int(x)
+
+
 #elif defined SK_MSCALAR_IS_FLOAT
 #ifdef SK_MSCALAR_IS_DOUBLE
     #error "can't define MSCALAR both as DOUBLE and FLOAT"
@@ -48,11 +61,25 @@
     static inline double SkMScalarToDouble(float x) {
         return static_cast<double>(x);
     }
+    static inline float SkMScalarAbs(float x) {
+        return sk_float_abs(x);
+    }
     static const SkMScalar SK_MScalarPI = 3.14159265f;
+
+    #define SkMScalarFloor(x)           sk_float_floor(x)
+    #define SkMScalarCeil(x)            sk_float_ceil(x)
+    #define SkMScalarRound(x)           sk_float_round(x)
+
+    #define SkMScalarFloorToInt(x)      sk_float_floor2int(x)
+    #define SkMScalarCeilToInt(x)       sk_float_ceil2int(x)
+    #define SkMScalarRoundToInt(x)      sk_float_round2int(x)
+
 #endif
 
-#define SkMScalarToScalar SkMScalarToFloat
-#define SkScalarToMScalar SkFloatToMScalar
+#define SkIntToMScalar(n)       static_cast<SkMScalar>(n)
+
+#define SkMScalarToScalar(x)    SkMScalarToFloat(x)
+#define SkScalarToMScalar(x)    SkFloatToMScalar(x)
 
 static const SkMScalar SK_MScalar1 = 1;
 
@@ -112,7 +139,7 @@ public:
     SkMatrix44(Uninitialized_Constructor) { }
     SkMatrix44(Identity_Constructor) { this->setIdentity(); }
 
-    // DEPRECATED: use the constructors that take an enum
+    SK_ATTR_DEPRECATED("use the constructors that take an enum")
     SkMatrix44() { this->setIdentity(); }
 
     SkMatrix44(const SkMatrix44& src) {
@@ -137,6 +164,14 @@ public:
         return !(other == *this);
     }
 
+    /* When converting from SkMatrix44 to SkMatrix, the third row and
+     * column is dropped.  When converting from SkMatrix to SkMatrix44
+     * the third row and column remain as identity:
+     * [ a b c ]      [ a b 0 c ]
+     * [ d e f ]  ->  [ d e 0 f ]
+     * [ g h i ]      [ 0 0 1 0 ]
+     *                [ g h 0 i ]
+     */
     SkMatrix44(const SkMatrix&);
     SkMatrix44& operator=(const SkMatrix& src);
     operator SkMatrix() const;
@@ -190,6 +225,17 @@ public:
         return !(this->getType() & ~(kScale_Mask | kTranslate_Mask));
     }
 
+    /**
+     *  Returns true if the matrix only contains scale or is identity.
+     */
+    inline bool isScale() const {
+            return !(this->getType() & ~kScale_Mask);
+    }
+
+    inline bool hasPerspective() const {
+        return SkToBool(this->getType() & kPerspective_Mask);
+    }
+
     void setIdentity();
     inline void reset() { this->setIdentity();}
 
@@ -224,6 +270,12 @@ public:
     inline void setDouble(int row, int col, double value) {
         this->set(row, col, SkDoubleToMScalar(value));
     }
+    inline float getFloat(int row, int col) const {
+        return SkMScalarToFloat(this->get(row, col));
+    }
+    inline void setFloat(int row, int col, float value) {
+        this->set(row, col, SkFloatToMScalar(value));
+    }
 
     /** These methods allow one to efficiently read matrix entries into an
      *  array. The given array must have room for exactly 16 entries. Whenever
@@ -253,6 +305,8 @@ public:
     void setRowMajor(const SkMScalar data[]) { this->setRowMajord(data); }
 #endif
 
+    /* This sets the top-left of the matrix and clears the translation and
+     * perspective components (with [3][3] set to 1). */
     void set3x3(SkMScalar m00, SkMScalar m01, SkMScalar m02,
                 SkMScalar m10, SkMScalar m11, SkMScalar m12,
                 SkMScalar m20, SkMScalar m21, SkMScalar m22);
@@ -304,7 +358,8 @@ public:
     }
 
     /** If this is invertible, return that in inverse and return true. If it is
-        not invertible, return false and ignore the inverse parameter.
+        not invertible, return false and leave the inverse parameter in an
+        unspecified state.
      */
     bool invert(SkMatrix44* inverse) const;
 
@@ -319,11 +374,12 @@ public:
         this->mapScalars(vec, vec);
     }
 
-    // DEPRECATED: call mapScalars()
+    SK_ATTR_DEPRECATED("use mapScalars")
     void map(const SkScalar src[4], SkScalar dst[4]) const {
         this->mapScalars(src, dst);
     }
-    // DEPRECATED: call mapScalars()
+
+    SK_ATTR_DEPRECATED("use mapScalars")
     void map(SkScalar vec[4]) const {
         this->mapScalars(vec, vec);
     }
@@ -341,7 +397,7 @@ public:
 
     friend SkVector4 operator*(const SkMatrix44& m, const SkVector4& src) {
         SkVector4 dst;
-        m.map(src.fData, dst.fData);
+        m.mapScalars(src.fData, dst.fData);
         return dst;
     }
 
@@ -355,6 +411,18 @@ public:
      */
     void map2(const float src2[], int count, float dst4[]) const;
     void map2(const double src2[], int count, double dst4[]) const;
+
+    /** Returns true if transformating an axis-aligned square in 2d by this matrix
+        will produce another 2d axis-aligned square; typically means the matrix
+        is a scale with perhaps a 90-degree rotation. A 3d rotation through 90
+        degrees into a perpendicular plane collapses a square to a line, but
+        is still considered to be axis-aligned.
+
+        By default, tolerates very slight error due to float imprecisions;
+        a 90-degree rotation can still end up with 10^-17 of
+        "non-axis-aligned" result.
+     */
+    bool preserves2dAxisAlignment(SkMScalar epsilon = SK_ScalarNearlyZero) const;
 
     void dump() const;
 

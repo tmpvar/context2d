@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
@@ -6,18 +5,19 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef GrPathRendererChain_DEFINED
 #define GrPathRendererChain_DEFINED
 
-#include "GrRefCnt.h"
+#include "SkRefCnt.h"
 #include "SkTArray.h"
 
 class GrContext;
 class GrDrawTarget;
 class GrPathRenderer;
+class GrPipelineBuilder;
+class GrStrokeInfo;
+class SkMatrix;
 class SkPath;
-class SkStrokeRec;
 
 /**
  * Keeps track of an ordered list of path renderers. When a path needs to be
@@ -33,8 +33,6 @@ public:
         kStencilOnly_StencilSupport,
         kNoRestriction_StencilSupport,
     };
-
-    SK_DECLARE_INST_COUNT(GrPathRendererChain)
 
     GrPathRendererChain(GrContext* context);
 
@@ -57,14 +55,15 @@ public:
         is drawing the path to the stencil buffer then stencilSupport can be used to determine
         whether the path can be rendered with arbitrary stencil rules or not. See comments on
         StencilSupport in GrPathRenderer.h. */
-    GrPathRenderer* getPathRenderer(const SkPath& path,
-                                    const SkStrokeRec& rec,
-                                    const GrDrawTarget* target,
+    GrPathRenderer* getPathRenderer(const GrDrawTarget* target,
+                                    const GrPipelineBuilder*,
+                                    const SkMatrix& viewMatrix,
+                                    const SkPath& path,
+                                    const GrStrokeInfo& stroke,
                                     DrawType drawType,
                                     StencilSupport* stencilSupport);
 
 private:
-
     GrPathRendererChain();
 
     void init();
@@ -78,6 +77,5 @@ private:
 
     typedef SkRefCnt INHERITED;
 };
-
 
 #endif

@@ -12,9 +12,7 @@
 #include "SkRandom.h"
 #include "SkTDArray.h"
 #include "SkTemplates.h"
-#include "SkInstCnt.h"
 
-namespace {
 // A is the top of an inheritance tree of classes that overload op new and
 // and delete to use a GrMemoryPool. The objects have values of different types
 // that can be set and checked.
@@ -45,22 +43,14 @@ public:
         }
     }
 
-    SK_DECLARE_INST_COUNT_ROOT(A);
-
-    static A* Create(SkMWCRandom* r);
+    static A* Create(SkRandom* r);
 
     static void SetAllocator(size_t preallocSize, size_t minAllocSize) {
-#if SK_ENABLE_INST_COUNT
-        SkASSERT(0 == GetInstanceCount());
-#endif
         GrMemoryPool* pool = new GrMemoryPool(preallocSize, minAllocSize);
         gPool.reset(pool);
     }
 
     static void ResetAllocator() {
-#if SK_ENABLE_INST_COUNT
-        SkASSERT(0 == GetInstanceCount());
-#endif
         gPool.reset(NULL);
     }
 
@@ -68,7 +58,7 @@ private:
     static SkAutoTDelete<GrMemoryPool> gPool;
     char fChar;
 };
-SK_DEFINE_INST_COUNT(A);
+
 SkAutoTDelete<GrMemoryPool> A::gPool;
 
 class B : public A {
@@ -116,12 +106,12 @@ public:
         fB = new B();
     }
     virtual void setValues(int v) {
-        fVoidStar = reinterpret_cast<void*>(v);
+        fVoidStar = reinterpret_cast<void*>(static_cast<intptr_t>(v));
         this->INHERITED::setValues(v);
         fB->setValues(v);
     }
     virtual bool checkValues(int v) {
-        return fVoidStar == reinterpret_cast<void*>(v) &&
+        return fVoidStar == reinterpret_cast<void*>(static_cast<intptr_t>(v)) &&
                fB->checkValues(v) &&
                this->INHERITED::checkValues(v);
     }
@@ -160,7 +150,7 @@ private:
     typedef A INHERITED;
 };
 
-A* A::Create(SkMWCRandom* r) {
+A* A::Create(SkRandom* r) {
     switch (r->nextRangeU(0, 4)) {
         case 0:
             return new A;
@@ -177,13 +167,13 @@ A* A::Create(SkMWCRandom* r) {
             return NULL;
     }
 }
-}
+
 struct Rec {
     A* fInstance;
     int fValue;
 };
 
-static void test_memory_pool(skiatest::Reporter* reporter) {
+DEF_TEST(GrMemoryPool, reporter) {
     // prealloc and min alloc sizes for the pool
     static const size_t gSizes[][2] = {
         {0, 0},
@@ -201,7 +191,7 @@ static void test_memory_pool(skiatest::Reporter* reporter) {
     // number of iterations
     static const int kCheckPeriod = 500;
 
-    SkMWCRandom r;
+    SkRandom r;
     for (size_t s = 0; s < SK_ARRAY_COUNT(gSizes); ++s) {
         A::SetAllocator(gSizes[s][0], gSizes[s][1]);
         for (size_t c = 0; c < SK_ARRAY_COUNT(gCreateFraction); ++c) {
@@ -233,14 +223,8 @@ static void test_memory_pool(skiatest::Reporter* reporter) {
                 REPORTER_ASSERT(reporter, rec.fInstance->checkValues(rec.fValue));
                 delete rec.fInstance;
             }
-#if SK_ENABLE_INST_COUNT
-            REPORTER_ASSERT(reporter, !A::GetInstanceCount());
-#endif
         }
     }
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("GrMemoryPool", GrMemoryPoolClass, test_memory_pool)
 
 #endif

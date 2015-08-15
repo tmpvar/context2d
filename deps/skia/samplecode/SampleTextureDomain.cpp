@@ -1,20 +1,19 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SampleCode.h"
-#include "SkCanvas.h"
-#include "SkDevice.h"
-#include "SkBlurMaskFilter.h"
 
-namespace {
-SkBitmap make_bitmap() {
+#include "SampleCode.h"
+#include "SkBlurMask.h"
+#include "SkBlurMaskFilter.h"
+#include "SkCanvas.h"
+#include "SkSurface.h"
+
+static SkBitmap make_bitmap() {
     SkBitmap bm;
-    bm.setConfig(SkBitmap::kARGB_8888_Config , 5, 5);
-    bm.allocPixels();
+    bm.allocN32Pixels(5, 5);
 
     for (int y = 0; y < bm.height(); y++) {
         uint32_t* p = bm.getAddr32(0, y);
@@ -25,7 +24,6 @@ SkBitmap make_bitmap() {
     bm.unlockPixels();
     return bm;
 }
-} // unnamed namespace
 
 class TextureDomainView : public SampleView {
     SkBitmap    fBM;
@@ -46,62 +44,61 @@ protected:
     }
 
     virtual void onDrawContent(SkCanvas* canvas) {
-        SkIRect srcRect;
+        SkRect srcRect;
         SkRect dstRect;
         SkPaint paint;
-        paint.setFilterBitmap(true);
+        paint.setFilterQuality(kLow_SkFilterQuality);
 
         // Test that bitmap draws from malloc-backed bitmaps respect
         // the constrained texture domain.
         srcRect.setXYWH(1, 1, 3, 3);
-        dstRect.setXYWH(5.0f, 5.0f, 305.0f, 305.0f);
-        canvas->drawBitmapRect(fBM, &srcRect, dstRect, &paint);
+        dstRect.setXYWH(5, 5, 305, 305);
+        canvas->drawBitmapRect(fBM, srcRect, dstRect, &paint, SkCanvas::kStrict_SrcRectConstraint);
 
         // Test that bitmap draws across separate devices also respect
         // the constrainted texture domain.
         // Note:  GPU-backed bitmaps follow a different rendering path
         // when copying from one GPU device to another.
-        SkAutoTUnref<SkDevice> secondDevice(canvas->createCompatibleDevice(
-                SkBitmap::kARGB_8888_Config, 5, 5, true));
-        SkCanvas secondCanvas(secondDevice.get());
+        SkImageInfo info = SkImageInfo::MakeN32(5, 5, kOpaque_SkAlphaType);
+        SkAutoTUnref<SkSurface> surface(canvas->newSurface(info));
 
         srcRect.setXYWH(1, 1, 3, 3);
-        dstRect.setXYWH(1.0f, 1.0f, 3.0f, 3.0f);
-        secondCanvas.drawBitmapRect(fBM, &srcRect, dstRect, &paint);
+        dstRect.setXYWH(1, 1, 3, 3);
+        surface->getCanvas()->drawBitmapRect(fBM, srcRect, dstRect, &paint,
+                                             SkCanvas::kStrict_SrcRectConstraint);
 
-        SkBitmap deviceBitmap = secondDevice->accessBitmap(false);
+        SkAutoTUnref<SkImage> image(surface->newImageSnapshot());
 
         srcRect.setXYWH(1, 1, 3, 3);
-        dstRect.setXYWH(405.0f, 5.0f, 305.0f, 305.0f);
-        canvas->drawBitmapRect(deviceBitmap, &srcRect, dstRect, &paint);
+        dstRect.setXYWH(405, 5, 305, 305);
+        canvas->drawImageRect(image, srcRect, dstRect, &paint);
 
         // Test that bitmap blurring using a subrect
         // renders correctly
         srcRect.setXYWH(1, 1, 3, 3);
-        dstRect.setXYWH(5.0f, 405.0f, 305.0f, 305.0f);
+        dstRect.setXYWH(5, 405, 305, 305);
         SkMaskFilter* mf = SkBlurMaskFilter::Create(
-            5,
-            SkBlurMaskFilter::kNormal_BlurStyle,
+            kNormal_SkBlurStyle,
+            SkBlurMask::ConvertRadiusToSigma(SkIntToScalar(5)),
             SkBlurMaskFilter::kHighQuality_BlurFlag |
             SkBlurMaskFilter::kIgnoreTransform_BlurFlag);
         paint.setMaskFilter(mf)->unref();
-        canvas->drawBitmapRect(deviceBitmap, &srcRect, dstRect, &paint);
+        canvas->drawImageRect(image, srcRect, dstRect, &paint);
 
         // Blur and a rotation + NULL src rect
         // This should not trigger the texture domain code
         // but it will test a code path in SkGpuDevice::drawBitmap
         // that handles blurs with rects transformed to non-
         // orthogonal rects. It also tests the NULL src rect handling
-    mf = SkBlurMaskFilter::Create(
-            5,
-            SkBlurMaskFilter::kNormal_BlurStyle,
-            SkBlurMaskFilter::kHighQuality_BlurFlag);
+        mf = SkBlurMaskFilter::Create(kNormal_SkBlurStyle,
+                                      SkBlurMask::ConvertRadiusToSigma(5),
+                                      SkBlurMaskFilter::kHighQuality_BlurFlag);
         paint.setMaskFilter(mf)->unref();
 
-        dstRect.setXYWH(-150.0f, -150.0f, 300.0f, 300.0f);
+        dstRect.setXYWH(-150, -150, 300, 300);
         canvas->translate(550, 550);
         canvas->rotate(45);
-        canvas->drawBitmapRect(fBM, NULL, dstRect, &paint);
+        canvas->drawBitmapRect(fBM, dstRect, &paint);
     }
 private:
     typedef SkView INHERITED;

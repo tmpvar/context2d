@@ -28,10 +28,9 @@
 static SkShader* make_shader0(SkIPoint* size) {
     SkBitmap    bm;
     size->set(2, 2);
-    bm.setConfig(SkBitmap::kARGB_8888_Config, size->fX, size->fY);
     SkPMColor color0 = SkPreMultiplyARGB(0x80, 0x80, 0xff, 0x80);
     SkPMColor color1 = SkPreMultiplyARGB(0x40, 0xff, 0x00, 0xff);
-    bm.allocPixels();
+    bm.allocN32Pixels(size->fX, size->fY);
     bm.eraseColor(color0);
     bm.lockPixels();
     uint32_t* pixels = (uint32_t*) bm.getPixels();
@@ -48,7 +47,7 @@ static SkShader* make_shader1(const SkIPoint& size) {
                       { SkIntToScalar(size.fX), SkIntToScalar(size.fY) } };
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorRED };
     return SkGradientShader::CreateLinear(pts, colors, NULL,
-                    SK_ARRAY_COUNT(colors), SkShader::kMirror_TileMode, NULL);
+                    SK_ARRAY_COUNT(colors), SkShader::kMirror_TileMode);
 }
 
 class VerticesView : public SampleView {
@@ -78,7 +77,7 @@ public:
 
 protected:
     // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt)  {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "Vertices");
             return true;
@@ -88,10 +87,10 @@ protected:
 
     SkScalar fScale;
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setDither(true);
-        paint.setFilterBitmap(true);
+        paint.setFilterQuality(kLow_SkFilterQuality);
 
         for (size_t i = 0; i < SK_ARRAY_COUNT(fRecs); i++) {
             canvas->save();
@@ -120,11 +119,11 @@ protected:
         }
     }
 
-    virtual SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) SK_OVERRIDE {
+    SkView::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) override {
         return new Click(this);
     }
 
-    virtual bool onClick(Click* click) {
+    bool onClick(Click* click) override {
     //    fCurrX = click->fICurr.fX;
     //    fCurrY = click->fICurr.fY;
         this->inval(NULL);

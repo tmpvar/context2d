@@ -10,22 +10,37 @@
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkImageEncoder.h"
+#include "SkMultiPictureDraw.h"
 #include "SkPicture.h"
 #include "SkPixelRef.h"
 #include "SkRect.h"
 #include "SkString.h"
 
 namespace sk_tools {
+#if SK_SUPPORT_GPU
+    CopyTilesRenderer::CopyTilesRenderer(const GrContextOptions& opts, int x, int y)
+    : INHERITED(opts)
+    , fXTilesPerLargeTile(x)
+    , fYTilesPerLargeTile(y) { }
+#else
     CopyTilesRenderer::CopyTilesRenderer(int x, int y)
     : fXTilesPerLargeTile(x)
-    , fYTilesPerLargeTile(y) {
-    }
-    void CopyTilesRenderer::init(SkPicture* pict) {
+    , fYTilesPerLargeTile(y) { }
+#endif
+    void CopyTilesRenderer::init(const SkPicture* pict, const SkString* writePath,
+                                 const SkString* mismatchPath, const SkString* inputFilename,
+                                 bool useChecksumBasedFilenames, bool useMultiPictureDraw) {
+        // Do not call INHERITED::init(), which would create a (potentially large) canvas which is
+        // not used by bench_pictures.
         SkASSERT(pict != NULL);
         // Only work with absolute widths (as opposed to percentages).
         SkASSERT(this->getTileWidth() != 0 && this->getTileHeight() != 0);
-        fPicture = pict;
-        fPicture->ref();
+        fPicture.reset(pict)->ref();
+        this->CopyString(&fWritePath, writePath);
+        this->CopyString(&fMismatchPath, mismatchPath);
+        this->CopyString(&fInputFilename, inputFilename);
+        fUseChecksumBasedFilenames = useChecksumBasedFilenames;
+        fUseMultiPictureDraw = useMultiPictureDraw;
         this->buildBBoxHierarchy();
         // In order to avoid allocating a large canvas (particularly important for GPU), create one
         // canvas that is a multiple of the tile size, and draw portions of the picture.
@@ -34,7 +49,7 @@ namespace sk_tools {
         fCanvas.reset(this->INHERITED::setupCanvas(fLargeTileWidth, fLargeTileHeight));
     }
 
-    bool CopyTilesRenderer::render(const SkString* path, SkBitmap** out) {
+    bool CopyTilesRenderer::render(SkBitmap** out) {
         int i = 0;
         bool success = true;
         SkBitmap dst;
@@ -48,9 +63,18 @@ namespace sk_tools {
                 mat.postTranslate(SkIntToScalar(-x), SkIntToScalar(-y));
                 fCanvas->setMatrix(mat);
                 // Draw the picture
-                fCanvas->drawPicture(*fPicture);
+                if (fUseMultiPictureDraw) {
+                    SkMultiPictureDraw mpd;
+
+                    mpd.add(fCanvas, fPicture);
+
+                    mpd.draw();
+                } else {
+                    fCanvas->drawPicture(fPicture);
+                }
                 // Now extract the picture into tiles
-                const SkBitmap& baseBitmap = fCanvas->getDevice()->accessBitmap(false);
+                SkBitmap baseBitmap;
+                fCanvas->readPixels(SkIRect::MakeSize(fCanvas->getBaseLayerSize()), &baseBitmap);
                 SkIRect subset;
                 for (int tileY = 0; tileY < fLargeTileHeight; tileY += this->getTileHeight()) {
                     for (int tileX = 0; tileX < fLargeTileWidth; tileX += this->getTileWidth()) {
@@ -59,10 +83,14 @@ namespace sk_tools {
                         SkDEBUGCODE(bool extracted =)
                         baseBitmap.extractSubset(&dst, subset);
                         SkASSERT(extracted);
-                        if (path != NULL) {
-                            // Similar to writeAppendNumber in PictureRenderer.cpp, but just encodes
+                        if (!fWritePath.isEmpty()) {
+                            // Similar to write() in PictureRenderer.cpp, but just encodes
                             // a bitmap directly.
-                            SkString pathWithNumber(*path);
+                            // TODO: Share more common code with write() to do this, to properly
+                            // write out the JSON summary, etc.
+                            SkString pathWithNumber = SkOSPath::Join(fWritePath.c_str(),
+                                                                     fInputFilename.c_str());
+                            pathWithNumber.remove(pathWithNumber.size() - 4, 4);
                             pathWithNumber.appendf("%i.png", i++);
                             SkBitmap copy;
 #if SK_SUPPORT_GPU
@@ -70,7 +98,7 @@ namespace sk_tools {
                                 dst.pixelRef()->readPixels(&copy, &subset);
                             } else {
 #endif
-                                dst.copyTo(&copy, dst.config());
+                                dst.copyTo(&copy);
 #if SK_SUPPORT_GPU
                             }
 #endif

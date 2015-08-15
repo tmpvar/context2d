@@ -11,7 +11,8 @@
 #include "SkColorFilter.h"
 #include "SkColorPriv.h"
 #include "SkColorShader.h"
-#include "SkFlattenableBuffers.h"
+#include "SkReadBuffer.h"
+#include "SkWriteBuffer.h"
 #include "SkXfermode.h"
 #include "SkString.h"
 
@@ -25,23 +26,14 @@ SkComposeShader::SkComposeShader(SkShader* sA, SkShader* sB, SkXfermode* mode) {
     SkSafeRef(mode);
 }
 
-SkComposeShader::SkComposeShader(SkFlattenableReadBuffer& buffer) :
-    INHERITED(buffer) {
-    fShaderA = buffer.readFlattenableT<SkShader>();
-    if (NULL == fShaderA) {
-        fShaderA = SkNEW_ARGS(SkColorShader, (0));
-    }
-    fShaderB = buffer.readFlattenableT<SkShader>();
-    if (NULL == fShaderB) {
-        fShaderB = SkNEW_ARGS(SkColorShader, (0));
-    }
-    fMode = buffer.readFlattenableT<SkXfermode>();
-}
-
 SkComposeShader::~SkComposeShader() {
     SkSafeUnref(fMode);
     fShaderB->unref();
     fShaderA->unref();
+}
+
+size_t SkComposeShader::contextSize() const {
+    return sizeof(ComposeShaderContext) + fShaderA->contextSize() + fShaderB->contextSize();
 }
 
 class SkAutoAlphaRestore {
@@ -59,67 +51,95 @@ private:
     SkPaint*    fPaint;
     uint8_t     fAlpha;
 };
+#define SkAutoAlphaRestore(...) SK_REQUIRE_LOCAL_VAR(SkAutoAlphaRestore)
 
-void SkComposeShader::flatten(SkFlattenableWriteBuffer& buffer) const {
-    this->INHERITED::flatten(buffer);
+SkFlattenable* SkComposeShader::CreateProc(SkReadBuffer& buffer) {
+    SkAutoTUnref<SkShader> shaderA(buffer.readShader());
+    SkAutoTUnref<SkShader> shaderB(buffer.readShader());
+    SkAutoTUnref<SkXfermode> mode(buffer.readXfermode());
+    if (!shaderA.get() || !shaderB.get()) {
+        return NULL;
+    }
+    return SkNEW_ARGS(SkComposeShader, (shaderA, shaderB, mode));
+}
+
+void SkComposeShader::flatten(SkWriteBuffer& buffer) const {
     buffer.writeFlattenable(fShaderA);
     buffer.writeFlattenable(fShaderB);
     buffer.writeFlattenable(fMode);
 }
 
-/*  We call setContext on our two worker shaders. However, we
-    always let them see opaque alpha, and if the paint really
-    is translucent, then we apply that after the fact.
-
-    We need to keep the calls to setContext/endContext balanced, since if we
-    return false, our endContext() will not be called.
- */
-bool SkComposeShader::setContext(const SkBitmap& device,
-                                 const SkPaint& paint,
-                                 const SkMatrix& matrix) {
-    if (!this->INHERITED::setContext(device, paint, matrix)) {
-        return false;
+template <typename T> void safe_call_destructor(T* obj) {
+    if (obj) {
+        obj->~T();
     }
+}
+
+SkShader::Context* SkComposeShader::onCreateContext(const ContextRec& rec, void* storage) const {
+    char* aStorage = (char*) storage + sizeof(ComposeShaderContext);
+    char* bStorage = aStorage + fShaderA->contextSize();
 
     // we preconcat our localMatrix (if any) with the device matrix
     // before calling our sub-shaders
-
     SkMatrix tmpM;
+    tmpM.setConcat(*rec.fMatrix, this->getLocalMatrix());
 
-    tmpM.setConcat(matrix, this->getLocalMatrix());
+    // Our sub-shaders need to see opaque, so by combining them we don't double-alphatize the
+    // result. ComposeShader itself will respect the alpha, and post-apply it after calling the
+    // sub-shaders.
+    SkPaint opaquePaint(*rec.fPaint);
+    opaquePaint.setAlpha(0xFF);
 
-    SkAutoAlphaRestore  restore(const_cast<SkPaint*>(&paint), 0xFF);
+    ContextRec newRec(rec);
+    newRec.fMatrix = &tmpM;
+    newRec.fPaint = &opaquePaint;
 
-    bool setContextA = fShaderA->setContext(device, paint, tmpM);
-    bool setContextB = fShaderB->setContext(device, paint, tmpM);
-    if (!setContextA || !setContextB) {
-        if (setContextB) {
-            fShaderB->endContext();
-        }
-        else if (setContextA) {
-            fShaderA->endContext();
-        }
-        this->INHERITED::endContext();
-        return false;
+    SkShader::Context* contextA = fShaderA->createContext(newRec, aStorage);
+    SkShader::Context* contextB = fShaderB->createContext(newRec, bStorage);
+    if (!contextA || !contextB) {
+        safe_call_destructor(contextA);
+        safe_call_destructor(contextB);
+        return NULL;
+    }
+
+    return SkNEW_PLACEMENT_ARGS(storage, ComposeShaderContext, (*this, rec, contextA, contextB));
+}
+
+SkComposeShader::ComposeShaderContext::ComposeShaderContext(
+        const SkComposeShader& shader, const ContextRec& rec,
+        SkShader::Context* contextA, SkShader::Context* contextB)
+    : INHERITED(shader, rec)
+    , fShaderContextA(contextA)
+    , fShaderContextB(contextB) {}
+
+SkComposeShader::ComposeShaderContext::~ComposeShaderContext() {
+    fShaderContextA->~Context();
+    fShaderContextB->~Context();
+}
+
+bool SkComposeShader::asACompose(ComposeRec* rec) const {
+    if (rec) {
+        rec->fShaderA = fShaderA;
+        rec->fShaderB = fShaderB;
+        rec->fMode = fMode;
     }
     return true;
 }
 
-void SkComposeShader::endContext() {
-    fShaderB->endContext();
-    fShaderA->endContext();
-    this->INHERITED::endContext();
-}
 
 // larger is better (fewer times we have to loop), but we shouldn't
 // take up too much stack-space (each element is 4 bytes)
 #define TMP_COLOR_COUNT     64
 
-void SkComposeShader::shadeSpan(int x, int y, SkPMColor result[], int count) {
-    SkShader*   shaderA = fShaderA;
-    SkShader*   shaderB = fShaderB;
-    SkXfermode* mode = fMode;
-    unsigned    scale = SkAlpha255To256(this->getPaintAlpha());
+void SkComposeShader::ComposeShaderContext::shadeSpan(int x, int y, SkPMColor result[], int count) {
+    SkShader::Context* shaderContextA = fShaderContextA;
+    SkShader::Context* shaderContextB = fShaderContextB;
+    SkXfermode*        mode = static_cast<const SkComposeShader&>(fShader).fMode;
+    unsigned           scale = SkAlpha255To256(this->getPaintAlpha());
+
+#ifdef SK_BUILD_FOR_ANDROID
+    scale = 256;    // ugh -- maintain old bug/behavior for now
+#endif
 
     SkPMColor   tmp[TMP_COLOR_COUNT];
 
@@ -132,8 +152,8 @@ void SkComposeShader::shadeSpan(int x, int y, SkPMColor result[], int count) {
                 n = TMP_COLOR_COUNT;
             }
 
-            shaderA->shadeSpan(x, y, result, n);
-            shaderB->shadeSpan(x, y, tmp, n);
+            shaderContextA->shadeSpan(x, y, result, n);
+            shaderContextB->shadeSpan(x, y, tmp, n);
 
             if (256 == scale) {
                 for (int i = 0; i < n; i++) {
@@ -157,11 +177,11 @@ void SkComposeShader::shadeSpan(int x, int y, SkPMColor result[], int count) {
                 n = TMP_COLOR_COUNT;
             }
 
-            shaderA->shadeSpan(x, y, result, n);
-            shaderB->shadeSpan(x, y, tmp, n);
+            shaderContextA->shadeSpan(x, y, result, n);
+            shaderContextB->shadeSpan(x, y, tmp, n);
             mode->xfer32(result, tmp, n, NULL);
 
-            if (256 == scale) {
+            if (256 != scale) {
                 for (int i = 0; i < n; i++) {
                     result[i] = SkAlphaMulQ(result[i], scale);
                 }
@@ -174,7 +194,7 @@ void SkComposeShader::shadeSpan(int x, int y, SkPMColor result[], int count) {
     }
 }
 
-#ifdef SK_DEVELOPER
+#ifndef SK_IGNORE_TO_STRING
 void SkComposeShader::toString(SkString* str) const {
     str->append("SkComposeShader: (");
 
@@ -182,8 +202,10 @@ void SkComposeShader::toString(SkString* str) const {
     fShaderA->toString(str);
     str->append(" ShaderB: ");
     fShaderB->toString(str);
-    str->append(" Xfermode: ");
-    fMode->toString(str);
+    if (fMode) {
+        str->append(" Xfermode: ");
+        fMode->toString(str);
+    }
 
     this->INHERITED::toString(str);
 

@@ -8,10 +8,11 @@
 #include "gm.h"
 #include "SkCanvas.h"
 #include "SkBlurImageFilter.h"
+#include "SkRSXform.h"
+#include "SkSurface.h"
 
 static void make_bm(SkBitmap* bm) {
-    bm->setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
-    bm->allocPixels();
+    bm->allocN32Pixels(100, 100);
     bm->eraseColor(SK_ColorBLUE);
 
     SkCanvas canvas(*bm);
@@ -63,15 +64,16 @@ public:
     SpriteBitmapGM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("spritebitmap");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(640, 480);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkBitmap bm;
         make_bm(&bm);
 
@@ -79,7 +81,7 @@ protected:
         int dy = 10;
 
         SkScalar sigma = 8;
-        SkAutoTUnref<SkImageFilter> filter(new SkBlurImageFilter(sigma, sigma));
+        SkAutoTUnref<SkImageFilter> filter(SkBlurImageFilter::Create(sigma, sigma));
 
         draw_2_bitmaps(canvas, bm, false, dx, dy);
         dy += bm.height() + 20;
@@ -93,7 +95,5 @@ protected:
 private:
     typedef GM INHERITED;
 };
-
-//////////////////////////////////////////////////////////////////////////////
-
 DEF_GM( return new SpriteBitmapGM; )
+

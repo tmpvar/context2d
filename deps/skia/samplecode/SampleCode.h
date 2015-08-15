@@ -1,11 +1,9 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 
 #ifndef SampleCode_DEFINED
 #define SampleCode_DEFINED
@@ -15,7 +13,14 @@
 #include "SkKey.h"
 #include "SkView.h"
 #include "SkOSMenu.h"
+
 class GrContext;
+class SkAnimTimer;
+
+#define DEF_SAMPLE(code) \
+    static SkView*          SK_MACRO_APPEND_LINE(F_)() { code } \
+    static SkViewRegister   SK_MACRO_APPEND_LINE(R_)(SK_MACRO_APPEND_LINE(F_));
+
 
 class SampleCode {
 public:
@@ -31,16 +36,7 @@ public:
 
     static bool FastTextQ(const SkEvent&);
 
-    static SkMSec GetAnimTime();
-    static SkMSec GetAnimTimeDelta();
-    static SkScalar GetAnimSecondsDelta();
-    static SkScalar GetAnimScalar(SkScalar speedPerSec, SkScalar period = 0);
-    // gives a sinusoidal value between 0 and amplitude
-    static SkScalar GetAnimSinScalar(SkScalar amplitude,
-                                     SkScalar periodInSec,
-                                     SkScalar phaseInSec = 0);
-
-    static GrContext* GetGr();
+    friend class SampleWindow;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,7 +53,7 @@ typedef SkView* (*SkViewCreateFunc)();
 class SkFuncViewFactory : public SkViewFactory {
 public:
     SkFuncViewFactory(SkViewCreateFunc func);
-    virtual SkView* operator() () const SK_OVERRIDE;
+    SkView* operator() () const override;
 
 private:
     SkViewCreateFunc fCreateFunc;
@@ -76,7 +72,7 @@ typedef skiagm::GM* (*GMFactoryFunc)(void*);
 class SkGMSampleViewFactory : public SkViewFactory {
 public:
     SkGMSampleViewFactory(GMFactoryFunc func);
-    virtual SkView* operator() () const SK_OVERRIDE;
+    SkView* operator() () const override;
 private:
     GMFactoryFunc fFunc;
 };
@@ -111,10 +107,11 @@ public:
         : fPipeState(SkOSMenu::kOffState)
         , fBGColor(SK_ColorWHITE)
         , fRepeatCount(1)
-        , fDebugHitTest(false) {
-    }
+        , fHaveCalledOnceBeforeDraw(false)
+    {}
 
     void setBGColor(SkColor color) { fBGColor = color; }
+    bool animate(const SkAnimTimer& timer) { return this->onAnimate(timer); }
 
     static bool IsSampleView(SkView*);
     static bool SetRepeatDraw(SkView*, int count);
@@ -129,9 +126,13 @@ public:
      */
     virtual void requestMenu(SkOSMenu* menu) {}
 
+    virtual void onTileSizeChanged(const SkSize& tileSize) {}
+
 protected:
     virtual void onDrawBackground(SkCanvas*);
     virtual void onDrawContent(SkCanvas*) = 0;
+    virtual bool onAnimate(const SkAnimTimer&) { return false; }
+    virtual void onOnceBeforeDraw() {}
 
     // overrides
     virtual bool onEvent(const SkEvent& evt);
@@ -144,10 +145,7 @@ protected:
 
 private:
     int fRepeatCount;
-
-    bool fDebugHitTest;
-    SkIPoint fDebugHitTestLoc;
-
+    bool fHaveCalledOnceBeforeDraw;
     typedef SkView INHERITED;
 };
 

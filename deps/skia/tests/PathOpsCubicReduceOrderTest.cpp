@@ -6,11 +6,13 @@
  */
 #include "PathOpsCubicIntersectionTestData.h"
 #include "PathOpsQuadIntersectionTestData.h"
+#include "PathOpsTestCommon.h"
 #include "SkIntersections.h"
 #include "SkPathOpsRect.h"
 #include "SkReduceOrder.h"
 #include "Test.h"
 
+#if 0 // disable test until stroke reduction is supported
 static bool controls_inside(const SkDCubic& cubic) {
     return between(cubic[0].fX, cubic[1].fX, cubic[3].fX)
             && between(cubic[0].fX, cubic[2].fX, cubic[3].fX)
@@ -54,8 +56,9 @@ static void find_tight_bounds(const SkDCubic& cubic, SkDRect& bounds) {
         bounds.add(cubicPair.second()[3]);
     }
 }
+#endif
 
-static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
+DEF_TEST(PathOpsReduceOrderCubic, reporter) {
     size_t index;
     SkReduceOrder reducer;
     int order;
@@ -97,12 +100,14 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
             ? firstTestIndex : SK_MaxS32;
     int firstQuadraticModLineTest = run == RunAll ? 0 : run == RunQuadraticModLines
             ? firstTestIndex : SK_MaxS32;
+#if 0
     int firstComputedLinesTest = run == RunAll ? 0 : run == RunComputedLines
             ? firstTestIndex : SK_MaxS32;
-
+#endif
     for (index = firstPointDegeneratesTest; index < pointDegenerates_count; ++index) {
         const SkDCubic& cubic = pointDegenerates[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 1) {
             SkDebugf("[%d] pointDegenerates order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -110,15 +115,18 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstNotPointDegeneratesTest; index < notPointDegenerates_count; ++index) {
         const SkDCubic& cubic = notPointDegenerates[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order == 1) {
             SkDebugf("[%d] notPointDegenerates order=%d\n", static_cast<int>(index), order);
+            order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
             REPORTER_ASSERT(reporter, 0);
         }
     }
     for (index = firstLinesTest; index < lines_count; ++index) {
         const SkDCubic& cubic = lines[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 2) {
             SkDebugf("[%d] lines order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -126,7 +134,8 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstNotLinesTest; index < notLines_count; ++index) {
         const SkDCubic& cubic = notLines[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order == 2) {
             SkDebugf("[%d] notLines order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -134,7 +143,8 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstModEpsilonTest; index < modEpsilonLines_count; ++index) {
         const SkDCubic& cubic = modEpsilonLines[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order == 2) {
             SkDebugf("[%d] line mod by epsilon order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -142,15 +152,18 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstLessEpsilonTest; index < lessEpsilonLines_count; ++index) {
         const SkDCubic& cubic = lessEpsilonLines[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 2) {
             SkDebugf("[%d] line less by epsilon/2 order=%d\n", static_cast<int>(index), order);
+            order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
             REPORTER_ASSERT(reporter, 0);
         }
     }
     for (index = firstNegEpsilonTest; index < negEpsilonLines_count; ++index) {
         const SkDCubic& cubic = negEpsilonLines[index];
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidCubic(cubic));
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 2) {
             SkDebugf("[%d] line neg by epsilon/2 order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -158,8 +171,9 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstQuadraticPointTest; index < quadraticPoints_count; ++index) {
         const SkDQuad& quad = quadraticPoints[index];
-        SkDCubic cubic = quad.toCubic();
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidQuad(quad));
+        SkDCubic cubic = quad.debugToCubic();
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 1) {
             SkDebugf("[%d] point quad order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -167,8 +181,9 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstQuadraticLineTest; index < quadraticLines_count; ++index) {
         const SkDQuad& quad = quadraticLines[index];
-        SkDCubic cubic = quad.toCubic();
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidQuad(quad));
+        SkDCubic cubic = quad.debugToCubic();
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 2) {
             SkDebugf("[%d] line quad order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
@@ -176,17 +191,20 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
     }
     for (index = firstQuadraticModLineTest; index < quadraticModEpsilonLines_count; ++index) {
         const SkDQuad& quad = quadraticModEpsilonLines[index];
-        SkDCubic cubic = quad.toCubic();
-        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics, SkReduceOrder::kFill_Style);
+        SkASSERT(ValidQuad(quad));
+        SkDCubic cubic = quad.debugToCubic();
+        order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics);
         if (order != 3) {
             SkDebugf("[%d] line mod quad order=%d\n", static_cast<int>(index), order);
             REPORTER_ASSERT(reporter, 0);
         }
     }
 
-    // test if computed line end points are valid
+#if 0 // disable test until stroke reduction is supported
+// test if computed line end points are valid
     for (index = firstComputedLinesTest; index < lines_count; ++index) {
         const SkDCubic& cubic = lines[index];
+        SkASSERT(ValidCubic(cubic));
         bool controlsInside = controls_inside(cubic);
         order = reducer.reduce(cubic, SkReduceOrder::kAllow_Quadratics,
                 SkReduceOrder::kStroke_Style);
@@ -220,7 +238,5 @@ static void PathOpsReduceOrderCubicTest(skiatest::Reporter* reporter) {
             }
         }
     }
+#endif
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS_SHORT(PathOpsReduceOrderCubicTest)

@@ -5,28 +5,28 @@
  * found in the LICENSE file.
  */
 
-#include "BenchTimer.h"
+#include "BenchLogger.h"
+#include "Timer.h"
 #include "CopyTilesRenderer.h"
+#include "CrashHandler.h"
+#include "LazyDecodeBitmap.h"
 #include "PictureBenchmark.h"
 #include "PictureRenderingFlags.h"
-#include "SkBenchLogger.h"
+#include "PictureResultsWriter.h"
 #include "SkCommandLineFlags.h"
-#include "SkForceLinking.h"
+#include "SkData.h"
+#include "SkDiscardableMemoryPool.h"
 #include "SkGraphics.h"
 #include "SkImageDecoder.h"
-#if LAZY_CACHE_STATS
-    #include "SkLazyPixelRef.h"
-#endif
-#include "SkLruImageCache.h"
 #include "SkMath.h"
 #include "SkOSFile.h"
 #include "SkPicture.h"
 #include "SkStream.h"
 #include "picture_utils.h"
 
-__SK_FORCE_IMAGE_DECODER_LINKING;
-
-SkBenchLogger gLogger;
+BenchLogger gLogger;
+PictureResultsLoggerWriter gLogWriter(&gLogger);
+PictureResultsMultiWriter gWriter;
 
 // Flags used by this file, in alphabetical order.
 DEFINE_bool(countRAM, false, "Count the RAM used for bitmap pixels in each skp file");
@@ -40,17 +40,34 @@ DEFINE_string(filter, "",
         "Specific flags are listed above.");
 DEFINE_string(logFile, "", "Destination for writing log output, in addition to stdout.");
 DEFINE_bool(logPerIter, false, "Log each repeat timer instead of mean.");
+DEFINE_string(jsonLog, "", "Destination for writing JSON data.");
 DEFINE_bool(min, false, "Print the minimum times (instead of average).");
-DECLARE_int32(multi);
 DECLARE_string(readPath);
 DEFINE_int32(repeat, 1, "Set the number of times to repeat each test.");
 DEFINE_bool(timeIndividualTiles, false, "Report times for drawing individual tiles, rather than "
             "times for drawing the whole page. Requires tiled rendering.");
-DEFINE_string(timers, "", "[wcgWC]*: Display wall, cpu, gpu, truncated wall or truncated cpu time"
+DEFINE_bool(purgeDecodedTex, false, "Purge decoded and GPU-uploaded textures "
+            "after each iteration.");
+DEFINE_string(timers, "c", "[wcgWC]*: Display wall, cpu, gpu, truncated wall or truncated cpu time"
               " for each picture.");
 DEFINE_bool(trackDeferredCaching, false, "Only meaningful with --deferImageDecoding and "
-            "LAZY_CACHE_STATS set to true. Report percentage of cache hits when using deferred "
-            "image decoding.");
+            "SK_LAZY_CACHE_STATS set to true. Report percentage of cache hits when using "
+            "deferred image decoding.");
+
+#if GR_GPU_STATS
+DEFINE_bool(gpuStats, false, "Only meaningful with gpu configurations. "
+            "Report some GPU call statistics.");
+#endif
+
+DEFINE_bool(mpd, false, "If true, use MultiPictureDraw to render.");
+
+// Buildbot-specific parameters
+DEFINE_string(builderName, "", "Name of the builder this is running on.");
+DEFINE_int32(buildNumber, -1, "Build number of the build this test is running on");
+DEFINE_int32(timestamp, 0, "Timestamp of the revision of Skia being tested.");
+DEFINE_string(gitHash, "", "Commit hash of the revision of Skia being run.");
+DEFINE_int32(gitNumber, -1, "Git number of the revision of Skia being run.");
+
 
 static char const * const gFilterTypes[] = {
     "paint",
@@ -145,11 +162,7 @@ static SkString filterFlagsUsage() {
     return result;
 }
 
-// These are defined in PictureRenderingFlags.cpp
-extern SkLruImageCache gLruImageCache;
-extern bool lazy_decode_bitmap(const void* buffer, size_t size, SkBitmap* bitmap);
-
-#if LAZY_CACHE_STATS
+#if SK_LAZY_CACHE_STATS
 static int32_t gTotalCacheHits;
 static int32_t gTotalCacheMisses;
 #endif
@@ -166,16 +179,17 @@ static bool run_single_benchmark(const SkString& inputPath,
         return false;
     }
 
+    SkDiscardableMemoryPool* pool = SkGetGlobalDiscardableMemoryPool();
     // Since the old picture has been deleted, all pixels should be cleared.
-    SkASSERT(gLruImageCache.getImageCacheUsed() == 0);
+    SkASSERT(pool->getRAMUsed() == 0);
     if (FLAGS_countRAM) {
-        // Set the limit to zero, so all pixels will be kept
-        gLruImageCache.setImageCacheLimit(0);
+        pool->setRAMBudget(SK_MaxU32);
+        // Set the limit to max, so all pixels will be kept
     }
 
     SkPicture::InstallPixelRefProc proc;
     if (FLAGS_deferImageDecoding) {
-        proc = &lazy_decode_bitmap;
+        proc = &sk_tools::LazyDecodeBitmap;
     } else {
         proc = &SkImageDecoder::DecodeMemory;
     }
@@ -188,21 +202,19 @@ static bool run_single_benchmark(const SkString& inputPath,
         return false;
     }
 
-    SkString filename;
-    sk_tools::get_basename(&filename, inputPath);
+    SkString filename = SkOSPath::Basename(inputPath.c_str());
 
-    SkString result;
-    result.printf("running bench [%i %i] %s ", picture->width(), picture->height(),
-                  filename.c_str());
-    gLogger.logProgress(result);
+    gWriter.bench(filename.c_str(),
+                  SkScalarCeilToInt(picture->cullRect().width()),
+                  SkScalarCeilToInt(picture->cullRect().height()));
 
-    benchmark.run(picture);
+    benchmark.run(picture, FLAGS_mpd);
 
-#if LAZY_CACHE_STATS
+#if SK_LAZY_CACHE_STATS
     if (FLAGS_trackDeferredCaching) {
-        int32_t cacheHits = SkLazyPixelRef::GetCacheHits();
-        int32_t cacheMisses = SkLazyPixelRef::GetCacheMisses();
-        SkLazyPixelRef::ResetCacheStats();
+        int cacheHits = pool->getCacheHits();
+        int cacheMisses = pool->getCacheMisses();
+        pool->resetCacheHitsAndMisses();
         SkString hitString;
         hitString.printf("Cache hit rate: %f\n", (double) cacheHits / (cacheHits + cacheMisses));
         gLogger.logProgress(hitString);
@@ -212,7 +224,7 @@ static bool run_single_benchmark(const SkString& inputPath,
 #endif
     if (FLAGS_countRAM) {
         SkString ramCount("RAM used for bitmaps: ");
-        size_t bytes = gLruImageCache.getImageCacheUsed();
+        size_t bytes = pool->getRAMUsed();
         if (bytes > 1024) {
             size_t kb = bytes / 1024;
             if (kb > 1024) {
@@ -330,10 +342,6 @@ static void setup_benchmark(sk_tools::PictureBenchmark* benchmark) {
     }
 
     if (FLAGS_timeIndividualTiles) {
-        if (FLAGS_multi > 1) {
-            gLogger.logError("Cannot time individual tiles with more than one thread.\n");
-            exit(-1);
-        }
         sk_tools::TiledPictureRenderer* tiledRenderer = renderer->getTiledRenderer();
         if (NULL == tiledRenderer) {
             gLogger.logError("--timeIndividualTiles requires tiled rendering.\n");
@@ -346,17 +354,24 @@ static void setup_benchmark(sk_tools::PictureBenchmark* benchmark) {
         benchmark->setTimeIndividualTiles(true);
     }
 
+    benchmark->setPurgeDecodedTex(FLAGS_purgeDecodedTex);
+
     if (FLAGS_readPath.count() < 1) {
         gLogger.logError(".skp files or directories are required.\n");
         exit(-1);
     }
 
     renderer->setDrawFilters(drawFilters, filtersName(drawFilters));
-    benchmark->setPrintMin(FLAGS_min);
-    benchmark->setLogPerIter(FLAGS_logPerIter);
+    if (FLAGS_logPerIter) {
+        benchmark->setTimerResultType(TimerData::kPerIter_Result);
+    } else if (FLAGS_min) {
+        benchmark->setTimerResultType(TimerData::kMin_Result);
+    } else {
+        benchmark->setTimerResultType(TimerData::kAvg_Result);
+    }
     benchmark->setRenderer(renderer);
     benchmark->setRepeats(FLAGS_repeat);
-    benchmark->setLogger(&gLogger);
+    benchmark->setWriter(&gWriter);
 }
 
 static int process_input(const char* input,
@@ -367,8 +382,7 @@ static int process_input(const char* input,
     int failures = 0;
     if (iter.next(&inputFilename)) {
         do {
-            SkString inputPath;
-            sk_tools::make_filepath(&inputPath, inputAsSkString, inputFilename);
+            SkString inputPath = SkOSPath::Join(input, inputFilename.c_str());
             if (!run_single_benchmark(inputPath, benchmark)) {
                 ++failures;
             }
@@ -387,6 +401,7 @@ static int process_input(const char* input,
 
 int tool_main(int argc, char** argv);
 int tool_main(int argc, char** argv) {
+    SetupCrashHandler();
     SkString usage;
     usage.printf("Time drawing .skp files.\n"
                  "\tPossible arguments for --filter: [%s]\n\t\t[%s]",
@@ -413,10 +428,22 @@ int tool_main(int argc, char** argv) {
         }
     }
 
+    SkAutoTDelete<PictureJSONResultsWriter> jsonWriter;
+    if (FLAGS_jsonLog.count() == 1) {
+        SkASSERT(FLAGS_builderName.count() == 1 && FLAGS_gitHash.count() == 1);
+        jsonWriter.reset(SkNEW(PictureJSONResultsWriter(
+                        FLAGS_jsonLog[0],
+                        FLAGS_builderName[0],
+                        FLAGS_buildNumber,
+                        FLAGS_timestamp,
+                        FLAGS_gitHash[0],
+                        FLAGS_gitNumber)));
+        gWriter.add(jsonWriter.get());
+    }
 
-#if SK_ENABLE_INST_COUNT
-    gPrintInstCount = true;
-#endif
+    gWriter.add(&gLogWriter);
+
+
     SkAutoGraphics ag;
 
     sk_tools::PictureBenchmark benchmark;
@@ -434,12 +461,20 @@ int tool_main(int argc, char** argv) {
         gLogger.logError(err);
         return 1;
     }
-#if LAZY_CACHE_STATS
+#if SK_LAZY_CACHE_STATS
     if (FLAGS_trackDeferredCaching) {
         SkDebugf("Total cache hit rate: %f\n",
                  (double) gTotalCacheHits / (gTotalCacheHits + gTotalCacheMisses));
     }
 #endif
+
+#if GR_GPU_STATS && SK_SUPPORT_GPU
+    if (FLAGS_gpuStats && benchmark.renderer()->isUsingGpuDevice()) {
+        benchmark.renderer()->getGrContext()->printGpuStats();
+    }
+#endif
+
+    gWriter.end();
     return 0;
 }
 

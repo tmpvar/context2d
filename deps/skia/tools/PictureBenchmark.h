@@ -8,13 +8,13 @@
 #ifndef PictureBenchmark_DEFINED
 #define PictureBenchmark_DEFINED
 
-#include "SkTypes.h"
 #include "PictureRenderer.h"
+#include "PictureResultsWriter.h"
+#include "SkTypes.h"
+#include "TimerData.h"
 
-class BenchTimer;
-class SkBenchLogger;
 class SkPicture;
-class SkString;
+class Timer;
 
 namespace sk_tools {
 
@@ -26,9 +26,9 @@ public:
 
     /**
      * Draw the provided SkPicture fRepeats times while collecting timing data, and log the output
-     * via fLogger.
+     * via fWriter.
      */
-    void run(SkPicture* pict);
+    void run(SkPicture* pict, bool useMultiPictureDraw);
 
     void setRepeats(int repeats) {
         fRepeats = repeats;
@@ -40,41 +40,31 @@ public:
      * TiledPictureRenderer.
      */
     void setTimeIndividualTiles(bool indiv) { fTimeIndividualTiles = indiv; }
+    bool timeIndividualTiles() const { return fTimeIndividualTiles; }
 
-    bool timeIndividualTiles() { return fTimeIndividualTiles; }
+    void setPurgeDecodedTex(bool purgeDecodedTex) { fPurgeDecodedTex = purgeDecodedTex; }
+    bool purgeDecodedText() const { return fPurgeDecodedTex; }
 
     PictureRenderer* setRenderer(PictureRenderer*);
+    PictureRenderer* renderer() { return fRenderer; }
 
-    void setLogPerIter(bool log) { fLogPerIter = log; }
+    void setTimerResultType(TimerData::Result resultType) { fTimerResult = resultType; }
 
-    void setPrintMin(bool min) { fPrintMin = min; }
+    void setTimersToShow(bool wall, bool truncatedWall, bool cpu, bool truncatedCpu, bool gpu);
 
-    void setTimersToShow(bool wall, bool truncatedWall, bool cpu, bool truncatedCpu, bool gpu) {
-        fShowWallTime = wall;
-        fShowTruncatedWallTime = truncatedWall;
-        fShowCpuTime = cpu;
-        fShowTruncatedCpuTime = truncatedCpu;
-        fShowGpuTime = gpu;
-    }
-
-    void setLogger(SkBenchLogger* logger) { fLogger = logger; }
+    void setWriter(PictureResultsWriter* writer) { fWriter = writer; }
 
 private:
-    int              fRepeats;
-    SkBenchLogger*   fLogger;
-    PictureRenderer* fRenderer;
-    bool             fLogPerIter;
-    bool             fPrintMin;
-    bool             fShowWallTime;
-    bool             fShowTruncatedWallTime;
-    bool             fShowCpuTime;
-    bool             fShowTruncatedCpuTime;
-    bool             fShowGpuTime;
-    bool             fTimeIndividualTiles;
+    int               fRepeats;
+    PictureRenderer*  fRenderer;
+    TimerData::Result fTimerResult;
+    uint32_t          fTimerTypes; // bitfield of TimerData::TimerFlags values
+    bool              fTimeIndividualTiles;
+    bool              fPurgeDecodedTex;
 
-    void logProgress(const char msg[]);
+    PictureResultsWriter* fWriter;
 
-    BenchTimer* setupTimer(bool useGLTimer = true);
+    Timer* setupTimer(bool useGLTimer = true);
 };
 
 }

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2006 The Android Open Source Project
  *
@@ -6,13 +5,12 @@
  * found in the LICENSE file.
  */
 
-
 #include "SkDrawPaint.h"
 #include "SkAnimateMaker.h"
 #include "SkDrawColor.h"
 #include "SkDrawShader.h"
 #include "SkMaskFilter.h"
-#include "SkPaintParts.h"
+#include "SkPaintPart.h"
 #include "SkPathEffect.h"
 
 enum SkPaint_Functions {
@@ -220,7 +218,7 @@ void SkDrawPaint::setupPaint(SkPaint* paint) const {
     if (fakeBold != -1)
         paint->setFakeBoldText(SkToBool(fakeBold));
     if (filterBitmap != -1)
-        paint->setFilterBitmap(SkToBool(filterBitmap));
+        paint->setFilterQuality(filterBitmap ? kLow_SkFilterQuality : kNone_SkFilterQuality);
     //  stroke is legacy; style setting if present overrides stroke
     if (stroke != -1)
         paint->setStyle(SkToBool(stroke) ? SkPaint::kStroke_Style : SkPaint::kFill_Style);

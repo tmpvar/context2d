@@ -10,7 +10,10 @@
 #ifndef SkTemplates_DEFINED
 #define SkTemplates_DEFINED
 
+#include "../private/SkTLogic.h"
+#include "SkMath.h"
 #include "SkTypes.h"
+#include <limits.h>
 #include <new>
 
 /** \file SkTemplates.h
@@ -25,16 +28,22 @@
  */
 template<typename T> inline void sk_ignore_unused_variable(const T&) { }
 
-/**
- *  SkTIsConst<T>::value is true if the type T is const.
- *  The type T is constrained not to be an array or reference type.
- */
-template <typename T> struct SkTIsConst {
-    static T* t;
-    static uint16_t test(const volatile void*);
-    static uint32_t test(volatile void *);
-    static const bool value = (sizeof(uint16_t) == sizeof(test(t)));
-};
+namespace skstd {
+
+template <typename T> inline remove_reference_t<T>&& move(T&& t) {
+  return static_cast<remove_reference_t<T>&&>(t);
+}
+
+template <typename T> inline T&& forward(remove_reference_t<T>& t) /*noexcept*/ {
+    return static_cast<T&&>(t);
+}
+template <typename T> inline T&& forward(remove_reference_t<T>&& t) /*noexcept*/ {
+    static_assert(!is_lvalue_reference<T>::value,
+                  "Forwarding an rvalue reference as an lvalue reference is not allowed.");
+    return static_cast<T&&>(t);
+}
+
+}  // namespace skstd
 
 ///@{
 /** SkTConstType<T, CONST>::type will be 'const T' if CONST is true, 'T' otherwise. */
@@ -64,13 +73,6 @@ template <typename D, typename S> static D* SkTAddOffset(S* ptr, size_t byteOffs
     );
 }
 
-/** Returns true if the source value 's' will fit in the destination type 'D'. */
-template <typename D, typename S> inline bool SkTFitsIn(S s) {
-    // the cast to <S> is just to restore the signedness of S, to avoid
-    // sign-unsigned comparison warnings.
-    return static_cast<S>(static_cast<D>(s)) == s;
-}
-
 /** \class SkAutoTCallVProc
 
     Call a function when this goes out of scope. The template uses two
@@ -83,7 +85,19 @@ template <typename T, void (*P)(T*)> class SkAutoTCallVProc : SkNoncopyable {
 public:
     SkAutoTCallVProc(T* obj): fObj(obj) {}
     ~SkAutoTCallVProc() { if (fObj) P(fObj); }
+
+    operator T*() const { return fObj; }
+    T* operator->() const { SkASSERT(fObj); return fObj; }
+
     T* detach() { T* obj = fObj; fObj = NULL; return obj; }
+    void reset(T* obj = NULL) {
+        if (fObj != obj) {
+            if (fObj) {
+                P(fObj);
+            }
+            fObj = obj;
+        }
+    }
 private:
     T* fObj;
 };
@@ -100,17 +114,32 @@ template <typename T, int (*P)(T*)> class SkAutoTCallIProc : SkNoncopyable {
 public:
     SkAutoTCallIProc(T* obj): fObj(obj) {}
     ~SkAutoTCallIProc() { if (fObj) P(fObj); }
+
+    operator T*() const { return fObj; }
+    T* operator->() const { SkASSERT(fObj); return fObj; }
+
     T* detach() { T* obj = fObj; fObj = NULL; return obj; }
 private:
     T* fObj;
 };
 
+/** \class SkAutoTDelete
+  An SkAutoTDelete<T> is like a T*, except that the destructor of SkAutoTDelete<T>
+  automatically deletes the pointer it holds (if any).  That is, SkAutoTDelete<T>
+  owns the T object that it points to.  Like a T*, an SkAutoTDelete<T> may hold
+  either NULL or a pointer to a T object.  Also like T*, SkAutoTDelete<T> is
+  thread-compatible, and once you dereference it, you get the threadsafety
+  guarantees of T.
+
+  The size of a SkAutoTDelete is small: sizeof(SkAutoTDelete<T>) == sizeof(T*)
+*/
 template <typename T> class SkAutoTDelete : SkNoncopyable {
 public:
     SkAutoTDelete(T* obj = NULL) : fObj(obj) {}
     ~SkAutoTDelete() { SkDELETE(fObj); }
 
     T* get() const { return fObj; }
+    operator T*() const { return fObj; }
     T& operator*() const { SkASSERT(fObj); return *fObj; }
     T* operator->() const { SkASSERT(fObj); return fObj; }
 
@@ -140,6 +169,10 @@ public:
         return obj;
     }
 
+    void swap(SkAutoTDelete* that) {
+        SkTSwap(fObj, that->fObj);
+    }
+
 private:
     T*  fObj;
 };
@@ -149,7 +182,7 @@ template <typename T> class SkAutoTDestroy : SkNoncopyable {
 public:
     SkAutoTDestroy(T* obj = NULL) : fObj(obj) {}
     ~SkAutoTDestroy() {
-        if (NULL != fObj) {
+        if (fObj) {
             fObj->~T();
         }
     }
@@ -170,6 +203,13 @@ public:
     T*      get() const { return fArray; }
     void    free() { SkDELETE_ARRAY(fArray); fArray = NULL; }
     T*      detach() { T* array = fArray; fArray = NULL; return array; }
+
+    void reset(T array[]) {
+        if (fArray != array) {
+            SkDELETE_ARRAY(fArray);
+            fArray = array;
+        }
+    }
 
 private:
     T*  fArray;
@@ -221,6 +261,11 @@ public:
         return fArray[index];
     }
 
+    void swap(SkAutoTArray& other) {
+        SkTSwap(fArray, other.fArray);
+        SkDEBUGCODE(SkTSwap(fCount, other.fCount));
+    }
+
 private:
     T*  fArray;
     SkDEBUGCODE(int fCount;)
@@ -228,7 +273,7 @@ private:
 
 /** Wraps SkAutoTArray, with room for up to N elements preallocated
  */
-template <size_t N, typename T> class SkAutoSTArray : SkNoncopyable {
+template <int N, typename T> class SkAutoSTArray : SkNoncopyable {
 public:
     /** Initialize with no objects */
     SkAutoSTArray() {
@@ -238,7 +283,7 @@ public:
 
     /** Allocate count number of T elements
      */
-    SkAutoSTArray(size_t count) {
+    SkAutoSTArray(int count) {
         fArray = NULL;
         fCount = 0;
         this->reset(count);
@@ -249,7 +294,7 @@ public:
     }
 
     /** Destroys previous objects in the array and default constructs count number of objects */
-    void reset(size_t count) {
+    void reset(int count) {
         T* start = fArray;
         T* iter = start + fCount;
         while (iter > start) {
@@ -257,17 +302,23 @@ public:
         }
 
         if (fCount != count) {
-            if (count > N) {
+            if (fCount > N) {
+                // 'fArray' was allocated last time so free it now
+                SkASSERT((T*) fStorage != fArray);
                 sk_free(fArray);
             }
 
             if (count > N) {
-                fArray = (T*) sk_malloc_throw(count * sizeof(T));
+                const uint64_t size64 = sk_64_mul(count, sizeof(T));
+                const size_t size = static_cast<size_t>(size64);
+                if (size != size64) {
+                    sk_out_of_memory();
+                }
+                fArray = (T*) sk_malloc_throw(size);
             } else if (count > 0) {
                 fArray = (T*) fStorage;
             } else {
                 fArray = NULL;
-                return;
             }
 
             fCount = count;
@@ -282,7 +333,7 @@ public:
 
     /** Return the number of T elements in the array
      */
-    size_t count() const { return fCount; }
+    int count() const { return fCount; }
 
     /** Return the array of T elements. Will be NULL if count == 0
      */
@@ -291,12 +342,12 @@ public:
     /** Return the nth element in the array
      */
     T&  operator[](int index) const {
-        SkASSERT((unsigned)index < fCount);
+        SkASSERT(index < fCount);
         return fArray[index];
     }
 
 private:
-    size_t  fCount;
+    int     fCount;
     T*      fArray;
     // since we come right after fArray, fStorage should be properly aligned
     char    fStorage[N * sizeof(T)];
@@ -314,7 +365,7 @@ public:
 
     /** Allocates space for 'count' Ts. */
     explicit SkAutoTMalloc(size_t count) {
-        fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW | SK_MALLOC_TEMP);
+        fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW);
     }
 
     ~SkAutoTMalloc() {
@@ -329,7 +380,7 @@ public:
     /** Resize the memory area pointed to by the current ptr without preserving contents. */
     void reset(size_t count) {
         sk_free(fPtr);
-        fPtr = fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW | SK_MALLOC_TEMP);
+        fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW);
     }
 
     T* get() const { return fPtr; }
@@ -365,19 +416,15 @@ private:
     T* fPtr;
 };
 
-template <size_t N, typename T> class SK_API SkAutoSTMalloc : SkNoncopyable {
+template <size_t N, typename T> class SkAutoSTMalloc : SkNoncopyable {
 public:
-    SkAutoSTMalloc() {
-        fPtr = NULL;
-    }
+    SkAutoSTMalloc() : fPtr(fTStorage) {}
 
     SkAutoSTMalloc(size_t count) {
         if (count > N) {
             fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW | SK_MALLOC_TEMP);
-        } else if (count) {
-            fPtr = fTStorage;
         } else {
-            fPtr = NULL;
+            fPtr = fTStorage;
         }
     }
 
@@ -393,11 +440,9 @@ public:
             sk_free(fPtr);
         }
         if (count > N) {
-            fPtr = (T*)sk_malloc_flags(count * sizeof(T), SK_MALLOC_THROW | SK_MALLOC_TEMP);
-        } else if (count) {
-            fPtr = fTStorage;
+            fPtr = (T*)sk_malloc_throw(count * sizeof(T));
         } else {
-            fPtr = NULL;
+            fPtr = fTStorage;
         }
         return fPtr;
     }
@@ -420,6 +465,20 @@ public:
         return fPtr[index];
     }
 
+    // Reallocs the array, can be used to shrink the allocation.  Makes no attempt to be intelligent
+    void realloc(size_t count) {
+        if (count > N) {
+            if (fPtr == fTStorage) {
+                fPtr = (T*)sk_malloc_throw(count * sizeof(T));
+                memcpy(fPtr, fTStorage, N * sizeof(T));
+            } else {
+                fPtr = (T*)sk_realloc_throw(fPtr, count * sizeof(T));
+            }
+        } else if (fPtr != fTStorage) {
+            fPtr = (T*)sk_realloc_throw(fPtr, count * sizeof(T));
+        }
+    }
+
 private:
     T*          fPtr;
     union {
@@ -428,13 +487,47 @@ private:
     };
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  Pass the object and the storage that was offered during SkInPlaceNewCheck, and this will
+ *  safely destroy (and free if it was dynamically allocated) the object.
+ */
+template <typename T> void SkInPlaceDeleteCheck(T* obj, void* storage) {
+    if (storage == obj) {
+        obj->~T();
+    } else {
+        SkDELETE(obj);
+    }
+}
+
+/**
+ *  Allocates T, using storage if it is large enough, and allocating on the heap (via new) if
+ *  storage is not large enough.
+ *
+ *      obj = SkInPlaceNewCheck<Type>(storage, size);
+ *      ...
+ *      SkInPlaceDeleteCheck(obj, storage);
+ */
+template <typename T> T* SkInPlaceNewCheck(void* storage, size_t size) {
+    return (sizeof(T) <= size) ? new (storage) T : SkNEW(T);
+}
+
+template <typename T, typename A1, typename A2, typename A3>
+T* SkInPlaceNewCheck(void* storage, size_t size, const A1& a1, const A2& a2, const A3& a3) {
+    return (sizeof(T) <= size) ? new (storage) T(a1, a2, a3) : SkNEW_ARGS(T, (a1, a2, a3));
+}
+
 /**
  * Reserves memory that is aligned on double and pointer boundaries.
  * Hopefully this is sufficient for all practical purposes.
  */
 template <size_t N> class SkAlignedSStorage : SkNoncopyable {
 public:
+    size_t size() const { return N; }
     void* get() { return fData; }
+    const void* get() const { return fData; }
+
 private:
     union {
         void*   fPtr;
@@ -456,6 +549,7 @@ public:
      * memory. Use placement new for types that require a cons.
      */
     void* get() { return fStorage.get(); }
+    const void* get() const { return fStorage.get(); }
 private:
     SkAlignedSStorage<sizeof(T)*N> fStorage;
 };

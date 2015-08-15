@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -15,21 +14,36 @@ class SkLinearGradient : public SkGradientShaderBase {
 public:
     SkLinearGradient(const SkPoint pts[2], const Descriptor&);
 
-    virtual bool setContext(const SkBitmap&, const SkPaint&, const SkMatrix&) SK_OVERRIDE;
-    virtual void shadeSpan(int x, int y, SkPMColor dstC[], int count) SK_OVERRIDE;
-    virtual void shadeSpan16(int x, int y, uint16_t dstC[], int count) SK_OVERRIDE;
-    virtual BitmapType asABitmap(SkBitmap*, SkMatrix*, TileMode*) const SK_OVERRIDE;
-    virtual GradientType asAGradient(GradientInfo* info) const SK_OVERRIDE;
-    virtual GrEffectRef* asNewEffect(GrContext* context, const SkPaint&) const SK_OVERRIDE;
+    size_t contextSize() const override;
 
-    SK_DEVELOPER_TO_STRING()
+    class LinearGradientContext : public SkGradientShaderBase::GradientShaderBaseContext {
+    public:
+        LinearGradientContext(const SkLinearGradient&, const ContextRec&);
+        ~LinearGradientContext() {}
+
+        void shadeSpan(int x, int y, SkPMColor dstC[], int count) override;
+        void shadeSpan16(int x, int y, uint16_t dstC[], int count) override;
+
+    private:
+        typedef SkGradientShaderBase::GradientShaderBaseContext INHERITED;
+    };
+
+    BitmapType asABitmap(SkBitmap*, SkMatrix*, TileMode*) const override;
+    GradientType asAGradient(GradientInfo* info) const override;
+    bool asFragmentProcessor(GrContext*, const SkPaint&, const SkMatrix& viewM,
+                             const SkMatrix*, GrColor*, GrProcessorDataManager*,
+                             GrFragmentProcessor**) const override;
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkLinearGradient)
 
 protected:
-    SkLinearGradient(SkFlattenableReadBuffer& buffer);
-    virtual void flatten(SkFlattenableWriteBuffer& buffer) const SK_OVERRIDE;
+    SkLinearGradient(SkReadBuffer& buffer);
+    void flatten(SkWriteBuffer& buffer) const override;
+    Context* onCreateContext(const ContextRec&, void* storage) const override;
 
 private:
+    friend class SkGradientShader;
     typedef SkGradientShaderBase INHERITED;
     const SkPoint fStart;
     const SkPoint fEnd;

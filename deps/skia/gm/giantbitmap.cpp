@@ -27,8 +27,7 @@ class GiantBitmapGM : public skiagm::GM {
     const SkBitmap& getBitmap() {
         if (NULL == fBM) {
             fBM = new SkBitmap;
-            fBM->setConfig(SkBitmap::kARGB_8888_Config, W, H);
-            fBM->allocPixels();
+            fBM->allocN32Pixels(W, H);
             fBM->eraseColor(SK_ColorWHITE);
 
             const SkColor colors[] = {
@@ -72,7 +71,8 @@ public:
     }
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         SkString str("giantbitmap_");
         switch (fMode) {
             case SkShader::kClamp_TileMode:
@@ -92,11 +92,10 @@ protected:
         return str;
     }
 
-    virtual SkISize onISize() { return SkISize::Make(640, 480); }
+    SkISize onISize() override { return SkISize::Make(640, 480); }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
-        SkShader* s = SkShader::CreateBitmapShader(getBitmap(), fMode, fMode);
 
         SkMatrix m;
         if (fDoRotate) {
@@ -107,10 +106,10 @@ protected:
             SkScalar scale = 11*SK_Scalar1/12;
             m.setScale(scale, scale);
         }
-        s->setLocalMatrix(m);
+        SkShader* s = SkShader::CreateBitmapShader(getBitmap(), fMode, fMode, &m);
 
         paint.setShader(s)->unref();
-        paint.setFilterBitmap(fDoFilter);
+        paint.setFilterQuality(fDoFilter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
 
         canvas->translate(SkIntToScalar(50), SkIntToScalar(50));
 

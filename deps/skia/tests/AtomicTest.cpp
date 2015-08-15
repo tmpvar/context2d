@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "SkThread.h"
+#include "SkAtomics.h"
 #include "SkThreadUtils.h"
 #include "SkTypes.h"
 #include "Test.h"
@@ -31,7 +31,7 @@ static void addABunchOfTimes(void* data) {
     }
 }
 
-static void test_atomicAddTests(skiatest::Reporter* reporter) {
+DEF_TEST(Atomic, reporter) {
     int32_t total = base;
     SkThread* threads[SK_ARRAY_COUNT(gAdds)];
     for (size_t i = 0; i < SK_ARRAY_COUNT(gAdds); i++) {
@@ -55,6 +55,3 @@ static void test_atomicAddTests(skiatest::Reporter* reporter) {
     const int32_t originalValue = valueToModify;
     REPORTER_ASSERT(reporter, originalValue == sk_atomic_add(&valueToModify, 7));
 }
-
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("AtomicAdd", AtomicAddTestClass, test_atomicAddTests)

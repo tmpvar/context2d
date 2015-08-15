@@ -1,19 +1,20 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "SampleCode.h"
+#include "SkAnimTimer.h"
 #include "SkView.h"
 #include "SkCanvas.h"
-#include "Sk64.h"
 #include "SkGradientShader.h"
+#include "SkString.h"
 
 static void draw_gradient2(SkCanvas* canvas, const SkRect& rect, SkScalar delta) {
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorMAGENTA };
-    SkScalar pos[] = { 0, SkFloatToScalar(0.25f), SkFloatToScalar(0.75f), SK_Scalar1 };
+    SkScalar pos[] = { 0, 0.25f, 0.75f, SK_Scalar1 };
 
     SkScalar l = rect.fLeft;
     SkScalar t = rect.fTop;
@@ -37,7 +38,6 @@ static void draw_gradient2(SkCanvas* canvas, const SkRect& rect, SkScalar delta)
 
 
 class DegenerateTwoPtRadialsView : public SampleView {
-
 public:
     DegenerateTwoPtRadialsView() {
         fTime = 0;
@@ -45,8 +45,7 @@ public:
     }
 
 protected:
-    // overrides from SkEventSink
-    virtual bool onQuery(SkEvent* evt) {
+    bool onQuery(SkEvent* evt) override {
         if (SampleCode::TitleQ(*evt)) {
             SampleCode::TitleR(evt, "DegenerateTwoPtRadials");
             return true;
@@ -54,10 +53,9 @@ protected:
         return this->INHERITED::onQuery(evt);
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
-        fTime += SampleCode::GetAnimSecondsDelta();
+    void onDrawContent(SkCanvas* canvas) override {
         SkScalar delta = fTime / 15.f;
-        int intPart = SkScalarFloor(delta);
+        int intPart = SkScalarFloorToInt(delta);
         delta = delta - SK_Scalar1 * intPart;
         if (intPart % 2) {
             delta = SK_Scalar1 - delta;
@@ -71,13 +69,17 @@ protected:
         SkScalar l = SK_Scalar1 * 100;
         SkScalar t = SK_Scalar1 * 100;
         draw_gradient2(canvas, SkRect::MakeXYWH(l, t, w, h), delta);
-        char txt[512];
-        sprintf(txt, "gap at \"tangent\" pt = %f", SkScalarToFloat(delta));
+        SkString txt;
+        txt.appendf("gap at \"tangent\" pt = %f", SkScalarToFloat(delta));
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setColor(SK_ColorBLACK);
-        canvas->drawText(txt, strlen(txt), l + w/2 + w*DELTA_SCALE*delta, t + h + SK_Scalar1 * 10, paint);
-        this->inval(NULL);
+        canvas->drawText(txt.c_str(), txt.size(), l + w/2 + w*DELTA_SCALE*delta, t + h + SK_Scalar1 * 10, paint);
+    }
+
+    bool onAnimate(const SkAnimTimer& timer) override {
+        fTime = SkDoubleToScalar(timer.secs() / 15);
+        return true;
     }
 
 private:

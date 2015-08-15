@@ -8,13 +8,9 @@
 
 
 #include "SkEventSink.h"
+#include "SkMutex.h"
 #include "SkTagList.h"
-#include "SkThread.h"
-
-#include "SkThread.h"
 #include "SkTime.h"
-
-SK_DEFINE_INST_COUNT(SkEventSink)
 
 class SkEventSink_Globals {
 public:
@@ -258,7 +254,7 @@ SkEventSink* SkEventSink::FindSink(SkEventSinkID sinkID)
 
 #if 0   // experimental, not tested
 
-#include "SkThread.h"
+#include "SkMutex.h"
 #include "SkTDict.h"
 
 #define kMinStringBufferSize    128

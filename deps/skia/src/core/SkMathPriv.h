@@ -10,6 +10,16 @@
 
 #include "SkMath.h"
 
+#if defined(SK_BUILD_FOR_IOS) && (defined(SK_BUILD_FOR_ARM32) || defined(SK_BUILD_FOR_ARM64))
+// iOS on ARM starts processes with the Flush-To-Zero (FTZ) and
+// Denormals-Are-Zero (DAZ) bits in the fpscr register set.
+// Algorithms that rely on denormalized numbers need alternative implementations.
+// This can also be controlled in SSE with the MXCSR register,
+// x87 with FSTCW/FLDCW, and mips with FCSR. This should be detected at runtime,
+// or the library built one way or the other more generally (by the build).
+#define SK_CPU_FLUSH_TO_ZERO
+#endif
+
 /** Returns -1 if n < 0, else returns 0
  */
 #define SkExtractSign(n)    ((int32_t)(n) >> 31)
@@ -33,29 +43,11 @@ static inline int32_t SkCopySign32(int32_t x, int32_t y) {
  @return max if value >= max, else value
  */
 static inline unsigned SkClampUMax(unsigned value, unsigned max) {
-#ifdef SK_CPU_HAS_CONDITIONAL_INSTR
     if (value > max) {
         value = max;
     }
     return value;
-#else
-    int diff = max - value;
-    // clear diff if diff is positive
-    diff &= diff >> 31;
-
-    return value + diff;
-#endif
 }
-
-/** Computes the 64bit product of a * b, and then shifts the answer down by
- shift bits, returning the low 32bits. shift must be [0..63]
- e.g. to perform a fixedmul, call SkMulShift(a, b, 16)
- */
-int32_t SkMulShift(int32_t a, int32_t b, unsigned shift);
-
-/** Return the integer cube root of value, with a bias of bitBias
- */
-int32_t SkCubeRootBits(int32_t value, int bitBias);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +57,7 @@ int32_t SkCubeRootBits(int32_t value, int bitBias);
 static inline U8CPU SkMulDiv255Trunc(U8CPU a, U8CPU b) {
     SkASSERT((uint8_t)a == a);
     SkASSERT((uint8_t)b == b);
-    unsigned prod = SkMulS16(a, b) + 1;
+    unsigned prod = a*b + 1;
     return (prod + (prod >> 8)) >> 8;
 }
 
@@ -75,7 +67,7 @@ static inline U8CPU SkMulDiv255Trunc(U8CPU a, U8CPU b) {
 static inline U8CPU SkMulDiv255Ceiling(U8CPU a, U8CPU b) {
     SkASSERT((uint8_t)a == a);
     SkASSERT((uint8_t)b == b);
-    unsigned prod = SkMulS16(a, b) + 255;
+    unsigned prod = a*b + 255;
     return (prod + (prod >> 8)) >> 8;
 }
 

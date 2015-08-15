@@ -8,16 +8,14 @@
 #ifndef GrGLVertexArray_DEFINED
 #define GrGLVertexArray_DEFINED
 
-#include "GrResource.h"
 #include "GrTypesPriv.h"
 #include "gl/GrGLDefines.h"
 #include "gl/GrGLFunctions.h"
-
 #include "SkTArray.h"
 
 class GrGLVertexBuffer;
 class GrGLIndexBuffer;
-class GrGpuGL;
+class GrGLGpu;
 
 struct GrGLAttribLayout {
     GrGLint     fCount;
@@ -26,19 +24,23 @@ struct GrGLAttribLayout {
 };
 
 static inline const GrGLAttribLayout& GrGLAttribTypeToLayout(GrVertexAttribType type) {
-    GrAssert(type >= 0 && type < kGrVertexAttribTypeCount);
+    SkASSERT(type >= 0 && type < kGrVertexAttribTypeCount);
     static const GrGLAttribLayout kLayouts[kGrVertexAttribTypeCount] = {
         {1, GR_GL_FLOAT, false},         // kFloat_GrVertexAttribType
         {2, GR_GL_FLOAT, false},         // kVec2f_GrVertexAttribType
         {3, GR_GL_FLOAT, false},         // kVec3f_GrVertexAttribType
         {4, GR_GL_FLOAT, false},         // kVec4f_GrVertexAttribType
+        {1, GR_GL_UNSIGNED_BYTE, true},  // kUByte_GrVertexAttribType
         {4, GR_GL_UNSIGNED_BYTE, true},  // kVec4ub_GrVertexAttribType
+        {2, GR_GL_SHORT, false},         // kVec2s_GrVertexAttribType
     };
     GR_STATIC_ASSERT(0 == kFloat_GrVertexAttribType);
     GR_STATIC_ASSERT(1 == kVec2f_GrVertexAttribType);
     GR_STATIC_ASSERT(2 == kVec3f_GrVertexAttribType);
     GR_STATIC_ASSERT(3 == kVec4f_GrVertexAttribType);
-    GR_STATIC_ASSERT(4 == kVec4ub_GrVertexAttribType);
+    GR_STATIC_ASSERT(4 == kUByte_GrVertexAttribType);
+    GR_STATIC_ASSERT(5 == kVec4ub_GrVertexAttribType);
+    GR_STATIC_ASSERT(6 == kVec2s_GrVertexAttribType);
     GR_STATIC_ASSERT(SK_ARRAY_COUNT(kLayouts) == kGrVertexAttribTypeCount);
     return kLayouts[type];
 }
@@ -49,7 +51,9 @@ static inline const GrGLAttribLayout& GrGLAttribTypeToLayout(GrVertexAttribType 
  */
 class GrGLAttribArrayState {
 public:
-    explicit GrGLAttribArrayState(int arrayCount = 0) { this->resize(arrayCount); }
+    explicit GrGLAttribArrayState(int arrayCount = 0) {
+        this->resize(arrayCount);
+    }
 
     void resize(int newCount) {
         fAttribArrayStates.resize_back(newCount);
@@ -63,9 +67,9 @@ public:
      * assumed that the GrGLAttribArrayState is tracking the state of the currently bound vertex
      * array object.
      */
-    void set(const GrGpuGL*,
-             int index,
-             GrGLVertexBuffer*,
+    void set(GrGLGpu*,
+             int attribIndex,
+             GrGLuint vertexBufferID,
              GrGLint size,
              GrGLenum type,
              GrGLboolean normalized,
@@ -76,7 +80,7 @@ public:
      * This function disables vertex attribs not present in the mask. It is assumed that the
      * GrGLAttribArrayState is tracking the state of the currently bound vertex array object.
      */
-    void disableUnusedAttribArrays(const GrGpuGL*, uint64_t usedAttribArrayMask);
+    void disableUnusedArrays(const GrGLGpu*, uint64_t usedAttribArrayMask);
 
     void invalidate() {
         int count = fAttribArrayStates.count();
@@ -128,22 +132,22 @@ private:
  * This class represents an OpenGL vertex array object. It manages the lifetime of the vertex array
  * and is used to track the state of the vertex array to avoid redundant GL calls.
  */
-class GrGLVertexArray : public GrResource {
+class GrGLVertexArray {
 public:
-    GrGLVertexArray(GrGpuGL* gpu, GrGLint id, int attribCount);
+    GrGLVertexArray(GrGLint id, int attribCount);
 
     /**
      * Binds this vertex array. If the ID has been deleted or abandoned then NULL is returned.
      * Otherwise, the GrGLAttribArrayState that is tracking this vertex array's attrib bindings is
      * returned.
      */
-    GrGLAttribArrayState* bind();
+    GrGLAttribArrayState* bind(GrGLGpu*);
 
     /**
      * This is a version of the above function that also binds an index buffer to the vertex
      * array object.
      */
-    GrGLAttribArrayState* bindWithIndexBuffer(const GrGLIndexBuffer* indexBuffer);
+    GrGLAttribArrayState* bindWithIndexBuffer(GrGLGpu* gpu, GrGLuint indexBufferID);
 
     void notifyIndexBufferDelete(GrGLuint bufferID);
 
@@ -155,20 +159,11 @@ public:
 
     void invalidateCachedState();
 
-    virtual size_t sizeInBytes() const SK_OVERRIDE { return 0; }
-
-protected:
-    virtual void onAbandon() SK_OVERRIDE;
-
-    virtual void onRelease() SK_OVERRIDE;
-
 private:
     GrGLuint                fID;
     GrGLAttribArrayState    fAttribArrays;
     GrGLuint                fIndexBufferID;
     bool                    fIndexBufferIDIsValid;
-
-    typedef GrResource INHERITED;
 };
 
 #endif

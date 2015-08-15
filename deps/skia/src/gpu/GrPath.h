@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2012 Google Inc.
  *
@@ -9,22 +8,48 @@
 #ifndef GrPath_DEFINED
 #define GrPath_DEFINED
 
-#include "GrResource.h"
-#include "GrRect.h"
+#include "GrGpuResource.h"
+#include "GrStrokeInfo.h"
+#include "SkPath.h"
+#include "SkRect.h"
 
-class GrPath : public GrResource {
+class GrPath : public GrGpuResource {
 public:
-    SK_DECLARE_INST_COUNT(GrPath);
+    
 
-    GrPath(GrGpu* gpu, bool isWrapped) : INHERITED(gpu, isWrapped) {}
+    /**
+     * Initialize to a path with a fixed stroke. Stroke must not be hairline.
+     */
+    GrPath(GrGpu* gpu, const SkPath& skPath, const GrStrokeInfo& stroke)
+        : INHERITED(gpu, kCached_LifeCycle)
+        , fBounds(skPath.getBounds())
+#ifdef SK_DEBUG
+        , fSkPath(skPath)
+        , fStroke(stroke)
+#endif
+    {
+    }
 
-    const GrRect& getBounds() const { return fBounds; }
+    static void ComputeKey(const SkPath& path, const GrStrokeInfo& stroke, GrUniqueKey* key,
+                           bool* outIsVolatile);
+
+    const SkRect& getBounds() const { return fBounds; }
+
+#ifdef SK_DEBUG
+    bool isEqualTo(const SkPath& path, const GrStrokeInfo& stroke) {
+        return fSkPath == path && fStroke.hasEqualEffect(stroke);
+    }
+#endif
 
 protected:
-    GrRect fBounds;
+    SkRect fBounds;
+#ifdef SK_DEBUG
+    SkPath fSkPath;
+    GrStrokeInfo fStroke;
+#endif
 
 private:
-    typedef GrResource INHERITED;
+    typedef GrGpuResource INHERITED;
 };
 
 #endif

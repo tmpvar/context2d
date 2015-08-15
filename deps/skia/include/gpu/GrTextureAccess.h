@@ -8,17 +8,16 @@
 #ifndef GrTextureAccess_DEFINED
 #define GrTextureAccess_DEFINED
 
-#include "GrNoncopyable.h"
+#include "GrGpuResourceRef.h"
+#include "GrTexture.h"
 #include "SkRefCnt.h"
 #include "SkShader.h"
-
-class GrTexture;
 
 /**
  * Represents the filtering and tile modes used to access a texture. It is mostly used with
  * GrTextureAccess (defined below). Also, some of the texture cache methods require knowledge about
  * filtering and tiling to perform a cache lookup. If it wasn't for this latter usage this would
- * be folded into GrTextureAccess.
+ * be folded into GrTextureAccess. The default is clamp tile modes and no filtering.
  */
 class GrTextureParams {
 public:
@@ -26,12 +25,18 @@ public:
         this->reset();
     }
 
-    GrTextureParams(SkShader::TileMode tileXAndY, bool bilerp) {
-        this->reset(tileXAndY, bilerp);
+    enum FilterMode {
+        kNone_FilterMode,
+        kBilerp_FilterMode,
+        kMipMap_FilterMode
+    };
+
+    GrTextureParams(SkShader::TileMode tileXAndY, FilterMode filterMode) {
+        this->reset(tileXAndY, filterMode);
     }
 
-    GrTextureParams(SkShader::TileMode tileModes[2], bool bilerp) {
-        this->reset(tileModes, bilerp);
+    GrTextureParams(const SkShader::TileMode tileModes[2], FilterMode filterMode) {
+        this->reset(tileModes, filterMode);
     }
 
     GrTextureParams(const GrTextureParams& params) {
@@ -41,35 +46,35 @@ public:
     GrTextureParams& operator= (const GrTextureParams& params) {
         fTileModes[0] = params.fTileModes[0];
         fTileModes[1] = params.fTileModes[1];
-        fBilerp = params.fBilerp;
+        fFilterMode = params.fFilterMode;
         return *this;
     }
 
     void reset() {
-        this->reset(SkShader::kClamp_TileMode, false);
+        this->reset(SkShader::kClamp_TileMode, kNone_FilterMode);
     }
 
-    void reset(SkShader::TileMode tileXAndY, bool bilerp) {
+    void reset(SkShader::TileMode tileXAndY, FilterMode filterMode) {
         fTileModes[0] = fTileModes[1] = tileXAndY;
-        fBilerp = bilerp;
+        fFilterMode = filterMode;
     }
 
-    void reset(SkShader::TileMode tileModes[2], bool bilerp) {
+    void reset(const SkShader::TileMode tileModes[2], FilterMode filterMode) {
         fTileModes[0] = tileModes[0];
         fTileModes[1] = tileModes[1];
-        fBilerp = bilerp;
+        fFilterMode = filterMode;
     }
 
     void setClampNoFilter() {
         fTileModes[0] = fTileModes[1] = SkShader::kClamp_TileMode;
-        fBilerp = false;
+        fFilterMode = kNone_FilterMode;
     }
 
     void setClamp() {
         fTileModes[0] = fTileModes[1] = SkShader::kClamp_TileMode;
     }
 
-    void setBilerp(bool bilerp) { fBilerp = bilerp; }
+    void setFilterMode(FilterMode filterMode) { fFilterMode = filterMode; }
 
     void setTileModeX(const SkShader::TileMode tm) { fTileModes[0] = tm; }
     void setTileModeY(const SkShader::TileMode tm) { fTileModes[1] = tm; }
@@ -84,12 +89,12 @@ public:
                SkShader::kClamp_TileMode != fTileModes[1];
     }
 
-    bool isBilerp() const { return fBilerp; }
+    FilterMode filterMode() const { return fFilterMode; }
 
     bool operator== (const GrTextureParams& other) const {
         return fTileModes[0] == other.fTileModes[0] &&
                fTileModes[1] == other.fTileModes[1] &&
-               fBilerp == other.fBilerp;
+               fFilterMode == other.fFilterMode;
     }
 
     bool operator!= (const GrTextureParams& other) const { return !(*this == other); }
@@ -97,20 +102,20 @@ public:
 private:
 
     SkShader::TileMode fTileModes[2];
-    bool               fBilerp;
+    FilterMode         fFilterMode;
 };
 
 /** A class representing the swizzle access pattern for a texture. Note that if the texture is
  *  an alpha-only texture then the alpha channel is substituted for other components. Any mangling
  *  to handle the r,g,b->a conversions for alpha textures is automatically included in the stage
- *  key. However, if a GrEffect uses different swizzles based on its input then it must
+ *  key. However, if a GrProcessor uses different swizzles based on its input then it must
  *  consider that variation in its key-generation.
  */
-class GrTextureAccess : GrNoncopyable {
+class GrTextureAccess : public SkNoncopyable {
 public:
     /**
-     * A default GrTextureAccess must have reset() called on it in a GrEffect subclass's
-     * constructor if it will be accessible via GrEffect::textureAccess().
+     * A default GrTextureAccess must have reset() called on it in a GrProcessor subclass's
+     * constructor if it will be accessible via GrProcessor::textureAccess().
      */
     GrTextureAccess();
 
@@ -119,7 +124,7 @@ public:
      */
     GrTextureAccess(GrTexture*, const GrTextureParams&);
     explicit GrTextureAccess(GrTexture*,
-                             bool bilerp = false,
+                             GrTextureParams::FilterMode = GrTextureParams::kNone_FilterMode,
                              SkShader::TileMode tileXAndY = SkShader::kClamp_TileMode);
 
     /**
@@ -129,33 +134,38 @@ public:
     GrTextureAccess(GrTexture*, const char* swizzle, const GrTextureParams&);
     GrTextureAccess(GrTexture*,
                     const char* swizzle,
-                    bool bilerp = false,
+                    GrTextureParams::FilterMode = GrTextureParams::kNone_FilterMode,
                     SkShader::TileMode tileXAndY = SkShader::kClamp_TileMode);
 
     void reset(GrTexture*, const GrTextureParams&);
     void reset(GrTexture*,
-               bool bilerp = false,
+               GrTextureParams::FilterMode = GrTextureParams::kNone_FilterMode,
                SkShader::TileMode tileXAndY = SkShader::kClamp_TileMode);
     void reset(GrTexture*, const char* swizzle, const GrTextureParams&);
     void reset(GrTexture*,
                const char* swizzle,
-               bool bilerp = false,
+               GrTextureParams::FilterMode = GrTextureParams::kNone_FilterMode,
                SkShader::TileMode tileXAndY = SkShader::kClamp_TileMode);
 
     bool operator== (const GrTextureAccess& other) const {
-#if GR_DEBUG
+#ifdef SK_DEBUG
         // below assumes all chars in fSwizzle are initialized even if string is < 4 chars long.
-        GrAssert(memcmp(fSwizzle, other.fSwizzle, sizeof(fSwizzle)-1) ==
+        SkASSERT(memcmp(fSwizzle, other.fSwizzle, sizeof(fSwizzle)-1) ==
                  strcmp(fSwizzle, other.fSwizzle));
 #endif
         return fParams == other.fParams &&
-               (fTexture.get() == other.fTexture.get()) &&
+               (this->getTexture() == other.getTexture()) &&
                (0 == memcmp(fSwizzle, other.fSwizzle, sizeof(fSwizzle)-1));
     }
 
     bool operator!= (const GrTextureAccess& other) const { return !(*this == other); }
 
     GrTexture* getTexture() const { return fTexture.get(); }
+
+    /**
+     * For internal use by GrProcessor.
+     */
+    const GrGpuResourceRef* getProgramTexture() const { return &fTexture; }
 
     /**
      * Returns a string representing the swizzle. The string is is null-terminated.
@@ -171,12 +181,14 @@ public:
 private:
     void setSwizzle(const char*);
 
-    GrTextureParams         fParams;
-    SkAutoTUnref<GrTexture> fTexture;
-    uint32_t                fSwizzleMask;
-    char                    fSwizzle[5];
+    typedef GrTGpuResourceRef<GrTexture> ProgramTexture;
 
-    typedef GrNoncopyable INHERITED;
+    ProgramTexture                  fTexture;
+    GrTextureParams                 fParams;
+    uint32_t                        fSwizzleMask;
+    char                            fSwizzle[5];
+
+    typedef SkNoncopyable INHERITED;
 };
 
 #endif

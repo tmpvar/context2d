@@ -5,10 +5,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
+#include "Benchmark.h"
 #include "SkCanvas.h"
 #include "SkColorShader.h"
-#include "SkFontHost.h"
 #include "SkPaint.h"
 #include "SkRandom.h"
 #include "SkString.h"
@@ -32,21 +31,19 @@ static const char* fontQualityName(const SkPaint& paint) {
     return "AA";
 }
 
-class ShaderMaskBench : public SkBenchmark {
+class ShaderMaskBench : public Benchmark {
     SkPaint     fPaint;
     SkString    fText;
     SkString    fName;
     FontQuality fFQ;
-    enum { N = SkBENCHLOOP(500) };
 public:
-    ShaderMaskBench(void* param, bool isOpaque, FontQuality fq) : INHERITED(param) {
+    ShaderMaskBench(bool isOpaque, FontQuality fq)  {
         fFQ = fq;
         fText.set(STR);
 
         fPaint.setAntiAlias(kBW != fq);
         fPaint.setLCDRenderText(kLCD == fq);
-        fPaint.setAlpha(isOpaque ? 0xFF : 0x80);
-        fPaint.setShader(new SkColorShader)->unref();
+        fPaint.setShader(new SkColorShader(isOpaque ? 0xFFFFFFFF : 0x80808080))->unref();
     }
 
 protected:
@@ -57,7 +54,7 @@ protected:
         return fName.c_str();
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    virtual void onDraw(const int loops, SkCanvas* canvas) {
         const SkIPoint dim = this->getSize();
         SkRandom rand;
 
@@ -72,14 +69,14 @@ protected:
         const SkScalar y0 = SkIntToScalar(-10);
 
         paint.setTextSize(SkIntToScalar(12));
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < loops; i++) {
             SkScalar x = x0 + rand.nextUScalar1() * dim.fX;
             SkScalar y = y0 + rand.nextUScalar1() * dim.fY;
             canvas->drawText(fText.c_str(), fText.size(), x, y, paint);
         }
 
         paint.setTextSize(SkIntToScalar(48));
-        for (int i = 0; i < N/4; i++) {
+        for (int i = 0; i < loops / 4 ; i++) {
             SkScalar x = x0 + rand.nextUScalar1() * dim.fX;
             SkScalar y = y0 + rand.nextUScalar1() * dim.fY;
             canvas->drawText(fText.c_str(), fText.size(), x, y, paint);
@@ -87,21 +84,14 @@ protected:
     }
 
 private:
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static SkBenchmark* Fact00(void* p) { return new ShaderMaskBench(p, true,  kBW); }
-static SkBenchmark* Fact01(void* p) { return new ShaderMaskBench(p, false, kBW); }
-static SkBenchmark* Fact10(void* p) { return new ShaderMaskBench(p, true,  kAA); }
-static SkBenchmark* Fact11(void* p) { return new ShaderMaskBench(p, false, kAA); }
-static SkBenchmark* Fact20(void* p) { return new ShaderMaskBench(p, true,  kLCD); }
-static SkBenchmark* Fact21(void* p) { return new ShaderMaskBench(p, false, kLCD); }
-
-static BenchRegistry gReg00(Fact00);
-static BenchRegistry gReg01(Fact01);
-static BenchRegistry gReg10(Fact10);
-static BenchRegistry gReg11(Fact11);
-static BenchRegistry gReg20(Fact20);
-static BenchRegistry gReg21(Fact21);
+DEF_BENCH( return new ShaderMaskBench(true,  kBW); )
+DEF_BENCH( return new ShaderMaskBench(false, kBW); )
+DEF_BENCH( return new ShaderMaskBench(true,  kAA); )
+DEF_BENCH( return new ShaderMaskBench(false, kAA); )
+DEF_BENCH( return new ShaderMaskBench(true,  kLCD); )
+DEF_BENCH( return new ShaderMaskBench(false, kLCD); )

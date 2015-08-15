@@ -7,15 +7,21 @@
 
 /* migrated from chrome/src/skia/ext/SkFontHost_fontconfig_direct.cpp */
 
-#include <string>
-#include <unistd.h>
-#include <fcntl.h>
+#include "SkBuffer.h"
+#include "SkDataTable.h"
+#include "SkFontConfigInterface.h"
+#include "SkFontStyle.h"
+#include "SkMutex.h"
+#include "SkStream.h"
+#include "SkString.h"
+#include "SkTArray.h"
+#include "SkTDArray.h"
+#include "SkTemplates.h"
+#include "SkTypeface.h"
+#include "SkTypes.h"
 
 #include <fontconfig/fontconfig.h>
-
-#include "SkBuffer.h"
-#include "SkFontConfigInterface.h"
-#include "SkStream.h"
+#include <unistd.h>
 
 size_t SkFontConfigInterface::FontIdentity::writeToMemory(void* addr) const {
     size_t size = sizeof(fID) + sizeof(fTTCIndex);
@@ -42,15 +48,18 @@ size_t SkFontConfigInterface::FontIdentity::readFromMemory(const void* addr,
                                                            size_t size) {
     SkRBuffer buffer(addr, size);
 
-    fID = buffer.readU32();
-    fTTCIndex = buffer.readU32();
-    size_t strLen = buffer.readU32();
-    int weight = buffer.readU32();
-    int width = buffer.readU32();
-    SkFontStyle::Slant slant = (SkFontStyle::Slant)buffer.readU8();
+    (void)buffer.readU32(&fID);
+    (void)buffer.readS32(&fTTCIndex);
+    uint32_t strLen, weight, width;
+    (void)buffer.readU32(&strLen);
+    (void)buffer.readU32(&weight);
+    (void)buffer.readU32(&width);
+    uint8_t u8;
+    (void)buffer.readU8(&u8);
+    SkFontStyle::Slant slant = (SkFontStyle::Slant)u8;
     fStyle = SkFontStyle(weight, width, slant);
     fString.resize(strLen);
-    buffer.read(fString.writable_str(), strLen);
+    (void)buffer.read(fString.writable_str(), strLen);
     buffer.skipToAlign4();
 
     return buffer.pos();    // the actual number of bytes read
@@ -107,30 +116,26 @@ public:
                                  SkTypeface::Style requested,
                                  FontIdentity* outFontIdentifier,
                                  SkString* outFamilyName,
-                                 SkTypeface::Style* outStyle) SK_OVERRIDE;
-    virtual SkStream* openStream(const FontIdentity&) SK_OVERRIDE;
+                                 SkTypeface::Style* outStyle) override;
+    SkStreamAsset* openStream(const FontIdentity&) override;
 
     // new APIs
-    virtual SkDataTable* getFamilyNames() SK_OVERRIDE;
+    SkDataTable* getFamilyNames() override;
     virtual bool matchFamilySet(const char inFamilyName[],
                                 SkString* outFamilyName,
-                                SkTArray<FontIdentity>*) SK_OVERRIDE;
+                                SkTArray<FontIdentity>*) override;
 
 private:
     SkMutex mutex_;
 };
 
-SkFontConfigInterface* SkFontConfigInterface::GetSingletonDirectInterface() {
-    static SkFontConfigInterface* gDirect;
-    if (NULL == gDirect) {
-        static SkMutex gMutex;
-        SkAutoMutexAcquire ac(gMutex);
-
-        if (NULL == gDirect) {
-            gDirect = new SkFontConfigInterfaceDirect;
-        }
+SkFontConfigInterface* SkFontConfigInterface::GetSingletonDirectInterface(SkBaseMutex* mutex) {
+    SkAutoMutexAcquire ac(mutex);
+    static SkFontConfigInterfaceDirect* singleton = NULL;
+    if (singleton == NULL) {
+        singleton = SkNEW(SkFontConfigInterfaceDirect);
     }
-    return gDirect;
+    return singleton;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,6 +177,7 @@ enum FontEquivClass
     PMINGLIUHK,
     MINGLIUHK,
     CAMBRIA,
+    CALIBRI,
 };
 
 // Match the font name against a whilelist of fonts, returning the equivalence
@@ -220,6 +226,7 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { PGOTHIC, "MS PGothic" },
         { PGOTHIC, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
                    "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
+        { PGOTHIC, "Noto Sans CJK JP" },
         { PGOTHIC, "IPAPGothic" },
         { PGOTHIC, "MotoyaG04Gothic" },
 
@@ -227,6 +234,7 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { GOTHIC, "MS Gothic" },
         { GOTHIC, "\xef\xbc\xad\xef\xbc\xb3 "
                   "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
+        { GOTHIC, "Noto Sans Mono CJK JP" },
         { GOTHIC, "IPAGothic" },
         { GOTHIC, "MotoyaG04GothicMono" },
 
@@ -258,6 +266,7 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         // 黑体
         { SIMHEI, "Simhei" },
         { SIMHEI, "\xe9\xbb\x91\xe4\xbd\x93" },
+        { SIMHEI, "Noto Sans CJK SC" },
         { SIMHEI, "MYingHeiGB18030" },
         { SIMHEI, "MYingHeiB5HK" },
 
@@ -284,6 +293,10 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         // Cambria
         { CAMBRIA, "Cambria" },
         { CAMBRIA, "Caladea" },
+
+        // Calibri
+        { CALIBRI, "Calibri" },
+        { CALIBRI, "Carlito" },
     };
 
     static const size_t kFontCount =
@@ -313,20 +326,22 @@ bool IsMetricCompatibleReplacement(const char* font_a, const char* font_b)
 // cases, the request either doesn't specify a font or is one of the
 // basic font names like "Sans", "Serif" or "Monospace". This function
 // tells you whether a given request is for such a fallback.
-bool IsFallbackFontAllowed(const std::string& family) {
+bool IsFallbackFontAllowed(const SkString& family) {
   const char* family_cstr = family.c_str();
-  return family.empty() ||
+  return family.isEmpty() ||
          strcasecmp(family_cstr, "sans") == 0 ||
          strcasecmp(family_cstr, "serif") == 0 ||
          strcasecmp(family_cstr, "monospace") == 0;
 }
 
 static bool valid_pattern(FcPattern* pattern) {
+#ifdef SK_FONT_CONFIG_ONLY_ALLOW_SCALABLE_FONTS
     FcBool is_scalable;
     if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &is_scalable) != FcResultMatch
         || !is_scalable) {
         return false;
     }
+#endif
 
     // fontconfig can also return fonts which are unreadable
     const char* c_filename = get_name(pattern, FC_FILE);
@@ -342,7 +357,7 @@ static bool valid_pattern(FcPattern* pattern) {
 // Find matching font from |font_set| for the given font family.
 FcPattern* MatchFont(FcFontSet* font_set,
                      const char* post_config_family,
-                     const std::string& family) {
+                     const SkString& family) {
   // Older versions of fontconfig have a bug where they cannot select
   // only scalable fonts so we have to manually filter the results.
   FcPattern* match = NULL;
@@ -434,8 +449,8 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
                                                   FontIdentity* outIdentity,
                                                   SkString* outFamilyName,
                                                   SkTypeface::Style* outStyle) {
-    std::string familyStr(familyName ? familyName : "");
-    if (familyStr.length() > kMaxFontFamilyLength) {
+    SkString familyStr(familyName ? familyName : "");
+    if (familyStr.size() > kMaxFontFamilyLength) {
         return false;
     }
 
@@ -543,7 +558,7 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
     return true;
 }
 
-SkStream* SkFontConfigInterfaceDirect::openStream(const FontIdentity& identity) {
+SkStreamAsset* SkFontConfigInterfaceDirect::openStream(const FontIdentity& identity) {
     return SkStream::NewFromFile(identity.fString.c_str());
 }
 
@@ -563,13 +578,20 @@ SkDataTable* SkFontConfigInterfaceDirect::getFamilyNames() {
     SkAutoMutexAcquire ac(mutex_);
 
     FcPattern* pat = FcPatternCreate();
-    FcObjectSet* os = FcObjectSetBuild (FC_FAMILY, (char *) 0);
+    SkAutoTCallVProc<FcPattern, FcPatternDestroy> autoDestroyPat(pat);
+    if (NULL == pat) {
+        return NULL;
+    }
+
+    FcObjectSet* os = FcObjectSetBuild(FC_FAMILY, (char *)0);
+    SkAutoTCallVProc<FcObjectSet, FcObjectSetDestroy> autoDestroyOs(os);
     if (NULL == os) {
         return NULL;
     }
+
     FcFontSet* fs = FcFontList(NULL, pat, os);
+    SkAutoTCallVProc<FcFontSet, FcFontSetDestroy> autoDestroyFs(fs);
     if (NULL == fs) {
-        FcObjectSetDestroy(os);
         return NULL;
     }
 
@@ -584,10 +606,6 @@ SkDataTable* SkFontConfigInterfaceDirect::getFamilyNames() {
         }
     }
 
-    FcFontSetDestroy(fs);
-    FcObjectSetDestroy(os);
-    FcPatternDestroy(pat);
-
     return SkDataTable::NewCopyArrays((const void*const*)names.begin(),
                                       sizes.begin(), names.count());
 }
@@ -598,8 +616,8 @@ bool SkFontConfigInterfaceDirect::matchFamilySet(const char inFamilyName[],
     SkAutoMutexAcquire ac(mutex_);
 
 #if 0
-    std::string familyStr(familyName ? familyName : "");
-    if (familyStr.length() > kMaxFontFamilyLength) {
+    SkString familyStr(familyName ? familyName : "");
+    if (familyStr.size() > kMaxFontFamilyLength) {
         return false;
     }
 

@@ -43,7 +43,7 @@ static int fillIndices(uint16_t indices[], int xCount, int yCount) {
         }
         n += 1;
     }
-    return indices - startIndices;
+    return static_cast<int>(indices - startIndices);
 }
 
 // Computes the delta between vertices along a single axis
@@ -136,7 +136,7 @@ void SkNinePatch::DrawMesh(SkCanvas* canvas, const SkRect& bounds,
     const int numYStretch = (numYDivs + 1) >> 1;
 
     if (numXStretch < 1 && numYStretch < 1) {
-        canvas->drawBitmapRect(bitmap, NULL, bounds, paint);
+        canvas->drawBitmapRect(bitmap, bounds, paint);
         return;
     }
 
@@ -161,7 +161,7 @@ void SkNinePatch::DrawMesh(SkCanvas* canvas, const SkRect& bounds,
         if (bounds.width() >= fixed)
             stretchX = (bounds.width() - fixed) / stretchSize;
         else // reuse stretchX, but keep it negative as a signal
-            stretchX = SkScalarDiv(-bounds.width(), fixed);
+            stretchX = -bounds.width() / fixed;
     }
 
     if (numYStretch > 0) {
@@ -173,7 +173,7 @@ void SkNinePatch::DrawMesh(SkCanvas* canvas, const SkRect& bounds,
         if (bounds.height() >= fixed)
             stretchY = (bounds.height() - fixed) / stretchSize;
         else // reuse stretchX, but keep it negative as a signal
-            stretchY = SkScalarDiv(-bounds.height(), fixed);
+            stretchY = -bounds.height() / fixed;
     }
 
 #if 0
@@ -293,7 +293,7 @@ static void drawNineViaRects(SkCanvas* canvas, const SkRect& dst,
             s.fRight = srcX[x+1];
             d.fLeft = dstX[x];
             d.fRight = dstX[x+1];
-            canvas->drawBitmapRect(bitmap, &s, d, paint);
+            canvas->drawBitmapRect(bitmap, s, d, paint);
         }
     }
 }

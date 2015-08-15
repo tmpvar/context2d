@@ -90,7 +90,7 @@ public:
 
     static GrDebugGL *getInstance() {
         // someone should admit to actually using this class
-        GrAssert(0 < gStaticRefCount);
+        SkASSERT(0 < gStaticRefCount);
 
         if (NULL == gObj) {
             gObj = SkNEW(GrDebugGL);
@@ -106,12 +106,17 @@ public:
     }
 
     static void staticUnRef() {
-        GrAssert(gStaticRefCount > 0);
+        SkASSERT(gStaticRefCount > 0);
         gStaticRefCount--;
         if (0 == gStaticRefCount) {
             SkDELETE(gObj);
             gObj = NULL;
         }
+    }
+
+    static void abandon() {
+        SkASSERT(gStaticRefCount > 0);
+        gObj->fAbandoned = true;
     }
 
 protected:
@@ -131,6 +136,8 @@ private:
     GrTextureObj* fTexture;
     GrTextureUnitObj *fTextureUnits[kDefaultMaxTextureUnits];
     GrVertexArrayObj *fVertexArray;
+
+    bool fAbandoned;
 
     typedef GrFakeRefObj *(*Create)();
 

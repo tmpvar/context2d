@@ -4,16 +4,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "gm.h"
 #include "SkCanvas.h"
 #include "SkGradientShader.h"
-#include "SkUnitMappers.h"
 
 namespace skiagm {
 
-static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
-    bm->setConfig(config, w, h);
-    bm->allocPixels();
+static void makebm(SkBitmap* bm, int w, int h) {
+    bm->allocN32Pixels(w, h);
     bm->eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas    canvas(*bm);
@@ -27,14 +26,8 @@ static void makebm(SkBitmap* bm, SkBitmap::Config config, int w, int h) {
 
     SkPaint     paint;
 
-    SkUnitMapper*   um = NULL;
-
-    um = new SkCosineMapper;
-
-    SkAutoUnref au(um);
-
     paint.setShader(SkGradientShader::CreateLinear(kPts0, kColors0, kPos,
-                    SK_ARRAY_COUNT(kColors0), SkShader::kClamp_TileMode, um))->unref();
+                    SK_ARRAY_COUNT(kColors0), SkShader::kClamp_TileMode))->unref();
     canvas.drawPaint(paint);
     paint.setShader(SkGradientShader::CreateLinear(kPts1, kColors1, kPos,
                     SK_ARRAY_COUNT(kColors1), SkShader::kClamp_TileMode))->unref();
@@ -48,38 +41,39 @@ struct LabeledMatrix {
     const char* fLabel;
 };
 
+static const char kText[] = "B";
+static const int kTextLen = SK_ARRAY_COUNT(kText) - 1;
+static const int kPointSize = 300;
+
 class ShaderText3GM : public GM {
 public:
     ShaderText3GM() {
-        this->setBGColor(0xFFDDDDDD);
+        this->setBGColor(sk_tool_utils::color_to_565(0xFFDDDDDD));
     }
 
 protected:
 
-    SkString onShortName() {
+    SkString onShortName() override {
         return SkString("shadertext3");
     }
 
-    SkISize onISize() { return make_isize(800, 1000); }
+    SkISize onISize() override{ return SkISize::Make(800, 1000); }
 
-    virtual void onDraw(SkCanvas* canvas) {
-        static const char kText[] = "B";
-        static const int kTextLen = SK_ARRAY_COUNT(kText) - 1;
-        static const int kPointSize = 300;
+    void onOnceBeforeDraw() override {
+        makebm(&fBmp, kPointSize / 4, kPointSize / 4);
+    }
 
-        static SkBitmap bmp;
-        if (bmp.isNull()) {
-            makebm(&bmp, SkBitmap::kARGB_8888_Config, kPointSize / 4, kPointSize / 4);
-        }
+    void onDraw(SkCanvas* canvas) override {
 
         SkPaint bmpPaint;
         bmpPaint.setAntiAlias(true);
-        bmpPaint.setFilterBitmap(true);
+        bmpPaint.setFilterQuality(kLow_SkFilterQuality);
         bmpPaint.setAlpha(0x80);
-        canvas->drawBitmap(bmp, 5.f, 5.f, &bmpPaint);
+        canvas->drawBitmap(fBmp, 5.f, 5.f, &bmpPaint);
 
         SkPaint outlinePaint;
         outlinePaint.setAntiAlias(true);
+        sk_tool_utils::set_portable_typeface(&outlinePaint);
         outlinePaint.setTextSize(SkIntToScalar(kPointSize));
         outlinePaint.setStyle(SkPaint::kStroke_Style);
         outlinePaint.setStrokeWidth(0.f);
@@ -101,19 +95,21 @@ protected:
         int i = 0;
         for (size_t tm0 = 0; tm0 < SK_ARRAY_COUNT(kTileModes); ++tm0) {
             for (size_t tm1 = 0; tm1 < SK_ARRAY_COUNT(kTileModes); ++tm1) {
-                SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(bmp,
-                                                                           kTileModes[tm0],
-                                                                           kTileModes[tm1]));
                 SkMatrix localM;
                 localM.setTranslate(5.f, 5.f);
                 localM.postRotate(20);
                 localM.postScale(1.15f, .85f);
-                shader->setLocalMatrix(localM);
+
+                SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(fBmp,
+                                                                           kTileModes[tm0],
+                                                                           kTileModes[tm1],
+                                                                           &localM));
 
                 SkPaint fillPaint;
                 fillPaint.setAntiAlias(true);
+                sk_tool_utils::set_portable_typeface(&fillPaint);
                 fillPaint.setTextSize(SkIntToScalar(kPointSize));
-                fillPaint.setFilterBitmap(true);
+                fillPaint.setFilterQuality(kLow_SkFilterQuality);
                 fillPaint.setShader(shader);
 
                 canvas->drawText(kText, kTextLen, 0, 0, fillPaint);
@@ -132,13 +128,12 @@ protected:
     }
 
 private:
+    SkBitmap fBmp;
     typedef GM INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef SK_BUILD_FOR_ANDROID
 static GM* MyFactory(void*) { return new ShaderText3GM; }
 static GMRegistry reg(MyFactory);
-#endif
 }

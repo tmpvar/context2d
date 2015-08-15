@@ -1,114 +1,176 @@
+# Copyright 2015 Google Inc.
+#
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This GYP file stores the dependencies necessary to build Skia on the Android
+# platform. The OS doesn't provide many stable libraries as part of the
+# distribution so we have to build a few of them ourselves.
+#
 {
+  'variables': {
+    'conditions': [
+      [ 'skia_arch_type == "arm" and arm_version != 7', {
+        'android_arch%': "armeabi",
+        'android_variant%': "arm",
+      }],
+      [ 'skia_arch_type == "arm" and arm_version == 7', {
+        'android_arch%': "armeabi-v7a",
+        'android_variant%': "arm",
+      }],
+      [ 'skia_arch_type == "arm64"', {
+        'android_arch%': "arm64-v8a",
+        'android_variant%': "arm64",
+      }],
+      [ 'skia_arch_type == "x86"', {
+        'android_arch%': "x86",
+        'android_variant%': "x86",
+      }],
+      [ 'skia_arch_type == "x86_64"', {
+        'android_arch%': "x86_64",
+        'android_variant%': "x86_64",
+      }],
+      [ 'skia_arch_type == "mips32"', {
+        'android_arch%': "mips",
+        'android_variant%': "mips",
+      }],
+      [ 'skia_arch_type == "mips64"', {
+        'android_arch%': "mips64",
+        'android_variant%': "mips64",
+      }],
+      [ 'android_buildtype == "Release"', {
+        'android_apk_suffix': "release.apk",
+      }, {
+        'android_apk_suffix': "debug.apk",
+      }],
+    ],
+  },
   'targets': [
     {
-      'target_name': 'CopySkiaAppDeps',
+      'target_name': 'CopySampleAppDeps',
       'type': 'none',
       'dependencies': [
         'skia_lib.gyp:skia_lib',
         'SampleApp.gyp:SampleApp',
-        'bench.gyp:bench',
-        'gm.gyp:gm',
-        'tests.gyp:tests',
-        'pathops_unittest.gyp:pathops_unittest',
-        'tools.gyp:bench_pictures',
-        'tools.gyp:render_pictures',
-        'tools.gyp:render_pdfs',
-        'tools.gyp:skimage',
       ],
-      'variables': {
-        'conditions': [
-          [ 'skia_arch_type == "x86"', {
-            'android_arch%': "x86",
-          }, {
-            'conditions': [
-              [ 'armv7', {
-                'android_arch%': "armeabi-v7a",
-              }, {
-               'android_arch%': "armeabi",
-              }],
-            ],
-          }],
-        ],
-      },
       'copies': [
-        # Copy gdbserver into the lib.target directory, so that it gets packaged
-        # in the APK.  This is necessary for debugging.
-        {
-          'destination': '<(PRODUCT_DIR)/lib.target',
-          'files': [
-            '<(android_base)/toolchains/<(android_toolchain)/gdbserver',
-          ],
-        },
         # Copy all shared libraries into the Android app's libs folder.  Note
         # that this copy requires us to build SkiaAndroidApp after those
         # libraries, so that they exist by the time it occurs.  If there are no
         # libraries to copy, this will cause an error in Make, but the app will
         # still build.
         {
-          'destination': '<(PRODUCT_DIR)/android/libs/<(android_arch)',
-          'files': [
-            '<(PRODUCT_DIR)/lib.target/libbench.so',
-            '<(PRODUCT_DIR)/lib.target/libbench_pictures.so',
-            '<(PRODUCT_DIR)/lib.target/libgm.so',
-            '<(PRODUCT_DIR)/lib.target/librender_pdfs.so',
-            '<(PRODUCT_DIR)/lib.target/librender_pictures.so',
-            '<(PRODUCT_DIR)/lib.target/libSampleApp.so',
-            '<(PRODUCT_DIR)/lib.target/libskimage.so',
-            '<(PRODUCT_DIR)/lib.target/libtests.so',
-            '<(PRODUCT_DIR)/lib.target/libpathops_unittest.so',
-            '<(PRODUCT_DIR)/lib.target/gdbserver',
-            '<(PRODUCT_DIR)/lib.target/libskia_android.so',
+          'destination': '<(android_base)/apps/sample_app/src/main/libs/<(android_arch)',
+          'conditions': [
+            [ 'skia_shared_lib', {
+              'files': [
+                '<(SHARED_LIB_DIR)/libSampleApp.so',
+                '<(SHARED_LIB_DIR)/libskia_android.so',
+              ]}, {
+              'files': [
+                '<(SHARED_LIB_DIR)/libSampleApp.so',
+             ]}
+           ],
           ],
         },
       ],
     },
     {
-      'target_name': 'skia_launcher',
-      'type': 'executable',
-      'sources': [
-        '../launcher/skia_launcher.cpp',
+      'target_name': 'SampleApp_APK',
+      'type': 'none',
+      'dependencies': [
+        'CopySampleAppDeps',
+      ],
+      'actions': [
+        {
+          'action_name': 'SampleApp_apk',
+          'inputs': [
+            '<(android_base)/apps/sample_app/src/main/AndroidManifest.xml',
+            '<(android_base)/apps/sample_app/src/main/jni/com_skia_SkiaSampleRenderer.h',
+            '<(android_base)/apps/sample_app/src/main/jni/com_skia_SkiaSampleRenderer.cpp',
+            '<(android_base)/apps/sample_app/src/main/java/com/skia/SkiaSampleActivity.java',
+            '<(android_base)/apps/sample_app/src/main/java/com/skia/SkiaSampleRenderer.java',
+            '<(android_base)/apps/sample_app/src/main/java/com/skia/SkiaSampleView.java',
+            '<(android_base)/apps/sample_app/src/main/libs/<(android_arch)/libSampleApp.so',
+          ],
+          'conditions': [
+            [ 'skia_shared_lib', {
+              'inputs': [
+                '<(android_base)/apps/sample_app/src/main/libs/<(android_arch)/libskia_android.so',
+              ],
+            }],
+          ],
+          'outputs': [
+            '<(android_base)/apps/sample_app/build/outputs/apk/sample_app-<(android_variant)-<(android_apk_suffix)',
+          ],
+          'action': [
+            '<(android_base)/apps/gradlew',
+            ':sample_app:assemble<(android_variant)<(android_buildtype)',
+            '-p<(android_base)/apps/sample_app',
+            '-PsuppressNativeBuild',
+          ],
+        },
       ],
     },
     {
-      'target_name': 'SkiaAndroidApp',
+      'target_name': 'CopyVisualBenchDeps',
       'type': 'none',
       'dependencies': [
-        'CopySkiaAppDeps',
-        'skia_launcher',
+        'skia_lib.gyp:skia_lib',
+        'visualbench.gyp:visualbench',
       ],
-      'variables': {
-         'ANDROID_SDK_ROOT': '<!(echo $ANDROID_SDK_ROOT)'
-       },
+
+      'copies': [
+        # Copy all shared libraries into the Android app's libs folder.  Note
+        # that this copy requires us to build SkiaAndroidApp after those
+        # libraries, so that they exist by the time it occurs.  If there are no
+        # libraries to copy, this will cause an error in Make, but the app will
+        # still build.
+        {
+          'destination': '<(android_base)/apps/visualbench/src/main/libs/<(android_arch)',
+          'conditions': [
+            [ 'skia_shared_lib', {
+              'files': [
+                '<(SHARED_LIB_DIR)/libskia_android.so',
+                '<(SHARED_LIB_DIR)/libvisualbench.so',
+              ]}, {
+              'files': [
+                '<(SHARED_LIB_DIR)/libvisualbench.so',
+             ]}
+           ],
+          ],
+        },
+      ],
+    },
+    {
+      'target_name': 'VisualBench_APK',
+      'type': 'none',
+      'dependencies': [
+        'CopyVisualBenchDeps',
+      ],
       'actions': [
         {
-          'action_name': 'SkiaAndroid_apk',
+          'action_name': 'SkiaVisualBench_apk',
           'inputs': [
-            '<(android_base)/app/AndroidManifest.xml',
-            '<(android_base)/app/build.xml',
-            '<(android_base)/app/project.properties',
-            '<(android_base)/app/jni/com_skia_SkiaIntentService.h',
-            '<(android_base)/app/jni/com_skia_SkiaIntentService.cpp',
-            '<(android_base)/app/jni/com_skia_SkiaSampleRenderer.h',
-            '<(android_base)/app/jni/com_skia_SkiaSampleRenderer.cpp',
-            '<(android_base)/app/src/com/skia/SkiaReceiver.java',
-            '<(android_base)/app/src/com/skia/SkiaIntentService.java',
-            '<(android_base)/app/src/com/skia/SkiaSampleActivity.java',
-            '<(android_base)/app/src/com/skia/SkiaSampleRenderer.java',
-            '<(android_base)/app/src/com/skia/SkiaSampleView.java',
+            '<(android_base)/apps/visualbench/src/main/AndroidManifest.xml',
+            '<(android_base)/apps/visualbench/src/main/java/com/skia/VisualBenchActivity.java',
+            '<(android_base)/apps/visualbench/src/main/libs/<(android_arch)/libvisualbench.so',
+          ],
+          'conditions': [
+            [ 'skia_shared_lib', {
+              'inputs': [
+                '<(android_base)/apps/visualbench/src/main/libs/<(android_arch)/libskia_android.so',
+              ],
+            }],
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/../android/bin/SkiaAndroid.apk',
+            '<(android_base)/apps/visualbench/build/outputs/apk/visualbench-<(android_variant)-<(android_apk_suffix)',
           ],
           'action': [
-            'ant',
-            '-f',
-            '<(android_base)/app/build.xml',
-            '-Dout.dir=<(PRODUCT_DIR)/android/bin',
-            '-Dgen.absolute.dir=<(PRODUCT_DIR)/android/gen',
-            '-Dnative.libs.absolute.dir=<(PRODUCT_DIR)/android/libs',
-            '-Dout.final.file=<(PRODUCT_DIR)/android/bin/SkiaAndroid.apk',
-            '-Dsdk.dir=<(ANDROID_SDK_ROOT)',
-            'debug',
+            '<(android_base)/apps/gradlew',
+            ':visualbench:assemble<(android_variant)<(android_buildtype)',
+            '-p<(android_base)/apps/visualbench',
+            '-PsuppressNativeBuild',
           ],
         },
       ],

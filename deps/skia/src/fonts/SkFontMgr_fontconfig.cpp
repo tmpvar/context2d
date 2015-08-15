@@ -5,10 +5,12 @@
  * found in the LICENSE file.
  */
 
+#include "SkFontConfigInterface.h"
+#include "SkFontConfigTypeface.h"
 #include "SkFontMgr.h"
 #include "SkFontStyle.h"
-#include "SkFontConfigInterface.h"
 #include "SkMath.h"
+#include "SkMutex.h"
 #include "SkString.h"
 #include "SkTDArray.h"
 
@@ -16,6 +18,37 @@
 // SkFontConfigInterface instance.
 #include <fontconfig/fontconfig.h>
 #include <unistd.h>
+
+namespace {
+
+// Fontconfig is not threadsafe before 2.10.91.  Before that, we lock with a global mutex.
+// See skia:1497 for background.
+SK_DECLARE_STATIC_MUTEX(gFCMutex);
+static bool gFCSafeToUse;
+
+struct FCLocker {
+    FCLocker() {
+        if (FcGetVersion() < 21091) {  // We assume FcGetVersion() has always been thread safe.
+            gFCMutex.acquire();
+            fUnlock = true;
+        } else {
+            fUnlock = false;
+        }
+        gFCSafeToUse = true;
+    }
+
+    ~FCLocker() {
+        if (fUnlock) {
+            gFCSafeToUse = false;
+            gFCMutex.release();
+        }
+    }
+
+private:
+    bool fUnlock;
+};
+
+} // namespace
 
 // borrow this global from SkFontHost_fontconfig. eventually that file should
 // go away, and be replaced with this one.
@@ -35,6 +68,7 @@ static bool is_lower(char c) {
 }
 
 static int get_int(FcPattern* pattern, const char field[]) {
+    SkASSERT(gFCSafeToUse);
     int value;
     if (FcPatternGetInteger(pattern, field, 0, &value) != FcResultMatch) {
         value = SK_MinS32;
@@ -43,6 +77,7 @@ static int get_int(FcPattern* pattern, const char field[]) {
 }
 
 static const char* get_name(FcPattern* pattern, const char field[]) {
+    SkASSERT(gFCSafeToUse);
     const char* name;
     if (FcPatternGetString(pattern, field, 0, (FcChar8**)&name) != FcResultMatch) {
         name = "";
@@ -51,6 +86,7 @@ static const char* get_name(FcPattern* pattern, const char field[]) {
 }
 
 static bool valid_pattern(FcPattern* pattern) {
+    SkASSERT(gFCSafeToUse);
     FcBool is_scalable;
     if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &is_scalable) != FcResultMatch || !is_scalable) {
         return false;
@@ -106,10 +142,10 @@ public:
     SkFontStyleSet_FC(FcPattern** matches, int count);
     virtual ~SkFontStyleSet_FC();
 
-    virtual int count() SK_OVERRIDE { return fRecCount; }
-    virtual void getStyle(int index, SkFontStyle*, SkString* style) SK_OVERRIDE;
-    virtual SkTypeface* createTypeface(int index) SK_OVERRIDE;
-    virtual SkTypeface* matchStyle(const SkFontStyle& pattern) SK_OVERRIDE;
+    int count() override { return fRecCount; }
+    void getStyle(int index, SkFontStyle*, SkString* style) override;
+    SkTypeface* createTypeface(int index) override;
+    SkTypeface* matchStyle(const SkFontStyle& pattern) override;
 
 private:
     struct Rec {
@@ -178,40 +214,32 @@ SkTypeface* SkFontStyleSet_FC::matchStyle(const SkFontStyle& pattern) {
 class SkFontMgr_fontconfig : public SkFontMgr {
     SkAutoTUnref<SkFontConfigInterface> fFCI;
     SkDataTable* fFamilyNames;
-
-    void init() {
-        if (!fFamilyNames) {
-            fFamilyNames = fFCI->getFamilyNames();
-        }
-    }
+    SkTypeface_FreeType::Scanner fScanner;
 
 public:
     SkFontMgr_fontconfig(SkFontConfigInterface* fci)
         : fFCI(fci)
-        , fFamilyNames(NULL) {}
+        , fFamilyNames(fFCI->getFamilyNames()) {}
 
     virtual ~SkFontMgr_fontconfig() {
         SkSafeUnref(fFamilyNames);
     }
 
 protected:
-    virtual int onCountFamilies() {
-        this->init();
+    int onCountFamilies() const override {
         return fFamilyNames->count();
     }
 
-    virtual void onGetFamilyName(int index, SkString* familyName) {
-        this->init();
+    void onGetFamilyName(int index, SkString* familyName) const override {
         familyName->set(fFamilyNames->atStr(index));
     }
 
-    virtual SkFontStyleSet* onCreateStyleSet(int index) {
-        this->init();
+    SkFontStyleSet* onCreateStyleSet(int index) const override {
         return this->onMatchFamily(fFamilyNames->atStr(index));
     }
 
-    virtual SkFontStyleSet* onMatchFamily(const char familyName[]) {
-        this->init();
+    SkFontStyleSet* onMatchFamily(const char familyName[]) const override {
+        FCLocker lock;
 
         FcPattern* pattern = FcPatternCreate();
 
@@ -255,17 +283,48 @@ protected:
         return sset;
     }
 
-    virtual SkTypeface* onMatchFamilyStyle(const char familyName[],
-                                           const SkFontStyle&) { return NULL; }
-    virtual SkTypeface* onMatchFaceStyle(const SkTypeface*,
-                                         const SkFontStyle&) { return NULL; }
-
-    virtual SkTypeface* onCreateFromData(SkData*, int ttcIndex) { return NULL; }
-    virtual SkTypeface* onCreateFromStream(SkStream*, int ttcIndex) {
+    SkTypeface* onMatchFamilyStyle(const char familyName[],
+                                   const SkFontStyle&) const override { return NULL; }
+    SkTypeface* onMatchFamilyStyleCharacter(const char familyName[], const SkFontStyle&,
+                                            const char* bcp47[], int bcp47Count,
+                                            SkUnichar character) const override {
         return NULL;
     }
-    virtual SkTypeface* onCreateFromFile(const char path[], int ttcIndex) {
-        return NULL;
+    SkTypeface* onMatchFaceStyle(const SkTypeface*,
+                                 const SkFontStyle&) const override { return NULL; }
+
+    SkTypeface* onCreateFromData(SkData*, int ttcIndex) const override { return NULL; }
+
+    SkTypeface* onCreateFromStream(SkStreamAsset* bareStream, int ttcIndex) const override {
+        SkAutoTDelete<SkStreamAsset> stream(bareStream);
+        const size_t length = stream->getLength();
+        if (!length) {
+            return NULL;
+        }
+        if (length >= 1024 * 1024 * 1024) {
+            return NULL;  // don't accept too large fonts (>= 1GB) for safety.
+        }
+
+        // TODO should the caller give us the style or should we get it from freetype?
+        SkFontStyle style;
+        bool isFixedWidth = false;
+        if (!fScanner.scanFont(stream, 0, NULL, &style, &isFixedWidth, NULL)) {
+            return NULL;
+        }
+
+        SkTypeface* face = FontConfigTypeface::Create(style, isFixedWidth, stream.detach());
+        return face;
+    }
+
+    SkTypeface* onCreateFromFile(const char path[], int ttcIndex) const override {
+        SkAutoTDelete<SkStreamAsset> stream(SkStream::NewFromFile(path));
+        return stream.get() ? this->createFromStream(stream.detach(), ttcIndex) : NULL;
+    }
+
+    SkTypeface* onLegacyCreateTypeface(const char familyName[],
+                                       unsigned styleBits) const override {
+        FCLocker lock;
+        return FontConfigTypeface::LegacyCreateTypeface(familyName, (SkTypeface::Style)styleBits);
     }
 };
 

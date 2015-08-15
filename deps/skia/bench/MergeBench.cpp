@@ -4,10 +4,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkBenchmark.h"
+
+#include "Benchmark.h"
 #include "SkBitmapSource.h"
 #include "SkCanvas.h"
-#include "SkDevice.h"
 #include "SkMergeImageFilter.h"
 
 #define FILTER_WIDTH_SMALL  SkIntToScalar(32)
@@ -15,17 +15,16 @@
 #define FILTER_WIDTH_LARGE  SkIntToScalar(256)
 #define FILTER_HEIGHT_LARGE SkIntToScalar(256)
 
-class MergeBench : public SkBenchmark {
+class MergeBench : public Benchmark {
 public:
-    MergeBench(void* param, bool small) : INHERITED(param), fIsSmall(small), fInitialized(false) {
-    }
+    MergeBench(bool small) : fIsSmall(small), fInitialized(false) { }
 
 protected:
-    virtual const char* onGetName() SK_OVERRIDE {
+    const char* onGetName() override {
         return fIsSmall ? "merge_small" : "merge_large";
     }
 
-    virtual void onPreDraw() SK_OVERRIDE {
+    void onPreDraw() override {
         if (!fInitialized) {
             make_bitmap();
             make_checkerboard();
@@ -33,28 +32,28 @@ protected:
         }
     }
 
-    virtual void onDraw(SkCanvas* canvas) SK_OVERRIDE {
+    void onDraw(const int loops, SkCanvas* canvas) override {
         SkRect r = fIsSmall ? SkRect::MakeWH(FILTER_WIDTH_SMALL, FILTER_HEIGHT_SMALL) :
                               SkRect::MakeWH(FILTER_WIDTH_LARGE, FILTER_HEIGHT_LARGE);
         SkPaint paint;
         paint.setImageFilter(mergeBitmaps())->unref();
-        canvas->drawRect(r, paint);
+        for (int i = 0; i < loops; i++) {
+            canvas->drawRect(r, paint);
+        }
     }
 
 private:
     SkImageFilter* mergeBitmaps() {
-        SkImageFilter* first = new SkBitmapSource(fCheckerboard);
-        SkImageFilter* second = new SkBitmapSource(fBitmap);
+        SkImageFilter* first = SkBitmapSource::Create(fCheckerboard);
+        SkImageFilter* second = SkBitmapSource::Create(fBitmap);
         SkAutoUnref aur0(first);
         SkAutoUnref aur1(second);
-        return new SkMergeImageFilter(first, second);
+        return SkMergeImageFilter::Create(first, second);
     }
 
     void make_bitmap() {
-        fBitmap.setConfig(SkBitmap::kARGB_8888_Config, 80, 80);
-        fBitmap.allocPixels();
-        SkDevice device(fBitmap);
-        SkCanvas canvas(&device);
+        fBitmap.allocN32Pixels(80, 80);
+        SkCanvas canvas(fBitmap);
         canvas.clear(0x00000000);
         SkPaint paint;
         paint.setAntiAlias(true);
@@ -65,10 +64,8 @@ private:
     }
 
     void make_checkerboard() {
-        fCheckerboard.setConfig(SkBitmap::kARGB_8888_Config, 80, 80);
-        fCheckerboard.allocPixels();
-        SkDevice device(fCheckerboard);
-        SkCanvas canvas(&device);
+        fCheckerboard.allocN32Pixels(80, 80);
+        SkCanvas canvas(fCheckerboard);
         canvas.clear(0x00000000);
         SkPaint darkPaint;
         darkPaint.setColor(0xFF804020);
@@ -91,10 +88,10 @@ private:
     bool fInitialized;
     SkBitmap fBitmap, fCheckerboard;
 
-    typedef SkBenchmark INHERITED;
+    typedef Benchmark INHERITED;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DEF_BENCH( return new MergeBench(p, true); )
-DEF_BENCH( return new MergeBench(p, false); )
+DEF_BENCH( return new MergeBench(true); )
+DEF_BENCH( return new MergeBench(false); )

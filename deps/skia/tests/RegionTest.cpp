@@ -1,13 +1,14 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Test.h"
-#include "SkRegion.h"
+
+#include "SkPath.h"
 #include "SkRandom.h"
+#include "SkRegion.h"
+#include "Test.h"
 
 static void Union(SkRegion* rgn, const SkIRect& rect) {
     rgn->op(rect, SkRegion::kUnion_Op);
@@ -91,6 +92,13 @@ static void test_empties(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, !empty.contains(empty2));
     REPORTER_ASSERT(reporter, !valid.contains(empty));
     REPORTER_ASSERT(reporter, !empty.contains(valid));
+
+    SkPath emptyPath;
+    emptyPath.moveTo(1, 5);
+    emptyPath.close();
+    SkRegion openClip;
+    openClip.setRect(-16000, -16000, 16000, 16000);
+    empty.setPath(emptyPath, openClip);  // should not assert
 }
 
 enum {
@@ -98,7 +106,7 @@ enum {
     H = 256
 };
 
-static SkIRect randRect(SkMWCRandom& rand) {
+static SkIRect randRect(SkRandom& rand) {
     int x = rand.nextU() % W;
     int y = rand.nextU() % H;
     int w = rand.nextU() % W;
@@ -106,7 +114,7 @@ static SkIRect randRect(SkMWCRandom& rand) {
     return SkIRect::MakeXYWH(x, y, w >> 1, h >> 1);
 }
 
-static void randRgn(SkMWCRandom& rand, SkRegion* rgn, int n) {
+static void randRgn(SkRandom& rand, SkRegion* rgn, int n) {
     rgn->setEmpty();
     for (int i = 0; i < n; ++i) {
         rgn->op(randRect(rand), SkRegion::kUnion_Op);
@@ -183,7 +191,7 @@ static void intersects_proc(skiatest::Reporter* reporter,
 static void test_proc(skiatest::Reporter* reporter,
                       void (*proc)(skiatest::Reporter*,
                                    const SkRegion& a, const SkRegion&)) {
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 10000; ++i) {
         SkRegion outer;
         randRgn(rand, &outer, 8);
@@ -193,7 +201,7 @@ static void test_proc(skiatest::Reporter* reporter,
     }
 }
 
-static void rand_rect(SkIRect* rect, SkMWCRandom& rand) {
+static void rand_rect(SkIRect* rect, SkRandom& rand) {
     int bits = 6;
     int shift = 32 - bits;
     rect->set(rand.nextU() >> shift, rand.nextU() >> shift,
@@ -222,7 +230,7 @@ static bool test_rects(const SkIRect rect[], int count) {
     return true;
 }
 
-static void TestRegion(skiatest::Reporter* reporter) {
+DEF_TEST(Region, reporter) {
     const SkIRect r2[] = {
         { 0, 0, 1, 1 },
         { 2, 2, 3, 3 },
@@ -237,7 +245,7 @@ static void TestRegion(skiatest::Reporter* reporter) {
     };
     REPORTER_ASSERT(reporter, test_rects(rects, SK_ARRAY_COUNT(rects)));
 
-    SkMWCRandom rand;
+    SkRandom rand;
     for (int i = 0; i < 1000; i++) {
         SkRegion rgn0, rgn1;
 
@@ -255,5 +263,30 @@ static void TestRegion(skiatest::Reporter* reporter) {
     test_fromchrome(reporter);
 }
 
-#include "TestClassDef.h"
-DEFINE_TESTCLASS("Region", RegionTestClass, TestRegion)
+// Test that writeToMemory reports the same number of bytes whether there was a
+// buffer to write to or not.
+static void test_write(const SkRegion& region, skiatest::Reporter* r) {
+    const size_t bytesNeeded = region.writeToMemory(NULL);
+    SkAutoMalloc storage(bytesNeeded);
+    const size_t bytesWritten = region.writeToMemory(storage.get());
+    REPORTER_ASSERT(r, bytesWritten == bytesNeeded);
+}
+
+DEF_TEST(Region_writeToMemory, r) {
+    // Test an empty region.
+    SkRegion region;
+    REPORTER_ASSERT(r, region.isEmpty());
+    test_write(region, r);
+
+    // Test a rectangular region
+    bool nonEmpty = region.setRect(0, 0, 50, 50);
+    REPORTER_ASSERT(r, nonEmpty);
+    REPORTER_ASSERT(r, region.isRect());
+    test_write(region, r);
+
+    // Test a complex region
+    nonEmpty = region.op(50, 50, 100, 100, SkRegion::kUnion_Op);
+    REPORTER_ASSERT(r, nonEmpty);
+    REPORTER_ASSERT(r, region.isComplex());
+    test_write(region, r);
+}

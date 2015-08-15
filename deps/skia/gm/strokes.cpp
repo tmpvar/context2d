@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2011 Google Inc.
  *
@@ -6,9 +5,8 @@
  * found in the LICENSE file.
  */
 
-
-
 #include "gm.h"
+#include "SkPath.h"
 #include "SkRandom.h"
 
 #define W   400
@@ -39,15 +37,16 @@ public:
     StrokesGM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("strokes_round");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(W, H*2);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setStyle(SkPaint::kStroke_Style);
         paint.setStrokeWidth(SkIntToScalar(9)/2);
@@ -79,8 +78,8 @@ private:
 
 class Strokes2GM : public skiagm::GM {
     SkPath fPath;
-public:
-    Strokes2GM() {
+protected:
+    void onOnceBeforeDraw() override {
         SkRandom rand;
         fPath.moveTo(0, 0);
         for (int i = 0; i < 13; i++) {
@@ -90,12 +89,12 @@ public:
         }
     }
 
-protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("strokes_poly");
     }
 
-    virtual SkISize onISize() {
+    SkISize onISize() override {
         return SkISize::Make(W, H*2);
     }
 
@@ -105,7 +104,7 @@ protected:
         canvas->concat(matrix);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         canvas->drawColor(SK_ColorWHITE);
 
         SkPaint paint;
@@ -188,28 +187,29 @@ public:
     Strokes3GM() {}
 
 protected:
-    virtual SkString onShortName() {
+
+    SkString onShortName() override {
         return SkString("strokes3");
     }
 
-    virtual SkISize onISize() {
-        return SkISize::Make(W, H*2);
+    SkISize onISize() override {
+        return SkISize::Make(1500, 1500);
     }
 
-    virtual void onDraw(SkCanvas* canvas) {
+    void onDraw(SkCanvas* canvas) override {
         SkPaint origPaint;
         origPaint.setAntiAlias(true);
         origPaint.setStyle(SkPaint::kStroke_Style);
         SkPaint fillPaint(origPaint);
         fillPaint.setColor(SK_ColorRED);
         SkPaint strokePaint(origPaint);
-        strokePaint.setColor(0xFF4444FF);
+        strokePaint.setColor(sk_tool_utils::color_to_565(0xFF4444FF));
 
         void (*procs[])(SkPath*, const SkRect&, SkString*) = {
             make0, make1, make2, make3, make4, make5
         };
 
-        canvas->translate(SkIntToScalar(20), SkIntToScalar(20));
+        canvas->translate(SkIntToScalar(20), SkIntToScalar(80));
 
         SkRect bounds = SkRect::MakeWH(SkIntToScalar(50), SkIntToScalar(50));
         SkScalar dx = bounds.width() * 4/3;
@@ -239,12 +239,42 @@ private:
     typedef skiagm::GM INHERITED;
 };
 
+class Strokes4GM : public skiagm::GM {
+public:
+    Strokes4GM() {}
+
+protected:
+
+    SkString onShortName() override {
+        return SkString("strokes_zoomed");
+    }
+
+    SkISize onISize() override {
+        return SkISize::Make(W, H*2);
+    }
+
+    void onDraw(SkCanvas* canvas) override {
+        SkPaint paint;
+        paint.setStyle(SkPaint::kStroke_Style);
+        paint.setStrokeWidth(0.055f);
+    
+        canvas->scale(1000, 1000);
+        canvas->drawCircle(0, 2, 1.97f, paint);
+    }
+
+private:
+    typedef skiagm::GM INHERITED;
+};
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 static skiagm::GM* F0(void*) { return new StrokesGM; }
 static skiagm::GM* F1(void*) { return new Strokes2GM; }
 static skiagm::GM* F2(void*) { return new Strokes3GM; }
+static skiagm::GM* F3(void*) { return new Strokes4GM; }
 
 static skiagm::GMRegistry R0(F0);
 static skiagm::GMRegistry R1(F1);
 static skiagm::GMRegistry R2(F2);
+static skiagm::GMRegistry R3(F3);

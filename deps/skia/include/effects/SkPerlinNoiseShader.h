@@ -23,9 +23,9 @@
     http://www.w3.org/TR/SVG/filters.html#feTurbulenceElement
 */
 class SK_API SkPerlinNoiseShader : public SkShader {
-    struct PaintingData;
 public:
     struct StitchData;
+    struct PaintingData;
 
     /**
      *  About the noise types : the difference between the 2 is just minor tweaks to the algorithm,
@@ -58,52 +58,68 @@ public:
     static SkShader* CreateFractalNoise(SkScalar baseFrequencyX, SkScalar baseFrequencyY,
                                         int numOctaves, SkScalar seed,
                                         const SkISize* tileSize = NULL);
-    static SkShader* CreateTubulence(SkScalar baseFrequencyX, SkScalar baseFrequencyY,
+    static SkShader* CreateTurbulence(SkScalar baseFrequencyX, SkScalar baseFrequencyY,
                                      int numOctaves, SkScalar seed,
                                      const SkISize* tileSize = NULL);
+    /**
+     * Create alias for CreateTurbulunce until all Skia users changed
+     * its code to use the new naming
+     */
+    static SkShader* CreateTubulence(SkScalar baseFrequencyX, SkScalar baseFrequencyY,
+                                     int numOctaves, SkScalar seed,
+                                     const SkISize* tileSize = NULL) {
+    return CreateTurbulence(baseFrequencyX, baseFrequencyY, numOctaves, seed, tileSize);
+    }
 
-    virtual bool setContext(const SkBitmap& device, const SkPaint& paint,
-                            const SkMatrix& matrix);
-    virtual void shadeSpan(int x, int y, SkPMColor[], int count) SK_OVERRIDE;
-    virtual void shadeSpan16(int x, int y, uint16_t[], int count) SK_OVERRIDE;
 
-    virtual GrEffectRef* asNewEffect(GrContext* context, const SkPaint&) const SK_OVERRIDE;
+    size_t contextSize() const override;
 
-    SK_DEVELOPER_TO_STRING()
+    class PerlinNoiseShaderContext : public SkShader::Context {
+    public:
+        PerlinNoiseShaderContext(const SkPerlinNoiseShader& shader, const ContextRec&);
+        virtual ~PerlinNoiseShaderContext();
+
+        void shadeSpan(int x, int y, SkPMColor[], int count) override;
+        void shadeSpan16(int x, int y, uint16_t[], int count) override;
+
+    private:
+        SkPMColor shade(const SkPoint& point, StitchData& stitchData) const;
+        SkScalar calculateTurbulenceValueForPoint(
+            int channel,
+            StitchData& stitchData, const SkPoint& point) const;
+        SkScalar noise2D(int channel,
+                         const StitchData& stitchData, const SkPoint& noiseVector) const;
+
+        SkMatrix fMatrix;
+        PaintingData* fPaintingData;
+
+        typedef SkShader::Context INHERITED;
+    };
+
+    virtual bool asFragmentProcessor(GrContext* context, const SkPaint&, const SkMatrix& viewM,
+                                     const SkMatrix*, GrColor*, GrProcessorDataManager*,
+                                     GrFragmentProcessor**) const override;
+
+    SK_TO_STRING_OVERRIDE()
     SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkPerlinNoiseShader)
 
 protected:
-    SkPerlinNoiseShader(SkFlattenableReadBuffer&);
-    virtual void flatten(SkFlattenableWriteBuffer&) const SK_OVERRIDE;
+    void flatten(SkWriteBuffer&) const override;
+    Context* onCreateContext(const ContextRec&, void* storage) const override;
 
 private:
     SkPerlinNoiseShader(SkPerlinNoiseShader::Type type, SkScalar baseFrequencyX,
                         SkScalar baseFrequencyY, int numOctaves, SkScalar seed,
-                        const SkISize* tileSize = NULL);
+                        const SkISize* tileSize);
     virtual ~SkPerlinNoiseShader();
 
-    void setTileSize(const SkISize&);
-
-    void initPaint(PaintingData& paintingData);
-
-    SkScalar noise2D(int channel, const PaintingData& paintingData,
-                     const StitchData& stitchData, const SkPoint& noiseVector);
-
-    SkScalar calculateTurbulenceValueForPoint(int channel, const PaintingData& paintingData,
-                                              StitchData& stitchData, const SkPoint& point);
-
-    SkPMColor shade(const SkPoint& point, StitchData& stitchData);
-
-    SkPerlinNoiseShader::Type fType;
-    SkScalar fBaseFrequencyX;
-    SkScalar fBaseFrequencyY;
-    int fNumOctaves;
-    SkScalar fSeed;
-    SkISize fTileSize;
-    bool fStitchTiles;
-    SkMatrix fMatrix;
-
-    PaintingData* fPaintingData;
+    const SkPerlinNoiseShader::Type fType;
+    const SkScalar                  fBaseFrequencyX;
+    const SkScalar                  fBaseFrequencyY;
+    const int                       fNumOctaves;
+    const SkScalar                  fSeed;
+    const SkISize                   fTileSize;
+    const bool                      fStitchTiles;
 
     typedef SkShader INHERITED;
 };

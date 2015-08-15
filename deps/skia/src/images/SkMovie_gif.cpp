@@ -16,6 +16,10 @@
 
 #include "gif_lib.h"
 
+#if GIFLIB_MAJOR < 5 || (GIFLIB_MAJOR == 5 && GIFLIB_MINOR == 0)
+#define DGifCloseFile(a, b) DGifCloseFile(a)
+#endif
+
 class SkGIFMovie : public SkMovie {
 public:
     SkGIFMovie(SkStream* stream);
@@ -31,6 +35,7 @@ private:
     int fCurrIndex;
     int fLastDrawIndex;
     SkBitmap fBackup;
+    SkColor fPaintingColor;
 };
 
 static int Decode(GifFileType* fileType, GifByteType* out, int size) {
@@ -50,17 +55,18 @@ SkGIFMovie::SkGIFMovie(SkStream* stream)
 
     if (DGifSlurp(fGIF) != GIF_OK)
     {
-        DGifCloseFile(fGIF);
+        DGifCloseFile(fGIF, NULL);
         fGIF = NULL;
     }
     fCurrIndex = -1;
     fLastDrawIndex = -1;
+    fPaintingColor = SkPackARGB32(0, 0, 0, 0);
 }
 
 SkGIFMovie::~SkGIFMovie()
 {
     if (fGIF)
-        DGifCloseFile(fGIF);
+        DGifCloseFile(fGIF, NULL);
 }
 
 static SkMSec savedimage_duration(const SavedImage* image)
@@ -123,6 +129,7 @@ static void copyLine(uint32_t* dst, const unsigned char* src, const ColorMapObje
     }
 }
 
+#if GIFLIB_MAJOR < 5
 static void copyInterlaceGroup(SkBitmap* bm, const unsigned char*& src,
                                const ColorMapObject* cmap, int transparent, int copyWidth,
                                int copyHeight, const GifImageDesc& imageDesc, int rowStep,
@@ -169,6 +176,7 @@ static void blitInterlace(SkBitmap* bm, const SavedImage* frame, const ColorMapO
 
     copyInterlaceGroup(bm, src, cmap, transparent, copyWidth, copyHeight, frame->ImageDesc, 2, 1);
 }
+#endif
 
 static void blitNormal(SkBitmap* bm, const SavedImage* frame, const ColorMapObject* cmap,
                        int transparent)
@@ -241,11 +249,15 @@ static void drawFrame(SkBitmap* bm, const SavedImage* frame, const ColorMapObjec
         return;
     }
 
+#if GIFLIB_MAJOR < 5
+    // before GIFLIB 5, de-interlacing wasn't done by library at load time
     if (frame->ImageDesc.Interlace) {
         blitInterlace(bm, frame, cmap, transparent);
-    } else {
-        blitNormal(bm, frame, cmap, transparent);
+        return;
     }
+#endif
+
+    blitNormal(bm, frame, cmap, transparent);
 }
 
 static bool checkIfWillBeCleared(const SavedImage* frame)
@@ -358,13 +370,11 @@ bool SkGIFMovie::onGetBitmap(SkBitmap* bm)
         startIndex = 0;
 
         // create bitmap
-        bm->setConfig(SkBitmap::kARGB_8888_Config, width, height, 0);
-        if (!bm->allocPixels(NULL)) {
+        if (!bm->tryAllocN32Pixels(width, height)) {
             return false;
         }
         // create bitmap for backup
-        fBackup.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0);
-        if (!fBackup.allocPixels(NULL)) {
+        if (!fBackup.tryAllocN32Pixels(width, height)) {
             return false;
         }
     } else if (startIndex > fCurrIndex) {
@@ -387,7 +397,6 @@ bool SkGIFMovie::onGetBitmap(SkBitmap* bm)
         bgColor = SkColorSetARGB(0xFF, col.Red, col.Green, col.Blue);
     }
 
-    static SkColor paintingColor = SkPackARGB32(0, 0, 0, 0);
     // draw each frames - not intelligent way
     for (int i = startIndex; i <= lastIndex; i++) {
         const SavedImage* cur = &fGIF->SavedImages[i];
@@ -396,17 +405,17 @@ bool SkGIFMovie::onGetBitmap(SkBitmap* bm)
             int disposal;
             getTransparencyAndDisposalMethod(cur, &trans, &disposal);
             if (!trans && gif->SColorMap != NULL) {
-                paintingColor = bgColor;
+                fPaintingColor = bgColor;
             } else {
-                paintingColor = SkColorSetARGB(0, 0, 0, 0);
+                fPaintingColor = SkColorSetARGB(0, 0, 0, 0);
             }
 
-            bm->eraseColor(paintingColor);
-            fBackup.eraseColor(paintingColor);
+            bm->eraseColor(fPaintingColor);
+            fBackup.eraseColor(fPaintingColor);
         } else {
             // Dispose previous frame before move to next frame.
             const SavedImage* prev = &fGIF->SavedImages[i-1];
-            disposeFrameIfNeeded(bm, prev, cur, &fBackup, paintingColor);
+            disposeFrameIfNeeded(bm, prev, cur, &fBackup, fPaintingColor);
         }
 
         // Draw frame
@@ -426,7 +435,7 @@ bool SkGIFMovie::onGetBitmap(SkBitmap* bm)
 
 #include "SkTRegistry.h"
 
-SkMovie* Factory(SkStream* stream) {
+SkMovie* Factory(SkStreamRewindable* stream) {
     char buf[GIF_STAMP_LEN];
     if (stream->read(buf, GIF_STAMP_LEN) == GIF_STAMP_LEN) {
         if (memcmp(GIF_STAMP,   buf, GIF_STAMP_LEN) == 0 ||
@@ -440,4 +449,4 @@ SkMovie* Factory(SkStream* stream) {
     return NULL;
 }
 
-static SkTRegistry<SkMovie*, SkStream*> gReg(Factory);
+static SkTRegistry<SkMovie*(*)(SkStreamRewindable*)> gReg(Factory);
