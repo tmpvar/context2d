@@ -20,7 +20,9 @@ module.exports.test = function(module, name, image, fn) {
     '2d.gradient.radial.outside3' : 'https://code.google.com/p/skia/issues/detail?id=517',
     '2d.drawImage.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1',
     '2d.pattern.animated.gif' : 'https://github.com/tmpvar/HTMLImageElement/issues/1',
-    '2d.text.draw.fill.rtl' : '../deps/skia/src/core/SkUtils.cpp:143: failed assertion "(c & 0xC0) != 0x80"'
+    '2d.text.draw.fill.rtl' : '../deps/skia/src/core/SkUtils.cpp:143: failed assertion "(c & 0xC0) != 0x80"',
+    '2d.path.isPointInPath.arc' : './../../c/skia.cc/src/core/SkPath.cpp:2774: failed assertion "0"',
+    '2d.path.isPointInPath.bigarc' : './../../c/skia.cc/src/core/SkPath.cpp:2774: failed assertion "0"',
   };
 
 
