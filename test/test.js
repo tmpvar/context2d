@@ -1,5 +1,6 @@
 var hound = require('hound');
 var optimist = require('optimist');
+var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var path = require('path');
 var glob = require('glob');
@@ -202,28 +203,28 @@ var run = function(complete) {
 
 if (argv.w) {
   var watcher = hound.watch(__dirname + '/../lib');
-  watcher.watch(__dirname + '/../index.js');
+  watcher.watch(__dirname + '/../context2d.js');
   watcher.watch(__dirname + '/../src');
-  watcher.watch(__dirname + '/../deps/skia/src/');
 
   watcher.on('change', function(file) {
-    if (file.match(/\.(h|cc|cpp)/)) {
+    if (file.match(/\.(h|cc|cpp|gyp)/)) {
       log('[recompiling]')
-      exec('node-gyp configure build', function(e, out, err) {
-
-        if (e) {
-          log('ERROR:');
-          err.split('\n').forEach(function(line) {
-            if (line.indexOf('gyp') < 0) {
-              console.log(line);
-            }
-          });
-
-        } else {
-          exec('touch ' + __filename);
-          rerun();
-        }
+      var c = spawn('node', [
+        'node_modules/pangyp/bin/node-gyp',
+        'configure',
+        'build',
+        '--debug'
+      ], {
+        env: process.env,
+        stdio: 'pipe'
       });
+
+      c.stdout.pipe(process.stdout);
+      c.stderr.pipe(process.stderr);
+      c.on('exit', function() {
+        exec('touch ' + __filename);
+        rerun();
+      })
     } else {
       rerun();
     }
