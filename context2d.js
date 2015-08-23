@@ -256,11 +256,9 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
   var state = new ContextState();
   var stateStack = [];
 
-  canvas = canvas || {
-    width : w || 300,
-    height: h || 150
-  };
-
+  canvas = canvas || {};
+  canvas.width = w || 300;
+  canvas.height = h || 150;
   canvas.dir = canvas.dir || 'ltr';
 
   var ret = new ContextCtor(canvas.width, canvas.height);
@@ -465,9 +463,11 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     // Handle Canvas elements
+    var isCanvas = false;
     if (i.ctx) {
       i = i.ctx;
       needsSwizzle = false;
+      isCanvas = true;
     }
 
     if (!i.imageData) {
@@ -611,7 +611,12 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
       throw new DOMException('invalid image dimensions (' + i.src + ')', DOMException.INDEX_SIZE_ERR);
     }
 
-    ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
+    if (isCanvas) {
+      ret.drawCanvas(i, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
+
+    } else {
+      ret.drawImageBuffer(id.data, sx, sy, sw, sh, dx, dy, dw, dh, id.width, id.height);
+    }
     ret.dirty = true;
   };
 

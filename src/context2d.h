@@ -1,37 +1,28 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
-#define SK_DEBUG 1
-#define SK_DUMP_ENABLED
-#define DUMP_IMAGEREF_LIFECYCLE
+// #define SK_DEBUG 1
+// #define SK_DUMP_ENABLED
+// #define DUMP_IMAGEREF_LIFECYCLE
 
 #include <node.h>
 #include <nan.h>
-#include <SkFontMgr.h>
-#include <SkCanvas.h>
-#include <SkPaint.h>
-#include <SkPath.h>
 
-#include <SkStream.h>
-#include <SkDevice.h>
-#include <SkData.h>
-#include <SkImageEncoder.h>
-#include <SkMatrix44.h>
+#include <SkSurface.h>
+#include <SkCanvas.h>
 
 using namespace node;
-using namespace v8;
-
-
 
 class Context2D : public Nan::ObjectWrap {
 
   public:
-    static void Init(v8::Handle<v8::Object> exports);
+    static void Init(v8::Local<v8::Object> exports);
     void resizeCanvas(uint32_t width, uint32_t height);
     void *getTextureData();
     SkBitmap bitmap;
     SkCanvas *canvas;
-    SkDevice *device;
+    SkAutoTDelete<SkSurface> surface;
+    // SkDevice *device;
     SkPath path, subpath;
     SkPaint paint, shadowPaint, strokePaint;
     SkXfermode::Mode globalCompositeOperation;
@@ -43,7 +34,7 @@ class Context2D : public Nan::ObjectWrap {
     ~Context2D();
     bool setupShadow(SkPaint *paint);
 
-    static Persistent<Function> constructor;
+    static v8::Persistent<v8::Function> constructor;
     static NAN_METHOD(New);
     static NAN_METHOD(ToPngBuffer);
     static NAN_METHOD(ToBuffer);
@@ -119,6 +110,7 @@ class Context2D : public Nan::ObjectWrap {
 
     // drawing images
     static NAN_METHOD(DrawImageBuffer);
+    static NAN_METHOD(DrawCanvas);
 
     // pixel manipulation
     static NAN_METHOD(CreateImageData);
