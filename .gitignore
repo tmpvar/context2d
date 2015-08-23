@@ -5,3 +5,6 @@ out.png
 .DS_Store
 test/.DS_Store
 deps/skia/third_party/lua
+.nadconfig.mk
+todo*
+xcode*
