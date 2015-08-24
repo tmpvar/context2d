@@ -194,12 +194,21 @@ util.inherits(CanvasPixelArray, Buffer);
 module.exports.CanvasPixelArray = CanvasPixelArray;
 
 function CanvasPattern(id, x, y) {
-  this.imageData = new ImageData(id.data, id.width, id.height);
+  if (id.ctx) {
+    this.ctx = id.ctx;
+  } else {
+    this.imageData = new ImageData(id.data, id.width, id.height);
+  }
   this.x = x;
   this.y = y;
 }
 
 CanvasPattern.prototype.type = 'pattern';
+CanvasPattern.prototype.imageData = null;
+CanvasPattern.prototype.ctx = null;
+CanvasPattern.prototype.x = 0;
+CanvasPattern.prototype.y = 0;
+
 
 module.exports.CanvasPattern = CanvasPattern;
 
@@ -373,8 +382,12 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
 
       if (c.type) {
         if (c.type === 'pattern') {
-          var id = c.imageData;
-          if (id) {
+          if (c.ctx) {
+            var ctx = c.ctx;
+            ret.setFillStylePatternCanvas(ctx, ctx.width, ctx.height, !!c.x, !!c.y);
+            state.fillStyle = c;
+          } else if (c.imageData) {
+            var id = c.imageData;
             ret.setFillStylePattern(new Buffer(id.data), id.width, id.height, !!c.x, !!c.y);
             state.fillStyle = c;
           } else {
@@ -768,9 +781,10 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
 
         var family = f.family.split(', ')[0];
 
-        if (fontCache[family]) {
-          family = fontCache[family];
-        }
+        // TODO: better caching..
+        // if (fontCache[family]) {
+        //   family = fontCache[family];
+        // }
 
         ret.setFont(
           family,
@@ -862,7 +876,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
 
     if (obj.ctx) {
-      obj = obj.ctx.imageData;
+      obj = obj;
     } else if (obj.src) {
       obj = obj.imageData;
     } else {

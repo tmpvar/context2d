@@ -74,6 +74,7 @@ void Context2D::Init(Local<Object> exports) {
   Nan::SetPrototypeMethod(tpl, "getImageSmoothingEnabled", GetImageSmoothingEnabled);
   Nan::SetPrototypeMethod(tpl, "setStrokeStyle", SetStrokeStyle);
   Nan::SetPrototypeMethod(tpl, "setFillStylePattern", SetFillStylePattern);
+  Nan::SetPrototypeMethod(tpl, "setFillStylePatternCanvas", SetFillStylePatternCanvas);
   Nan::SetPrototypeMethod(tpl, "setFillStyle", SetFillStyle);
   Nan::SetPrototypeMethod(tpl, "setLinearGradientShader", SetLinearGradientShader);
   Nan::SetPrototypeMethod(tpl, "setRadialGradientShader", SetRadialGradientShader);
@@ -160,7 +161,7 @@ Context2D::Context2D(uint32_t w, uint32_t h) {
 }
 
 Context2D::~Context2D() {
-  this->canvas->unref();
+  // TODO: cleanup after yourself!
 }
 
 bool Context2D::setupShadow(SkPaint *paint) {
@@ -214,20 +215,6 @@ void Context2D::resizeCanvas(uint32_t width, uint32_t height) {
   SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
   this->surface.reset(SkSurface::NewRaster(info));
   this->canvas = this->surface->getCanvas();
-
-  return;
-  // TODO: setup the surface with kARGB_8888_Config inside of SkImageInfo
-  // this->surface = SkSurface::NewRasterN32Premul(width, height);
-  // this->canvas = this->surface->getCanvas();
-
-  // this->bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  // this->bitmap.allocPixels();
-
-  // SkSafeUnref(this->canvas);
-  // SkSafeUnref(this->device);
-
-  // this->device = new SkDevice(this->bitmap);
-  // this->canvas = new SkCanvas(this->device);
 }
 
 void *Context2D::getTextureData() {
@@ -459,8 +446,8 @@ void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info
   Local<Object> buffer_obj = info[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
 
-  // int32_t w = info[1]->Int32Value();
-  // int32_t h = info[2]->Int32Value();
+  int32_t w = info[1]->Int32Value();
+  int32_t h = info[2]->Int32Value();
 
   SkShader::TileMode repeatX = info[3]->BooleanValue() ?
                                SkShader::kRepeat_TileMode :
@@ -470,14 +457,37 @@ void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info
                                SkShader::kRepeat_TileMode :
                                SkShader::kClamp_TileMode;
 
-  SkBitmap src;
+  // TODO: implement cropping via the w/h params
 
-  // src.setConfig(SkColorType::kARGB_8888_Config, w, h);
+  SkBitmap src;
+  src.setInfo(SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kPremul_SkAlphaType));
+  src.allocPixels();
   src.setPixels(buffer_data);
 
   SkBitmapProcShader *shader = SkNEW_ARGS(SkBitmapProcShader, (src, repeatX, repeatY));
   ctx->paint.setShader(shader);
   shader->unref();
+}
+
+void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *src = ObjectWrap::Unwrap<Context2D>(info[0]->ToObject());
+
+  SkShader::TileMode repeatX = info[3]->BooleanValue() ?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
+
+  SkShader::TileMode repeatY = info[4]->BooleanValue()?
+                               SkShader::kRepeat_TileMode :
+                               SkShader::kClamp_TileMode;
+
+  SkMatrix matrix;
+  matrix.setTranslate(SkIntToScalar(10), SkIntToScalar(0));
+
+  SkAutoTUnref<SkImage> sourceImage(src->surface->newImageSnapshot());
+  SkAutoTUnref<SkShader> shader(sourceImage->newShader(repeatX, repeatY, &matrix));
+
+  ctx->paint.setShader(shader);
 }
 
 void Context2D::SetFillStyle(const Nan::FunctionCallbackInfo<Value>& info) {
@@ -1122,40 +1132,43 @@ void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
-  // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
 
 
-  // bool isBold = info[1]->BooleanValue();
-  // bool isItalic = info[2]->BooleanValue();
+   bool isBold = info[1]->BooleanValue();
+   bool isItalic = info[2]->BooleanValue();
 
-  // SkScalar fontSize = SkDoubleToScalar(info[3]->NumberValue());
-  // ctx->paint.setTextSize(fontSize);
-  // ctx->strokePaint.setTextSize(fontSize);
+   SkScalar fontSize = SkDoubleToScalar(info[3]->NumberValue());
+   ctx->paint.setTextSize(fontSize);
+   ctx->strokePaint.setTextSize(fontSize);
 
-  // SkTypeface::Style style = SkTypeface::kNormal;
+   SkTypeface::Style style = SkTypeface::kNormal;
 
-  // if (isBold && isItalic) {
-  //   style = SkTypeface::kBoldItalic;
-  // } else if (isBold) {
-  //   style = SkTypeface::kBold;
-  // } else if (isItalic) {
-  //   style = SkTypeface::kItalic;
-  // }
+   if (isBold && isItalic) {
+     style = SkTypeface::kBoldItalic;
+   } else if (isBold) {
+     style = SkTypeface::kBold;
+   } else if (isItalic) {
+     style = SkTypeface::kItalic;
+   }
 
-  // SkTypeface *face = NULL;
 
-  // if (info[0]->IsString()) {
-  //   String::Utf8Value family(info[0]);
-  //   face = SkTypeface::CreateFromName(*family, style);
-  // } else if (info[0]->IsNumber()) {
-  //   SkFontID id = info[0]->Uint32Value();
-  //   face = SkTypefaceCache::FindByID(id);
-  // }
 
-  // if (face) {
-  //   ctx->paint.setTypeface(face);
-  //   ctx->strokePaint.setTypeface(face);
-  // }
+   SkTypeface *face = NULL;
+//
+   if (info[0]->IsString()) {
+     String::Utf8Value family(info[0]);
+     face = SkTypeface::CreateFromName(*family, style);
+   } else if (info[0]->IsNumber()) {
+       printf("wooops!\n");
+     // SkFontID id = info[0]->Uint32Value();
+     // face = SkTypefaceCache::FindByID(id);
+   }
+//
+   if (face) {
+     ctx->paint.setTypeface(face);
+     ctx->strokePaint.setTypeface(face);
+   }
 }
 
 void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
@@ -1175,19 +1188,19 @@ void Context2D::SetTextBaseline(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::AddFont(const Nan::FunctionCallbackInfo<Value>& info) {
-  //   Local<Object> buffer_obj = info[0]->ToObject();
-  // char *buffer_data = Buffer::Data(buffer_obj);
-  // size_t buffer_length = Buffer::Length(buffer_obj);
+  Local<Object> buffer_obj = info[0]->ToObject();
+  char *buffer_data = Buffer::Data(buffer_obj);
+  size_t buffer_length = Buffer::Length(buffer_obj);
 
-  // SkData *data = SkData::NewWithCopy((void *)buffer_data, buffer_length);
-  // SkAutoTUnref<SkStream> stream(SkNEW_ARGS(SkMemoryStream, (data)));
-  // SkTypeface* face = SkTypeface::CreateFromStream(stream);
+  SkData *data = SkData::NewWithCopy((void *)buffer_data, buffer_length);
+  SkStreamAsset *stream = SkNEW_ARGS(SkMemoryStream, (data));
+  SkTypeface* face = SkTypeface::CreateFromStream(stream);
 
-  // SkTypefaceCache::Add(face, face->fontStyle());
+  SkTypefaceCache::Add(face, face->fontStyle());
 
-  // data->unref();
+  data->unref();
 
-  // info.GetReturnValue().Set(Nan::New(face->uniqueID()));
+  info.GetReturnValue().Set(Nan::New(face->uniqueID()));
 }
 
 void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
@@ -1210,14 +1223,10 @@ void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
   SkBitmap src;
   src.setInfo(SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kPremul_SkAlphaType));
   src.allocPixels();
-
-  // src.setConfig(SkBitmap::kARGB_8888_Config, w, h);
   src.setPixels(buffer_data);
 
   const SkRect srcRect = { sx, sy, sx+sw, sy+sh };
-  // const SkRect srcRect = { 0, 0, 150, 50 };
   SkRect destRect = { dx, dy, dx+dw, dy+dh };
-  // SkRect destRect = { 0, 0, 150, 50 };
   const SkISize canvasSize = ctx->canvas->getBaseLayerSize();
   SkRect bounds = {
     0, 0,
@@ -1252,9 +1261,7 @@ void Context2D::DrawCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
   SkScalar dh = SkDoubleToScalar(info[8]->NumberValue());
 
   const SkRect srcRect = { sx, sy, sx+sw, sy+sh };
-  // const SkRect srcRect = { 0, 0, 150, 50 };
   SkRect destRect = { dx, dy, dx+dw, dy+dh };
-  // SkRect destRect = { 0, 0, 150, 50 };
   const SkISize canvasSize = ctx->canvas->getBaseLayerSize();
   SkRect bounds = {
     0, 0,
@@ -1289,14 +1296,11 @@ void Context2D::GetImageData(const Nan::FunctionCallbackInfo<Value>& info) {
   int32_t sw = info[2]->Int32Value();
   int32_t sh = info[3]->Int32Value();
 
-  // SkIRect srcRect = SkIRect::MakeXYWH(sx, sy, sw, sh);
-
   ctx->canvas->flush();
   SkBitmap masterBitmap = ctx->canvas->getDevice()->accessBitmap(false);
 
   masterBitmap.lockPixels();
 
-  //pxref->readPixels(&bitmap, &srcRect);
   size_t size = sw*sh*4;
   void *data = malloc(size);
   SkColor *buffer_ptr = (SkColor *)data;

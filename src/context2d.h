@@ -69,6 +69,7 @@ class Context2D : public Nan::ObjectWrap {
     // colors and styles (see also the CanvasDrawingStyles interface)
     static NAN_METHOD(SetStrokeStyle);
     static NAN_METHOD(SetFillStylePattern);
+    static NAN_METHOD(SetFillStylePatternCanvas);
     static NAN_METHOD(SetFillStyle);
     static NAN_METHOD(CreatePattern);
 
