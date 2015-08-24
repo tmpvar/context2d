@@ -782,13 +782,16 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
         var family = f.family.split(', ')[0];
 
         // TODO: better caching..
-        // if (fontCache[family]) {
-        //   family = fontCache[family];
-        // }
+        if (fontCache[family]) {
+          family = fontCache[family];
+        }
 
         ret.setFont(
           family,
-          false, false, f.size);
+          false,
+          false,
+          f.size
+        );
       }
     }
   });

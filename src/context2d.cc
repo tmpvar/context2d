@@ -20,6 +20,7 @@
 
 #include <SkData.h>
 #include <SkFontMgr.h>
+#include <SkTypefaceCache.h>
 #include <SkGraphics.h>
 #include <SkColorFilter.h>
 #include <SkGradientShader.h>
@@ -43,6 +44,14 @@ using namespace node;
 using namespace v8;
 
 #define DEGREES(rads) ((rads) * (180/M_PI))
+
+bool findFontByUniqueId(SkTypeface *face, const SkFontStyle& style, void* context) {
+  SkFontID *fontId = (SkFontID *)context;
+  if (face->uniqueID() == *fontId) {
+    return true;
+  }
+  return false;
+}
 
 void Context2D::Init(Local<Object> exports) {
   SkAutoGraphics ag;
@@ -483,6 +492,14 @@ void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>
 
   SkMatrix matrix;
   matrix.setTranslate(SkIntToScalar(10), SkIntToScalar(0));
+
+  // TODO: `src->surface->newImageSnapshot()` needs to be called upon creation
+  //       of the pattern.  This will require another c++ class that wraps
+  //       SkImage/SkShader
+  //
+  //       affects tests:
+  //       - 2d.pattern.modify.canvas1
+  //       - 2d.pattern.modify.canvas2
 
   SkAutoTUnref<SkImage> sourceImage(src->surface->newImageSnapshot());
   SkAutoTUnref<SkShader> shader(sourceImage->newShader(repeatX, repeatY, &matrix));
@@ -1132,43 +1149,39 @@ void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
-   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
 
+  bool isBold = info[1]->BooleanValue();
+  bool isItalic = info[2]->BooleanValue();
 
-   bool isBold = info[1]->BooleanValue();
-   bool isItalic = info[2]->BooleanValue();
+  SkScalar fontSize = SkDoubleToScalar(info[3]->NumberValue());
+  ctx->paint.setTextSize(fontSize);
+  ctx->strokePaint.setTextSize(fontSize);
 
-   SkScalar fontSize = SkDoubleToScalar(info[3]->NumberValue());
-   ctx->paint.setTextSize(fontSize);
-   ctx->strokePaint.setTextSize(fontSize);
+  SkTypeface::Style style = SkTypeface::kNormal;
 
-   SkTypeface::Style style = SkTypeface::kNormal;
+  if (isBold && isItalic) {
+    style = SkTypeface::kBoldItalic;
+  } else if (isBold) {
+    style = SkTypeface::kBold;
+  } else if (isItalic) {
+    style = SkTypeface::kItalic;
+  }
 
-   if (isBold && isItalic) {
-     style = SkTypeface::kBoldItalic;
-   } else if (isBold) {
-     style = SkTypeface::kBold;
-   } else if (isItalic) {
-     style = SkTypeface::kItalic;
-   }
+  SkTypeface *face = NULL;
 
+  if (info[0]->IsString()) {
+    String::Utf8Value family(info[0]);
+    face = SkTypeface::CreateFromName(*family, style);
+  } else if (info[0]->IsNumber()) {
+    SkFontID id = info[0]->Uint32Value();
+    face = SkTypefaceCache::FindByProcAndRef(findFontByUniqueId, &id);
+  }
 
-
-   SkTypeface *face = NULL;
-//
-   if (info[0]->IsString()) {
-     String::Utf8Value family(info[0]);
-     face = SkTypeface::CreateFromName(*family, style);
-   } else if (info[0]->IsNumber()) {
-       printf("wooops!\n");
-     // SkFontID id = info[0]->Uint32Value();
-     // face = SkTypefaceCache::FindByID(id);
-   }
-//
-   if (face) {
-     ctx->paint.setTypeface(face);
-     ctx->strokePaint.setTypeface(face);
-   }
+  if (face) {
+    ctx->paint.setTypeface(face);
+    ctx->strokePaint.setTypeface(face);
+  }
 }
 
 void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
