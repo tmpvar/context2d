@@ -8,3 +8,4 @@ deps/skia/third_party/lua
 .nadconfig.mk
 todo*
 xcode*
+npm-debug.log

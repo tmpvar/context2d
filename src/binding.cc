@@ -5,8 +5,4 @@
 using namespace v8;
 using namespace node;
 
-void InitializeBinding(Local<Object> exports) {
-  Context2D::Init(exports);
-}
-
-NODE_MODULE(context2d, InitializeBinding);
+NODE_MODULE(context2d, Context2D::Init);

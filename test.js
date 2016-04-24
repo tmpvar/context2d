@@ -1,39 +1,44 @@
 var ok = require('assert').ok
 var pseudoCanvas = {};
 var fs = require('fs');
-var context = require('./').createContext(pseudoCanvas);
+var ctx = require('./').createContext(pseudoCanvas);
 
-// // console.log(context);
-// // ok(context.canvas === pseudoCanvas);
+ctx.beginPath()
+  ctx.moveTo(0, 0)
+  // ctx.lineTo(10, 10)
+  // ctx.stroke()
 
-// // var hue = 0;
-// // var lastX = 640 * Math.random();
-// // var lastY = 480 * Math.random();
-// // context.save();
-// //   context.translate(context.canvas.width/2, context.canvas.height/2);
-// //   context.scale(0.9, 0.9);
-// //   context.translate(-context.canvas.width/2, -context.canvas.height/2);
-// //   context.beginPath();
-// //   context.lineWidth = 5 + Math.random() * 10;
-// //   context.moveTo(lastX, lastY);
-// //   lastX = context.canvas.width * Math.random();
-// //   lastY = context.canvas.height * Math.random();
-// //   context.bezierCurveTo(context.canvas.width * Math.random(),
-// //                        context.canvas.height * Math.random(),
-// //                        context.canvas.width * Math.random(),
-// //                        context.canvas.height * Math.random(),
-// //                        lastX, lastY);
+// console.log(ctx);
+// ok(ctx.canvas === pseudoCanvas);
 
-// //   hue = hue + 10 * Math.random();
-// //   context.strokeStyle = 'hsl(' + hue + ', 50%, 50%)';
-// //   context.shadowColor = 'white';
-// //   context.shadowBlur = 10;
-// //   context.stroke();
-// // context.restore();
+// var hue = 0;
+// var lastX = 640 * Math.random();
+// var lastY = 480 * Math.random();
+// ctx.save();
+//   ctx.translate(ctx.canvas.width/2, ctx.canvas.height/2);
+//   ctx.scale(0.9, 0.9);
+//   ctx.translate(-ctx.canvas.width/2, -ctx.canvas.height/2);
+//   ctx.beginPath();
+//   ctx.lineWidth = 5 + Math.random() * 10;
+//   ctx.moveTo(lastX, lastY);
+//   lastX = ctx.canvas.width * Math.random();
+//   lastY = ctx.canvas.height * Math.random();
+//   ctx.bezierCurveTo(ctx.canvas.width * Math.random(),
+//                        ctx.canvas.height * Math.random(),
+//                        ctx.canvas.width * Math.random(),
+//                        ctx.canvas.height * Math.random(),
+//                        lastX, lastY);
 
-// context.fillStyle = "#ff00ff";
-// context.fillRect(10, 10, 100, 100);
+//   hue = hue + 10 * Math.random();
+//   ctx.strokeStyle = 'hsl(' + hue + ', 50%, 50%)';
+//   ctx.shadowColor = 'white';
+//   ctx.shadowBlur = 10;
+//   ctx.stroke();
+// ctx.restore();
+
+// ctx.fillStyle = "#ff00ff";
+// ctx.fillRect(10, 10, 100, 100);
 // console.log('here');
-// // fs.writeFileSync(__dirname + '/out.png', context.toPngBuffer());
+// // fs.writeFileSync(__dirname + '/out.png', ctx.toPngBuffer());
 
 // console.log('ok');

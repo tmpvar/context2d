@@ -4,6 +4,7 @@
 #include <node.h>
 #include <node_buffer.h>
 #include <nan.h>
+#include <stdio.h>
 
 #define _USE_MATH_DEFINES 1
 
@@ -12,6 +13,7 @@
 #include <SkPaint.h>
 #include <SkPath.h>
 #include <SkError.h>
+#include <SkTypes.h>
 #include <SkImageInfo.h>
 
 #include <SkStream.h>
@@ -20,7 +22,6 @@
 
 #include <SkData.h>
 #include <SkFontMgr.h>
-#include <SkTypefaceCache.h>
 #include <SkGraphics.h>
 #include <SkColorFilter.h>
 #include <SkGradientShader.h>
@@ -29,7 +30,6 @@
 #include <SkRect.h>
 #include <SkRegion.h>
 #include <SkPixelRef.h>
-#include <SkTypefaceCache.h>
 #include <SkTypeface.h>
 #include <SkMatrix44.h>
 #include <SkXfermode.h>
@@ -45,96 +45,13 @@ using namespace v8;
 
 #define DEGREES(rads) ((rads) * (180/M_PI))
 
-bool findFontByUniqueId(SkTypeface *face, const SkFontStyle& style, void* context) {
+bool findFontByUniqueId(SkTypeface *face, void* context) {
   SkFontID *fontId = (SkFontID *)context;
   if (face->uniqueID() == *fontId) {
     return true;
   }
   return false;
 }
-
-void Context2D::Init(Local<Object> exports) {
-  SkAutoGraphics ag;
-
-  Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("Context2D").ToLocalChecked());
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-  // Non-standard
-  Nan::SetPrototypeMethod(tpl, "toPngBuffer", ToPngBuffer);
-  Nan::SetPrototypeMethod(tpl, "dumpState", DumpState);
-  Nan::SetPrototypeMethod(tpl, "toBuffer", ToBuffer);
-  Nan::SetPrototypeMethod(tpl, "getPixel", GetPixel);
-  Nan::SetPrototypeMethod(tpl, "resize", Resize);
-  Nan::SetPrototypeMethod(tpl, "addFont", AddFont);
-
-
-  // Standard
-  Nan::SetPrototypeMethod(tpl, "save", Save);
-  Nan::SetPrototypeMethod(tpl, "restore", Restore);
-  Nan::SetPrototypeMethod(tpl, "scale", Scale);
-  Nan::SetPrototypeMethod(tpl, "rotate", Rotate);
-  Nan::SetPrototypeMethod(tpl, "translate", Translate);
-  Nan::SetPrototypeMethod(tpl, "transform", Transform);
-  Nan::SetPrototypeMethod(tpl, "resetMatrix", ResetMatrix);
-  Nan::SetPrototypeMethod(tpl, "setGlobalAlpha", SetGlobalAlpha);
-  Nan::SetPrototypeMethod(tpl, "setGlobalCompositeOperation", SetGlobalCompositeOperation);
-  Nan::SetPrototypeMethod(tpl, "setImageSmoothingEnabled", SetImageSmoothingEnabled);
-  Nan::SetPrototypeMethod(tpl, "getImageSmoothingEnabled", GetImageSmoothingEnabled);
-  Nan::SetPrototypeMethod(tpl, "setStrokeStyle", SetStrokeStyle);
-  Nan::SetPrototypeMethod(tpl, "setFillStylePattern", SetFillStylePattern);
-  Nan::SetPrototypeMethod(tpl, "setFillStylePatternCanvas", SetFillStylePatternCanvas);
-  Nan::SetPrototypeMethod(tpl, "setFillStyle", SetFillStyle);
-  Nan::SetPrototypeMethod(tpl, "setLinearGradientShader", SetLinearGradientShader);
-  Nan::SetPrototypeMethod(tpl, "setRadialGradientShader", SetRadialGradientShader);
-  Nan::SetPrototypeMethod(tpl, "setShadowOffsetX", SetShadowOffsetX);
-  Nan::SetPrototypeMethod(tpl, "setShadowOffsetY", SetShadowOffsetY);
-  Nan::SetPrototypeMethod(tpl, "setShadowBlur", SetShadowBlur);
-  Nan::SetPrototypeMethod(tpl, "setShadowColor", SetShadowColor);
-  Nan::SetPrototypeMethod(tpl, "clearRect", ClearRect);
-  Nan::SetPrototypeMethod(tpl, "fillRect", FillRect);
-  Nan::SetPrototypeMethod(tpl, "strokeRect", StrokeRect);
-  Nan::SetPrototypeMethod(tpl, "beginPath", BeginPath);
-  Nan::SetPrototypeMethod(tpl, "fill", Fill);
-  Nan::SetPrototypeMethod(tpl, "stroke", Stroke);
-  Nan::SetPrototypeMethod(tpl, "clip", Clip);
-  Nan::SetPrototypeMethod(tpl, "isPointInPath", IsPointInPath);
-  Nan::SetPrototypeMethod(tpl, "closePath", ClosePath);
-  Nan::SetPrototypeMethod(tpl, "moveTo", MoveTo);
-  Nan::SetPrototypeMethod(tpl, "lineTo", LineTo);
-  Nan::SetPrototypeMethod(tpl, "quadraticCurveTo", QuadraticCurveTo);
-  Nan::SetPrototypeMethod(tpl, "bezierCurveTo", BezierCurveTo);
-  Nan::SetPrototypeMethod(tpl, "arcTo", ArcTo);
-  Nan::SetPrototypeMethod(tpl, "rect", Rect);
-  Nan::SetPrototypeMethod(tpl, "arc", Arc);
-  Nan::SetPrototypeMethod(tpl, "ellipse", Ellipse);
-  Nan::SetPrototypeMethod(tpl, "fillText", FillText);
-  Nan::SetPrototypeMethod(tpl, "strokeText", StrokeText);
-  Nan::SetPrototypeMethod(tpl, "measureText", MeasureText);
-  Nan::SetPrototypeMethod(tpl, "setFont", SetFont);
-  Nan::SetPrototypeMethod(tpl, "setTextAlign", SetTextAlign);
-  Nan::SetPrototypeMethod(tpl, "getTextBaseline", GetTextBaseline);
-  Nan::SetPrototypeMethod(tpl, "setTextBaseline", SetTextBaseline);
-  Nan::SetPrototypeMethod(tpl, "drawImageBuffer", DrawImageBuffer);
-  Nan::SetPrototypeMethod(tpl, "drawCanvas", DrawCanvas);
-  Nan::SetPrototypeMethod(tpl, "createImageData", CreateImageData);
-  Nan::SetPrototypeMethod(tpl, "getImageData", GetImageData);
-  Nan::SetPrototypeMethod(tpl, "putImageData", PutImageData);
-  Nan::SetPrototypeMethod(tpl, "setLineWidth", SetLineWidth);
-  Nan::SetPrototypeMethod(tpl, "setLineCap", SetLineCap);
-  Nan::SetPrototypeMethod(tpl, "setLineJoin", SetLineJoin);
-  Nan::SetPrototypeMethod(tpl, "getMiterLimit", GetMiterLimit);
-  Nan::SetPrototypeMethod(tpl, "setMiterLimit", SetMiterLimit);
-  Nan::SetPrototypeMethod(tpl, "setLineDash", SetLineDash);
-  Nan::SetPrototypeMethod(tpl, "getLineDash", GetLineDash);
-  Nan::SetPrototypeMethod(tpl, "setLineDashOffset", SetLineDashOffset);
-  Nan::SetPrototypeMethod(tpl, "getLineDashOffset", GetLineDashOffset);
-
-  Local<Function> constructor = Nan::New(tpl->GetFunction());
-  exports->Set(Nan::New("Context2D").ToLocalChecked(), constructor);
-
-}
-
 
 Context2D::Context2D(uint32_t w, uint32_t h) {
   this->resizeCanvas(w, h);
@@ -196,15 +113,15 @@ bool Context2D::setupShadow(SkPaint *paint) {
     SkPoint shadowOffset;
     m.mapXY(this->shadowX, this->shadowY, &shadowOffset);
 
-    SkDrawLooper* dl = SkBlurDrawLooper::Create(
+    sk_sp<SkDrawLooper> dl = SkBlurDrawLooper::Make(
       c,
       this->shadowBlur,
       this->shadowX,
       this->shadowY,
       SkBlurDrawLooper::kAll_BlurFlag | SkBlurDrawLooper::kOverrideColor_BlurFlag | SkBlurDrawLooper::kIgnoreTransform_BlurFlag
     );
-    SkSafeUnref(paint->setLooper(dl));
 
+    paint->setLooper(dl);
 
     return true;
   }
@@ -222,7 +139,7 @@ void Context2D::resizeCanvas(uint32_t width, uint32_t height) {
   }
 
   SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
-  this->surface.reset(SkSurface::NewRaster(info));
+  this->surface.reset(SkSurface::MakeRaster(info).get());
   this->canvas = this->surface->getCanvas();
 }
 
@@ -243,12 +160,12 @@ void Context2D::New(const Nan::FunctionCallbackInfo<Value>& info) {
     info[1]->Uint32Value()
   );
 
-  context->Wrap(info.This());
-  info.GetReturnValue().Set(info.This());
+  context->Wrap(info.Holder());
+  info.GetReturnValue().Set(info.Holder());
 }
 
 void Context2D::Resize(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   int width = info[0]->Uint32Value() & 0xff;
   int height = info[1]->Uint32Value() & 0xff;
@@ -257,14 +174,14 @@ void Context2D::Resize(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::DumpState(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkMatrix44 matrix(ctx->canvas->getTotalMatrix());
   matrix.dump();
   ctx->path.dump();
 }
 
 void Context2D::GetPixel(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
 
@@ -290,7 +207,7 @@ void Context2D::GetPixel(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::ToPngBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->flush();
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
@@ -307,7 +224,7 @@ void Context2D::ToPngBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
 
 
 void Context2D::ToBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
 
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(true);
@@ -326,19 +243,19 @@ void Context2D::ToBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
 
 
 void Context2D::Save(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->save();
 }
 
 void Context2D::Restore(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->restore();
 }
 
 void Context2D::Scale(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined() && !info[1]->IsUndefined()) {
     ctx->canvas->scale(
@@ -349,7 +266,7 @@ void Context2D::Scale(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Rotate(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined()) {
     SkScalar rads = SkDoubleToScalar(DEGREES(info[0]->NumberValue()));
@@ -358,7 +275,7 @@ void Context2D::Rotate(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Translate(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined() && !info[0]->IsUndefined()) {
     SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -395,19 +312,19 @@ void Context2D::Transform(const Nan::FunctionCallbackInfo<Value>& info) {
     m[7] = 0;
     m[8] = 1;
 
-    Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
     ctx->canvas->concat(m);
   }
 }
 
 void Context2D::ResetMatrix(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->canvas->resetMatrix();
 }
 
 void Context2D::SetGlobalAlpha(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());\
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());\
 
   ctx->globalAlpha = (uint8_t)(info[0]->NumberValue()*255);
 
@@ -419,20 +336,20 @@ void Context2D::SetGlobalAlpha(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetGlobalCompositeOperation(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->globalCompositeOperation = (SkXfermode::Mode)info[0]->IntegerValue();
 }
 
 void Context2D::SetImageSmoothingEnabled(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::GetImageSmoothingEnabled(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::SetStrokeStyle(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
   ctx->strokePaint.setShader(NULL);
@@ -446,7 +363,7 @@ void Context2D::SetStrokeStyle(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!Buffer::HasInstance(info[0])) {
     Nan::ThrowTypeError("First argument needs to be a buffer");
@@ -473,13 +390,13 @@ void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info
   src.allocPixels();
   src.setPixels(buffer_data);
 
-  SkBitmapProcShader *shader = SkNEW_ARGS(SkBitmapProcShader, (src, repeatX, repeatY));
+  sk_sp<SkShader> shader = SkMakeBitmapShader(src, repeatX, repeatY, nullptr, nullptr);
   ctx->paint.setShader(shader);
   shader->unref();
 }
 
 void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   Context2D *src = ObjectWrap::Unwrap<Context2D>(info[0]->ToObject());
 
   SkShader::TileMode repeatX = info[3]->BooleanValue() ?
@@ -501,14 +418,14 @@ void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>
   //       - 2d.pattern.modify.canvas1
   //       - 2d.pattern.modify.canvas2
 
-  SkAutoTUnref<SkImage> sourceImage(src->surface->newImageSnapshot());
-  SkAutoTUnref<SkShader> shader(sourceImage->newShader(repeatX, repeatY, &matrix));
+  sk_sp<SkImage> sourceImage(src->surface->makeImageSnapshot());
+  sk_sp<SkShader> shader(sourceImage->makeShader(repeatX, repeatY, &matrix));
 
   ctx->paint.setShader(shader);
 }
 
 void Context2D::SetFillStyle(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
   ctx->paint.setShader(NULL);
@@ -522,7 +439,7 @@ void Context2D::SetFillStyle(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint points[2] = {
     {
@@ -568,7 +485,7 @@ void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& 
       }
 
 
-      SkShader *gradientShader = SkGradientShader::CreateLinear(
+      sk_sp<SkShader> gradientShader = SkGradientShader::MakeLinear(
         points,
         colors,
         offsets,
@@ -587,7 +504,7 @@ void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& 
 }
 
 void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& info) {
-   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint start = {
     SkDoubleToScalar(info[0]->NumberValue()),
@@ -635,7 +552,7 @@ void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& 
                                       color->Get(2)->Uint32Value() & 0xff);
       }
 
-      SkShader *gradientShader = SkGradientShader::CreateTwoPointConical(
+      sk_sp<SkShader> gradientShader = SkGradientShader::MakeTwoPointConical(
         start,
         startRadius,
         end,
@@ -660,22 +577,22 @@ void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& 
 }
 
 void Context2D::SetShadowOffsetX(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowX = SkDoubleToScalar(info[0]->NumberValue());
 }
 
 void Context2D::SetShadowOffsetY(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowY = SkDoubleToScalar(info[0]->NumberValue());
 }
 
 void Context2D::SetShadowBlur(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowBlur = SkDoubleToScalar(info[0]->NumberValue());
 }
 
 void Context2D::SetShadowColor(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
   ctx->shadowPaint.setShader(NULL);
@@ -689,7 +606,7 @@ void Context2D::SetShadowColor(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::ClearRect(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkCanvas *canvas = ctx->canvas;
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -714,13 +631,13 @@ void Context2D::ClearRect(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::FillRect(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkRect rect = SkRect::MakeXYWH(
     SkDoubleToScalar(info[0]->NumberValue()),
-	SkDoubleToScalar(info[1]->NumberValue()),
-	SkDoubleToScalar(info[2]->NumberValue()),
-	SkDoubleToScalar(info[3]->NumberValue())
+    SkDoubleToScalar(info[1]->NumberValue()),
+    SkDoubleToScalar(info[2]->NumberValue()),
+    SkDoubleToScalar(info[3]->NumberValue())
   );
 
   SkPaint p, spaint(ctx->paint);
@@ -742,7 +659,7 @@ void Context2D::FillRect(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::StrokeRect(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(info[1]->NumberValue());
@@ -806,12 +723,12 @@ void Context2D::StrokeRect(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::BeginPath(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->path.rewind();
 }
 
 void Context2D::Fill(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->save();
   ctx->canvas->resetMatrix();
@@ -822,7 +739,7 @@ void Context2D::Fill(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Stroke(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPaint stroke(ctx->strokePaint);
   SkMatrix im, m = ctx->canvas->getTotalMatrix();
@@ -856,13 +773,13 @@ void Context2D::Stroke(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Clip(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->clipPath(ctx->path, SkRegion::kIntersect_Op, true);
 }
 
 void Context2D::IsPointInPath(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(info[1]->NumberValue());
@@ -887,14 +804,12 @@ void Context2D::IsPointInPath(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::ClosePath(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->path.close();
 }
 
 void Context2D::MoveTo(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
-
-  SkMatrix m = ctx->canvas->getTotalMatrix();
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint pt;
   m.mapXY(
@@ -907,7 +822,7 @@ void Context2D::MoveTo(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::LineTo(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkMatrix m = ctx->canvas->getTotalMatrix();
 
@@ -926,7 +841,7 @@ void Context2D::LineTo(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::QuadraticCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar cpx = SkDoubleToScalar(info[0]->NumberValue());
   SkScalar cpy = SkDoubleToScalar(info[1]->NumberValue());
@@ -948,7 +863,7 @@ void Context2D::QuadraticCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::BezierCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x1 = SkDoubleToScalar(info[0]->NumberValue());
   SkScalar y1 = SkDoubleToScalar(info[1]->NumberValue());
@@ -975,7 +890,7 @@ void Context2D::BezierCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::ArcTo(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkMatrix m(ctx->canvas->getTotalMatrix());
 
@@ -1014,7 +929,7 @@ void Context2D::ArcTo(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Rect(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
   SkScalar y = SkDoubleToScalar(info[1]->NumberValue());
@@ -1029,7 +944,7 @@ void Context2D::Rect(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Arc(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkMatrix m = ctx->canvas->getTotalMatrix();
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -1093,11 +1008,11 @@ void Context2D::Arc(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::Ellipse(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::FillText(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   String::Utf8Value string(info[0]);
   SkScalar x = SkDoubleToScalar(info[1]->NumberValue());
@@ -1113,7 +1028,7 @@ void Context2D::FillText(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::StrokeText(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   String::Utf8Value string(info[0]);
   SkScalar x = SkDoubleToScalar(info[1]->NumberValue());
@@ -1129,7 +1044,7 @@ void Context2D::StrokeText(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   String::Utf8Value string(info[0]);
 
   SkRect bounds;
@@ -1149,7 +1064,7 @@ void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   bool isBold = info[1]->BooleanValue();
   bool isItalic = info[2]->BooleanValue();
@@ -1175,7 +1090,7 @@ void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
     face = SkTypeface::CreateFromName(*family, style);
   } else if (info[0]->IsNumber()) {
     SkFontID id = info[0]->Uint32Value();
-    face = SkTypefaceCache::FindByProcAndRef(findFontByUniqueId, &id);
+    face = ctx->typeFaceCache.findByProcAndRef(findFontByUniqueId, &id);
   }
 
   if (face) {
@@ -1185,7 +1100,7 @@ void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPaint::Align align = (SkPaint::Align)info[0]->IntegerValue();
   ctx->paint.setTextAlign(align);
@@ -1193,23 +1108,25 @@ void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::GetTextBaseline(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::SetTextBaseline(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::AddFont(const Nan::FunctionCallbackInfo<Value>& info) {
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
+
   Local<Object> buffer_obj = info[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
   size_t buffer_length = Buffer::Length(buffer_obj);
 
   SkData *data = SkData::NewWithCopy((void *)buffer_data, buffer_length);
-  SkStreamAsset *stream = SkNEW_ARGS(SkMemoryStream, (data));
-  SkTypeface* face = SkTypeface::CreateFromStream(stream);
+  SkMemoryStream stream(data);
+  SkTypeface* face = SkTypeface::CreateFromStream((SkStreamAsset *)&stream);
 
-  SkTypefaceCache::Add(face, face->fontStyle());
+  ctx->typeFaceCache.add(face);
 
   data->unref();
 
@@ -1217,7 +1134,7 @@ void Context2D::AddFont(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Local<Object> buffer_obj = info[0]->ToObject();
   char *buffer_data = Buffer::Data(buffer_obj);
@@ -1255,12 +1172,19 @@ void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
   //       fillRect
   ctx->setupShadow(&spaint);
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
-    ctx->canvas->drawBitmapRectToRect(src, &srcRect, destRect, &spaint);
+    ctx->canvas->drawBitmapRect(
+      src,
+      srcRect,
+      destRect,
+      &spaint,
+      SkCanvas::kFast_SrcRectConstraint
+  );
+
   ctx->canvas->restoreToCount(count);
 }
 
 void Context2D::DrawCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Context2D *src = ObjectWrap::Unwrap<Context2D>(info[0]->ToObject());
 
@@ -1291,18 +1215,18 @@ void Context2D::DrawCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->setupShadow(&spaint);
   int count = ctx->canvas->saveLayer(&bounds, &layerPaint);
 
-    SkImage* image = src->surface->newImageSnapshot(SkSurface::kYes_Budgeted);
-    ctx->canvas->drawImageRect(image, &srcRect, destRect, &spaint);
+  sk_sp<SkImage> image = src->surface->makeImageSnapshot(SkBudgeted::kYes);
+  ctx->canvas->drawImageRect(image.get(), srcRect, destRect, &spaint);
 
   ctx->canvas->restoreToCount(count);
 }
 
 void Context2D::CreateImageData(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::GetImageData(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   int32_t sx = info[0]->Int32Value();
   int32_t sy = info[1]->Int32Value();
@@ -1349,7 +1273,7 @@ void Context2D::GetImageData(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::PutImageData(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Local<Object> buffer_obj = info[0]->ToObject();
   SkColor *buffer_ptr = (SkColor *)Buffer::Data(buffer_obj);
@@ -1396,32 +1320,32 @@ void Context2D::PutImageData(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetLineWidth(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->strokePaint.setStrokeWidth(SkDoubleToScalar(info[0]->NumberValue()));
 
   ctx->defaultLineWidth = false;
 }
 
 void Context2D::SetLineCap(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   uint32_t c = info[0]->Uint32Value();
   ctx->strokePaint.setStrokeCap((SkPaint::Cap)c);
 }
 
 void Context2D::SetLineJoin(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   uint32_t j = info[0]->Uint32Value();
   ctx->strokePaint.setStrokeJoin((SkPaint::Join)j);
 }
 
 void Context2D::GetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::SetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
-  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+  Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar limit = SkDoubleToScalar(info[0]->NumberValue());
 
@@ -1429,18 +1353,18 @@ void Context2D::SetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 void Context2D::SetLineDash(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::GetLineDash(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::SetLineDashOffset(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
 void Context2D::GetLineDashOffset(const Nan::FunctionCallbackInfo<Value>& info) {
-    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.This());
+    // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 

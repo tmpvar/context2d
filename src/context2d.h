@@ -10,18 +10,23 @@
 
 #include <SkSurface.h>
 #include <SkCanvas.h>
+#include <SkPath.h>
+#include <SkTemplates.h>
+#include <SkRefCnt.h>
+#include <SkTypefaceCache.h>
 
-using namespace node;
+
+using namespace Nan;
 
 class Context2D : public Nan::ObjectWrap {
 
   public:
-    static void Init(v8::Local<v8::Object> exports);
     void resizeCanvas(uint32_t width, uint32_t height);
     void *getTextureData();
     SkBitmap bitmap;
     SkCanvas *canvas;
-    SkAutoTDelete<SkSurface> surface;
+    SkTypefaceCache typeFaceCache;
+    sk_sp<SkSurface> surface;
     // SkDevice *device;
     SkPath path, subpath;
     SkPaint paint, shadowPaint, strokePaint;
@@ -29,12 +34,102 @@ class Context2D : public Nan::ObjectWrap {
     SkScalar shadowX, shadowY, shadowBlur;
     uint8_t globalAlpha;
     bool defaultLineWidth;
+
+    static NAN_MODULE_INIT(Init) {
+      v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
+      tpl->SetClassName(Nan::New("Context2D").ToLocalChecked());
+      tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+      // Non-standard
+      Nan::SetPrototypeMethod(tpl, "toPngBuffer", ToPngBuffer);
+      Nan::SetPrototypeMethod(tpl, "dumpState", DumpState);
+      Nan::SetPrototypeMethod(tpl, "toBuffer", ToBuffer);
+      Nan::SetPrototypeMethod(tpl, "getPixel", GetPixel);
+      Nan::SetPrototypeMethod(tpl, "resize", Resize);
+      Nan::SetPrototypeMethod(tpl, "addFont", AddFont);
+
+
+      // Standard
+      Nan::SetPrototypeMethod(tpl, "save", Save);
+      Nan::SetPrototypeMethod(tpl, "restore", Restore);
+      Nan::SetPrototypeMethod(tpl, "scale", Scale);
+      Nan::SetPrototypeMethod(tpl, "rotate", Rotate);
+      Nan::SetPrototypeMethod(tpl, "translate", Translate);
+      Nan::SetPrototypeMethod(tpl, "transform", Transform);
+      Nan::SetPrototypeMethod(tpl, "resetMatrix", ResetMatrix);
+      Nan::SetPrototypeMethod(tpl, "setGlobalAlpha", SetGlobalAlpha);
+      Nan::SetPrototypeMethod(tpl, "setGlobalCompositeOperation", SetGlobalCompositeOperation);
+      Nan::SetPrototypeMethod(tpl, "setImageSmoothingEnabled", SetImageSmoothingEnabled);
+      Nan::SetPrototypeMethod(tpl, "getImageSmoothingEnabled", GetImageSmoothingEnabled);
+      Nan::SetPrototypeMethod(tpl, "setStrokeStyle", SetStrokeStyle);
+      Nan::SetPrototypeMethod(tpl, "setFillStylePattern", SetFillStylePattern);
+      Nan::SetPrototypeMethod(tpl, "setFillStylePatternCanvas", SetFillStylePatternCanvas);
+      Nan::SetPrototypeMethod(tpl, "setFillStyle", SetFillStyle);
+      Nan::SetPrototypeMethod(tpl, "setLinearGradientShader", SetLinearGradientShader);
+      Nan::SetPrototypeMethod(tpl, "setRadialGradientShader", SetRadialGradientShader);
+      Nan::SetPrototypeMethod(tpl, "setShadowOffsetX", SetShadowOffsetX);
+      Nan::SetPrototypeMethod(tpl, "setShadowOffsetY", SetShadowOffsetY);
+      Nan::SetPrototypeMethod(tpl, "setShadowBlur", SetShadowBlur);
+      Nan::SetPrototypeMethod(tpl, "setShadowColor", SetShadowColor);
+      Nan::SetPrototypeMethod(tpl, "clearRect", ClearRect);
+      Nan::SetPrototypeMethod(tpl, "fillRect", FillRect);
+      Nan::SetPrototypeMethod(tpl, "strokeRect", StrokeRect);
+      Nan::SetPrototypeMethod(tpl, "beginPath", BeginPath);
+      Nan::SetPrototypeMethod(tpl, "fill", Fill);
+      Nan::SetPrototypeMethod(tpl, "stroke", Stroke);
+      Nan::SetPrototypeMethod(tpl, "clip", Clip);
+      Nan::SetPrototypeMethod(tpl, "isPointInPath", IsPointInPath);
+      Nan::SetPrototypeMethod(tpl, "closePath", ClosePath);
+      Nan::SetPrototypeMethod(tpl, "moveTo", MoveTo);
+      Nan::SetPrototypeMethod(tpl, "lineTo", LineTo);
+      Nan::SetPrototypeMethod(tpl, "quadraticCurveTo", QuadraticCurveTo);
+      Nan::SetPrototypeMethod(tpl, "bezierCurveTo", BezierCurveTo);
+      Nan::SetPrototypeMethod(tpl, "arcTo", ArcTo);
+      Nan::SetPrototypeMethod(tpl, "rect", Rect);
+      Nan::SetPrototypeMethod(tpl, "arc", Arc);
+      Nan::SetPrototypeMethod(tpl, "ellipse", Ellipse);
+      Nan::SetPrototypeMethod(tpl, "fillText", FillText);
+      Nan::SetPrototypeMethod(tpl, "strokeText", StrokeText);
+      Nan::SetPrototypeMethod(tpl, "measureText", MeasureText);
+      Nan::SetPrototypeMethod(tpl, "setFont", SetFont);
+      Nan::SetPrototypeMethod(tpl, "setTextAlign", SetTextAlign);
+      Nan::SetPrototypeMethod(tpl, "getTextBaseline", GetTextBaseline);
+      Nan::SetPrototypeMethod(tpl, "setTextBaseline", SetTextBaseline);
+      Nan::SetPrototypeMethod(tpl, "drawImageBuffer", DrawImageBuffer);
+      Nan::SetPrototypeMethod(tpl, "drawCanvas", DrawCanvas);
+      Nan::SetPrototypeMethod(tpl, "createImageData", CreateImageData);
+      Nan::SetPrototypeMethod(tpl, "getImageData", GetImageData);
+      Nan::SetPrototypeMethod(tpl, "putImageData", PutImageData);
+      Nan::SetPrototypeMethod(tpl, "setLineWidth", SetLineWidth);
+      Nan::SetPrototypeMethod(tpl, "setLineCap", SetLineCap);
+      Nan::SetPrototypeMethod(tpl, "setLineJoin", SetLineJoin);
+      Nan::SetPrototypeMethod(tpl, "getMiterLimit", GetMiterLimit);
+      Nan::SetPrototypeMethod(tpl, "setMiterLimit", SetMiterLimit);
+      Nan::SetPrototypeMethod(tpl, "setLineDash", SetLineDash);
+      Nan::SetPrototypeMethod(tpl, "getLineDash", GetLineDash);
+      Nan::SetPrototypeMethod(tpl, "setLineDashOffset", SetLineDashOffset);
+      Nan::SetPrototypeMethod(tpl, "getLineDashOffset", GetLineDashOffset);
+
+      constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
+
+      Nan::Set(
+        target,
+        Nan::New("Context2D").ToLocalChecked(),
+        Nan::GetFunction(tpl).ToLocalChecked()
+      );
+    }
+
+
   private:
     Context2D(uint32_t w, uint32_t h);
     ~Context2D();
     bool setupShadow(SkPaint *paint);
 
-    static v8::Persistent<v8::Function> constructor;
+    static inline Persistent<v8::Function> & constructor() {
+      static Persistent<v8::Function> my_constructor;
+      return my_constructor;
+    }
+
     static NAN_METHOD(New);
     static NAN_METHOD(ToPngBuffer);
     static NAN_METHOD(ToBuffer);
