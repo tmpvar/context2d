@@ -24,7 +24,7 @@ class Context2D : public Nan::ObjectWrap {
     void resizeCanvas(uint32_t width, uint32_t height);
     void *getTextureData();
     SkBitmap bitmap;
-    SkCanvas *canvas;
+    SkCanvas *canvas = nullptr;
     SkTypefaceCache typeFaceCache;
     sk_sp<SkSurface> surface;
     // SkDevice *device;

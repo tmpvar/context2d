@@ -139,6 +139,18 @@ void Context2D::resizeCanvas(uint32_t width, uint32_t height) {
   }
 
   SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
+
+  if (!this->canvas) {
+    const size_t minRowBytes = info.minRowBytes();
+    const size_t size = info.getSafeSize(minRowBytes);
+    SkAutoTMalloc<SkPMColor> storage(size);
+    SkPMColor* baseAddr = storage.get();
+    sk_bzero(baseAddr, size);
+
+    this->canvas = SkCanvas::NewRasterDirect(info, baseAddr, minRowBytes);
+    return;
+  }
+
   this->surface.reset(SkSurface::MakeRaster(info).get());
   this->canvas = this->surface->getCanvas();
 }
@@ -812,6 +824,8 @@ void Context2D::MoveTo(const Nan::FunctionCallbackInfo<Value>& info) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint pt;
+
+  SkMatrix m = ctx->canvas->getTotalMatrix();
   m.mapXY(
     SkDoubleToScalar(info[0]->NumberValue()),
     SkDoubleToScalar(info[1]->NumberValue()),
