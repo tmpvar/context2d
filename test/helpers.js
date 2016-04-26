@@ -97,12 +97,13 @@ module.exports.createCanvas = function(t, doc, w, h) {
     el.dispatchEvent(ev);
   };
 
-  el.toDataURL = function() {
-    if (ctx) {
-      return 'data:image/png;base64,' + ctx.toPngBuffer().toString('hex');
+  Object.defineProperty(el, 'toDataURL', {
+    value: function() {
+      if (ctx) {
+        return 'data:image/png;base64,' + ctx.toPngBuffer().toString('hex');
+      }
     }
-  }
-
+  });
 
   Object.defineProperty(el, 'width', {
     get: function() { return w; },

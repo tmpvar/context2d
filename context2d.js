@@ -184,11 +184,19 @@ function ImageData(buffer, w, h) {
 
 module.exports.ImageData = ImageData;
 
-function CanvasPixelArray() {
-  Buffer.apply(this, arguments);
-}
+function CanvasPixelArray(buffer) {
+  if (!Buffer.isBuffer(buffer)) {
+    buffer = new Buffer(buffer)
+  }
 
-util.inherits(CanvasPixelArray, Buffer);
+  this.buffer = buffer
+
+  Object.defineProperty(this, 'length', {
+    get: function() {
+      return buffer.length
+    }
+  })
+}
 
 
 module.exports.CanvasPixelArray = CanvasPixelArray;
@@ -197,7 +205,12 @@ function CanvasPattern(id, x, y) {
   if (id.ctx) {
     this.ctx = id.ctx;
   } else {
-    this.imageData = new ImageData(id.data, id.width, id.height);
+    var data = id.data
+    if (data.buffer) {
+      data = data.buffer
+    }
+
+    this.imageData = new ImageData(data, id.width, id.height);
   }
   this.x = x;
   this.y = y;
@@ -208,7 +221,6 @@ CanvasPattern.prototype.imageData = null;
 CanvasPattern.prototype.ctx = null;
 CanvasPattern.prototype.x = 0;
 CanvasPattern.prototype.y = 0;
-
 
 module.exports.CanvasPattern = CanvasPattern;
 
@@ -354,14 +366,11 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     }
   });
 
-
-
-
   Object.defineProperty(ret, 'fillStyle', {
-    get : function() {
+    get : function getFillStyle() {
       return state.fillStyle;
     },
-    set : function(c) {
+    set : function setFillStyle(c) {
       if (!c) {
         return;
       }
@@ -1189,7 +1198,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     h = Math.round(Math.abs(h)) || 1;
 
     var buf = new CanvasPixelArray(w * h * 4);
-    buf.fill(0);
+    buf.buffer.fill(0);
     return new ImageData(buf, w, h);
   };
 

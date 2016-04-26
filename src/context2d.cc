@@ -139,19 +139,20 @@ void Context2D::resizeCanvas(uint32_t width, uint32_t height) {
   }
 
   SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
+  this->surface = SkSurface::MakeRaster(info);
 
-  if (!this->canvas) {
-    const size_t minRowBytes = info.minRowBytes();
-    const size_t size = info.getSafeSize(minRowBytes);
-    SkAutoTMalloc<SkPMColor> storage(size);
-    SkPMColor* baseAddr = storage.get();
-    sk_bzero(baseAddr, size);
+  // if (this->canvas == nullptr) {
+  //   const size_t minRowBytes = info.minRowBytes();
+  //   const size_t size = info.getSafeSize(minRowBytes);
+  //   SkAutoTMalloc<SkPMColor> storage(size);
+  //   SkPMColor* baseAddr = storage.get();
+  //   sk_bzero(baseAddr, size);
 
-    this->canvas = SkCanvas::NewRasterDirect(info, baseAddr, minRowBytes);
-    return;
-  }
+  //   this->canvas = SkCanvas::NewRasterDirect(info, baseAddr, minRowBytes);
+  //   return;
+  // }
 
-  this->surface.reset(SkSurface::MakeRaster(info).get());
+  // this->surface.reset(SkSurface::MakeRaster(info).get());
   this->canvas = this->surface->getCanvas();
 }
 
@@ -404,7 +405,7 @@ void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info
 
   sk_sp<SkShader> shader = SkMakeBitmapShader(src, repeatX, repeatY, nullptr, nullptr);
   ctx->paint.setShader(shader);
-  shader->unref();
+  // shader->unref();
 }
 
 void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
@@ -510,7 +511,7 @@ void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& 
       delete[] colors;
       delete[] offsets;
 
-      gradientShader->unref();
+      // gradientShader->unref();
     }
   }
 }
@@ -582,7 +583,7 @@ void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& 
       delete[] colors;
       delete[] offsets;
 
-      gradientShader->unref();
+      // gradientShader->unref();
 
     }
   }
@@ -656,7 +657,7 @@ void Context2D::FillRect(const Nan::FunctionCallbackInfo<Value>& info) {
   p.setXfermodeMode(ctx->globalCompositeOperation);
   p.setAlpha(ctx->globalAlpha);
 
-  int count;
+  int count = 0;
 
   if (ctx->setupShadow(&spaint)) {
     count = ctx->canvas->saveLayer(NULL, &p);
