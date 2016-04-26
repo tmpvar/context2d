@@ -124,21 +124,22 @@ module.exports.createCanvas = function(t, doc, w, h) {
     }
   });
 
+  Object.defineProperty(el, 'getContext', {
+    value: function getContext() {
+      ctx = el.ctx = context.createContext(el, w, h);
 
-  el.getContext = function() {
-    ctx = el.ctx = context.createContext(el, w, h);
+      el.ctx.debug = function() {
+        module.exports.output(el.ctx);
+        ctx.dumpState();
+      }
+      t.context.ctx = ctx;
 
-    el.ctx.debug = function() {
-      module.exports.output(el.ctx);
-      ctx.dumpState();
+      el.ctx.addFont('CanvasTest', CanvasFontBuffer);
+
+  //    el.ctx.drawImage(background, 0, 0);
+      return el.ctx;
     }
-    t.context.ctx = ctx;
-
-    el.ctx.addFont('CanvasTest', CanvasFontBuffer);
-
-//    el.ctx.drawImage(background, 0, 0);
-    return el.ctx;
-  }
+  })
 
   doc.body.appendChild(el);
   return el;
