@@ -9,3 +9,5 @@ deps/skia/third_party/lua
 todo*
 xcode*
 npm-debug.log
+external/skia
+.gclient_entries

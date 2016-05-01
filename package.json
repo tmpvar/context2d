@@ -5,6 +5,7 @@
   "main": "context2d.js",
   "scripts": {
     "test": "node test/test.js",
+    "preinstall": "external/depot_tools/gclient sync && node tools/setup-skia.js",
     "install": "node-gyp configure build --debug"
   },
   "repository": {
@@ -23,7 +24,6 @@
     "glob": "^5.0.15",
     "htmlimage": "^1.1.0",
     "nan": "https://github.com/nodejs/nan.git",
-    "skia.cc": "git+ssh://github.com/tmpvar/skia.cc#npm",
     "windows-angle": "tmpvar/windows-angle"
   },
   "devDependencies": {

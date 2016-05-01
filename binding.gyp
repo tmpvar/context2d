@@ -90,26 +90,7 @@
 # TODO: build type
 
     'libraries': [
-      'node_modules/skia.cc/out/Debug/libgenperf_libs.a',
-      'node_modules/skia.cc/out/Debug/libjpeg-turbo.a',
-      'node_modules/skia.cc/out/Debug/libpng_static.a',
-      'node_modules/skia.cc/out/Debug/libskia_codec.a',
-      'node_modules/skia.cc/out/Debug/libskia_codec_android.a',
-      'node_modules/skia.cc/out/Debug/libskia_core.a',
-      'node_modules/skia.cc/out/Debug/libskia_effects.a',
-      'node_modules/skia.cc/out/Debug/libskia_images.a',
-      'node_modules/skia.cc/out/Debug/libskia_opts.a',
-      'node_modules/skia.cc/out/Debug/libskia_opts_sse41.a',
-      'node_modules/skia.cc/out/Debug/libskia_opts_ssse3.a',
-      'node_modules/skia.cc/out/Debug/libskia_ports.a',
-      'node_modules/skia.cc/out/Debug/libskia_sfnt.a',
-      'node_modules/skia.cc/out/Debug/libskia_skgpu.a',
-      'node_modules/skia.cc/out/Debug/libskia_utils.a',
-      'node_modules/skia.cc/out/Debug/libwebp_dec.a',
-      'node_modules/skia.cc/out/Debug/libwebp_demux.a',
-      'node_modules/skia.cc/out/Debug/libwebp_dsp.a',
-      'node_modules/skia.cc/out/Debug/libwebp_enc.a',
-      'node_modules/skia.cc/out/Debug/libwebp_utils.a'
+      '<@(shared_static_libraries)'
     ],
     'sources' : [
       'src/context2d.cc',
