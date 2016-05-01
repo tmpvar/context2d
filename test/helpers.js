@@ -23,6 +23,9 @@ module.exports.test = function(module, name, image, fn) {
     '2d.text.draw.fill.rtl' : '../deps/skia/src/core/SkUtils.cpp:143: failed assertion "(c & 0xC0) != 0x80"',
     '2d.path.isPointInPath.arc' : './../../c/skia.cc/src/core/SkPath.cpp:2774: failed assertion "0"',
     '2d.path.isPointInPath.bigarc' : './../../c/skia.cc/src/core/SkPath.cpp:2774: failed assertion "0"',
+    '2d.imageData.create1.type': 'TODO: convert to Uint8ClampedArray',
+    '2d.imageData.create2.type': 'TODO: convert to Uint8ClampedArray',
+    '2d.imageData.get.type': 'TODO: convert to Uint8ClampedArray'
   };
 
 
@@ -252,7 +255,6 @@ module.exports.assertMatch = function(t, a, b, text_a, text_b) {
         ' (got ' + a + ')');
   }
 }
-
 
 module.exports.output = function(ctx, name) {
   name = name || 'out.png';

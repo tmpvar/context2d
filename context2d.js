@@ -165,8 +165,8 @@ function ImageData(buffer, w, h) {
     throw new Error('invalid argument count');
   }
 
-  if (!(buffer instanceof CanvasPixelArray)) {
-    buffer = new CanvasPixelArray(buffer);
+  if (!Buffer.isBuffer(buffer)) {
+    buffer = new Buffer(buffer);
   }
 
   Object.defineProperty(this, 'width', {
@@ -183,23 +183,6 @@ function ImageData(buffer, w, h) {
 }
 
 module.exports.ImageData = ImageData;
-
-function CanvasPixelArray(buffer) {
-  if (!Buffer.isBuffer(buffer)) {
-    buffer = new Buffer(buffer)
-  }
-
-  this.buffer = buffer
-
-  Object.defineProperty(this, 'length', {
-    get: function() {
-      return buffer.length
-    }
-  })
-}
-
-
-module.exports.CanvasPixelArray = CanvasPixelArray;
 
 function CanvasPattern(id, x, y) {
   if (id.ctx) {
@@ -1197,8 +1180,8 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
     w = Math.round(Math.abs(w)) || 1;
     h = Math.round(Math.abs(h)) || 1;
 
-    var buf = new CanvasPixelArray(w * h * 4);
-    buf.buffer.fill(0);
+    var buf = new Buffer(w * h * 4);
+    buf.fill(0);
     return new ImageData(buf, w, h);
   };
 
