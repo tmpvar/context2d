@@ -4,7 +4,7 @@
       'src',
       'node_modules/windows-angle/deps/angle/include',
       'node_modules/windows-angle/src/shim',
-      'node_modules/skia.cc/include',
+      'external/skia/include',
       "<!(node -e \"require('nan')\")",
       'external/skia/include/android',
       'external/skia/include/animator',

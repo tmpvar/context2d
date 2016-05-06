@@ -3,6 +3,11 @@ var pseudoCanvas = {};
 var fs = require('fs');
 var ctx = require('./').createContext(pseudoCanvas);
 
+ctx.fillStyle = '#f0f'
+ctx.fillRect(0, 0, 50, 50)
+
+fs.writeFileSync('test.png', ctx.toPngBuffer())
+
 ctx.beginPath()
   ctx.moveTo(0, 0)
   // ctx.lineTo(10, 10)
