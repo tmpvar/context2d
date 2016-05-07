@@ -14,8 +14,9 @@
 #include <SkTemplates.h>
 #include <SkRefCnt.h>
 #include <SkTypefaceCache.h>
-#include <SkForceLinking.h>
 
+// Ensure image encoders are linked
+#include <SkForceLinking.h>
 __SK_FORCE_IMAGE_DECODER_LINKING;
 
 using namespace Nan;

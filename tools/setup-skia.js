@@ -1,9 +1,12 @@
 const spawn = require('child_process').spawn
 const path = require('path')
 
-const env = process.env
-
 const root = path.join(__dirname, '..')
+const depotDir = path.join(root, 'external', 'depot_tools')
+
+const env = Object.assign({}, process.env, {
+  PATH: process.env.PATH + ':' + depotDir
+})
 
 console.log('# prepare skia for building')
 spawn('python', ['bin/sync-and-gyp'], {
