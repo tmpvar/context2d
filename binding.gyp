@@ -12,7 +12,7 @@
     'sources' : ['src/binding.cc'],
     'xcode_settings': {
       'MACOSX_DEPLOYMENT_TARGET': '10.7',
-      'OTHER_CFLAGS': ['-stdlib=libc++']
+      'OTHER_CFLAGS': ['-stdlib=libc++', '-std=c++11']
     },
     'type': 'loadable_module',
     'win_delay_load_hook': 'false',
@@ -84,7 +84,7 @@
     'standalone_static_library': 1,
     'xcode_settings': {
       'MACOSX_DEPLOYMENT_TARGET': '10.7',
-      'OTHER_CFLAGS': ['-stdlib=libc++']
+      'OTHER_CFLAGS': ['-stdlib=libc++', '-std=c++11']
     },
 
 # TODO: build type
