@@ -5,7 +5,8 @@
   "main": "context2d.js",
   "scripts": {
     "test": "node test/test.js",
-    "install": "node-gyp configure build --debug"
+    "install": "node-gyp configure build --debug",
+    "prebuild": "prebuild --verbose --all --collect-files-filter='\\.(node|a)$'"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "glob": "^5.0.15",
     "htmlimage": "^1.1.0",
     "nan": "https://github.com/nodejs/nan.git",
+    "prebuild": "git+https://github.com/tmpvar/prebuild.git#configurable-file-regex",
     "windows-angle": "tmpvar/windows-angle"
   },
   "devDependencies": {
