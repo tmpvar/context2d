@@ -167,7 +167,7 @@ void *Context2D::getTextureData() {
   return NULL;
 }
 
-void Context2D::New(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::New) {
   Context2D* context = new Context2D(
     info[0]->Uint32Value(),
     info[1]->Uint32Value()
@@ -177,7 +177,7 @@ void Context2D::New(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(info.Holder());
 }
 
-void Context2D::Resize(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Resize) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   int width = info[0]->Uint32Value() & 0xff;
@@ -186,14 +186,14 @@ void Context2D::Resize(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->resizeCanvas(width, height);
 }
 
-void Context2D::DumpState(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::DumpState) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkMatrix44 matrix(ctx->canvas->getTotalMatrix());
   matrix.dump();
   ctx->path.dump();
 }
 
-void Context2D::GetPixel(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetPixel) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkBitmap bitmap = ctx->canvas->getDevice()->accessBitmap(false);
@@ -219,7 +219,7 @@ void Context2D::GetPixel(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(obj);
 }
 
-void Context2D::ToPngBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ToPngBuffer) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->flush();
@@ -236,7 +236,7 @@ void Context2D::ToPngBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 
-void Context2D::ToBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ToBuffer) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
 
@@ -255,19 +255,19 @@ void Context2D::ToBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
 }
 
 
-void Context2D::Save(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Save) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->save();
 }
 
-void Context2D::Restore(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Restore) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->restore();
 }
 
-void Context2D::Scale(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Scale) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined() && !info[1]->IsUndefined()) {
@@ -278,7 +278,7 @@ void Context2D::Scale(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::Rotate(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Rotate) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined()) {
@@ -287,7 +287,7 @@ void Context2D::Rotate(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::Translate(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Translate) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!info[0]->IsUndefined() && !info[0]->IsUndefined()) {
@@ -298,7 +298,7 @@ void Context2D::Translate(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::Transform(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Transform) {
     if (!info[0]->IsUndefined() &&
       !info[1]->IsUndefined() &&
       !info[2]->IsUndefined() &&
@@ -331,12 +331,12 @@ void Context2D::Transform(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::ResetMatrix(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ResetMatrix) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->canvas->resetMatrix();
 }
 
-void Context2D::SetGlobalAlpha(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetGlobalAlpha) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());\
 
   ctx->globalAlpha = (uint8_t)(info[0]->NumberValue()*255);
@@ -348,20 +348,20 @@ void Context2D::SetGlobalAlpha(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::SetGlobalCompositeOperation(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetGlobalCompositeOperation) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->globalCompositeOperation = (SkXfermode::Mode)info[0]->IntegerValue();
 }
 
-void Context2D::SetImageSmoothingEnabled(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetImageSmoothingEnabled) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::GetImageSmoothingEnabled(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetImageSmoothingEnabled) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::SetStrokeStyle(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetStrokeStyle) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
@@ -375,7 +375,7 @@ void Context2D::SetStrokeStyle(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->strokePaint.setColor(SkColorSetARGBInline(a,r,g,b));
 }
 
-void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetFillStylePattern) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   if (!Buffer::HasInstance(info[0])) {
@@ -408,7 +408,7 @@ void Context2D::SetFillStylePattern(const Nan::FunctionCallbackInfo<Value>& info
   // shader->unref();
 }
 
-void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetFillStylePatternCanvas) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   Context2D *src = ObjectWrap::Unwrap<Context2D>(info[0]->ToObject());
 
@@ -437,7 +437,7 @@ void Context2D::SetFillStylePatternCanvas(const Nan::FunctionCallbackInfo<Value>
   ctx->paint.setShader(shader);
 }
 
-void Context2D::SetFillStyle(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetFillStyle) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
@@ -451,7 +451,7 @@ void Context2D::SetFillStyle(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->paint.setColor(SkColorSetARGBInline(a,r,g,b));
 }
 
-void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLinearGradientShader) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint points[2] = {
@@ -516,7 +516,7 @@ void Context2D::SetLinearGradientShader(const Nan::FunctionCallbackInfo<Value>& 
   }
 }
 
-void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetRadialGradientShader) {
    Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint start = {
@@ -589,22 +589,22 @@ void Context2D::SetRadialGradientShader(const Nan::FunctionCallbackInfo<Value>& 
   }
 }
 
-void Context2D::SetShadowOffsetX(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetShadowOffsetX) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowX = SkDoubleToScalar(info[0]->NumberValue());
 }
 
-void Context2D::SetShadowOffsetY(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetShadowOffsetY) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowY = SkDoubleToScalar(info[0]->NumberValue());
 }
 
-void Context2D::SetShadowBlur(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetShadowBlur) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->shadowBlur = SkDoubleToScalar(info[0]->NumberValue());
 }
 
-void Context2D::SetShadowColor(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetShadowColor) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   // Clear off the old shader
@@ -618,7 +618,7 @@ void Context2D::SetShadowColor(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->shadowPaint.setColor(SkColorSetARGBInline(a,r,g,b));
 }
 
-void Context2D::ClearRect(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ClearRect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkCanvas *canvas = ctx->canvas;
 
@@ -643,7 +643,7 @@ void Context2D::ClearRect(const Nan::FunctionCallbackInfo<Value>& info) {
   canvas->restore();
 }
 
-void Context2D::FillRect(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::FillRect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkRect rect = SkRect::MakeXYWH(
@@ -671,7 +671,7 @@ void Context2D::FillRect(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restoreToCount(count);
 }
 
-void Context2D::StrokeRect(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::StrokeRect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -735,12 +735,12 @@ void Context2D::StrokeRect(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restoreToCount(count);
 }
 
-void Context2D::BeginPath(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::BeginPath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->path.rewind();
 }
 
-void Context2D::Fill(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Fill) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->save();
@@ -751,7 +751,7 @@ void Context2D::Fill(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restore();
 }
 
-void Context2D::Stroke(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Stroke) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPaint stroke(ctx->strokePaint);
@@ -785,13 +785,13 @@ void Context2D::Stroke(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restoreToCount(count);
 }
 
-void Context2D::Clip(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Clip) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   ctx->canvas->clipPath(ctx->path, SkRegion::kIntersect_Op, true);
 }
 
-void Context2D::IsPointInPath(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::IsPointInPath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -816,12 +816,12 @@ void Context2D::IsPointInPath(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(Nan::New(contained));
 }
 
-void Context2D::ClosePath(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ClosePath) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->path.close();
 }
 
-void Context2D::MoveTo(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::MoveTo) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPoint pt;
@@ -836,7 +836,7 @@ void Context2D::MoveTo(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->path.moveTo(pt);
 }
 
-void Context2D::LineTo(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::LineTo) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkMatrix m = ctx->canvas->getTotalMatrix();
@@ -855,7 +855,7 @@ void Context2D::LineTo(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->path.lineTo(pt);
 }
 
-void Context2D::QuadraticCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::QuadraticCurveTo) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar cpx = SkDoubleToScalar(info[0]->NumberValue());
@@ -877,7 +877,7 @@ void Context2D::QuadraticCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->path.quadTo(cp, p);
 }
 
-void Context2D::BezierCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::BezierCurveTo) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x1 = SkDoubleToScalar(info[0]->NumberValue());
@@ -904,7 +904,7 @@ void Context2D::BezierCurveTo(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->path.cubicTo(p1, p2, p3);
 }
 
-void Context2D::ArcTo(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::ArcTo) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkMatrix m(ctx->canvas->getTotalMatrix());
@@ -943,7 +943,7 @@ void Context2D::ArcTo(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::Rect(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Rect) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar x = SkDoubleToScalar(info[0]->NumberValue());
@@ -958,7 +958,7 @@ void Context2D::Rect(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->path.addPath(subpath);
 }
 
-void Context2D::Arc(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Arc) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   SkMatrix m = ctx->canvas->getTotalMatrix();
 
@@ -1022,11 +1022,11 @@ void Context2D::Arc(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::Ellipse(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::Ellipse) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::FillText(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::FillText) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   String::Utf8Value string(info[0]);
@@ -1042,7 +1042,7 @@ void Context2D::FillText(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->drawText(*string, length, x, y, ctx->paint);
 }
 
-void Context2D::StrokeText(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::StrokeText) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   String::Utf8Value string(info[0]);
@@ -1058,7 +1058,7 @@ void Context2D::StrokeText(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->drawText(*string, length, x, y, ctx->strokePaint);
 }
 
-void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::MeasureText) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   String::Utf8Value string(info[0]);
 
@@ -1078,7 +1078,7 @@ void Context2D::MeasureText(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(obj);
 }
 
-void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetFont) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   bool isBold = info[1]->BooleanValue();
@@ -1114,7 +1114,7 @@ void Context2D::SetFont(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetTextAlign) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkPaint::Align align = (SkPaint::Align)info[0]->IntegerValue();
@@ -1122,15 +1122,15 @@ void Context2D::SetTextAlign(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->strokePaint.setTextAlign(align);
 }
 
-void Context2D::GetTextBaseline(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetTextBaseline) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::SetTextBaseline(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetTextBaseline) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::AddFont(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::AddFont) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Local<Object> buffer_obj = info[0]->ToObject();
@@ -1148,7 +1148,7 @@ void Context2D::AddFont(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(Nan::New(face->uniqueID()));
 }
 
-void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::DrawImageBuffer) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Local<Object> buffer_obj = info[0]->ToObject();
@@ -1198,7 +1198,7 @@ void Context2D::DrawImageBuffer(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restoreToCount(count);
 }
 
-void Context2D::DrawCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::DrawCanvas) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Context2D *src = ObjectWrap::Unwrap<Context2D>(info[0]->ToObject());
@@ -1236,11 +1236,11 @@ void Context2D::DrawCanvas(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->canvas->restoreToCount(count);
 }
 
-void Context2D::CreateImageData(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::CreateImageData) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::GetImageData(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetImageData) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   int32_t sx = info[0]->Int32Value();
@@ -1287,7 +1287,7 @@ void Context2D::GetImageData(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(obj);
 }
 
-void Context2D::PutImageData(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::PutImageData) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   Local<Object> buffer_obj = info[0]->ToObject();
@@ -1334,32 +1334,32 @@ void Context2D::PutImageData(const Nan::FunctionCallbackInfo<Value>& info) {
   bitmap.unlockPixels();
 }
 
-void Context2D::SetLineWidth(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLineWidth) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
   ctx->strokePaint.setStrokeWidth(SkDoubleToScalar(info[0]->NumberValue()));
 
   ctx->defaultLineWidth = false;
 }
 
-void Context2D::SetLineCap(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLineCap) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   uint32_t c = info[0]->Uint32Value();
   ctx->strokePaint.setStrokeCap((SkPaint::Cap)c);
 }
 
-void Context2D::SetLineJoin(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLineJoin) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   uint32_t j = info[0]->Uint32Value();
   ctx->strokePaint.setStrokeJoin((SkPaint::Join)j);
 }
 
-void Context2D::GetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetMiterLimit) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::SetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetMiterLimit) {
   Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 
   SkScalar limit = SkDoubleToScalar(info[0]->NumberValue());
@@ -1367,19 +1367,19 @@ void Context2D::SetMiterLimit(const Nan::FunctionCallbackInfo<Value>& info) {
   ctx->strokePaint.setStrokeMiter(limit);
 }
 
-void Context2D::SetLineDash(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLineDash) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::GetLineDash(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetLineDash) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::SetLineDashOffset(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::SetLineDashOffset) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
-void Context2D::GetLineDashOffset(const Nan::FunctionCallbackInfo<Value>& info) {
+NAN_METHOD(Context2D::GetLineDashOffset) {
     // Context2D *ctx = ObjectWrap::Unwrap<Context2D>(info.Holder());
 }
 
