@@ -11,3 +11,4 @@ xcode*
 npm-debug.log
 external/skia
 .gclient_entries
+prebuilds

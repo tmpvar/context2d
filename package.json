@@ -5,7 +5,6 @@
   "main": "context2d.js",
   "scripts": {
     "test": "node test/test.js",
-    "preinstall": "external/depot_tools/gclient sync && node tools/setup-skia.js",
     "install": "node-gyp configure build --debug"
   },
   "repository": {
@@ -27,6 +26,7 @@
     "windows-angle": "tmpvar/windows-angle"
   },
   "devDependencies": {
+    "context2d-skia": "git+https://github.com/tmpvar/context2d-skia.git",
     "optimist": "~0.4.0",
     "hound": "~1.0.4",
     "glob": "~3.2.1",
