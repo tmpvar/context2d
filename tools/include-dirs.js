@@ -21,4 +21,4 @@ var includes = [
   return path.resolve(path.join(__dirname, '..'), dir)
 })
 
-console.log('-I' + includes.join('  -I'))
+console.log(' -I' + includes.join('  -I'))
