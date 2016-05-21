@@ -6,22 +6,7 @@
       'node_modules/windows-angle/src/shim',
       'external/skia/include',
       "<!(node -e \"require('nan')\")",
-      'node_modules/context2d-skia/skia/include/android',
-      'node_modules/context2d-skia/skia/include/animator',
-      'node_modules/context2d-skia/skia/include/codec',
-      'node_modules/context2d-skia/skia/include/config',
-      'node_modules/context2d-skia/skia/include/core',
-      'node_modules/context2d-skia/skia/include/effects',
-      'node_modules/context2d-skia/skia/include/gpu',
-      'node_modules/context2d-skia/skia/include/images',
-      'node_modules/context2d-skia/skia/include/pathops',
-      'node_modules/context2d-skia/skia/include/ports',
-      'node_modules/context2d-skia/skia/include/private',
-      'node_modules/context2d-skia/skia/include/svg',
-      'node_modules/context2d-skia/skia/include/utils',
-      'node_modules/context2d-skia/skia/include/views',
-      'node_modules/context2d-skia/skia/include/xml',
-      'node_modules/context2d-skia/skia/src/core'
+      "<!(node tools/include-dirs.js)"
     ],
     # TODO: proper Debug/Release support
     'shared_static_libraries': [
