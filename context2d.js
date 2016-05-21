@@ -771,7 +771,7 @@ module.exports.createContext = function(canvas, w, h, ContextCtor) {
       if (f && f.family !== 'default' && f.family !== 'initial') {
         state.font = f.toString();
 
-        var family = f.family.split(', ')[0];
+        var family = String(f.family).split(', ')[0];
 
         // TODO: better caching..
         if (fontCache[family]) {
