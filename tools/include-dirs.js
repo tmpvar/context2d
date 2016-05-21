@@ -17,8 +17,6 @@ var includes = [
   './node_modules/context2d-skia/skia/include/views',
   './node_modules/context2d-skia/skia/include/xml',
   './node_modules/context2d-skia/skia/src/core'
-].map(function(dir) {
-  return path.resolve(path.join(__dirname, '..'), dir)
-})
+]
 
 console.log(' -I' + includes.join('  -I'))
