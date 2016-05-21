@@ -5,7 +5,7 @@
   "main": "context2d.js",
   "scripts": {
     "test": "node test/test.js",
-    "install": "node-gyp configure build --debug",
+    "install": "prebuild --install",
     "prebuild": "prebuild --verbose --all --collect-files-filter='\\.(node|a)$'"
   },
   "repository": {
