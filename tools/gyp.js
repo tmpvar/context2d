@@ -22,34 +22,36 @@ var includes = [
 })
 
 module.exports.include_dirs = function() {
-  console.log(' -I' + includes.join(' -I'))
+  process.stdout.write(' -I' + includes.join(' -I') + ' ')
 }
 
 var staticLibs = [
-  './node_modules/context2d-skia/skia/out/Debug/libgenperf_libs.a',
-  './node_modules/context2d-skia/skia/out/Debug/libjpeg-turbo.a',
-  './node_modules/context2d-skia/skia/out/Debug/libpng_static.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_codec.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_codec_android.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_core.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_effects.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_images.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_opts.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_opts_sse41.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_opts_ssse3.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_ports.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_sfnt.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_skgpu.a',
-  './node_modules/context2d-skia/skia/out/Debug/libskia_utils.a',
-  './node_modules/context2d-skia/skia/out/Debug/libwebp_dec.a',
-  './node_modules/context2d-skia/skia/out/Debug/libwebp_demux.a',
-  './node_modules/context2d-skia/skia/out/Debug/libwebp_dsp.a',
-  './node_modules/context2d-skia/skia/out/Debug/libwebp_enc.a',
-  './node_modules/context2d-skia/skia/out/Debug/libwebp_utils.a'
-].map(function(dir) {
-  return path.resolve(path.join(__dirname, '..'), dir)
-})
+  '../node_modules/context2d-skia/skia/out/Debug/libgenperf_libs.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libjpeg-turbo.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libpng_static.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_codec.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_codec_android.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_core.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_effects.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_images.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_opts.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_opts_sse41.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_opts_ssse3.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_ports.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_sfnt.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_skgpu.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libskia_utils.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libwebp_dec.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libwebp_demux.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libwebp_dsp.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libwebp_enc.a',
+  '../node_modules/context2d-skia/skia/out/Debug/libwebp_utils.a'
+]
 
-module.exports.static_libraries = function () {
-  console.log(staticLibs.join(' '))
+module.exports.static_libraries = function (external) {
+  if (external) {
+    staticLibs.push('../node_modules/context2d/build/Release/context2d-static.a')
+  }
+
+  process.stdout.write(staticLibs.join(' ') + ' ')
 }
